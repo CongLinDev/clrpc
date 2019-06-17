@@ -1,0 +1,33 @@
+zookeeper:
+  registry:
+    url: localhost:2181
+    root_path: /
+  session:
+    timeout: 5000 #ms
+
+server:
+  url: localhost:5000
+  thread:
+    boss: 1
+    worker: 10
+
+client:
+  connect-url:
+    # - localhost:5000
+    # # - localhost:5001
+
+  session:
+    timeout: 5000 #ms
+  thread:
+    worker: 10
+      
+service:
+  thread:
+    pool:
+      class: conglin.clrpc.common.util.threadpool.FixedThreadPool
+      core-size: 5
+      max-size: 10
+      keep-alive: 1000 #ms
+      queue: 0
+  session:
+    time-threshold: 5000
