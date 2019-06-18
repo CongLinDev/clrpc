@@ -1,8 +1,7 @@
 package conglin.clrpc.bootstrap;
 
-import java.util.List;
-
 import conglin.clrpc.service.ClientServiceHandler;
+import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.transfer.net.ClientTransfer;
 
 /**
@@ -35,12 +34,18 @@ public class RpcClientBootstrap {
         return serviceHandler.getService(interfaceClass);
     }
 
+    
+    public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
+        return serviceHandler.getAsynchronousService(interfaceClass);
+    }
+
+
     public void start(){
         clientTransfer.start(serviceHandler);
         serviceHandler.start(clientTransfer);
     }
 
-    public void start(List<String> initRemoteAddress){
+    public void start(String ...initRemoteAddress){
         clientTransfer.start(serviceHandler, initRemoteAddress);
         serviceHandler.start(clientTransfer);
     }

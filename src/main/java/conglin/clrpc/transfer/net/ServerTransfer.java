@@ -42,7 +42,7 @@ public class ServerTransfer{
     public void start(ServerServiceHandler serviceHandler){
         if(bossGroup == null && workerGroup == null){
             int bossThread = ConfigParser.getInstance().getOrDefault("server.thread.boss", 1);
-            int workerThread = ConfigParser.getInstance().getOrDefault("server.thread.worker", 10);
+            int workerThread = ConfigParser.getInstance().getOrDefault("server.thread.worker", 4);
             bossGroup = new NioEventLoopGroup(bossThread);
             workerGroup = new NioEventLoopGroup(workerThread);
 

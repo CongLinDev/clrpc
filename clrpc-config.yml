@@ -2,6 +2,9 @@ zookeeper:
   registry:
     url: localhost:2181
     root_path: /
+  discovery:
+    url: localhost:2181
+    root_path: /
   session:
     timeout: 5000 #ms
 
@@ -9,18 +12,18 @@ server:
   url: localhost:5000
   thread:
     boss: 1
-    worker: 10
+    worker: 4
 
 client:
   connect-url:
-    # - localhost:5000
-    # # - localhost:5001
+    - localhost:5000
+    # - localhost:5001
 
   session:
     timeout: 5000 #ms
   thread:
-    worker: 10
-      
+    worker: 4
+
 service:
   thread:
     pool:

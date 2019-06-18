@@ -18,7 +18,7 @@ public class ConfigParser{
 
     private static final Logger log = LoggerFactory.getLogger(ConfigParser.class);
 
-    private final static String CONFIG_FILENAME = "clrpc-config.yml";
+    private static String CONFIG_FILENAME = "clrpc-config.yml";
 
     private Map<String, Object> configs;
 
@@ -41,7 +41,21 @@ public class ConfigParser{
     public static ConfigParser getInstance(){
         return SingletonHolder.CONFIG_PARSER;
     }
-    
+
+    /**
+     * 调用该方法前一定要确保
+     * 未调用 {@link ConfigParser.getInstance()} 方法
+     * 否则该方法将不起任何作用
+     * 建议在创建启动类前调用
+     * @param path
+     */
+    public static void setConfigFilePath(String path){
+        if(path.endsWith("/")){
+            CONFIG_FILENAME = path + CONFIG_FILENAME;
+        }else{
+            CONFIG_FILENAME = path + "/" + CONFIG_FILENAME;
+        }
+    }
     
     @SuppressWarnings("unchecked")
     public <T> T getOrDefault(String key, T t){

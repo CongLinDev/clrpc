@@ -8,11 +8,14 @@
 
 ```java
 
-    RpcServerBootstrap serverBootstrap = new RpcServerBootstrap();
-
-    bootstrap.addService(Interface1.class, Implement1.class)
-             .addService(Interface2.class, Implement2.class)
-             .start();
+    RpcServerBootstrap bootstrap = new RpcServerBootstrap();
+    try{
+        bootstrap.addService(Interface1.class, Implement1.class)
+                 .addService(Interface2.class, Implement2.class)
+                 .start();
+    }finally{
+        bootstrap.stop();
+    }
 ```
 
 ### 客户端
@@ -30,3 +33,38 @@
 
     bootstrap.stop();
 ```
+
+## 配置
+
+配置文件名为 `clrpc-config.yml`，位置默认在项目根目录下。
+
+### 配置文件位置
+
+文件位置默认在项目根目录下。
+
+若要更改配置文件目录，则必须在创建启动类之前调用 `ConfigParser.getInstance()` 方法。
+
+### 配置项
+
+| Field | Type | Null | Default | Remark |
+| :------: | :------: | :------: | :------: | :------: |
+| zookeeper.registry.url | String | YES | localhost:2181 | 服务注册地址 |
+| zookeeper.registry.root_path | String | YES | / | 服务注册根节点 |
+| zookeeper.discovery.url | String | YES | localhost:2181 | 服务搜索地址，若该项为空。则client.connect-url 不能为空 |
+| zookeeper.discovery.root_path | String | YES | / | 服务搜索根节点 |
+| zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
+|  |
+| server.url | String | YES | localhost:5000 | 服务提供者地址 |
+| server.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
+| server.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
+|  |
+| client.connect-url | List\<String\> | YES | localhost:5000 | 服务使用者越过Zookeeper直接连接服务使用者的地址。zookeeper.discovery.url 为空时有效，且 zookeeper.discovery.url 为空时，该项不得为空 |
+| client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
+| client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
+|  |
+| service.thread.pool.class | conglin.clrpc.common.util.threadpool.ThreadPool | YES | conglin.clrpc.common.util.threadpool.FixedThreadPool | 业务线程池 |
+| service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
+| service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
+| service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
+| service.thread.pool.queue | Integer | YES | 0 | 业务线程池队列数 |
+| service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |

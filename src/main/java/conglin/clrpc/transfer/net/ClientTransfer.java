@@ -64,33 +64,50 @@ public class ClientTransfer {
     /**
      * 开启传输服务
      * 先检查配置文件中是否有 zookeeper 的url地址
-     * 若有，则将zookeeper中的服务加入当前服务。没有则跳过该步。
-     * 然后将配置文件中的自定义url加入当前服务。
+     * 若有，则将zookeeper中的服务加入当前服务。
+     * 没有则读取配置文件中的ip进行直连服务
      * @param serviceHandler
      */
     public void start(ClientServiceHandler serviceHandler){
-        this.serviceHandler = serviceHandler;
+        preStart(serviceHandler);
 
-        if(workerGroup == null){
-            int workerThread = ConfigParser.getInstance().getOrDefault("client.thread.worker", 10);
-            workerGroup = new NioEventLoopGroup(workerThread);
-        }        
-
-        String zookeeperAddress = (String)ConfigParser.getInstance().get("zookeeper.registry.url");
+        String zookeeperAddress = (String)ConfigParser.getInstance().get("zookeeper.discovery.url");
         if(zookeeperAddress != null){
-            log.info("Discover zookeeper service url=" + zookeeperAddress);
+            log.info("Discover zookeeper service url =" + zookeeperAddress);
             this.serviceDiscovery = new BasicServiceDiscovery(this);
-
+        }else{
+            start(serviceHandler, new String[0]);
         }
-
-        //List<String> initRemoteAddress = ConfigParser.getInstance()
-         //       .getOrDefault("client.connect-url", new ArrayList<String>());
-        //start(serviceHandler, initRemoteAddress);
     }
 
-    public void start(ClientServiceHandler serviceHandler, List<String> initRemoteAddress){
+    /**
+     * 开启传输服务
+     * 直连配置文件中以及用户自定义的服务ip地址
+     * @param serviceHandler
+     * @param initRemoteAddress 直连地址
+     */
+    public void start(ClientServiceHandler serviceHandler, String... initRemoteAddress){
+        preStart(serviceHandler);
 
-        //updateConnectedServer(initRemoteAddress);
+        List<String> configRemoteAddress = ConfigParser.getInstance()
+               .getOrDefault("client.connect-url", new ArrayList<String>());
+        for(String s: initRemoteAddress){
+            configRemoteAddress.add(s);
+        }
+        updateConnectedServer(configRemoteAddress);
+    }
+
+
+    /**
+     * 预启动，为启动做准备
+     * @param serviceHandler
+     */
+    private void preStart(ClientServiceHandler serviceHandler){
+        this.serviceHandler = serviceHandler;
+        if(workerGroup == null){
+            int workerThread = ConfigParser.getInstance().getOrDefault("client.thread.worker", 4);
+            workerGroup = new NioEventLoopGroup(workerThread);
+        }
     }
 
     public void stop() throws InterruptedException {

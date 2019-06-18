@@ -66,10 +66,15 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     }
 
     @Override
-    public RpcFuture call(String function, Object... args) {
+    public RpcFuture call(String methodName, Object... args) {
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler();
-        BasicRequest request = createRequest(this.clazz.getName(), function, args);
+        BasicRequest request = createRequest(this.clazz.getName(), methodName, args);
         return serviceHandler.sendRequest(request, channelHandler.getChannel());
+    }
+
+    @Override
+    public RpcFuture call(Method method, Object... args) {
+        return call(method.getName(), args);
     }
 
     private BasicRequest createRequest(String className, String methodName, Object[] args){

@@ -36,7 +36,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
         this.clientTransfer = clientTransfer;
 
         //服务注册地址
-        registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.registry.url", "localhost:2181");
+        registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.url", "localhost:2181");
 
         //session timeout in milliseconds
         int sessionTimeout = ConfigParser.getInstance().getOrDefault("zookeeper.session.timeout", 5000);
@@ -66,7 +66,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
      * @param keeper
      */
     private void watchNode(final ZooKeeper keeper){
-        String path = ConfigParser.getInstance().getOrDefault("zookeeper.registry.root_path", "/");
+        String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root_path", "/");
 
         try{
             List<String> nodeList = keeper.getChildren(path, new Watcher(){

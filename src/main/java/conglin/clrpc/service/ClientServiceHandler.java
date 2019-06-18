@@ -2,6 +2,7 @@ package conglin.clrpc.service;
 
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
+import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.transfer.net.BasicRequest;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import io.netty.channel.Channel;
@@ -37,7 +38,9 @@ public class ClientServiceHandler extends ServiceHandler {
             new BasicObjectProxy<T>(interfaceClass, this, clientTransfer));
     }
 
-
+    public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
+        return new BasicObjectProxy<T>(interfaceClass, this, clientTransfer);
+    }
 
     public void start(ClientTransfer clientTransfer){
         this.clientTransfer = clientTransfer;
@@ -59,13 +62,13 @@ public class ClientServiceHandler extends ServiceHandler {
 
 
 
-    // public void putFuture(String requestId, RpcFuture rpcFuture){
-    //     rpcFutures.put(requestId, rpcFuture);
-    // }
+    public void putFuture(String requestId, RpcFuture rpcFuture){
+        rpcFutures.put(requestId, rpcFuture);
+    }
 
-    // public RpcFuture getFuture(String requestId){
-    //     return rpcFutures.get(requestId);
-    // }
+    public RpcFuture getFuture(String requestId){
+        return rpcFutures.get(requestId);
+    }
 
     public RpcFuture removeFuture(String requestId){
         return rpcFutures.remove(requestId);
