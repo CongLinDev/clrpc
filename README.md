@@ -28,6 +28,12 @@
     Interface1 i1 = bootstrap.getService(Interface1.class);
     Interface2 i2 = bootstrap.getService(Interface2.class);
 
+    //同步服务
+    Interface1 i1 = bootstrap.getService(Interface1.class);
+    Interface2 i2 = bootstrap.getService(Interface2.class);
+    //异步服务
+    ObjectProxy proxy = bootstrap.getAsynchronousService(Interface3.class);
+
     // 下面是你的业务逻辑代码
     // ......
 
@@ -42,7 +48,7 @@
 
 文件位置默认在项目根目录下。
 
-若要更改配置文件目录，则必须在创建启动类之前调用 `ConfigParser.getInstance()` 方法。
+若要更改配置文件目录，则必须在创建启动类之前调用 `ConfigParser.setConfigFilePath()` 方法。
 
 ### 配置项
 
@@ -53,16 +59,13 @@
 | zookeeper.discovery.url | String | YES | localhost:2181 | 服务搜索地址，若该项为空。则client.connect-url 不能为空 |
 | zookeeper.discovery.root_path | String | YES | / | 服务搜索根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
-|  |
 | server.url | String | YES | localhost:5000 | 服务提供者地址 |
 | server.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | server.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
-|  |
 | client.connect-url | List\<String\> | YES | localhost:5000 | 服务使用者越过Zookeeper直接连接服务使用者的地址。zookeeper.discovery.url 为空时有效，且 zookeeper.discovery.url 为空时，该项不得为空 |
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
-|  |
-| service.thread.pool.class | conglin.clrpc.common.util.threadpool.ThreadPool | YES | conglin.clrpc.common.util.threadpool.FixedThreadPool | 业务线程池 |
+| service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.FixedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |

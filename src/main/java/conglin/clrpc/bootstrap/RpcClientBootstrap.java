@@ -11,8 +11,11 @@ import conglin.clrpc.transfer.net.ClientTransfer;
  * <blockquote><pre>
  *     RpcClientBootstrap bootstrap = new RpcClientBootstrap();
  *     bootstrap.start();
+ *     //同步服务
  *     Interface1 i1 = bootstrap.getService(Interface1.class);
  *     Interface2 i2 = bootstrap.getService(Interface2.class);
+ *     //异步服务
+ *     ObjectProxy proxy = bootstrap.getAsynchronousService(Interface3.class);
  *     
  * </pre></blockquote>
  * 
