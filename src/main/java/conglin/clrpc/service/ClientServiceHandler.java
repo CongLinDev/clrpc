@@ -3,7 +3,7 @@ package conglin.clrpc.service;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.transfer.net.BasicRequest;
+import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

@@ -1,6 +1,6 @@
 package conglin.clrpc.common.exception;
 
-import conglin.clrpc.transfer.net.BasicResponse;
+import conglin.clrpc.transfer.net.message.BasicResponse;
 
 public class ResponseException extends RuntimeException {
 

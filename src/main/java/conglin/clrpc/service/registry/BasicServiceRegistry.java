@@ -70,6 +70,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
      */
     private void createRootNode(ZooKeeper keeper) {
         String path = ConfigParser.getInstance().getOrDefault("zookeeper.registry.root_path", "/");
+        path = path.endsWith("/") ? path.substring(0, path.length()-1) : path;//补全斜杠
         try {
             Stat stat = keeper.exists(path, false);
             if (stat == null) {
@@ -88,7 +89,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
     private void createNode(ZooKeeper keeper, String data) {
         byte[] bytes = data.getBytes();
         String path = ConfigParser.getInstance().getOrDefault("zookeeper.registry.root_path", "/");
-
+        path = path.endsWith("/") ? path : path + "/";//补全斜杠
         try {
             String subPath = keeper.create(path, bytes, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
             log.debug("create zookeeper node ({} => {})", subPath, data);

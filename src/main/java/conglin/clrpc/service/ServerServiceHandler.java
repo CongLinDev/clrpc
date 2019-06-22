@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.service.registry.BasicServiceRegistry;
 import conglin.clrpc.service.registry.ServiceRegistry;
-import conglin.clrpc.transfer.net.BasicRequest;
+import conglin.clrpc.transfer.net.message.BasicRequest;
 
 import net.sf.cglib.reflect.FastClass;
 

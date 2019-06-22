@@ -8,9 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.util.concurrent.RpcFuture;
-import conglin.clrpc.common.util.lang.ClassUtil;
 import conglin.clrpc.service.ClientServiceHandler;
-import conglin.clrpc.transfer.net.BasicRequest;
+import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 
@@ -85,11 +84,18 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
                     .className(className)
                     .methodName(methodName)
                     .parameters(args)
-                    .parameterTypes(ClassUtil.getClassType(args))
+                    .parameterTypes(getClassType(args))
                     .build();
         log.debug(request.toString());
         return request;
     }
 
+    private Class<?>[] getClassType(Object[] objs){
+        Class<?>[] types = new Class[objs.length];
+        for (int i = 0; i < objs.length; i++) {
+            types[i] = objs[i].getClass();
+        }
+        return types;
+    }
 }
 

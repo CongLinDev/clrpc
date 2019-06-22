@@ -67,6 +67,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
      */
     private void watchNode(final ZooKeeper keeper){
         String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root_path", "/");
+        path = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
         try{
             List<String> nodeList = keeper.getChildren(path, new Watcher(){
@@ -80,7 +81,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
 
             List<String> list = new ArrayList<>();
             for(String node : nodeList){
-                byte[] bytes = keeper.getData(path + node, false, null);
+                byte[] bytes = keeper.getData(path + "/" + node, false, null);
                 if(bytes.length > 0)
                     list.add(new String(bytes));
             }

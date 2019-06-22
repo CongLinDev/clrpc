@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.exception.ResponseException;
 import conglin.clrpc.service.ServiceHandler;
-import conglin.clrpc.transfer.net.BasicRequest;
-import conglin.clrpc.transfer.net.BasicResponse;
+import conglin.clrpc.transfer.net.message.BasicRequest;
+import conglin.clrpc.transfer.net.message.BasicResponse;
 
 
 public class RpcFuture implements Future<Object> {

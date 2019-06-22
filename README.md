@@ -65,7 +65,7 @@
 | client.connect-url | List\<String\> | YES | localhost:5000 | 服务使用者越过Zookeeper直接连接服务使用者的地址。zookeeper.discovery.url 为空时有效，且 zookeeper.discovery.url 为空时，该项不得为空 |
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
-| service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.FixedThreadPool | 业务线程池 |
+| service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |

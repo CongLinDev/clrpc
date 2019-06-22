@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.service.ServerServiceHandler;
-import conglin.clrpc.transfer.net.BasicRequest;
-import conglin.clrpc.transfer.net.BasicResponse;
+import conglin.clrpc.transfer.net.message.BasicRequest;
+import conglin.clrpc.transfer.net.message.BasicResponse;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
