@@ -2,7 +2,6 @@ package conglin.clrpc.test.pojo;
 
 public class User{
 
-   
     private Long userId;
     private String username;
 

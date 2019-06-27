@@ -25,12 +25,10 @@
     RpcClientBootstrap bootstrap = new RpcClientBootstrap();
     bootstrap.start();
 
-    Interface1 i1 = bootstrap.getService(Interface1.class);
-    Interface2 i2 = bootstrap.getService(Interface2.class);
-
     //同步服务
     Interface1 i1 = bootstrap.getService(Interface1.class);
     Interface2 i2 = bootstrap.getService(Interface2.class);
+
     //异步服务
     ObjectProxy proxy = bootstrap.getAsynchronousService(Interface3.class);
 
@@ -71,3 +69,9 @@
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread.pool.queue | Integer | YES | 0 | 业务线程池队列数 |
 | service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
+
+## 扩展
+
+### 熔断器
+
+你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 熔断、高频控制、隔离、限流、限时、重试。

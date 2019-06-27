@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.exception.ResponseException;
-import conglin.clrpc.service.ServiceHandler;
+import conglin.clrpc.service.AbstractServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
 
@@ -30,11 +30,11 @@ public class RpcFuture implements Future<Object> {
     private long startTime;
     private static long timeThreshold = ConfigParser.getInstance().getOrDefault("service.session.time-threshold", 5000);
 
-    private List<BasicCallback> callbacks;
+    private List<Callback> callbacks;
 
     private ReentrantLock lock;
 
-    private static ServiceHandler serviceHandler;
+    private static AbstractServiceHandler serviceHandler;
 
     public RpcFuture(BasicRequest request){
         this.request = request;
@@ -99,7 +99,7 @@ public class RpcFuture implements Future<Object> {
      * @param callback
      * @return
      */
-    public RpcFuture addCallback(BasicCallback callback){
+    public RpcFuture addCallback(Callback callback){
         createCallbackLock();
         lock.lock();
 
@@ -136,9 +136,7 @@ public class RpcFuture implements Future<Object> {
         if(callbacks != null){
             lock.lock();
             try{
-                for(BasicCallback callback : callbacks){
-                    runCallback(callback);
-                }
+                callbacks.forEach((callback)-> runCallback(callback));
             }finally{
                 lock.unlock();
             }
@@ -146,13 +144,13 @@ public class RpcFuture implements Future<Object> {
     }
 
     /**
-     * 注册到一个 {@link ServiceHandler} 上
-     * {@link RpcFuture#runCallback(BasicCallback)} 中的
+     * 注册到一个 {@link AbstractServiceHandler} 上
+     * {@link RpcFuture#runCallback(Callback)} 中的
      * 回调函数将提交到这个线程池中
      * 
      * @param serviceHandler
      */
-    public static void registerThreadPool(ServiceHandler serviceHandler){
+    public static void registerThreadPool(AbstractServiceHandler serviceHandler){
         RpcFuture.serviceHandler = serviceHandler;
     }
 
@@ -161,21 +159,16 @@ public class RpcFuture implements Future<Object> {
      * 反之使用当前线程顺序执行
      * @param callback
      */
-    private void runCallback(BasicCallback callback){
+    private void runCallback(Callback callback){
         // final BasicResponse res = this.response;
         if(serviceHandler != null){
-            serviceHandler.submit(new Runnable(){
-                @Override
-                public void run() {
-                    runCallbackCore(callback);
-                }
-            });
+            serviceHandler.submit(() -> runCallbackCore(callback));
         }else{
             runCallbackCore(callback);
         }
     }
 
-    private void runCallbackCore(BasicCallback callback){
+    private void runCallbackCore(Callback callback){
         if(!response.isError()){
             callback.success(response.getResult());
         }else{

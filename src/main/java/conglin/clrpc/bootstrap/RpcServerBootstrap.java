@@ -50,15 +50,6 @@ public class RpcServerBootstrap {
     }
 
     /**
-     * 扫描并保存所有使用 {@link conglin.clrpc.service.RpcService} 注解的服务
-     * 未实现
-     */
-    public RpcServerBootstrap findService(){
-        serviceHandler.findService();
-        return this;
-    }
-
-    /**
      * 启动
      */
     public void start() {

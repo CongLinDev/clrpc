@@ -1,8 +1,8 @@
 package conglin.clrpc.transfer.net.message;
 
-import conglin.clrpc.common.Builder;
+import conglin.clrpc.common.AbstractBuilder;
 
-public final class BasicRequestBuilder extends Builder<BasicRequest> {
+public final class BasicRequestBuilder extends AbstractBuilder<BasicRequest> {
 
     BasicRequestBuilder(BasicRequest product) {
         super(product);

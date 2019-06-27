@@ -1,9 +1,9 @@
 package conglin.clrpc.common;
 
-public abstract class Builder<T>{
+abstract public class AbstractBuilder<T>{
     private T product;
 
-    public Builder(T product){
+    public AbstractBuilder(T product){
         this.product = product;
     }
 

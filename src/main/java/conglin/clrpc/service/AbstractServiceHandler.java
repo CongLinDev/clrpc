@@ -12,8 +12,8 @@ import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.threadpool.FixedThreadPool;
 import conglin.clrpc.common.util.threadpool.ThreadPool;
 
-public abstract class ServiceHandler {
-    private static final Logger log = LoggerFactory.getLogger(ServiceHandler.class);
+abstract public class AbstractServiceHandler {
+    private static final Logger log = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
     private ExecutorService businessTheardExecutorService;
 

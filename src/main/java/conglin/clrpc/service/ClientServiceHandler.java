@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ClientServiceHandler extends ServiceHandler {
+public class ClientServiceHandler extends AbstractServiceHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ClientServiceHandler.class);
 
@@ -60,8 +60,6 @@ public class ClientServiceHandler extends ServiceHandler {
      * 以下代码用于 RpcFuture 的管理和维护
      */
 
-
-
     public void putFuture(String requestId, RpcFuture rpcFuture){
         rpcFutures.put(requestId, rpcFuture);
     }
@@ -73,8 +71,6 @@ public class ClientServiceHandler extends ServiceHandler {
     public RpcFuture removeFuture(String requestId){
         return rpcFutures.remove(requestId);
     }
-
-
 
 
 

@@ -13,7 +13,7 @@ import conglin.clrpc.transfer.net.message.BasicRequest;
 
 import net.sf.cglib.reflect.FastClass;
 
-public class ServerServiceHandler extends ServiceHandler {
+public class ServerServiceHandler extends AbstractServiceHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ServerServiceHandler.class);
 
@@ -26,14 +26,6 @@ public class ServerServiceHandler extends ServiceHandler {
     public ServerServiceHandler() {
         services = new HashMap<>();
         serviceRegistry = new BasicServiceRegistry();
-    }
-
-    /**
-     * 寻找所有使用 {@link conglin.clrpc.service.RpcService} 注解的接口或类，将其加入到
-     * {@link RpcServiceHandler#services} 中
-     */
-    public void findService() {
-        // TODO: 使用Spring获取带有注解的类或接口
     }
 
     /**

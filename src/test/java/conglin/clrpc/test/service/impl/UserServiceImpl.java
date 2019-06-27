@@ -1,6 +1,7 @@
 package conglin.clrpc.test.service.impl;
 
 import conglin.clrpc.test.pojo.User;
+import conglin.clrpc.test.pojo.UserInfo;
 import conglin.clrpc.test.service.UserService;
 
 public class UserServiceImpl implements UserService {
@@ -12,7 +13,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String postUser(User user) {
-        System.out.println(user+"--------------------");
+        System.out.println(user + "--------------------");
+        return "ok";
+    }
+
+    @Override
+    public String postUserInfo(UserInfo userInfo) {
+        System.out.println(userInfo + "--------------------");
         return "ok";
     }
 

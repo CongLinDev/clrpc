@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,37 @@ public class ConfigParser{
             CONFIG_FILENAME = path + "/" + CONFIG_FILENAME;
         }
     }
-    
+
+    /**
+     * 获取某个键值的值
+     * 若不存在返回null
+     * @param key 键值
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public Object get(String key){
+        String [] paths = key.split("\\.");
+        Object obj = configs;
+
+        try{
+            for(String path : paths){
+                obj = ((Map<String, Object>)Map.class.cast(obj)).get(path);
+                if(obj == null) return null;
+            }
+            return obj;
+        }catch(ClassCastException exception){
+            return null;
+        }
+    }
+
+    /**
+     * 获取某个键值的值
+     * 若不存在返回默认值
+     * @param <T> 
+     * @param key 键值
+     * @param t 默认值
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public <T> T getOrDefault(String key, T t){
         Object obj = get(key);
@@ -69,19 +100,23 @@ public class ConfigParser{
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public Object get(String key){
-        String [] paths = key.split("\\.");
-        Object obj = configs;
-
-        try{
-            for(int i = 0; i < paths.length; i++){
-                obj = ((Map<String, Object>)Map.class.cast(obj)).get(paths[i]);
-                if(obj == null) return null;
-            }
-            return obj;
-        }catch(ClassCastException exception){
-            return null;
+    /**
+     * 获取某个键值的值
+     * 若满足一定条件,返回搜索值(有可能为默认值)
+     * 否则返回默认值
+     * @param <T>
+     * @param key
+     * @param t
+     * @param predicate
+     * @return
+     */
+    public <T> T getOrDefaultWithCondition(String key, T t, Predicate<T> predicate){
+        T value = getOrDefault(key, t);
+        if(predicate.test(value)){
+            return value;
+        }else{
+            return t;
         }
     }
+
 }

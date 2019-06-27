@@ -1,6 +1,6 @@
 package conglin.clrpc.common.util.concurrent;
 
-public interface BasicCallback{
+public interface Callback{
 
     void success(Object result);
 

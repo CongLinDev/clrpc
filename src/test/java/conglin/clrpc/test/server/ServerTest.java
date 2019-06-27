@@ -13,7 +13,7 @@ public class ServerTest {
         try {
             System.out.println("Server opening...");
             serverBootstrap.addService(HelloService.class, HelloServiceImpl.class)
-                    .addService(UserService.class, UserServiceImpl.class)
+                    //.addService(UserService.class, UserServiceImpl.class)
                     .start();
             
         }finally{
