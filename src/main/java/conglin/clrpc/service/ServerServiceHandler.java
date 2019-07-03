@@ -58,7 +58,6 @@ public class ServerServiceHandler extends AbstractServiceHandler {
         serviceRegistry.register(data);
     }
 
-
     /**
      * 处理客户端请求并生成结果
      * @param request
@@ -84,4 +83,12 @@ public class ServerServiceHandler extends AbstractServiceHandler {
         return serviceFastClass.invoke(methodIndex, serviceBean, parameters);
     }
 
+    /**
+     * 移除服务
+     * @param interfaceClass 接口
+     */
+    public void removeService(Class<?> interfaceClass){
+        services.remove(interfaceClass.getName());
+        log.debug("Remove service named " + interfaceClass.getName());
+    }
 }

@@ -52,9 +52,11 @@ public class BasicServiceRegistry implements ServiceRegistry {
                 public void process(WatchedEvent event) {
                     if (event.getState() == Event.KeeperState.SyncConnected) {
                         countDownLatch.countDown();
+                        log.debug("ZooKeeper address=" + registryAddress + " connected.");
                     }
                 }
             });
+            log.debug("ZooKeeper address="+ registryAddress +" connecting...");
             countDownLatch.await();
 
         } catch (IOException | InterruptedException e) {

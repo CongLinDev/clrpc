@@ -1,8 +1,5 @@
 package conglin.clrpc.bootstrap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.ServerTransfer;
 
@@ -20,10 +17,7 @@ import conglin.clrpc.transfer.net.ServerTransfer;
  * 注意：若服务接口相同，先添加的服务会被覆盖。
  */
 
-
 public class RpcServerBootstrap {
-
-    private static final Logger log = LoggerFactory.getLogger(RpcServerBootstrap.class);
 
     // 管理传输
     private ServerTransfer serverTransfer;
@@ -46,6 +40,16 @@ public class RpcServerBootstrap {
      */
     public RpcServerBootstrap addService(Class<?> interfaceClass, Class<?> implementClass) {
         serviceHandler.addService(interfaceClass, implementClass);
+        return this;
+    }
+
+    /**
+     * 移除已经发布的服务
+     * @param interfaceClass
+     * @return
+     */
+    public RpcServerBootstrap removeService(Class<?> interfaceClass) {
+        serviceHandler.removeService(interfaceClass);;
         return this;
     }
 
