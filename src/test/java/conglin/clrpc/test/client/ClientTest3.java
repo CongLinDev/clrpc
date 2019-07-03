@@ -5,24 +5,17 @@ import java.util.Random;
 import conglin.clrpc.bootstrap.RpcClientBootstrap;
 import conglin.clrpc.common.util.concurrent.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.test.pojo.User;
-import conglin.clrpc.test.service.HelloService;
 import conglin.clrpc.test.service.UserService;
 
-
-public class ClientTest{
+/**
+ * 测试异步调用服务
+ */
+public class ClientTest3 {
     public static void main(String[] args) {
         RpcClientBootstrap clientBootstrap = new RpcClientBootstrap();
         System.out.println("Client opening...");
         clientBootstrap.start();
-
-        HelloService helloService = clientBootstrap.getService(HelloService.class);
-        String s = helloService.hello();
-        System.out.println(s);
-        System.out.println("===================================");
         
-        UserService userService = clientBootstrap.getService(UserService.class);
-        User user = userService.getUser(1256L, "小明");
         ObjectProxy objectProxy = clientBootstrap.getAsynchronousService(UserService.class);
 
         Random random = new Random();

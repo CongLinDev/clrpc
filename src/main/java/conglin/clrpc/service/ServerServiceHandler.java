@@ -7,6 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.exception.NoSuchServiceException;
 import conglin.clrpc.service.registry.BasicServiceRegistry;
 import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.transfer.net.message.BasicRequest;
@@ -36,9 +37,9 @@ public class ServerServiceHandler extends AbstractServiceHandler {
      */
     public void addService(Class<?> interfaceClass, Class<?> implementClass) {
         if (implementClass.isInterface()) {
-            log.error("{} is not a service class. And it will not be added Services", implementClass.getName());
+            log.error(implementClass.getName() + " is not a service class. And it will not be added Services");
         } else if (!interfaceClass.isAssignableFrom(implementClass)) {
-            log.error("{} is not permitted. And it will not be added Services", implementClass.getName());
+            log.error(implementClass.getName() + " is not permitted. And it will not be added Services");
         } else {
             try {
                 Object implementObject = implementClass.getDeclaredConstructor().newInstance();
@@ -64,11 +65,16 @@ public class ServerServiceHandler extends AbstractServiceHandler {
      * @return
      * @throws InvocationTargetException
      */
-    public Object handleRequest(BasicRequest request) throws InvocationTargetException{
+    public Object handleRequest(BasicRequest request) throws InvocationTargetException, NoSuchServiceException{
         String className = request.getClassName();
 
         //获取服务实现类
         Object serviceBean = services.get(className);
+        //如果服务实现类没有注册，抛出异常
+        if(serviceBean == null){
+            throw new NoSuchServiceException(request.getRequestId(), className, request.getMethodName());
+        }
+
         Class<?> serviceBeanClass = serviceBean.getClass();
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();

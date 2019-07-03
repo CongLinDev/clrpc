@@ -44,11 +44,11 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
                 return proxy.getClass().getName() + "@" +
                     Integer.toHexString(System.identityHashCode(proxy)) +
                     ", with InvocationHandler " + this;
-            } else{
+            } else {
                 throw new IllegalStateException(String.valueOf(method));
             }
         }
-
+        
         //创建发送请求消息
         BasicRequest request = BasicRequest.builder()
                 .requestId(UUID.randomUUID().toString())

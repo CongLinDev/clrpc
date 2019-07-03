@@ -81,7 +81,13 @@ public class RpcFuture implements Future<Object> {
     public void done(BasicResponse response){
         this.response = response;
         synchronizer.release(1);
+
         invokeCallbacks();
+        
+        if(response == null || response.isError() == true){
+            log.error(response.getError());
+            return;
+        }
 
         long responseTime = System.currentTimeMillis() - startTime;
         if(responseTime > timeThreshold){

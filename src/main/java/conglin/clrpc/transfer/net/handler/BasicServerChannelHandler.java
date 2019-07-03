@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.exception.NoSuchServiceException;
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
@@ -35,8 +36,8 @@ public class BasicServerChannelHandler extends SimpleChannelInboundHandler<Basic
                 try {
                     Object result = serviceHandler.handleRequest(msg);
                     response.setResult(result);
-                } catch (InvocationTargetException e) {
-                    log.error("Request failed: {} ", e);
+                } catch (NoSuchServiceException | InvocationTargetException e) {
+                    log.error("Request failed: " + e.getMessage());
                     response.setError(e.toString());
                 }
 
