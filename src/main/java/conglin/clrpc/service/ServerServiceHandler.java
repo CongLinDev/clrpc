@@ -46,7 +46,7 @@ public class ServerServiceHandler extends AbstractServiceHandler {
                 services.put(interfaceClass.getName(), implementObject);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                log.error("{} Can not add service", e);
+                log.error("Can not add service. " + e.getMessage());
             }
         }
     }
@@ -56,7 +56,12 @@ public class ServerServiceHandler extends AbstractServiceHandler {
      * @param data
      */
     public void registerService(String data){
-        serviceRegistry.register(data);
+        //只把简单的类名注册到zookeeper上
+        services.keySet().forEach(
+            service -> serviceRegistry.registerProvider(
+                service.substring(service.lastIndexOf(".") + 1, service.length()),
+                data)
+            );
     }
 
     /**

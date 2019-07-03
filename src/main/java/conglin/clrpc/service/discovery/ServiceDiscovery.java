@@ -15,5 +15,12 @@ public interface ServiceDiscovery{
     /**
      * 关闭服务
      */
-    void stop() throws InterruptedException;
+    void stop();
+
+    /**
+     * 注册消费者
+     * @param serviceName
+     * @param data
+     */
+    void registerConsumer(String serviceName, String data);
 }

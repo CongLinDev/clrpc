@@ -34,11 +34,13 @@ public class RpcClientBootstrap {
     }
 
     public <T> T getService(Class<T> interfaceClass){
+        clientTransfer.findService(interfaceClass);
         return serviceHandler.getService(interfaceClass);
     }
 
     
     public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
+        clientTransfer.findService(interfaceClass);
         return serviceHandler.getAsynchronousService(interfaceClass);
     }
 

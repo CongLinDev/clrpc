@@ -3,6 +3,7 @@ package conglin.clrpc.transfer.net;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,12 +39,11 @@ public class ClientTransfer {
 
     private EventLoopGroup workerGroup;
     private ClientServiceHandler serviceHandler;
-
     
     private CopyOnWriteArrayList<BasicClientChannelHandler> connectedHandlers;
     private Map<InetSocketAddress, BasicClientChannelHandler> connectedServerNodes;
 
-    private ServiceDiscovery serviceDiscovery;
+    private Set<ServiceDiscovery> serviceDiscoveries;
 
     private ReentrantLock lock;
     private Condition connected;
@@ -54,6 +54,7 @@ public class ClientTransfer {
     public ClientTransfer() {
         connectedHandlers = new CopyOnWriteArrayList<>();
         connectedServerNodes = new ConcurrentHashMap<>();
+        serviceDiscoveries = new HashSet<>();
 
         lock = new ReentrantLock();
         connected = lock.newCondition();
@@ -74,7 +75,7 @@ public class ClientTransfer {
         String zookeeperAddress = (String)ConfigParser.getInstance().get("zookeeper.discovery.url");
         if(zookeeperAddress != null){
             log.info("Discover zookeeper service url =" + zookeeperAddress);
-            this.serviceDiscovery = new BasicServiceDiscovery(this);
+
         }else{
             start(serviceHandler, new String[0]);
         }
@@ -97,6 +98,14 @@ public class ClientTransfer {
         updateConnectedServer(configRemoteAddress);
     }
 
+    /**
+     * 在 ZooKeeper中寻找服务提供者
+     * @param <T>
+     * @param interfaceClass 提供该服务的类
+     */
+    public <T> void findService(Class<T> interfaceClass){
+        this.serviceDiscoveries.add(new BasicServiceDiscovery(this, interfaceClass.getSimpleName()));
+    }
 
     /**
      * 预启动，为启动做准备
@@ -110,13 +119,13 @@ public class ClientTransfer {
         }
     }
 
-    public void stop() throws InterruptedException {
+    public void stop()  {
 
         disconnectAllServerNode();
         signalAvailableChannelHandler();
         
         if(workerGroup != null) workerGroup.shutdownGracefully();
-        if(serviceDiscovery != null) serviceDiscovery.stop();
+        if(serviceDiscoveries != null) serviceDiscoveries.forEach(s->s.stop());
     }
 
     public void updateConnectedServer(List<String> serverAddress){
@@ -182,7 +191,7 @@ public class ClientTransfer {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if(future.isSuccess()){
-                            log.debug("Connect to remote server successfully. Remote Address :" + remoteAddress.toString());                            
+                            log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());                            
                             addChannelHandler(channelInitializer.getBasicClientChannelHandler());
                         }
                     }

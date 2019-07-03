@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.zookeeper.NodeManager;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import io.netty.util.internal.ThreadLocalRandom;
 
@@ -27,16 +29,21 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
 
     private final String registryAddress; //服务注册地址
     private ZooKeeper zooKeeper;
+    private final String rootPath;
+
     private volatile List<String> dataList;
 
     private ClientTransfer clientTransfer;
 
-    public BasicServiceDiscovery(ClientTransfer clientTransfer){
+    public BasicServiceDiscovery(ClientTransfer clientTransfer, String serviceName){
 
         this.clientTransfer = clientTransfer;
 
         //服务注册地址
         registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.url", "localhost:2181");
+
+        String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root_path", "/clrpc");
+        rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
         //session timeout in milliseconds
         int sessionTimeout = ConfigParser.getInstance().getOrDefault("zookeeper.session.timeout", 5000);
@@ -57,7 +64,9 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
         }
 
         if(zooKeeper != null){
-            watchNode(zooKeeper);
+            // registerConsumer(serviceName, )
+            String absPath = rootPath + "/service/" + serviceName + "/providers";
+            watchNode(zooKeeper, absPath);
         }
     }
 
@@ -65,16 +74,13 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
      * 监视结点
      * @param keeper
      */
-    private void watchNode(final ZooKeeper keeper){
-        String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root_path", "/");
-        path = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-
+    private void watchNode(final ZooKeeper keeper, String path){
         try{
             List<String> nodeList = keeper.getChildren(path, new Watcher(){
                 @Override
                 public void process(WatchedEvent event) {
                     if(event.getType() == Event.EventType.NodeChildrenChanged){
-                        watchNode(keeper);
+                        watchNode(keeper, path);
                     }
                 }
             });
@@ -89,7 +95,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
             log.debug("node data: {}", list);
 
         }catch(KeeperException | InterruptedException e){
-            log.error("", e);
+            log.error(e.getMessage());
         }
         
         log.debug("Service discovery triggered updating connected server node.");
@@ -117,10 +123,24 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     }
 
     @Override
-    public void stop() throws InterruptedException{
+    public void stop(){
         if(zooKeeper != null){
-            zooKeeper.close();
+            try{
+                zooKeeper.close();
+            }catch(InterruptedException e){
+                log.error("ZooKeeper stops with error. " + e.getMessage());
+            }
         }
+    }
+
+    @Override
+    public void registerConsumer(String serviceName, String data) {
+        //创建服务节点
+        String serviceNode = rootPath + "/service/" + serviceName;
+        NodeManager.createNode(zooKeeper,serviceNode, serviceName);
+        //创建消费者节点
+        String absPath = rootPath + "/service/" + serviceName + "/consumers/consumer";
+        NodeManager.createNode(zooKeeper, absPath, data, CreateMode.EPHEMERAL_SEQUENTIAL);
     }
     
 }
