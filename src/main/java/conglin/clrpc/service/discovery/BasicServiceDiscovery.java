@@ -35,14 +35,16 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
 
     private ClientTransfer clientTransfer;
 
-    public BasicServiceDiscovery(ClientTransfer clientTransfer, String serviceName){
+    private String serviceName;
 
+    public BasicServiceDiscovery(ClientTransfer clientTransfer, String serviceName){
+        this.serviceName = serviceName;
         this.clientTransfer = clientTransfer;
 
         //服务注册地址
         registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.url", "localhost:2181");
 
-        String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root_path", "/clrpc");
+        String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
         //session timeout in milliseconds
@@ -62,9 +64,12 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
         }catch(IOException | InterruptedException e){
             log.error("", e);
         }
+    }
 
+    @Override
+    public void init(){
         if(zooKeeper != null){
-            // registerConsumer(serviceName, )
+            //registerConsumer(serviceName, );
             String absPath = rootPath + "/service/" + serviceName + "/providers";
             watchNode(zooKeeper, absPath);
         }
@@ -84,7 +89,6 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
                     }
                 }
             });
-
             List<String> list = new ArrayList<>();
             for(String node : nodeList){
                 byte[] bytes = keeper.getData(path + "/" + node, false, null);
@@ -106,9 +110,8 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
      * 更新连接的服务器
      */
     private void updateConnectedServer(){
-        clientTransfer.updateConnectedServer(dataList);
+        clientTransfer.updateConnectedServer(serviceName, dataList);
     }
-
 
     @Override
     public String discover() {

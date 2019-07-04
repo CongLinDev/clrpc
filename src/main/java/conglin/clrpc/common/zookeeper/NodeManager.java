@@ -62,7 +62,6 @@ public class NodeManager {
             Stat stat = keeper.exists(path, false);
             if(stat == null){
                 int index = path.lastIndexOf("/");
-                System.out.println(path + index);
                 String higherLevelPath = path.substring(0, index);
                 createNode(keeper, higherLevelPath);
                 String subPath = keeper.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);

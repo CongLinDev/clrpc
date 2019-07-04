@@ -23,4 +23,9 @@ public interface ServiceDiscovery{
      * @param data
      */
     void registerConsumer(String serviceName, String data);
+
+    /**
+     * 初始化
+     */
+    void init();
 }

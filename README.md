@@ -53,9 +53,9 @@
 | Field | Type | Null | Default | Remark |
 | :------: | :------: | :------: | :------: | :------: |
 | zookeeper.registry.url | String | YES | localhost:2181 | 服务注册地址 |
-| zookeeper.registry.root_path | String | YES | /clrpc | 服务注册根节点 |
+| zookeeper.registry.root-path | String | YES | /clrpc | 服务注册根节点 |
 | zookeeper.discovery.url | String | YES | localhost:2181 | 服务搜索地址，若该项为空。则client.connect-url 不能为空 |
-| zookeeper.discovery.root_path | String | YES | /clrpc | 服务搜索根节点 |
+| zookeeper.discovery.root-path | String | YES | /clrpc | 服务搜索根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
 | server.url | String | YES | localhost:5000 | 服务提供者地址 |
 | server.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |

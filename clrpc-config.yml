@@ -1,10 +1,10 @@
 zookeeper:
   registry:
     url: localhost:2181
-    root_path: /clrpc
+    root-path: /clrpc
   discovery:
     url: localhost:2181
-    root_path: /clrpc
+    root-path: /clrpc
   session:
     timeout: 5000 #ms
 
@@ -32,4 +32,4 @@ service:
       keep-alive: 1000 #ms
       queue: 0
   session:
-    time-threshold: 5000
+    time-threshold: 5000 #ms

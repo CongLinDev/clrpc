@@ -34,7 +34,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
     public BasicServiceRegistry() {
         // 服务注册地址
         registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.registry.url", "localhost:2181");
-        String path = ConfigParser.getInstance().getOrDefault("zookeeper.registry.root_path", "/clrpc");
+        String path = ConfigParser.getInstance().getOrDefault("zookeeper.registry.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length()-1) : path;//去除最后一个 /
     }
 

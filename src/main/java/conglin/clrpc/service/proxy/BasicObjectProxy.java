@@ -59,14 +59,16 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
                 .build();
         log.debug(request.toString());
         // send request
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler();
+        String simpleClassName = method.getDeclaringClass().getSimpleName();
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
         RpcFuture future = serviceHandler.sendRequest(request, channelHandler.getChannel());
         return future.get();
     }
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler();
+        String simpleClassName = this.clazz.getSimpleName();
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
         BasicRequest request = createRequest(this.clazz.getName(), methodName, args);
         return serviceHandler.sendRequest(request, channelHandler.getChannel());
     }
