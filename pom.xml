@@ -4,7 +4,7 @@
 
   <groupId>conglin.clrpc</groupId>
   <artifactId>clrpc</artifactId>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>clrpc</name>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.1.36.Final</version>
+      <version>4.1.37.Final</version>
     </dependency>
 
     <!-- zookeeper -->

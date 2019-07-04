@@ -25,6 +25,7 @@ import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
 import conglin.clrpc.transfer.net.handler.ProtostuffClientChannelInitializer;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -59,7 +60,7 @@ public class ClientTransfer {
 
         String zookeeperAddress = (String)ConfigParser.getInstance().get("zookeeper.discovery.url");
         if(zookeeperAddress != null){
-            log.info("Discover zookeeper service url =" + zookeeperAddress);
+            log.info("Discover zookeeper service url = " + zookeeperAddress);
         }else{
             start(serviceHandler, new String[0]);
         }
@@ -226,6 +227,10 @@ public class ClientTransfer {
             serviceDiscovery.init();
         }
     
+        /**
+         * 更新服务地址
+         * @param serverAddress
+         */
         public void updateConnectedServer(List<String> serverAddress) {
             if (serverAddress != null) {
                 if (serverAddress.size() > 0) {
@@ -274,6 +279,10 @@ public class ClientTransfer {
             }
         }
     
+        /**
+         * 添加服务提供者的Channel
+         * @param channelHandler
+         */
         public void addChannelHandler(BasicClientChannelHandler channelHandler){
             connectedHandlers.add(channelHandler);
             SocketAddress address = channelHandler.getChannel().remoteAddress();

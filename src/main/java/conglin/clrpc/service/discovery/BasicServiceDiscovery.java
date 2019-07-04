@@ -1,6 +1,8 @@
 package conglin.clrpc.service.discovery;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -69,7 +71,12 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     @Override
     public void init(){
         if(zooKeeper != null){
-            //registerConsumer(serviceName, );
+            try{
+                registerConsumer(serviceName, InetAddress.getLocalHost().getHostAddress());
+            }catch(UnknownHostException e){
+                log.error("Unknown consumer host: " + e.getMessage());
+            }
+
             String absPath = rootPath + "/service/" + serviceName + "/providers";
             watchNode(zooKeeper, absPath);
         }

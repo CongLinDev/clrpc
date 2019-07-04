@@ -7,7 +7,7 @@ import conglin.clrpc.test.service.HelloService;
  * 测试同步调用服务
  */
 public class ClientTest1{
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         RpcClientBootstrap clientBootstrap = new RpcClientBootstrap();
         System.out.println("Client opening...");
         clientBootstrap.start();
@@ -23,5 +23,6 @@ public class ClientTest1{
         }
 
         System.out.println("Client closing...");
+        
     }
 }
