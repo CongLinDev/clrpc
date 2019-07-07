@@ -53,7 +53,7 @@ public class BasicServerChannelHandler extends SimpleChannelInboundHandler<Basic
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("Server caught exception ", cause);
+        log.error(cause.getMessage());
         ctx.close();
     }
 

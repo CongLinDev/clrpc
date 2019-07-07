@@ -19,7 +19,7 @@ import conglin.clrpc.transfer.net.ClientTransfer;
  *     
  * </pre></blockquote>
  * 
- * 注意：使用完后记得调用 stop()
+ * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 
 public class RpcClientBootstrap {

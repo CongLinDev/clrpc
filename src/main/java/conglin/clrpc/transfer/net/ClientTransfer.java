@@ -25,7 +25,6 @@ import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
 import conglin.clrpc.transfer.net.handler.ProtostuffClientChannelInitializer;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -39,6 +38,9 @@ public class ClientTransfer {
 
     public static final String ANONYMOUS_SERVICE_NAME = "AnonymousService";
 
+    public static final InetSocketAddress LOCAL_ADDRESS = IPAddressUtil
+            .splitHostnameAndPortSilently(ConfigParser.getInstance().getOrDefault("client.address", "localhost:5200"));
+
     private EventLoopGroup workerGroup;
     private ClientServiceHandler serviceHandler;
 
@@ -49,35 +51,34 @@ public class ClientTransfer {
     }
 
     /**
-     * 开启传输服务
-     * 先检查配置文件中是否有 zookeeper 的url地址
-     * 若有，则将zookeeper中的服务加入当前服务。
+     * 开启传输服务 先检查配置文件中是否有 zookeeper 的url地址 若有，则将zookeeper中的服务加入当前服务。
      * 没有则读取配置文件中的ip进行直连服务
+     * 
      * @param serviceHandler
      */
-    public void start(ClientServiceHandler serviceHandler){
+    public void start(ClientServiceHandler serviceHandler) {
         preStart(serviceHandler);
 
-        String zookeeperAddress = (String)ConfigParser.getInstance().get("zookeeper.discovery.url");
-        if(zookeeperAddress != null){
-            log.info("Discover zookeeper service url = " + zookeeperAddress);
-        }else{
+        String zookeeperAddress = (String) ConfigParser.getInstance().get("zookeeper.discovery.address");
+        if (zookeeperAddress != null) {
+            log.debug("Discovering zookeeper service address = " + zookeeperAddress);
+        } else {
             start(serviceHandler, new String[0]);
         }
     }
 
     /**
-     * 开启传输服务
-     * 直连配置文件中以及用户自定义的服务ip地址
+     * 开启传输服务 直连配置文件中以及用户自定义的服务ip地址
+     * 
      * @param serviceHandler
      * @param initRemoteAddress 直连地址
      */
-    public void start(ClientServiceHandler serviceHandler, String... initRemoteAddress){
+    public void start(ClientServiceHandler serviceHandler, String... initRemoteAddress) {
         preStart(serviceHandler);
 
-        List<String> configRemoteAddress = ConfigParser.getInstance()
-               .getOrDefault("client.connect-url", new ArrayList<String>());
-        for(String s: initRemoteAddress){
+        List<String> configRemoteAddress = ConfigParser.getInstance().getOrDefault("client.connect-address",
+                new ArrayList<String>());
+        for (String s : initRemoteAddress) {
             configRemoteAddress.add(s);
         }
         updateConnectedServer(ANONYMOUS_SERVICE_NAME, configRemoteAddress);
@@ -85,10 +86,11 @@ public class ClientTransfer {
 
     /**
      * 在 ZooKeeper中寻找服务提供者
+     * 
      * @param <T>
      * @param interfaceClass 提供该服务的类
      */
-    public <T> void findService(Class<T> interfaceClass){
+    public <T> void findService(Class<T> interfaceClass) {
         ClientTransferNode node = new ClientTransferNode(interfaceClass.getSimpleName());
         transferNodes.put(interfaceClass.getSimpleName(), node);
         node.init();
@@ -96,11 +98,12 @@ public class ClientTransfer {
 
     /**
      * 预启动，为启动做准备
+     * 
      * @param serviceHandler
      */
-    private void preStart(ClientServiceHandler serviceHandler){
+    private void preStart(ClientServiceHandler serviceHandler) {
         this.serviceHandler = serviceHandler;
-        if(workerGroup == null){
+        if (workerGroup == null) {
             int workerThread = ConfigParser.getInstance().getOrDefault("client.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
@@ -109,23 +112,25 @@ public class ClientTransfer {
     /**
      * 停止服务
      */
-    public void stop()  {
+    public void stop() {
         disconnectAllServerNode();
         signalAvailableChannelHandler();
-        
-        if(workerGroup != null) workerGroup.shutdownGracefully();
-        
+
+        if (workerGroup != null)
+            workerGroup.shutdownGracefully();
+
         transferNodes.values().forEach(node -> node.stop());
     }
 
     /**
      * 更新连接的服务器
-     * @param serviceName 服务名
+     * 
+     * @param serviceName   服务名
      * @param serverAddress 服务器地址
      */
-    public void updateConnectedServer(String serviceName, List<String> serverAddress){
-        if(transferNodes.containsKey(serviceName)){
-            log.info("Starting update connected provider whose service name is " + serviceName);
+    public void updateConnectedServer(String serviceName, List<String> serverAddress) {
+        if (transferNodes.containsKey(serviceName)) {
+            log.debug("Starting to update connected provider whose service name is " + serviceName);
             transferNodes.get(serviceName).updateConnectedServer(serverAddress);
         }
     }
@@ -133,28 +138,30 @@ public class ClientTransfer {
     /**
      * 取消连接所有节点的服务器
      */
-    private void disconnectAllServerNode(){
+    private void disconnectAllServerNode() {
         transferNodes.values().forEach(node -> node.disconnectAllServerNode());
     }
 
-    private void signalAvailableChannelHandler(){
+    private void signalAvailableChannelHandler() {
         transferNodes.values().forEach(node -> node.signalAvailableChannelHandler());
     }
 
     /**
      * 连接某个特定的服务提供者
      */
-    private void connectServerNode(String serviceName, final InetSocketAddress remoteAddress){
-        serviceHandler.submit(new Runnable(){
+    private void connectServerNode(String serviceName, final InetSocketAddress remoteAddress) {
+        serviceHandler.submit(new Runnable() {
             @Override
             public void run() {
                 Bootstrap bootstrap = new Bootstrap();
                 ClientChannelInitializer channelInitializer = new ProtostuffClientChannelInitializer(serviceHandler);
-                bootstrap.group(workerGroup)
+                bootstrap.localAddress(LOCAL_ADDRESS.getPort())
+                        .group(workerGroup)
                         .channel(NioSocketChannel.class)
                         .handler(channelInitializer);
-                
+                log.info("Client started on {}", LOCAL_ADDRESS.toString());
                 ChannelFuture channelFuture = bootstrap.connect(remoteAddress);
+
                 channelFuture.addListener(new ChannelFutureListener(){
                 
                     @Override
@@ -239,6 +246,7 @@ public class ClientTransfer {
                     // 添加新节点
                     for (final InetSocketAddress address : serverNodeSet) {
                         if (!connectedServerNodes.keySet().contains(address)) {
+                            log.info("Connecting server address = " + address);
                             connectServerNode(serviceName, address);
                         }
                     }

@@ -27,7 +27,7 @@ public class ServerTransfer{
     
 
     public ServerTransfer(){
-        this.serverAddress = ConfigParser.getInstance().getOrDefault("server.url", "localhost:5000");
+        this.serverAddress = ConfigParser.getInstance().getOrDefault("server.address", "localhost:5000");
     }
 
     public ServerTransfer(String serverAddress){
@@ -65,7 +65,7 @@ public class ServerTransfer{
 
                 channelFuture.channel().closeFuture().sync();
             }catch(UnknownHostException | InterruptedException e){
-                log.error("", e);
+                log.error(e.getMessage());
             }finally{
                 stop();
             }

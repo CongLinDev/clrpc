@@ -31,7 +31,7 @@ public class ConfigParser{
         }catch(FileNotFoundException e){
             log.error("You must add config file named 'clrpc-config.yml' in your project.");
         }catch(IOException e){
-            log.error(e.toString());
+            log.error(e.getMessage());
         }
     }
 

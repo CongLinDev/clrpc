@@ -96,7 +96,7 @@ public class ClientServiceHandler extends AbstractServiceHandler {
         try{
             countDownLatch.await();
         }catch(InterruptedException e){
-            log.error("", e);
+            log.error(e.getMessage());
         }
         return future;
     }

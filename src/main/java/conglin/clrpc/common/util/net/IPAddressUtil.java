@@ -13,6 +13,12 @@ public class IPAddressUtil{
 
     private static final Logger log = LoggerFactory.getLogger(IPAddressUtil.class);
 
+    /**
+     * 分割host和端口
+     * @param data
+     * @return
+     * @throws UnknownHostException
+     */
     public static InetSocketAddress splitHostnameAndPort(String data) throws UnknownHostException {
 
         String [] hostnameAndPort = data.trim().split(":");
@@ -20,6 +26,11 @@ public class IPAddressUtil{
         return InetSocketAddress.createUnresolved(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
     }
 
+    /**
+     * 分割host和端口
+     * @param data
+     * @return
+     */
     public static Set<InetSocketAddress> splitHostnameAndPort(List<String> data) {
         Set<InetSocketAddress> set = new HashSet<>(data.size());
         for(String s : data){
@@ -31,5 +42,20 @@ public class IPAddressUtil{
             }          
         }
         return set;
+    }
+
+    /**
+     * 静默地分割host和端口
+     * 即遇到异常时不抛出异常而是返回空指针
+     * @param data
+     * @return
+     */
+    public static InetSocketAddress splitHostnameAndPortSilently(String data){
+        try{
+            return splitHostnameAndPort(data);
+        }catch(UnknownHostException e){
+            log.error("Error address = " + data + " And it can not be converted");
+            return null;
+        }
     }
 }

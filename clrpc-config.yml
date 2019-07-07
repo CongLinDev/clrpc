@@ -1,23 +1,28 @@
 zookeeper:
   registry:
-    url: localhost:2181
+    address: localhost:2181
     root-path: /clrpc
   discovery:
-    url: localhost:2181
+    address: localhost:2181
+    root-path: /clrpc
+  monitor:
+    address: localhost:2181
     root-path: /clrpc
   session:
     timeout: 5000 #ms
 
 server:
-  url: localhost:5000
+  address: localhost:5000
   thread:
     boss: 1
     worker: 4
 
 client:
-  connect-url:
+  address: localhost:5200
+  connect-address:
     - localhost:5000
     # - localhost:5001
+  
   session:
     timeout: 5000 #ms
   thread:

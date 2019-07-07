@@ -36,7 +36,7 @@ abstract public class AbstractServiceHandler {
                             | InvocationTargetException | NoSuchMethodException | SecurityException
                             | ClassNotFoundException e) {
 
-                        log.error(e.getMessage() + " .Loading conglin.clrpc.common.util.threadpool.FixedThreadPool rather than "
+                        log.warn(e.getMessage() + " .Loading conglin.clrpc.common.util.threadpool.FixedThreadPool rather than "
                                 + threadpoolName);
                         // 如果类名错误，则默认加载 {link conglin.clrpc.common.util.threadpool.FixedThreadPool}
                         businessTheardExecutorService = (new FixedThreadPool()).getExecutorService();

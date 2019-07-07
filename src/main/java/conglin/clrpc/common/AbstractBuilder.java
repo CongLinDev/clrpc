@@ -17,5 +17,4 @@ abstract public class AbstractBuilder<T>{
     public T getProduct() {
         return product;
     }
-
 }

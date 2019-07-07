@@ -1,14 +1,10 @@
 package conglin.clrpc.service.discovery;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -16,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.zookeeper.NodeManager;
+import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import io.netty.util.internal.ThreadLocalRandom;
 
@@ -44,7 +40,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
         this.clientTransfer = clientTransfer;
 
         //服务注册地址
-        registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.url", "localhost:2181");
+        registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.address", "localhost:2181");
 
         String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
@@ -64,53 +60,22 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
             });
             countDownLatch.await();
         }catch(IOException | InterruptedException e){
-            log.error("", e);
+            log.error(e.getMessage());
         }
     }
 
     @Override
     public void init(){
         if(zooKeeper != null){
-            try{
-                registerConsumer(serviceName, InetAddress.getLocalHost().getHostAddress());
-            }catch(UnknownHostException e){
-                log.error("Unknown consumer host: " + e.getMessage());
-            }
-
+            registerConsumer(serviceName, ClientTransfer.LOCAL_ADDRESS.toString());
             String absPath = rootPath + "/service/" + serviceName + "/providers";
-            watchNode(zooKeeper, absPath);
-        }
-    }
 
-    /**
-     * 监视结点
-     * @param keeper
-     */
-    private void watchNode(final ZooKeeper keeper, String path){
-        try{
-            List<String> nodeList = keeper.getChildren(path, new Watcher(){
-                @Override
-                public void process(WatchedEvent event) {
-                    if(event.getType() == Event.EventType.NodeChildrenChanged){
-                        watchNode(keeper, path);
-                    }
-                }
+            ZooKeeperUtils.watchChildrenData(zooKeeper, absPath, 
+                data -> {
+                BasicServiceDiscovery.this.dataList = data;
+                updateConnectedServer();
             });
-            List<String> list = new ArrayList<>();
-            for(String node : nodeList){
-                byte[] bytes = keeper.getData(path + "/" + node, false, null);
-                if(bytes.length > 0)
-                    list.add(new String(bytes));
-            }
-            this.dataList = list;
-            log.debug("node data: {}", list);
-
-        }catch(KeeperException | InterruptedException e){
-            log.error(e.getMessage());
         }
-        
-        log.debug("Service discovery triggered updating connected server node.");
-        updateConnectedServer();
     }
 
     /**
@@ -147,10 +112,10 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     public void registerConsumer(String serviceName, String data) {
         //创建服务节点
         String serviceNode = rootPath + "/service/" + serviceName;
-        NodeManager.createNode(zooKeeper,serviceNode, serviceName);
+        ZooKeeperUtils.createNode(zooKeeper,serviceNode, serviceName);
         //创建消费者节点
         String absPath = rootPath + "/service/" + serviceName + "/consumers/consumer";
-        NodeManager.createNode(zooKeeper, absPath, data, CreateMode.EPHEMERAL_SEQUENTIAL);
+        ZooKeeperUtils.createNode(zooKeeper, absPath, data, CreateMode.EPHEMERAL_SEQUENTIAL);
     }
     
 }

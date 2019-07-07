@@ -1,6 +1,8 @@
 package conglin.clrpc.test.server;
 
 import conglin.clrpc.bootstrap.RpcServerBootstrap;
+import conglin.clrpc.test.service.UserService;
+import conglin.clrpc.test.service.impl.UserServiceImpl;
 
 /**
  * 测试未注册服务情况下
@@ -12,7 +14,7 @@ public class ServerTest2 {
         try {
             System.out.println("Server opening...");
             //未添加服务
-            serverBootstrap.start();
+            serverBootstrap.addService(UserService.class, UserServiceImpl.class).start();
             
         }finally{
             serverBootstrap.stop();

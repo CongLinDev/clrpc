@@ -15,6 +15,7 @@ import conglin.clrpc.transfer.net.ServerTransfer;
  * </pre></blockquote>
  * 
  * 注意：若服务接口相同，先添加的服务会被覆盖。
+ *      结束后不要忘记关闭服务端，释放资源。
  */
 
 public class RpcServerBootstrap {
