@@ -9,17 +9,17 @@ public final class BasicResponseBuilder extends AbstractBuilder<BasicResponse>{
     }
 
     public BasicResponseBuilder requestId(String requestId){
-        super.getProduct().setRequestId(requestId);
+        product.setRequestId(requestId);
         return this;
     }
 
     public BasicResponseBuilder error(String error){
-        super.getProduct().setError(error);
+        product.setError(error);
         return this;
     }
 
     public BasicResponseBuilder result(Object result){
-        super.getProduct().setResult(result);
+        product.setResult(result);
         return this;
     }
 }

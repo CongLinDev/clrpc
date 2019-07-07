@@ -9,27 +9,27 @@ public final class BasicRequestBuilder extends AbstractBuilder<BasicRequest> {
     }
 
     public BasicRequestBuilder requestId(String requestId){
-        super.getProduct().setRequestId(requestId);
+        product.setRequestId(requestId);
         return this;
     }
 
 	public BasicRequestBuilder className(String className){
-        super.getProduct().setClassName(className);
+        product.setClassName(className);
         return this;
     }
 
     public BasicRequestBuilder methodName(String methodName){
-        super.getProduct().setMethodName(methodName);
+        product.setMethodName(methodName);
         return this;
     }
 
     public BasicRequestBuilder parameterTypes(Class<?>[] parameterTypes){
-        super.getProduct().setParameterTypes(parameterTypes);
+        product.setParameterTypes(parameterTypes);
         return this;
     }
 
     public BasicRequestBuilder parameters(Object[] parameters){
-        super.getProduct().setParameters(parameters);
+        product.setParameters(parameters);
         return this;
     }
 }

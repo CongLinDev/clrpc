@@ -213,7 +213,7 @@ public class ZooKeeperUtils {
      */
     public static List<String> getChildrenData(final ZooKeeper keeper, String rootPath, List<String> nodeList)
             throws KeeperException, InterruptedException {
-        List<String> dataList = new ArrayList<>();
+        List<String> dataList = new ArrayList<>(nodeList.size());
 
         for (String node : nodeList) {
             String nodeData = new String(keeper.getData(rootPath + "/" + node, false, null));

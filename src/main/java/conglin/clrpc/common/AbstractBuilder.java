@@ -1,20 +1,16 @@
 package conglin.clrpc.common;
 
 abstract public class AbstractBuilder<T>{
-    private T product;
+    protected T product;
 
     public AbstractBuilder(T product){
         this.product = product;
     }
 
-    public T build(){
-        return product;
-    }
-
     /**
-     * @return the product
+     * @return 构造完成返回产品
      */
-    public T getProduct() {
+    public T build(){
         return product;
     }
 }
