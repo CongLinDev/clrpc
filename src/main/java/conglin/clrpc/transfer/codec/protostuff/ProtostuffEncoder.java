@@ -9,7 +9,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class ProtostuffEncoder extends MessageToByteEncoder{
 
     private SerializationHandler serializationHandler;
-    private Class<?> genericClass;
+    private final Class<?> genericClass;
 
     public ProtostuffEncoder(Class<?> genericClass){
         this.genericClass = genericClass;

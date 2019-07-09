@@ -23,7 +23,7 @@ public class ServerTransfer{
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    private String serverAddress;
+    private final String serverAddress;
     
 
     public ServerTransfer(){

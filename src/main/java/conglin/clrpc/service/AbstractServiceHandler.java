@@ -15,39 +15,31 @@ import conglin.clrpc.common.util.threadpool.ThreadPool;
 abstract public class AbstractServiceHandler {
     private static final Logger log = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
-    private ExecutorService businessTheardExecutorService;
+    private final ExecutorService businessTheardExecutorService;
 
-    /**
-     * 获取一个业务线程池
-     * 
-     * @return
-     */
-    private ExecutorService getBusinessTheardExecutorService() {
-        if (businessTheardExecutorService == null) {
-            String threadpoolName = ConfigParser.getInstance().getOrDefault("service.thread.pool.class",
-                    "conglin.clrpc.common.util.threadpool.FixedThreadPool");
-            synchronized (ServerServiceHandler.class) {
-                if (businessTheardExecutorService == null) {
-                    try {
-                        ThreadPool threadPool = (ThreadPool) Class.forName(threadpoolName)
-                                .getConstructor().newInstance();
-                        businessTheardExecutorService = threadPool.getExecutorService();
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | NoSuchMethodException | SecurityException
-                            | ClassNotFoundException e) {
+    public AbstractServiceHandler(){
+        String threadpoolName = ConfigParser.getInstance().getOrDefault("service.thread.pool.class",
+            "conglin.clrpc.common.util.threadpool.FixedThreadPool");
 
-                        log.warn(e.getMessage() + " .Loading conglin.clrpc.common.util.threadpool.FixedThreadPool rather than "
-                                + threadpoolName);
-                        // 如果类名错误，则默认加载 {link conglin.clrpc.common.util.threadpool.FixedThreadPool}
-                        businessTheardExecutorService = (new FixedThreadPool()).getExecutorService();
-                    }
-                }
-            }
+        ExecutorService executorService = null;
+        try {
+            ThreadPool threadPool = (ThreadPool) Class.forName(threadpoolName)
+                    .getConstructor().newInstance();
+            executorService = threadPool.getExecutorService();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException e) {
+            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.common.util.threadpool.FixedThreadPool' rather than "
+                    + threadpoolName);
+        }finally{
+            // 如果类名错误，则默认加载 {link conglin.clrpc.common.util.threadpool.FixedThreadPool}
+            businessTheardExecutorService = 
+                (executorService == null) 
+                    ? (new FixedThreadPool()).getExecutorService()
+                    : executorService;
         }
-
-        return businessTheardExecutorService;
     }
-
+    
     /**
      * 提交一个 {link java.util.concurrent.Callable} 任务
      * 
@@ -56,8 +48,7 @@ abstract public class AbstractServiceHandler {
      * @return
      */
     public <T> Future<T> submit(Callable<T> task) {
-        ExecutorService executorService = getBusinessTheardExecutorService();
-        return executorService.submit(task);
+        return businessTheardExecutorService.submit(task);
     }
 
     /**
@@ -67,8 +58,7 @@ abstract public class AbstractServiceHandler {
      * @return
      */
     public Future<?> submit(Runnable task) {
-        ExecutorService executorService = getBusinessTheardExecutorService();
-        return executorService.submit(task);
+        return businessTheardExecutorService.submit(task);
     }
 
     public void stop(){

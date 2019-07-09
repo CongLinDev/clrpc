@@ -11,7 +11,7 @@ import io.protostuff.runtime.RuntimeSchema;
 
 public class ProtostuffSerializationHandler implements SerializationHandler{
 
-    private Map<Class<?>, Schema<?>> cachedSchema;
+    private final Map<Class<?>, Schema<?>> cachedSchema;
     
     private ProtostuffSerializationHandler(){
         cachedSchema = new ConcurrentHashMap<>();

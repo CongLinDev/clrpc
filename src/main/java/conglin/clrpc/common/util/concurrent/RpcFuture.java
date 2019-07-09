@@ -22,12 +22,12 @@ public class RpcFuture implements Future<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(RpcFuture.class);
 
-    private SimpleSynchronizer synchronizer;
+    private final SimpleSynchronizer synchronizer;
 
-    private BasicRequest request;
+    private final BasicRequest request;
     private BasicResponse response;
 
-    private long startTime;
+    private final long startTime;
     private static final long timeThreshold = ConfigParser.getInstance().getOrDefault("service.session.time-threshold", 5000);
 
     private List<Callback> callbacks;

@@ -18,11 +18,11 @@ import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
 
-    private Class<T> clazz;
+    private final Class<T> clazz;
 
-    private ClientServiceHandler serviceHandler;
+    private final ClientServiceHandler serviceHandler;
 
-    private ClientTransfer clientTransfer;
+    private final ClientTransfer clientTransfer;
 
     public BasicObjectProxy(Class<T> clazz, 
                     ClientServiceHandler serviceHandler,

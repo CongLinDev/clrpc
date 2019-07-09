@@ -10,7 +10,7 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     private static final Logger log = LoggerFactory.getLogger(ConsoleRpcMonitorBootstrap.class);
 
     protected ConsoleRpcMonitorBootstrap(){
-
+        super();
     }
 
     @Override

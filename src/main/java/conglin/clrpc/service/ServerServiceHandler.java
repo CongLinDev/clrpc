@@ -20,11 +20,12 @@ public class ServerServiceHandler extends AbstractServiceHandler {
 
     //服务映射
     //String保存接口名 Object保存服务实现类
-    private Map<String, Object> services;
+    private final Map<String, Object> services;
 
-    private ServiceRegistry serviceRegistry;
+    private final ServiceRegistry serviceRegistry;
 
     public ServerServiceHandler() {
+        super();
         services = new HashMap<>();
         serviceRegistry = new BasicServiceRegistry();
     }
@@ -41,13 +42,39 @@ public class ServerServiceHandler extends AbstractServiceHandler {
         } else if (!interfaceClass.isAssignableFrom(implementClass)) {
             log.error(implementClass.getName() + " is not permitted. And it will not be added Services");
         } else {
-            try {
-                Object implementObject = implementClass.getDeclaredConstructor().newInstance();
-                services.put(interfaceClass.getName(), implementObject);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                log.error("Can not add service. " + e.getMessage());
-            }
+            addService(interfaceClass.getName(), implementClass);
+        }
+    }
+
+    /**
+     * 手动添加服务 此时服务并未注册
+     * 且若服务接口相同，后添加的服务会覆盖前添加的服务
+     * @param implementClass 该实现类类名必须满足 'xxxServiceImpl' 格式
+     */
+    public void addService(Class<?> implementClass){
+        String implementClassName = implementClass.getName();
+        if (implementClass.isInterface()) {
+            log.error(implementClassName + " is not a service class. And it will not be added Services");
+        }else if (!implementClassName.endsWith("ServiceImpl")){
+            log.error(implementClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
+        }else{
+            addService(implementClassName.substring(0, implementClassName.length()-4), implementClass);
+        }
+    }
+
+    /**
+     * 手动添加服务 此时服务并未注册
+     * 且若服务接口相同，后添加的服务会覆盖前添加的服务
+     * @param interfaceClassName
+     * @param implementClass
+     */
+    public void addService(String interfaceClassName, Class<?> implementClass){
+        try {
+            Object implementObject = implementClass.getDeclaredConstructor().newInstance();
+            services.put(interfaceClassName, implementObject);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            log.error("Can not add service. " + e.getMessage());
         }
     }
 

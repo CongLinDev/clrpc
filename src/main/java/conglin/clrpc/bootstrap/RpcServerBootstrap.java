@@ -34,13 +34,33 @@ public class RpcServerBootstrap {
 
     /**
      * 保存即将发布的服务
-     * 
      * @param interfaceClass 接口类
      * @param implementClass 实现类
      * @return
      */
     public RpcServerBootstrap addService(Class<?> interfaceClass, Class<?> implementClass) {
         serviceHandler.addService(interfaceClass, implementClass);
+        return this;
+    }
+
+    /**
+     * 保存即将发布的服务
+     * @param interfaceClassName
+     * @param implementClass
+     * @return
+     */
+    public RpcServerBootstrap addService(String interfaceClassName, Class<?> implementClass) {
+        serviceHandler.addService(interfaceClassName, implementClass);
+        return this;
+    }
+
+    /**
+     * 保存即将发布的服务
+     * @param implementClass 类名必须满足 'xxxServiceImpl' 条件
+     * @return
+     */
+    public RpcServerBootstrap addService(Class<?> implementClass) {
+        serviceHandler.addService(implementClass);
         return this;
     }
 

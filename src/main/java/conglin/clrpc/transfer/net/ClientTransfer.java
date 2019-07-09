@@ -44,7 +44,7 @@ public class ClientTransfer {
     private EventLoopGroup workerGroup;
     private ClientServiceHandler serviceHandler;
 
-    private Map<String, ClientTransferNode> transferNodes;
+    private final Map<String, ClientTransferNode> transferNodes;
 
     public ClientTransfer() {
         transferNodes = new ConcurrentHashMap<>();
@@ -77,7 +77,7 @@ public class ClientTransfer {
         preStart(serviceHandler);
 
         List<String> configRemoteAddress = ConfigParser.getInstance().getOrDefault("client.connect-address",
-                new ArrayList<String>());
+                new ArrayList<String>(initRemoteAddress.length));
         for (String s : initRemoteAddress) {
             configRemoteAddress.add(s);
         }

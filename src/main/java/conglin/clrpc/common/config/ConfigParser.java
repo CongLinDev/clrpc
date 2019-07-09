@@ -21,17 +21,20 @@ public class ConfigParser{
 
     private static String CONFIG_FILENAME = "clrpc-config.yml";
 
-    private Map<String, Object> configs;
+    private final Map<String, Object> configs;
 
     @SuppressWarnings("unchecked")
     private ConfigParser(){
+        Map<String, Object> tempConfig = null;
         try(InputStream inputStream = new FileInputStream(CONFIG_FILENAME)){
             Yaml yaml = new Yaml();
-            configs = (Map<String, Object>) yaml.load(inputStream);
+            tempConfig = (Map<String, Object>) yaml.load(inputStream);
         }catch(FileNotFoundException e){
             log.error("You must add config file named 'clrpc-config.yml' in your project.");
         }catch(IOException e){
             log.error(e.getMessage());
+        }finally{
+            configs = tempConfig;
         }
     }
 

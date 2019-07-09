@@ -22,11 +22,12 @@ public class ClientServiceHandler extends AbstractServiceHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ClientServiceHandler.class);
 
-    private Map<String, RpcFuture> rpcFutures;
+    private final Map<String, RpcFuture> rpcFutures;
 
     private ClientTransfer clientTransfer;
 
     public ClientServiceHandler(){
+        super();
         rpcFutures = new ConcurrentHashMap<>();
     }
 

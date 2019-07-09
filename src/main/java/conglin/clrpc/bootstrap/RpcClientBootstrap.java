@@ -33,28 +33,49 @@ public class RpcClientBootstrap {
         clientTransfer = new ClientTransfer();
     }
 
+    /**
+     * 获取同步服务
+     * @param <T>
+     * @param interfaceClass 接口类
+     * @return 返回代理服务类
+     */
     public <T> T getService(Class<T> interfaceClass){
         clientTransfer.findService(interfaceClass);
         return serviceHandler.getService(interfaceClass);
     }
 
-    
+    /**
+     * 获取异步服务
+     * @param <T>
+     * @param interfaceClass
+     * @return
+     */
     public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
         clientTransfer.findService(interfaceClass);
         return serviceHandler.getAsynchronousService(interfaceClass);
     }
 
-
+    /**
+     * 启动
+     */
     public void start(){
         clientTransfer.start(serviceHandler);
         serviceHandler.start(clientTransfer);
     }
 
+    /**
+     * 启动
+     * 已知服务端地址，不通过zookeeper获取服务
+     * @param initRemoteAddress
+     */
     public void start(String ...initRemoteAddress){
         clientTransfer.start(serviceHandler, initRemoteAddress);
         serviceHandler.start(clientTransfer);
     }
 
+    /**
+     * 停止
+     */
     public void stop() throws InterruptedException{
         serviceHandler.stop();
         clientTransfer.stop();

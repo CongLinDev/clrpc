@@ -10,7 +10,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class ProtostuffDecoder extends ByteToMessageDecoder{
     private SerializationHandler serializationHandler;
-    private Class<?> genericClass;
+    private final Class<?> genericClass;
 
     public ProtostuffDecoder(Class<?> genericClass){
         serializationHandler = ProtostuffSerializationHandler.getInstance();

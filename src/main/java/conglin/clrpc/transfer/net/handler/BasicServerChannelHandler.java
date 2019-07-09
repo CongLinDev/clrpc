@@ -19,7 +19,7 @@ public class BasicServerChannelHandler extends SimpleChannelInboundHandler<Basic
 
     private static final Logger log = LoggerFactory.getLogger(BasicClientChannelHandler.class);
 
-    private ServerServiceHandler serviceHandler;
+    private final ServerServiceHandler serviceHandler;
 
     public BasicServerChannelHandler(ServerServiceHandler serviceHandler) {
         super();

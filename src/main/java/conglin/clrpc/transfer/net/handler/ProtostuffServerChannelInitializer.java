@@ -13,7 +13,7 @@ public class ProtostuffServerChannelInitializer
         extends ChannelInitializer<SocketChannel>
         implements ServerChannelInitializer{
 
-    private ServerServiceHandler serviceHandler;
+    private final ServerServiceHandler serviceHandler;
     
     public ProtostuffServerChannelInitializer(ServerServiceHandler serviceHandler){
         super();

@@ -16,7 +16,7 @@ public class ProtostuffClientChannelInitializer
 
     private BasicClientChannelHandler clientChannelHandler;
 
-    private ClientServiceHandler serviceHandler;
+    private final ClientServiceHandler serviceHandler;
 
     public ProtostuffClientChannelInitializer(ClientServiceHandler serviceHandler){
         this.serviceHandler = serviceHandler;

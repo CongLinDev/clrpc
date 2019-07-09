@@ -1,7 +1,7 @@
 package conglin.clrpc.common;
 
 abstract public class AbstractBuilder<T>{
-    protected T product;
+    protected final T product;
 
     public AbstractBuilder(T product){
         this.product = product;

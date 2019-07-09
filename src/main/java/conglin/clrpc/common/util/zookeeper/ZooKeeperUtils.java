@@ -195,8 +195,9 @@ public class ZooKeeperUtils {
         Map<String, String> dataMap = new HashMap<>(nodeList.size());
 
         for (String node : nodeList) {
-            String nodeData = new String(keeper.getData(rootPath + "/" + node, false, null));
-            dataMap.put(node, nodeData);
+            String path = rootPath + "/" + node;
+            String nodeData = new String(keeper.getData(path, false, null));
+            dataMap.put(path, nodeData);
         }
         return dataMap;
     }
@@ -216,7 +217,8 @@ public class ZooKeeperUtils {
         List<String> dataList = new ArrayList<>(nodeList.size());
 
         for (String node : nodeList) {
-            String nodeData = new String(keeper.getData(rootPath + "/" + node, false, null));
+            String path = rootPath + "/" + node;
+            String nodeData = new String(keeper.getData(path, false, null));
             dataList.add(nodeData);
         }
         return dataList;

@@ -17,7 +17,7 @@ public class BasicClientChannelHandler
 
     private static final Logger log = LoggerFactory.getLogger(BasicClientChannelHandler.class);
 
-    private ClientServiceHandler serviceHandler;
+    private final ClientServiceHandler serviceHandler;
 
     private Channel channel;
 
