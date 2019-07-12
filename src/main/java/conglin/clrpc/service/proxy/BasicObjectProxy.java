@@ -49,47 +49,59 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
             }
         }
         
-        //创建发送请求消息
-        BasicRequest request = BasicRequest.builder()
-                .requestId(UUID.randomUUID().toString())
-                .className(method.getDeclaringClass().getName())
-                .methodName(method.getName())
-                .parameterTypes(method.getParameterTypes())
-                .parameters(args)
-                .build();
-        log.debug(request.toString());
-        // send request
-        String simpleClassName = method.getDeclaringClass().getSimpleName();
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
-        RpcFuture future = serviceHandler.sendRequest(request, channelHandler.getChannel());
+        RpcFuture future = call(method, args);
         return future.get();
     }
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
         String simpleClassName = this.clazz.getSimpleName();
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
-        BasicRequest request = createRequest(this.clazz.getName(), methodName, args);
-        return serviceHandler.sendRequest(request, channelHandler.getChannel());
+        return callCore(simpleClassName, methodName, args);
     }
 
     @Override
     public RpcFuture call(Method method, Object... args) {
-        return call(method.getName(), args);
+        return callCore(method, args);
     }
 
-    private BasicRequest createRequest(String className, String methodName, Object[] args){
-
-        //构造请求
+    /**
+     * 请求核心函数
+     * @param simpleClassName
+     * @param methodName
+     * @param args
+     * @return
+     */
+    private RpcFuture callCore(String simpleClassName, String methodName, Object...args){
         BasicRequest request = BasicRequest.builder()
-                    .requestId(UUID.randomUUID().toString())
-                    .className(className)
-                    .methodName(methodName)
-                    .parameters(args)
-                    .parameterTypes(getClassType(args))
-                    .build();
+            .requestId(UUID.randomUUID().toString())
+            .className(this.clazz.getName())
+            .methodName(methodName)
+            .parameters(args)
+            .parameterTypes(getClassType(args))
+            .build();
         log.debug(request.toString());
-        return request;
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
+        return serviceHandler.sendRequest(request, channelHandler.getChannel());
+    }
+
+    /**
+     * 请求核心函数
+     * @param method
+     * @param args
+     * @return
+     */
+    private RpcFuture callCore(Method method, Object... args){
+        BasicRequest request = BasicRequest.builder()
+            .requestId(UUID.randomUUID().toString())
+            .className(method.getDeclaringClass().getName())
+            .methodName(method.getName())
+            .parameterTypes(method.getParameterTypes())
+            .parameters(args)
+            .build();
+        log.debug(request.toString());
+        String simpleClassName = method.getDeclaringClass().getSimpleName();
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
+        return serviceHandler.sendRequest(request, channelHandler.getChannel());
     }
 
     private Class<?>[] getClassType(Object[] objs){

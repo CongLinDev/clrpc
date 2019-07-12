@@ -1,6 +1,7 @@
 package conglin.clrpc.common.util.concurrent;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -32,7 +33,7 @@ public class RpcFuture implements Future<Object> {
 
     private List<Callback> callbacks;
 
-    private ReentrantLock lock;
+    private volatile ReentrantLock lock;
 
     private static AbstractServiceHandler serviceHandler;
 
@@ -129,7 +130,7 @@ public class RpcFuture implements Future<Object> {
             synchronized(this){
                 if(lock == null){
                     lock = new ReentrantLock();
-                    callbacks = new ArrayList<>();
+                    callbacks = Collections.synchronizedList(new LinkedList<>());
                 }
             }
         }

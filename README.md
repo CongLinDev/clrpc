@@ -87,7 +87,7 @@
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
-| service.thread.pool.queue | Integer | YES | 0 | 业务线程池队列数 |
+| service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
 | service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
 
 ## 扩展

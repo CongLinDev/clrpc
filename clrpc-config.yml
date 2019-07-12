@@ -35,6 +35,6 @@ service:
       core-size: 5
       max-size: 10
       keep-alive: 1000 #ms
-      queue: 0
+      queue: 10
   session:
     time-threshold: 5000 #ms

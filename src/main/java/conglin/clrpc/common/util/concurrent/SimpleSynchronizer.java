@@ -2,7 +2,7 @@ package conglin.clrpc.common.util.concurrent;
 
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-public class SimpleSynchronizer extends AbstractQueuedSynchronizer{
+class SimpleSynchronizer extends AbstractQueuedSynchronizer{
 
     private static final long serialVersionUID = 1L;
     
@@ -23,6 +23,10 @@ public class SimpleSynchronizer extends AbstractQueuedSynchronizer{
         }
     }
 
+    /**
+     * 是否完成
+     * @return
+     */
     public boolean isDone(){
         return getState() == DONE;
     }
