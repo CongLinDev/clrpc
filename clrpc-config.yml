@@ -31,7 +31,7 @@ client:
 service:
   thread:
     pool:
-      class: conglin.clrpc.common.util.threadpool.FixedThreadPool
+      class: conglin.clrpc.common.util.threadpool.CustomizedThreadPool
       core-size: 5
       max-size: 10
       keep-alive: 1000 #ms

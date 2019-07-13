@@ -8,21 +8,21 @@ import java.util.concurrent.TimeUnit;
 
 import conglin.clrpc.common.config.ConfigParser;
 
-public class FixedThreadPool implements ThreadPool {
+public class CustomizedThreadPool implements ThreadPool {
 
-    private int corePoolSize;
-    private int maximumPoolSize;
-    private long keepAliveTime;
-    private int queues;
+    protected final int corePoolSize;
+    protected final int maximumPoolSize;
+    protected final long keepAliveTime;
+    protected final int queues;
 
-    public FixedThreadPool() {
+    public CustomizedThreadPool() {
         this(ConfigParser.getInstance().getOrDefault("service.thread.pool.core-size", 5),
             ConfigParser.getInstance().getOrDefault("service.thread.pool.max-size", 10),
             ConfigParser.getInstance().getOrDefault("service.thread.pool.keep-alive", 1000),
             ConfigParser.getInstance().getOrDefault("service.thread.pool.queues", 10));
     }
 
-    public FixedThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queues) {
+    public CustomizedThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queues) {
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTime = keepAliveTime;

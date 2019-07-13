@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class RpcFuture implements Future<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(RpcFuture.class);
 
-    private final SimpleSynchronizer synchronizer;
+    private final FutureSynchronizer synchronizer;
 
     private final BasicRequest request;
     private BasicResponse response;
@@ -39,7 +40,7 @@ public class RpcFuture implements Future<Object> {
 
     public RpcFuture(BasicRequest request){
         this.request = request;
-        this.synchronizer = new SimpleSynchronizer();
+        this.synchronizer = new FutureSynchronizer();
         this.startTime = System.currentTimeMillis();
     }
 
@@ -180,6 +181,40 @@ public class RpcFuture implements Future<Object> {
             callback.success(response.getResult());
         }else{
             callback.fail(new ResponseException(response));
+        }
+    }
+
+    /**
+     * 用于RpcFuture的同步器
+     */
+    class FutureSynchronizer extends AbstractQueuedSynchronizer{
+    
+        private static final long serialVersionUID = -3359796046494665489L;
+        
+        private final int DONE = 1;// 完成
+        private final int PENDING = 0;//等待
+        //private final int CANCEL = -1;//取消
+    
+        @Override
+        protected boolean tryAcquire(int arg) {
+            return getState() == DONE;
+        }
+    
+        @Override
+        protected boolean tryRelease(int arg) {
+            if(getState() == PENDING){
+               return compareAndSetState(PENDING, DONE);
+            }else{
+                return true;
+            }
+        }
+    
+        /**
+         * 是否完成
+         * @return
+         */
+        public boolean isDone(){
+            return getState() == DONE;
         }
     }
 

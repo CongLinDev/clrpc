@@ -91,8 +91,18 @@ public class ClientTransfer {
      * @param interfaceClass 提供该服务的类
      */
     public <T> void findService(Class<T> interfaceClass) {
-        ClientTransferNode node = new ClientTransferNode(interfaceClass.getSimpleName());
-        transferNodes.put(interfaceClass.getSimpleName(), node);
+        findService(interfaceClass.getSimpleName());
+    }
+
+    /**
+     * 在 ZooKeeper中寻找服务提供者
+     * 
+     * @param <T>
+     * @param serviceName
+     */
+    public <T> void findService(String serviceName){
+        ClientTransferNode node = new ClientTransferNode(serviceName);
+        transferNodes.put(serviceName, node);
         node.init();
     }
 
