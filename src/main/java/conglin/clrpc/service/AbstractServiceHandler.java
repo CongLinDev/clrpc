@@ -24,7 +24,7 @@ abstract public class AbstractServiceHandler {
      * 需要注意的是，你创建的线程池必须有一个无参的构造函数
      */
     public AbstractServiceHandler(){
-        String threadpoolName = ConfigParser.getInstance().getOrDefault("service.thread.pool.class",
+        String threadpoolName = ConfigParser.getOrDefault("service.thread.pool.class",
             "conglin.clrpc.common.util.threadpool.CustomizedThreadPool");
 
         ExecutorService executorService = null;

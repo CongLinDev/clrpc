@@ -5,6 +5,7 @@ import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.ClientTransfer;
+import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -36,11 +37,11 @@ public class ClientServiceHandler extends AbstractServiceHandler {
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
-            new BasicObjectProxy<T>(interfaceClass, this, clientTransfer));
+            new BasicObjectProxy<T>(interfaceClass, this));
     }
 
     public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
-        return new BasicObjectProxy<T>(interfaceClass, this, clientTransfer);
+        return new BasicObjectProxy<T>(interfaceClass, this);
     }
 
     public void start(ClientTransfer clientTransfer){
@@ -74,16 +75,15 @@ public class ClientServiceHandler extends AbstractServiceHandler {
     }
 
 
-
-
-
     /**
-     * 用于发送RPC请求
-     * @param request 请求
-     * @param channel 发送的通道
+     * 发送 RPC请求
+     * @param request
      * @return
      */
-    public RpcFuture sendRequest(BasicRequest request, Channel channel){
+    public RpcFuture sendRequest(BasicRequest request){
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(request.getServiceName());
+        Channel channel = channelHandler.getChannel();
+
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         RpcFuture future = new RpcFuture(request);

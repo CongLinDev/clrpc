@@ -16,10 +16,10 @@ public class CustomizedThreadPool implements ThreadPool {
     protected final int queues;
 
     public CustomizedThreadPool() {
-        this(ConfigParser.getInstance().getOrDefault("service.thread.pool.core-size", 5),
-            ConfigParser.getInstance().getOrDefault("service.thread.pool.max-size", 10),
-            ConfigParser.getInstance().getOrDefault("service.thread.pool.keep-alive", 1000),
-            ConfigParser.getInstance().getOrDefault("service.thread.pool.queues", 10));
+        this(ConfigParser.getOrDefault("service.thread.pool.core-size", 5),
+            ConfigParser.getOrDefault("service.thread.pool.max-size", 10),
+            ConfigParser.getOrDefault("service.thread.pool.keep-alive", 1000),
+            ConfigParser.getOrDefault("service.thread.pool.queues", 10));
     }
 
     public CustomizedThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queues) {

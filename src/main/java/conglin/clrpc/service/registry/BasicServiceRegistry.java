@@ -30,10 +30,10 @@ public class BasicServiceRegistry implements ServiceRegistry {
 
     public BasicServiceRegistry() {
         // 服务注册地址
-        registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.registry.address", "localhost:2181");
-        String path = ConfigParser.getInstance().getOrDefault("zookeeper.registry.root-path", "/clrpc");
+        registryAddress = ConfigParser.getOrDefault("zookeeper.registry.address", "localhost:2181");
+        String path = ConfigParser.getOrDefault("zookeeper.registry.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length()-1) : path;//去除最后一个 /
-        sessionTimeout = ConfigParser.getInstance().getOrDefault("zookeeper.session.timeout", 5000);
+        sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
     }
 
     /**

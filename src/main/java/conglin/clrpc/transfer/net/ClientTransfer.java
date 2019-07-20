@@ -39,7 +39,7 @@ public class ClientTransfer {
     public static final String ANONYMOUS_SERVICE_NAME = "AnonymousService";
 
     public static final InetSocketAddress LOCAL_ADDRESS = IPAddressUtil
-            .splitHostnameAndPortSilently(ConfigParser.getInstance().getOrDefault("client.address", "localhost:5200"));
+            .splitHostnameAndPortSilently(ConfigParser.getOrDefault("client.address", "localhost:5200"));
 
     private EventLoopGroup workerGroup;
     private ClientServiceHandler serviceHandler;
@@ -59,7 +59,7 @@ public class ClientTransfer {
     public void start(ClientServiceHandler serviceHandler) {
         preStart(serviceHandler);
 
-        String zookeeperAddress = (String) ConfigParser.getInstance().get("zookeeper.discovery.address");
+        String zookeeperAddress = (String) ConfigParser.get("zookeeper.discovery.address");
         if (zookeeperAddress != null) {
             log.debug("Discovering zookeeper service address = " + zookeeperAddress);
         } else {
@@ -76,7 +76,7 @@ public class ClientTransfer {
     public void start(ClientServiceHandler serviceHandler, String... initRemoteAddress) {
         preStart(serviceHandler);
 
-        List<String> configRemoteAddress = ConfigParser.getInstance().getOrDefault("client.connect-address",
+        List<String> configRemoteAddress = ConfigParser.getOrDefault("client.connect-address",
                 new ArrayList<String>(initRemoteAddress.length));
         for (String s : initRemoteAddress) {
             configRemoteAddress.add(s);
@@ -114,7 +114,7 @@ public class ClientTransfer {
     private void preStart(ClientServiceHandler serviceHandler) {
         this.serviceHandler = serviceHandler;
         if (workerGroup == null) {
-            int workerThread = ConfigParser.getInstance().getOrDefault("client.thread.worker", 4);
+            int workerThread = ConfigParser.getOrDefault("client.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
     }
@@ -324,7 +324,7 @@ public class ClientTransfer {
          */
         private boolean waitingForChannelHandler() throws InterruptedException{
             lock.lock();
-            long timeout = ConfigParser.getInstance().getOrDefault("client.session.timeout", 5000);
+            long timeout = ConfigParser.getOrDefault("client.session.timeout", 5000);
             try{
                 return connected.await(timeout,TimeUnit.MILLISECONDS);
             } finally {

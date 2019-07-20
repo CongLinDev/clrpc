@@ -21,34 +21,27 @@ public class ConfigParser{
 
     private static String CONFIG_FILENAME = "clrpc-config.yml";
 
-    private final Map<String, Object> configs;
+    private final static Map<String, Object> configs;
 
-    @SuppressWarnings("unchecked")
-    private ConfigParser(){
+    static{
         Map<String, Object> tempConfig = null;
         try(InputStream inputStream = new FileInputStream(CONFIG_FILENAME)){
             Yaml yaml = new Yaml();
-            tempConfig = (Map<String, Object>) yaml.load(inputStream);
+            tempConfig = (Map<String, Object>)Map.class.cast(yaml.load(inputStream));
         }catch(FileNotFoundException e){
             log.error("You must add config file named 'clrpc-config.yml' in your project.");
         }catch(IOException e){
+            log.error(e.getMessage());
+        }catch(ClassCastException e){
             log.error(e.getMessage());
         }finally{
             configs = tempConfig;
         }
     }
 
-    private static class SingletonHolder {
-        private static final ConfigParser CONFIG_PARSER = new ConfigParser();
-    }
-
-    public static ConfigParser getInstance(){
-        return SingletonHolder.CONFIG_PARSER;
-    }
-
     /**
      * 调用该方法前一定要确保
-     * 未调用 {@link ConfigParser.getInstance()} 方法
+     * 未调用 {@link ConfigParser.} 方法
      * 否则该方法将不起任何作用
      * 建议在创建启动类前调用
      * @param path
@@ -68,7 +61,7 @@ public class ConfigParser{
      * @return
      */
     @SuppressWarnings("unchecked")
-    public Object get(String key){
+    public static Object get(String key){
         String [] paths = key.split("\\.");
         Object obj = configs;
 
@@ -92,7 +85,7 @@ public class ConfigParser{
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getOrDefault(String key, T t){
+    public static <T> T getOrDefault(String key, T t){
         Object obj = get(key);
         if(obj == null) return t;
 
@@ -113,7 +106,7 @@ public class ConfigParser{
      * @param predicate
      * @return
      */
-    public <T> T getOrDefaultWithCondition(String key, T t, Predicate<T> predicate){
+    public static <T> T getOrDefaultWithCondition(String key, T t, Predicate<T> predicate){
         T value = getOrDefault(key, t);
         if(predicate.test(value)){
             return value;

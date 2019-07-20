@@ -32,4 +32,9 @@ public final class BasicRequestBuilder extends AbstractBuilder<BasicRequest> {
         product.setParameters(parameters);
         return this;
     }
+
+    public BasicRequestBuilder serviceName(String serviceName){
+        product.setServiceName(serviceName);
+        return this;
+    }
 }

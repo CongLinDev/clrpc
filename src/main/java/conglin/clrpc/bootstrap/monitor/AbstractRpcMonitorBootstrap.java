@@ -22,7 +22,7 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
     private final int sessionTimeout;
 
     public AbstractRpcMonitorBootstrap() {
-        this.sessionTimeout = ConfigParser.getInstance().getOrDefault("zookeeper.session.timeout", 5000);
+        this.sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
     }
 
     public AbstractRpcMonitorBootstrap(int sessionTimeout) {
@@ -31,8 +31,8 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
 
     @Override
     public RpcMonitorBootstrap monitor() throws InvalidZooKeeperNodeException {
-        String monitorAddress = ConfigParser.getInstance().getOrDefault("zookeeper.monitor.address", "localhost:2181");
-        String configRootPath = ConfigParser.getInstance().getOrDefault("zookeeper.monitor.root-path", "/clrpc");
+        String monitorAddress = ConfigParser.getOrDefault("zookeeper.monitor.address", "localhost:2181");
+        String configRootPath = ConfigParser.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         return monitor(monitorAddress, configRootPath);
     }
 

@@ -4,10 +4,15 @@ import java.util.Arrays;
 
 public class BasicRequest {
     private String requestId;
+    private String serviceName;
     private String className;
     private String methodName;
     private Class<?>[] parameterTypes;
     private Object[] parameters;
+
+    public static BasicRequestBuilder builder(){
+        return new BasicRequestBuilder(new BasicRequest());
+    }
 
     public String getRequestId() {
         return requestId;
@@ -15,6 +20,14 @@ public class BasicRequest {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public String getClassName() {
@@ -53,11 +66,7 @@ public class BasicRequest {
     public String toString() {
         return "BasicRequest [className=" + className + ", methodName=" + methodName + ", parameterTypes="
                 + Arrays.toString(parameterTypes) + ", parameters=" + Arrays.toString(parameters) + ", requestId="
-                + requestId + "]";
-    }
-
-    public static BasicRequestBuilder builder(){
-        return new BasicRequestBuilder(new BasicRequest());
+                + requestId + ", serviceName=" + serviceName + "]";
     }
 
 }

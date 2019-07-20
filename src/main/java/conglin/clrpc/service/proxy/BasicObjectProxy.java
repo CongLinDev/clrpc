@@ -10,10 +10,6 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
-import conglin.clrpc.transfer.net.ClientTransfer;
-import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
-
-
 
 public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
@@ -22,14 +18,10 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
 
     private final ClientServiceHandler serviceHandler;
 
-    private final ClientTransfer clientTransfer;
-
     public BasicObjectProxy(Class<T> clazz, 
-                    ClientServiceHandler serviceHandler,
-                    ClientTransfer clientTransfer){
+                    ClientServiceHandler serviceHandler){
         this.clazz = clazz;
         this.serviceHandler = serviceHandler;
-        this.clientTransfer = clientTransfer;
     }
 
     @Override
@@ -66,22 +58,22 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
 
     /**
      * 请求核心函数
-     * @param simpleClassName
+     * @param serviceName
      * @param methodName
      * @param args
      * @return
      */
-    private RpcFuture callCore(String simpleClassName, String methodName, Object...args){
+    private RpcFuture callCore(String serviceName, String methodName, Object...args){
         BasicRequest request = BasicRequest.builder()
             .requestId(UUID.randomUUID().toString())
             .className(this.clazz.getName())
             .methodName(methodName)
             .parameters(args)
             .parameterTypes(getClassType(args))
+            .serviceName(serviceName)
             .build();
         log.debug(request.toString());
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
-        return serviceHandler.sendRequest(request, channelHandler.getChannel());
+        return serviceHandler.sendRequest(request);
     }
 
     /**
@@ -97,11 +89,10 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
             .methodName(method.getName())
             .parameterTypes(method.getParameterTypes())
             .parameters(args)
+            .serviceName(method.getDeclaringClass().getSimpleName())
             .build();
         log.debug(request.toString());
-        String simpleClassName = method.getDeclaringClass().getSimpleName();
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(simpleClassName);
-        return serviceHandler.sendRequest(request, channelHandler.getChannel());
+        return serviceHandler.sendRequest(request);
     }
 
     private Class<?>[] getClassType(Object[] objs){

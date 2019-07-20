@@ -27,7 +27,7 @@ public class ServerTransfer{
     
 
     public ServerTransfer(){
-        this.serverAddress = ConfigParser.getInstance().getOrDefault("server.address", "localhost:5000");
+        this.serverAddress = ConfigParser.getOrDefault("server.address", "localhost:5000");
     }
 
     public ServerTransfer(String serverAddress){
@@ -41,8 +41,8 @@ public class ServerTransfer{
      */
     public void start(ServerServiceHandler serviceHandler){
         if(bossGroup == null && workerGroup == null){
-            int bossThread = ConfigParser.getInstance().getOrDefault("server.thread.boss", 1);
-            int workerThread = ConfigParser.getInstance().getOrDefault("server.thread.worker", 4);
+            int bossThread = ConfigParser.getOrDefault("server.thread.boss", 1);
+            int workerThread = ConfigParser.getOrDefault("server.thread.worker", 4);
             bossGroup = new NioEventLoopGroup(bossThread);
             workerGroup = new NioEventLoopGroup(workerThread);
 

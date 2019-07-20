@@ -40,13 +40,13 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
         this.clientTransfer = clientTransfer;
 
         //服务注册地址
-        registryAddress = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.address", "localhost:2181");
+        registryAddress = ConfigParser.getOrDefault("zookeeper.discovery.address", "localhost:2181");
 
-        String path = ConfigParser.getInstance().getOrDefault("zookeeper.discovery.root-path", "/clrpc");
+        String path = ConfigParser.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
         //session timeout in milliseconds
-        int sessionTimeout = ConfigParser.getInstance().getOrDefault("zookeeper.session.timeout", 5000);
+        int sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         try{

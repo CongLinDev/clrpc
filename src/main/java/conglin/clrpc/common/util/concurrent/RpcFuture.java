@@ -30,7 +30,7 @@ public class RpcFuture implements Future<Object> {
     private BasicResponse response;
 
     private final long startTime;
-    private static final long timeThreshold = ConfigParser.getInstance().getOrDefault("service.session.time-threshold", 5000);
+    private static final long timeThreshold = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
 
     private List<Callback> callbacks;
 
