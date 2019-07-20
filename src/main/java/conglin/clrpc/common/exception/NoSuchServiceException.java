@@ -5,18 +5,18 @@ public class NoSuchServiceException extends RuntimeException{
     private static final long serialVersionUID = -2704737758397975272L;
     
     private String requestId;
-    private String className;
+    private String serviceName;
     private String methodName;
 
-    public NoSuchServiceException(String requestId, String className, String methodName){
+    public NoSuchServiceException(String requestId, String serviceName, String methodName){
         this.requestId = requestId;
-        this.className = className;
+        this.serviceName = serviceName;
         this.methodName = methodName;
     }
 
     @Override
     public String toString() {
-        return "NoSuchServiceException [className=" + className + ", methodName=" + methodName + ", requestId="
+        return "NoSuchServiceException [serviceName=" + serviceName + ", methodName=" + methodName + ", requestId="
                 + requestId + "]";
     }
 

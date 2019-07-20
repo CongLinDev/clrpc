@@ -144,7 +144,7 @@ public class RpcFuture implements Future<Object> {
         if(callbacks != null){
             lock.lock();
             try{
-                callbacks.forEach((callback)-> runCallback(callback));
+                callbacks.forEach(this::runCallback);
             }finally{
                 lock.unlock();
             }

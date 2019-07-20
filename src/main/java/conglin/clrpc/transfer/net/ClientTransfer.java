@@ -2,7 +2,6 @@ package conglin.clrpc.transfer.net;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.exception.NoAvailableServerException;
 import conglin.clrpc.common.util.net.IPAddressUtil;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
@@ -35,8 +33,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public class ClientTransfer {
 
     private static final Logger log = LoggerFactory.getLogger(ClientTransfer.class);
-
-    public static final String ANONYMOUS_SERVICE_NAME = "AnonymousService";
 
     public static final InetSocketAddress LOCAL_ADDRESS = IPAddressUtil
             .splitHostnameAndPortSilently(ConfigParser.getOrDefault("client.address", "localhost:5200"));
@@ -57,31 +53,18 @@ public class ClientTransfer {
      * @param serviceHandler
      */
     public void start(ClientServiceHandler serviceHandler) {
-        preStart(serviceHandler);
+        this.serviceHandler = serviceHandler;
+        if (workerGroup == null) {
+            int workerThread = ConfigParser.getOrDefault("client.thread.worker", 4);
+            workerGroup = new NioEventLoopGroup(workerThread);
+        }
 
         String zookeeperAddress = (String) ConfigParser.get("zookeeper.discovery.address");
-        if (zookeeperAddress != null) {
+        if (zookeeperAddress == null) {
+            log.debug("Config 'zookeeper.discovery.address' is null. And default values will be used.");
+        }else{
             log.debug("Discovering zookeeper service address = " + zookeeperAddress);
-        } else {
-            start(serviceHandler, new String[0]);
         }
-    }
-
-    /**
-     * 开启传输服务 直连配置文件中以及用户自定义的服务ip地址
-     * 
-     * @param serviceHandler
-     * @param initRemoteAddress 直连地址
-     */
-    public void start(ClientServiceHandler serviceHandler, String... initRemoteAddress) {
-        preStart(serviceHandler);
-
-        List<String> configRemoteAddress = ConfigParser.getOrDefault("client.connect-address",
-                new ArrayList<String>(initRemoteAddress.length));
-        for (String s : initRemoteAddress) {
-            configRemoteAddress.add(s);
-        }
-        updateConnectedServer(ANONYMOUS_SERVICE_NAME, configRemoteAddress);
     }
 
     /**
@@ -104,19 +87,6 @@ public class ClientTransfer {
         ClientTransferNode node = new ClientTransferNode(serviceName);
         transferNodes.put(serviceName, node);
         node.init();
-    }
-
-    /**
-     * 预启动，为启动做准备
-     * 
-     * @param serviceHandler
-     */
-    private void preStart(ClientServiceHandler serviceHandler) {
-        this.serviceHandler = serviceHandler;
-        if (workerGroup == null) {
-            int workerThread = ConfigParser.getOrDefault("client.thread.worker", 4);
-            workerGroup = new NioEventLoopGroup(workerThread);
-        }
     }
 
     /**
@@ -195,8 +165,6 @@ public class ClientTransfer {
     public BasicClientChannelHandler chooseChannelHandler(String serviceName){
         if(transferNodes.containsKey(serviceName)){
             return transferNodes.get(serviceName).chooseChannelHandler();
-        }else if(transferNodes.containsKey(ANONYMOUS_SERVICE_NAME)){
-            return transferNodes.get(ANONYMOUS_SERVICE_NAME).chooseChannelHandler();
         }else{
             return null;
         }
@@ -342,7 +310,6 @@ public class ClientTransfer {
                     waitingForChannelHandler();
                 }catch(InterruptedException e){
                     log.error("Waiting for available node is interrupted!", e);
-                    throw new NoAvailableServerException();
                 }
             }
     

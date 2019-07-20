@@ -98,13 +98,13 @@ public class ServerServiceHandler extends AbstractServiceHandler {
      * @throws InvocationTargetException
      */
     public Object handleRequest(BasicRequest request) throws InvocationTargetException, NoSuchServiceException{
-        String className = request.getClassName();
 
+        String serviceName = request.getServiceName();
         //获取服务实现类
-        Object serviceBean = services.get(className);
+        Object serviceBean = services.get(serviceName);
         //如果服务实现类没有注册，抛出异常
         if(serviceBean == null){
-            throw new NoSuchServiceException(request.getRequestId(), className, request.getMethodName());
+            throw new NoSuchServiceException(request.getRequestId(), serviceName, request.getMethodName());
         }
 
         Class<?> serviceBeanClass = serviceBean.getClass();

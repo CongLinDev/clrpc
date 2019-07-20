@@ -64,16 +64,6 @@ public class RpcClientBootstrap {
     }
 
     /**
-     * 启动
-     * 已知服务端地址，不通过zookeeper获取服务
-     * @param initRemoteAddress
-     */
-    public void start(String ...initRemoteAddress){
-        clientTransfer.start(serviceHandler, initRemoteAddress);
-        serviceHandler.start(clientTransfer);
-    }
-
-    /**
      * 停止
      */
     public void stop() throws InterruptedException{
