@@ -1,4 +1,4 @@
-package conglin.clrpc.test.client;
+package conglin.clrpc.test.benchmark.async;
 
 import java.util.Random;
 
@@ -10,7 +10,7 @@ import conglin.clrpc.test.service.UserService;
 /**
  * 测试异步调用服务
  */
-public class ClientTest3 {
+public class AsyncClientTest1 {
     public static void main(String[] args) {
         RpcClientBootstrap clientBootstrap = new RpcClientBootstrap();
         System.out.println("Client opening...");

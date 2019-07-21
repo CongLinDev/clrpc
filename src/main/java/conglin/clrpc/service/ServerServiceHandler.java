@@ -42,7 +42,7 @@ public class ServerServiceHandler extends AbstractServiceHandler {
         } else if (!interfaceClass.isAssignableFrom(implementClass)) {
             log.error(implementClass.getName() + " is not permitted. And it will not be added Services");
         } else {
-            addService(interfaceClass.getName(), implementClass);
+            addService(interfaceClass.getSimpleName(), implementClass);
         }
     }
 
@@ -65,13 +65,13 @@ public class ServerServiceHandler extends AbstractServiceHandler {
     /**
      * 手动添加服务 此时服务并未注册
      * 且若服务接口相同，后添加的服务会覆盖前添加的服务
-     * @param interfaceClassName
+     * @param serviceName
      * @param implementClass
      */
-    public void addService(String interfaceClassName, Class<?> implementClass){
+    public void addService(String serviceName, Class<?> implementClass){
         try {
             Object implementObject = implementClass.getDeclaredConstructor().newInstance();
-            services.put(interfaceClassName, implementObject);
+            services.put(serviceName, implementObject);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.error("Can not add service. " + e.getMessage());

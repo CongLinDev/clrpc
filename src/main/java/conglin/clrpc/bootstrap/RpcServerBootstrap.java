@@ -45,12 +45,12 @@ public class RpcServerBootstrap {
 
     /**
      * 保存即将发布的服务
-     * @param interfaceClassName
+     * @param serviceName
      * @param implementClass
      * @return
      */
-    public RpcServerBootstrap addService(String interfaceClassName, Class<?> implementClass) {
-        serviceHandler.addService(interfaceClassName, implementClass);
+    public RpcServerBootstrap addService(String serviceName, Class<?> implementClass) {
+        serviceHandler.addService(serviceName, implementClass);
         return this;
     }
 

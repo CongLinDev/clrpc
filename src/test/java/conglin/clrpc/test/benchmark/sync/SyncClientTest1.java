@@ -1,4 +1,4 @@
-package conglin.clrpc.test.client;
+package conglin.clrpc.test.benchmark.sync;
 
 import conglin.clrpc.bootstrap.RpcClientBootstrap;
 import conglin.clrpc.test.service.HelloService;
@@ -6,7 +6,7 @@ import conglin.clrpc.test.service.HelloService;
 /**
  * 测试同步调用服务
  */
-public class ClientTest1{
+public class SyncClientTest1{
     public static void main(String[] args){
         RpcClientBootstrap clientBootstrap = new RpcClientBootstrap();
         System.out.println("Client opening...");

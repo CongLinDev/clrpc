@@ -90,6 +90,24 @@
 | service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
 | service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
 
+## 测试
+
+### 同步
+
+在同步测试中，**尽量了排除业务逻辑占用时间的干扰**。
+
+[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/benchmark/sync/SyncServerTimeTest.java)
+
+[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/benchmark/sync/SyncClientTimeTest.java)
+
+使用 [默认配置](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml) 进行本机模拟RPC测试。
+
+1. 操作系统：Windows 10 (18362.239) 企业版
+2. 处理器：Inter(R) Core(TM) i5-6300HQ CPU @ 2.30GHz
+3. 内存: 12.0 GB
+
+结论：本机基础上，1000次的同步请求大约在 **1500毫秒** 完成。
+
 ## 扩展
 
 `clrpc` 自身暂时不支持 熔断、服务降级等功能。

@@ -1,20 +1,19 @@
-package conglin.clrpc.test.server;
+package conglin.clrpc.test.benchmark.async;
 
 import conglin.clrpc.bootstrap.RpcServerBootstrap;
-import conglin.clrpc.test.service.HelloService;
-import conglin.clrpc.test.service.impl.HelloServiceImpl;
+import conglin.clrpc.test.service.UserService;
+import conglin.clrpc.test.service.impl.UserServiceImpl;
 
 /**
- * 测试同步调用服务
+ * 测试异步调用服务
  */
-public class ServerTest1 {
-
+public class AsyncServerTest1 {
     public static void main(String[] args) {
         RpcServerBootstrap serverBootstrap = new RpcServerBootstrap();
         try {
             System.out.println("Server opening...");
-            serverBootstrap.addService(HelloService.class, HelloServiceImpl.class)
-                    .start();
+            
+            serverBootstrap.addService(UserService.class, UserServiceImpl.class).start();
             
         }finally{
             serverBootstrap.stop();
