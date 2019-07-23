@@ -40,21 +40,6 @@ public class ConfigParser{
     }
 
     /**
-     * 调用该方法前一定要确保
-     * 未调用 {@link ConfigParser.} 方法
-     * 否则该方法将不起任何作用
-     * 建议在创建启动类前调用
-     * @param path
-     */
-    public static void setConfigFilePath(String path){
-        if(path.endsWith("/")){
-            CONFIG_FILENAME = path + CONFIG_FILENAME;
-        }else{
-            CONFIG_FILENAME = path + "/" + CONFIG_FILENAME;
-        }
-    }
-
-    /**
      * 获取某个键值的值
      * 若不存在返回null
      * @param key 键值

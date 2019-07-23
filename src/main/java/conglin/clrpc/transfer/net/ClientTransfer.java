@@ -148,8 +148,8 @@ public class ClientTransfer {
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if(future.isSuccess()){
                             log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
-                            transferNodes.get(serviceName).
-                                addChannelHandler(channelInitializer.getBasicClientChannelHandler());
+                            transferNodes.get(serviceName)
+                                .addChannelHandler(channelInitializer.getBasicClientChannelHandler());
                         }
                     }
                 });
@@ -180,17 +180,17 @@ public class ClientTransfer {
 
     class ClientTransferNode {
     
-        private CopyOnWriteArrayList<BasicClientChannelHandler> connectedHandlers;
-        private Map<InetSocketAddress, BasicClientChannelHandler> connectedServerNodes;
+        private final CopyOnWriteArrayList<BasicClientChannelHandler> connectedHandlers;
+        private final Map<InetSocketAddress, BasicClientChannelHandler> connectedServerNodes;
     
-        private ReentrantLock lock;
-        private Condition connected;
+        private final ReentrantLock lock;
+        private final Condition connected;
     
-        private AtomicInteger roundCounter;
+        private final AtomicInteger roundCounter;
     
-        private ServiceDiscovery serviceDiscovery;
+        private final ServiceDiscovery serviceDiscovery;
     
-        private String serviceName;
+        private final String serviceName;
     
         public ClientTransferNode(String serviceName) {
             this.serviceName = serviceName;

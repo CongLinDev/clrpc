@@ -65,7 +65,7 @@
 
 文件位置默认在项目根目录下。
 
-若要更改配置文件目录，则必须在创建启动类之前调用 `ConfigParser.setConfigFilePath()` 方法。
+~~若要更改配置文件目录，则必须在创建启动类之前调用 `ConfigParser.setConfigFilePath()` 方法。~~
 
 ### 配置项
 

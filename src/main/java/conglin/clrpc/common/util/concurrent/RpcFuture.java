@@ -1,14 +1,10 @@
 package conglin.clrpc.common.util.concurrent;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +28,7 @@ public class RpcFuture implements Future<Object> {
     private final long startTime;
     private static final long timeThreshold = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
 
-    private List<Callback> callbacks;
-
-    private volatile ReentrantLock lock;
+    private Callback futureCallback;
 
     private static AbstractServiceHandler serviceHandler;
 
@@ -84,7 +78,7 @@ public class RpcFuture implements Future<Object> {
         this.response = response;
         synchronizer.release(1);
 
-        invokeCallbacks();
+        runCallback(futureCallback);
         
         if(response == null || response.isError() == true){
             log.error(response.getError());
@@ -108,47 +102,13 @@ public class RpcFuture implements Future<Object> {
      * @return
      */
     public RpcFuture addCallback(Callback callback){
-        createCallbackLock();
-        lock.lock();
-
-        try{
-            if(isDone()){
-                runCallback(callback);
-            }else{
-                callbacks.add(callback);
-            }
-        }finally{
-            lock.unlock();
+        if(callback == null) return this;
+        if(isDone()){
+            runCallback(callback);
+        }else{
+            futureCallback = callback;
         }
         return this;
-    }
-
-    /**
-     * 创建回调函数集合以及和可重入锁
-     */
-    private void createCallbackLock(){
-        if(lock == null){
-            synchronized(this){
-                if(lock == null){
-                    lock = new ReentrantLock();
-                    callbacks = Collections.synchronizedList(new LinkedList<>());
-                }
-            }
-        }
-    }
-
-    /**
-     * 回调所有回调函数
-     */
-    private void invokeCallbacks(){
-        if(callbacks != null){
-            lock.lock();
-            try{
-                callbacks.forEach(this::runCallback);
-            }finally{
-                lock.unlock();
-            }
-        }
     }
 
     /**
@@ -168,7 +128,6 @@ public class RpcFuture implements Future<Object> {
      * @param callback
      */
     private void runCallback(Callback callback){
-        // final BasicResponse res = this.response;
         if(serviceHandler != null){
             serviceHandler.submit(() -> runCallbackCore(callback));
         }else{
