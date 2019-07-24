@@ -128,6 +128,8 @@ public class RpcFuture implements Future<Object> {
      * @param callback
      */
     private void runCallback(Callback callback){
+        if(callback == null) return;
+        
         if(serviceHandler != null){
             serviceHandler.submit(() -> runCallbackCore(callback));
         }else{

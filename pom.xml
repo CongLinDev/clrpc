@@ -4,7 +4,7 @@
 
   <groupId>conglin.clrpc</groupId>
   <artifactId>clrpc</artifactId>
-  <version>0.2.6-SNAPSHOT</version>
+  <version>0.2.7-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>clrpc</name>
@@ -54,13 +54,6 @@
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime</artifactId>
       <version>1.6.0</version>
-    </dependency>
-
-    <!-- cglib -->
-    <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib</artifactId>
-      <version>3.2.9</version>
     </dependency>
 
     <!-- slf4j -->

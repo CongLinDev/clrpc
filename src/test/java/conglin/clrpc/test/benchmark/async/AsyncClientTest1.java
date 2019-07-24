@@ -5,7 +5,6 @@ import java.util.Random;
 import conglin.clrpc.bootstrap.RpcClientBootstrap;
 import conglin.clrpc.common.util.concurrent.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.test.service.UserService;
 
 /**
  * 测试异步调用服务

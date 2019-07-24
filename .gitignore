@@ -2,6 +2,6 @@
 .classpath
 .vscode
 .settings
-/logs/
-/target/
+logs/*
+target/*
 .project

@@ -40,6 +40,7 @@ public class BasicClientChannelHandler
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error(cause.getMessage());
+        cause.printStackTrace();
         ctx.close();
     }
 

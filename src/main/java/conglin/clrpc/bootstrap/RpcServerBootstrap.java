@@ -44,11 +44,8 @@ public class RpcServerBootstrap {
      * @return
      */
     public RpcServerBootstrap addService(Class<?> interfaceClass, Class<?> implementClass) {
-        if (implementClass.isInterface()) {
-            log.error(implementClass.getName() + " is not a service class. And it will not be added Services");
-            return this;
-        } else if (!interfaceClass.isAssignableFrom(implementClass)) {
-            log.error(implementClass.getName() + " is not permitted. And it will not be added Services");
+        if (!interfaceClass.isAssignableFrom(implementClass)) {
+            log.error(implementClass.getSimpleName() + " is not permitted. And it will not be added Services");
             return this;
         } else {
             return addService(interfaceClass.getSimpleName(), implementClass);
@@ -62,10 +59,7 @@ public class RpcServerBootstrap {
      */
     public RpcServerBootstrap addService(Class<?> implementClass) {
         String implementClassName = implementClass.getSimpleName();
-        if (implementClass.isInterface()) {
-            log.error(implementClassName + " is not a service class. And it will not be added Services");
-            return this;
-        }else if (!implementClassName.endsWith("ServiceImpl")){
+        if (!implementClassName.endsWith("ServiceImpl")){
             log.error(implementClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
             return this;
         }else{
@@ -80,8 +74,13 @@ public class RpcServerBootstrap {
      * @return
      */
     public RpcServerBootstrap addService(String serviceName, Class<?> implementClass) {
-        serviceHandler.addService(serviceName, implementClass);
-        return this;
+        if (implementClass.isInterface()) {
+            log.error(implementClass.getSimpleName() + " is not a service class. And it will not be added Services");
+            return this;
+        }else {
+            serviceHandler.addService(serviceName, implementClass);
+            return this;
+        }
     }
 
     /**
@@ -90,7 +89,16 @@ public class RpcServerBootstrap {
      * @return
      */
     public RpcServerBootstrap removeService(Class<?> interfaceClass) {
-        serviceHandler.removeService(interfaceClass);;
+        return removeService(interfaceClass.getSimpleName());
+    }
+
+    /**
+     * 移除已经发布的服务
+     * @param serviceName
+     * @return
+     */
+    public RpcServerBootstrap removeService(String serviceName) {
+        serviceHandler.removeService(serviceName);
         return this;
     }
 

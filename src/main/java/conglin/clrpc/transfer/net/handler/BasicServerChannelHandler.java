@@ -1,11 +1,10 @@
 package conglin.clrpc.transfer.net.handler;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.NoSuchServiceException;
+import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
@@ -36,9 +35,9 @@ public class BasicServerChannelHandler extends SimpleChannelInboundHandler<Basic
                 try {
                     Object result = serviceHandler.handleRequest(msg);
                     response.setResult(result);
-                } catch (NoSuchServiceException | InvocationTargetException e) {
+                } catch (NoSuchServiceException | ServiceExecutionException e) {
                     log.error("Request failed: " + e.getMessage());
-                    response.setError(e.toString());
+                    response.setError(e.getDescription());
                 }
 
                 ctx.writeAndFlush(response).addListener(new ChannelFutureListener(){
