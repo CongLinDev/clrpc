@@ -150,6 +150,8 @@ public class ClientTransfer {
                             log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
                             transferNodes.get(serviceName)
                                 .addChannelHandler(channelInitializer.getBasicClientChannelHandler());
+                        }else{
+                            log.error("Cannot connect to remote server. Remote Address : " + remoteAddress.toString());
                         }
                     }
                 });
@@ -294,6 +296,7 @@ public class ClientTransfer {
             lock.lock();
             long timeout = ConfigParser.getOrDefault("client.session.timeout", 5000);
             try{
+                log.info("Waiting for Channel Handler " + timeout + " mm...");
                 return connected.await(timeout,TimeUnit.MILLISECONDS);
             } finally {
                 lock.unlock();
