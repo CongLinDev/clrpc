@@ -16,7 +16,7 @@ public class AsyncClientTest1 {
         System.out.println("Client opening...");
         clientBootstrap.start();
         
-        ObjectProxy objectProxy = clientBootstrap.getAsynchronousService(UserService.class);
+        ObjectProxy objectProxy = clientBootstrap.getAsynchronousService("UserService");
 
         Random random = new Random();
 

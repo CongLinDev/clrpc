@@ -34,25 +34,44 @@ public class RpcClientBootstrap {
     }
 
     /**
-     * 获取同步服务
+     * 获取同步服务代理
      * @param <T>
      * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
     public <T> T getService(Class<T> interfaceClass){
-        clientTransfer.findService(interfaceClass);
-        return serviceHandler.getService(interfaceClass);
+        return getService(interfaceClass, interfaceClass.getSimpleName());
     }
 
     /**
-     * 获取异步服务
+     * 获取同步服务代理
      * @param <T>
-     * @param interfaceClass
-     * @return
+     * @param interfaceClass 接口类
+     * @param serviceName 服务名
+     * @return 返回代理服务类
      */
-    public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
-        clientTransfer.findService(interfaceClass);
-        return serviceHandler.getAsynchronousService(interfaceClass);
+    public <T> T getService(Class<T> interfaceClass, String serviceName){
+        clientTransfer.findService(serviceName);
+        return serviceHandler.getService(interfaceClass, serviceName);
+    }
+
+    /**
+     * 获取异步服务代理
+     * @param interfaceClass 接口类
+     * @return 返回代理服务类
+     */
+    public ObjectProxy getAsynchronousService(Class<?> interfaceClass){
+        return getAsynchronousService(interfaceClass.getSimpleName());
+    }
+
+    /**
+     * 获取异步服务代理
+     * @param serviceName 返回代理服务类
+     * @return 返回代理服务类
+     */
+    public ObjectProxy getAsynchronousService(String serviceName){
+        clientTransfer.findService(serviceName);
+        return serviceHandler.getAsynchronousService(serviceName);
     }
 
     /**

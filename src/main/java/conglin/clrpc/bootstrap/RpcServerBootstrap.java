@@ -1,5 +1,8 @@
 package conglin.clrpc.bootstrap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.ServerTransfer;
 
@@ -20,6 +23,8 @@ import conglin.clrpc.transfer.net.ServerTransfer;
 
 public class RpcServerBootstrap {
 
+    private static final Logger log = LoggerFactory.getLogger(RpcServerBootstrap.class);
+
     // 管理传输
     private ServerTransfer serverTransfer;
 
@@ -39,8 +44,33 @@ public class RpcServerBootstrap {
      * @return
      */
     public RpcServerBootstrap addService(Class<?> interfaceClass, Class<?> implementClass) {
-        serviceHandler.addService(interfaceClass, implementClass);
-        return this;
+        if (implementClass.isInterface()) {
+            log.error(implementClass.getName() + " is not a service class. And it will not be added Services");
+            return this;
+        } else if (!interfaceClass.isAssignableFrom(implementClass)) {
+            log.error(implementClass.getName() + " is not permitted. And it will not be added Services");
+            return this;
+        } else {
+            return addService(interfaceClass.getSimpleName(), implementClass);
+        }
+    }
+
+    /**
+     * 保存即将发布的服务
+     * @param implementClass 类名必须满足 'xxxServiceImpl' 条件
+     * @return
+     */
+    public RpcServerBootstrap addService(Class<?> implementClass) {
+        String implementClassName = implementClass.getSimpleName();
+        if (implementClass.isInterface()) {
+            log.error(implementClassName + " is not a service class. And it will not be added Services");
+            return this;
+        }else if (!implementClassName.endsWith("ServiceImpl")){
+            log.error(implementClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
+            return this;
+        }else{
+            return addService(implementClassName.substring(0, implementClassName.length()-4), implementClass);
+        }
     }
 
     /**
@@ -51,16 +81,6 @@ public class RpcServerBootstrap {
      */
     public RpcServerBootstrap addService(String serviceName, Class<?> implementClass) {
         serviceHandler.addService(serviceName, implementClass);
-        return this;
-    }
-
-    /**
-     * 保存即将发布的服务
-     * @param implementClass 类名必须满足 'xxxServiceImpl' 条件
-     * @return
-     */
-    public RpcServerBootstrap addService(Class<?> implementClass) {
-        serviceHandler.addService(implementClass);
         return this;
     }
 

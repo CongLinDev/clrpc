@@ -14,13 +14,11 @@ import conglin.clrpc.transfer.net.message.BasicRequest;
 public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
 
-    private final Class<T> clazz;
-
+    private final String serviceName;
     private final ClientServiceHandler serviceHandler;
 
-    public BasicObjectProxy(Class<T> clazz, 
-                    ClientServiceHandler serviceHandler){
-        this.clazz = clazz;
+    public BasicObjectProxy(String serviceName, ClientServiceHandler serviceHandler){
+        this.serviceName = serviceName;
         this.serviceHandler = serviceHandler;
     }
 
@@ -47,8 +45,7 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        String simpleClassName = this.clazz.getSimpleName();
-        return callCore(simpleClassName, methodName, args);
+        return callCore(serviceName, methodName, args);
     }
 
     @Override
@@ -57,7 +54,7 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     }
 
     /**
-     * 请求核心函数
+     * 请求核心函数(用于异步请求)
      * @param serviceName
      * @param methodName
      * @param args
@@ -66,7 +63,7 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     private RpcFuture callCore(String serviceName, String methodName, Object...args){
         BasicRequest request = BasicRequest.builder()
             .requestId(UUID.randomUUID().toString())
-            .className(this.clazz.getName())
+            //.className(null)
             .methodName(methodName)
             .parameters(args)
             .parameterTypes(getClassType(args))
@@ -77,7 +74,7 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
     }
 
     /**
-     * 请求核心函数
+     * 请求核心函数(用于同步请求)
      * @param method
      * @param args
      * @return
@@ -89,7 +86,7 @@ public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
             .methodName(method.getName())
             .parameterTypes(method.getParameterTypes())
             .parameters(args)
-            .serviceName(method.getDeclaringClass().getSimpleName())
+            .serviceName(this.serviceName)
             .build();
         log.debug(request.toString());
         return serviceHandler.sendRequest(request);

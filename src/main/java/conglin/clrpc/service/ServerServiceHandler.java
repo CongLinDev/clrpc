@@ -33,38 +33,6 @@ public class ServerServiceHandler extends AbstractServiceHandler {
     /**
      * 手动添加服务 此时服务并未注册
      * 且若服务接口相同，后添加的服务会覆盖前添加的服务
-     * @param interfaceClass
-     * @param implementClass
-     */
-    public void addService(Class<?> interfaceClass, Class<?> implementClass) {
-        if (implementClass.isInterface()) {
-            log.error(implementClass.getName() + " is not a service class. And it will not be added Services");
-        } else if (!interfaceClass.isAssignableFrom(implementClass)) {
-            log.error(implementClass.getName() + " is not permitted. And it will not be added Services");
-        } else {
-            addService(interfaceClass.getSimpleName(), implementClass);
-        }
-    }
-
-    /**
-     * 手动添加服务 此时服务并未注册
-     * 且若服务接口相同，后添加的服务会覆盖前添加的服务
-     * @param implementClass 该实现类类名必须满足 'xxxServiceImpl' 格式
-     */
-    public void addService(Class<?> implementClass){
-        String implementClassName = implementClass.getName();
-        if (implementClass.isInterface()) {
-            log.error(implementClassName + " is not a service class. And it will not be added Services");
-        }else if (!implementClassName.endsWith("ServiceImpl")){
-            log.error(implementClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
-        }else{
-            addService(implementClassName.substring(0, implementClassName.length()-4), implementClass);
-        }
-    }
-
-    /**
-     * 手动添加服务 此时服务并未注册
-     * 且若服务接口相同，后添加的服务会覆盖前添加的服务
      * @param serviceName
      * @param implementClass
      */

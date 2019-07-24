@@ -3,4 +3,5 @@
 .vscode
 .settings
 /logs/
+/target/
 .project

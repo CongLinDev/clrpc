@@ -32,16 +32,29 @@ public class ClientServiceHandler extends AbstractServiceHandler {
         rpcFutures = new ConcurrentHashMap<>();
     }
 
+    /**
+     * 获取同步服务代理
+     * @param <T>
+     * @param interfaceClass
+     * @param serviceName
+     * @return
+     */
     @SuppressWarnings("unchecked")
-    public <T> T getService(Class<T> interfaceClass){
+    public <T> T getService(Class<T> interfaceClass, String serviceName){
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
-            new BasicObjectProxy<T>(interfaceClass, this));
+            new BasicObjectProxy<T>(serviceName, this));
     }
 
-    public <T> ObjectProxy getAsynchronousService(Class<T> interfaceClass){
-        return new BasicObjectProxy<T>(interfaceClass, this);
+    /**
+     * 获取异步服务代理
+     * @param <T>
+     * @param serviceName
+     * @return
+     */
+    public <T> ObjectProxy getAsynchronousService(String serviceName){
+        return new BasicObjectProxy<T>(serviceName, this);
     }
 
     public void start(ClientTransfer clientTransfer){
