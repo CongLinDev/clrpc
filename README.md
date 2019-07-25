@@ -57,9 +57,15 @@
     }
 ```
 
+## 架构
+
+![architecture.png](https://i.loli.net/2019/07/25/5d39b1f61a9bc41985.png)
+
 ## 配置
 
 配置文件名为 `clrpc-config.yml`，位置默认在项目根目录下。
+
+[配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml)。
 
 ### 配置文件位置
 

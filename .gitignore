@@ -2,6 +2,7 @@
 .classpath
 .vscode
 .settings
+architecture/*
 logs/*
 target/*
 .project
