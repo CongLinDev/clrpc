@@ -10,7 +10,7 @@ public class ProtostuffCodecFactory implements CodecFactory {
         
     }
 
-    public static ProtostuffCodecFactory getInstance() {
+    public static CodecFactory getInstance() {
         return SingletonHolder.CODEC_FACTORY;
     }
 

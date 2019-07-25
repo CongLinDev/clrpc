@@ -73,7 +73,7 @@
 | :------: | :------: | :------: | :------: | :------: |
 | zookeeper.registry.address | String | YES | localhost:2181 | 服务注册地址 |
 | zookeeper.registry.root-path | String | YES | /clrpc | 服务注册根节点 |
-| zookeeper.discovery.address | String | YES | localhost:2181 | 服务搜索地址，若该项为空。则client.connect-address 不能为空 |
+| zookeeper.discovery.address | String | YES | localhost:2181 | 服务搜索地址 |
 | zookeeper.discovery.root-path | String | YES | /clrpc | 服务搜索根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
 | server.address | String | YES | localhost:5000 | 服务提供者地址 |

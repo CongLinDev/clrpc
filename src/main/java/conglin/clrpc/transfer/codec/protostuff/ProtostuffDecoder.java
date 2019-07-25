@@ -2,8 +2,7 @@ package conglin.clrpc.transfer.codec.protostuff;
 
 import java.util.List;
 
-import conglin.clrpc.transfer.protocol.SerializationHandler;
-import conglin.clrpc.transfer.protocol.protostuff.ProtostuffSerializationHandler;
+import conglin.clrpc.transfer.codec.SerializationHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

@@ -1,4 +1,4 @@
-package conglin.clrpc.transfer.protocol;
+package conglin.clrpc.transfer.codec;
 
 public interface SerializationHandler{
     /**
