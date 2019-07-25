@@ -11,7 +11,7 @@ import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 
-public class BasicObjectProxy<T> implements ObjectProxy, InvocationHandler {
+public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
 
     private final String serviceName;

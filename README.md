@@ -80,7 +80,6 @@
 | server.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | server.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
 | client.address | String | YES | localhost:5200 | 服务使用者地址 |
-| client.connect-address | List\<String\> | YES | localhost:5000 | 服务使用者越过Zookeeper直接连接服务使用者的地址。zookeeper.discovery.address 为空时有效，且 zookeeper.discovery.address 为空时，该项不得为空 |
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
 | service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
@@ -89,6 +88,7 @@
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
 | service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
+| service.codec.factory-class| conglin.clrpc.<br>transfer.codec.<br>CodecFactory | YES | conglin.clrpc.<br>transfer.codec.<br>protostuff.<br>ProtostuffCodecFactory | 编解码器工厂，默认使用 Protostuff |
 
 ## 测试
 
@@ -108,8 +108,8 @@
 
 ### 结论
 
-1. 本机基础上，且只有一台服务器的情况下，1000次的*同步请求*大约在 **1500毫秒** 完成。
-2. 本机基础上，且只有一台服务器的情况下，10000次的*同步请求*大约在 **3800毫秒** 完成。
+1. 本机基础上，且只有一台服务器的情况下，1000次的*同步请求*大约在 **1300毫秒** 内完成。
+2. 本机基础上，且只有一台服务器的情况下，10000次的*同步请求*大约在 **3700毫秒** 内完成。
 
 ## 扩展
 

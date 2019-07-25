@@ -22,7 +22,7 @@ import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
-import conglin.clrpc.transfer.net.handler.ProtostuffClientChannelInitializer;
+import conglin.clrpc.transfer.net.handler.BasicClientChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -134,7 +134,7 @@ public class ClientTransfer {
             @Override
             public void run() {
                 Bootstrap bootstrap = new Bootstrap();
-                ClientChannelInitializer channelInitializer = new ProtostuffClientChannelInitializer(serviceHandler);
+                ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
                 bootstrap.localAddress(LOCAL_ADDRESS.getPort())
                         .group(workerGroup)
                         .channel(NioSocketChannel.class)

@@ -44,17 +44,16 @@ public class ClientServiceHandler extends AbstractServiceHandler {
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
-            new BasicObjectProxy<T>(serviceName, this));
+            new BasicObjectProxy(serviceName, this));
     }
 
     /**
      * 获取异步服务代理
-     * @param <T>
      * @param serviceName
      * @return
      */
-    public <T> ObjectProxy getAsynchronousService(String serviceName){
-        return new BasicObjectProxy<T>(serviceName, this);
+    public ObjectProxy getAsynchronousService(String serviceName){
+        return new BasicObjectProxy(serviceName, this);
     }
 
     public void start(ClientTransfer clientTransfer){

@@ -18,11 +18,7 @@ server:
     worker: 4
 
 client:
-  address: localhost:5200
-  connect-address:
-    - localhost:5000
-    # - localhost:5001
-  
+  address: localhost:5200  
   session:
     timeout: 5000 #ms
   thread:
@@ -38,3 +34,5 @@ service:
       queue: 10
   session:
     time-threshold: 5000 #ms
+  codec:
+    factory-class: conglin.clrpc.transfer.codec.protostuff.ProtostuffCodecFactory

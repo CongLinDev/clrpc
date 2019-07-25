@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtil;
 import conglin.clrpc.service.ServerServiceHandler;
-import conglin.clrpc.transfer.net.handler.ProtostuffServerChannelInitializer;
+import conglin.clrpc.transfer.net.handler.BasicServerChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -36,7 +36,6 @@ public class ServerTransfer{
 
     /**
      * 启动Netty 并将其注册到zookeeper中
-     * 默认使用 Protostuff
      * @param serviceHandler
      */
     public void start(ServerServiceHandler serviceHandler){
@@ -50,7 +49,7 @@ public class ServerTransfer{
             bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 //.handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ProtostuffServerChannelInitializer(serviceHandler))
+                .childHandler(new BasicServerChannelInitializer(serviceHandler))
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
