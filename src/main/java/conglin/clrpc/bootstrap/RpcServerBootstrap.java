@@ -40,47 +40,58 @@ public class RpcServerBootstrap {
     /**
      * 保存即将发布的服务
      * @param interfaceClass 接口类
-     * @param implementClass 实现类
+     * @param serviceBeanClass 实现类
      * @return
      */
-    public RpcServerBootstrap addService(Class<?> interfaceClass, Class<?> implementClass) {
-        if (!interfaceClass.isAssignableFrom(implementClass)) {
-            log.error(implementClass.getSimpleName() + " is not permitted. And it will not be added Services");
+    public RpcServerBootstrap addService(Class<?> interfaceClass, Class<?> serviceBeanClass) {
+        if (!interfaceClass.isAssignableFrom(serviceBeanClass)) {
+            log.error(serviceBeanClass.getSimpleName() + " is not permitted. And it will not be added Services");
             return this;
         } else {
-            return addService(interfaceClass.getSimpleName(), implementClass);
+            return addService(interfaceClass.getSimpleName(), serviceBeanClass);
         }
     }
 
     /**
      * 保存即将发布的服务
-     * @param implementClass 类名必须满足 'xxxServiceImpl' 条件
+     * @param serviceBeanClass 类名必须满足 'xxxServiceImpl' 条件
      * @return
      */
-    public RpcServerBootstrap addService(Class<?> implementClass) {
-        String implementClassName = implementClass.getSimpleName();
-        if (!implementClassName.endsWith("ServiceImpl")){
-            log.error(implementClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
+    public RpcServerBootstrap addService(Class<?> serviceBeanClass) {
+        String serviceBeanClassName = serviceBeanClass.getSimpleName();
+        if (!serviceBeanClassName.endsWith("ServiceImpl")){
+            log.error(serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
             return this;
         }else{
-            return addService(implementClassName.substring(0, implementClassName.length()-4), implementClass);
+            return addService(serviceBeanClassName.substring(0, serviceBeanClassName.length()-4), serviceBeanClass);
         }
     }
 
     /**
      * 保存即将发布的服务
      * @param serviceName
-     * @param implementClass
+     * @param serviceBeanClass
      * @return
      */
-    public RpcServerBootstrap addService(String serviceName, Class<?> implementClass) {
-        if (implementClass.isInterface()) {
-            log.error(implementClass.getSimpleName() + " is not a service class. And it will not be added Services");
+    public RpcServerBootstrap addService(String serviceName, Class<?> serviceBeanClass) {
+        if (serviceBeanClass.isInterface()) {
+            log.error(serviceBeanClass.getSimpleName() + " is not a service class. And it will not be added Services");
             return this;
         }else {
-            serviceHandler.addService(serviceName, implementClass);
+            serviceHandler.addService(serviceName, serviceBeanClass);
             return this;
         }
+    }
+
+    /**
+     * 保存即将发布的服务
+     * @param serviceName
+     * @param serviceBean
+     * @return
+     */
+    public RpcServerBootstrap addService(String serviceName, Object serviceBean){
+        serviceHandler.addService(serviceName, serviceBean);
+        return this;
     }
 
     /**

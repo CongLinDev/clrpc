@@ -59,7 +59,7 @@
 
 ## 架构
 
-![architecture.png](https://i.loli.net/2019/07/25/5d39b1f61a9bc41985.png)
+![architecture.png](https://i.loli.net/2019/07/26/5d3a5d9c3c12176172.png)
 
 ## 配置
 

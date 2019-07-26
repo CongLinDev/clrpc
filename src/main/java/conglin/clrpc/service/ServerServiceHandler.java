@@ -19,7 +19,7 @@ public class ServerServiceHandler extends AbstractServiceHandler {
     private static final Logger log = LoggerFactory.getLogger(ServerServiceHandler.class);
 
     //服务映射
-    //String保存接口名 Object保存服务实现类
+    //String保存服务名 Object保存服务实现类
     private final Map<String, Object> services;
 
     private final ServiceRegistry serviceRegistry;
@@ -32,18 +32,28 @@ public class ServerServiceHandler extends AbstractServiceHandler {
 
     /**
      * 手动添加服务 此时服务并未注册
-     * 且若服务接口相同，后添加的服务会覆盖前添加的服务
+     * 且若服务名相同，后添加的服务会覆盖前添加的服务
      * @param serviceName
-     * @param implementClass
+     * @param serviceBeanClass
      */
-    public void addService(String serviceName, Class<?> implementClass){
+    public void addService(String serviceName, Class<?> serviceBeanClass){
         try {
-            Object implementObject = implementClass.getDeclaredConstructor().newInstance();
-            services.put(serviceName, implementObject);
+            Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
+            addService(serviceName, serviceBean);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             log.error("Can not add service. " + e.getMessage());
         }
+    }
+
+    /**
+     * 手动添加服务 此时服务并未注册
+     * 且若服务名相同，后添加的服务会覆盖前添加的服务
+     * @param serviceName
+     * @param serviceBean
+     */
+    public void addService(String serviceName, Object serviceBean){
+        services.put(serviceName, serviceBean);
     }
 
     /**

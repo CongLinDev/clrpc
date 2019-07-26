@@ -99,16 +99,14 @@ public class RpcFuture implements Future<Object> {
      * 选择在此创建回调函数集合以及和可重入锁的原因是
      * 有些 {@link RpcFuture} 并没有回调函数
      * @param callback
-     * @return
      */
-    public RpcFuture addCallback(Callback callback){
-        if(callback == null) return this;
+    public void addCallback(Callback callback){
+        if(callback == null) return;
         if(isDone()){
             runCallback(callback);
         }else{
             futureCallback = callback;
         }
-        return this;
     }
 
     /**
