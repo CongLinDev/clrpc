@@ -37,6 +37,18 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
             } else {
                 throw new IllegalStateException(String.valueOf(method));
             }
+            // switch (name){
+            //     case "equals":
+            //         return proxy == args[0];
+            //     case "hashCode":
+            //         return System.identityHashCode(proxy);
+            //     case "toString":
+            //         return proxy.getClass().getName() + "@" +
+            //             Integer.toHexString(System.identityHashCode(proxy)) +
+            //             ", with InvocationHandler " + this;
+            //     default:
+            //         throw new IllegalStateException(String.valueOf(method));
+            // }
         }
         
         RpcFuture future = call(method, args);

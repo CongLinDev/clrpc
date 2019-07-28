@@ -12,13 +12,13 @@ zookeeper:
     timeout: 5000 #ms
 
 server:
-  address: localhost:5000
+  address: localhost:5100
   thread:
     boss: 1
     worker: 4
 
 client:
-  address: localhost:5200  
+  address: localhost:5200
   session:
     timeout: 5000 #ms
   thread:

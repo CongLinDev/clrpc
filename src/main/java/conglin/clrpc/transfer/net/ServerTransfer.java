@@ -27,7 +27,7 @@ public class ServerTransfer{
     
 
     public ServerTransfer(){
-        this.serverAddress = ConfigParser.getOrDefault("server.address", "localhost:5000");
+        this.serverAddress = ConfigParser.getOrDefault("server.address", "localhost:5100");
     }
 
     public ServerTransfer(String serverAddress){
