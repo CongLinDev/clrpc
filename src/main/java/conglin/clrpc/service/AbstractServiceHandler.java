@@ -67,6 +67,16 @@ abstract public class AbstractServiceHandler {
         return businessTheardExecutorService.submit(task);
     }
 
+    /**
+     * 提交一个 {@link java.lang.Runnable} 任务
+     * 
+     * @param task
+     * @return 
+     */
+    public void execute(Runnable task){
+        businessTheardExecutorService.execute(task);
+    }
+
     public void stop(){
         if(businessTheardExecutorService != null)
             businessTheardExecutorService.shutdown();

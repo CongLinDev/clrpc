@@ -1,15 +1,5 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.util.concurrent.RpcFuture;
-import conglin.clrpc.service.proxy.BasicObjectProxy;
-import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.transfer.net.message.BasicRequest;
-import conglin.clrpc.transfer.net.ClientTransfer;
-import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-
 import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +8,16 @@ import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.util.concurrent.RpcFuture;
+import conglin.clrpc.service.proxy.BasicObjectProxy;
+import conglin.clrpc.service.proxy.ObjectProxy;
+import conglin.clrpc.transfer.net.ClientTransfer;
+import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
+import conglin.clrpc.transfer.net.message.BasicRequest;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+
 
 public class ClientServiceHandler extends AbstractServiceHandler {
 
@@ -25,11 +25,18 @@ public class ClientServiceHandler extends AbstractServiceHandler {
 
     private final Map<String, RpcFuture> rpcFutures;
 
+    // private final int REQUEST_QUEUE_MAX_SIZE;
+    // private final int REQUEST_QUEUE_TIME_THRESHOLD;
+    // private final Map<String, Queue<BasicRequest>> allKindsOfRequests;
+
     private ClientTransfer clientTransfer;
 
     public ClientServiceHandler(){
         super();
         rpcFutures = new ConcurrentHashMap<>();
+        // allKindsOfRequests = new ConcurrentHashMap<>();
+        // REQUEST_QUEUE_MAX_SIZE = ConfigParser.getOrDefault("service.request-queue.max-size", 20);
+        // REQUEST_QUEUE_TIME_THRESHOLD = ConfigParser.getOrDefault("service.request-queue.time-threshold", 100);
     }
 
     /**
@@ -58,6 +65,29 @@ public class ClientServiceHandler extends AbstractServiceHandler {
 
     public void start(ClientTransfer clientTransfer){
         this.clientTransfer = clientTransfer;
+        //轮询线程，负责发送请求
+        // super.execute(()->{
+        //     while(!Thread.interrupted()){
+        //         int count = 0;//标志位，记录遍历过的空队列个数
+        //         for(Queue<BasicRequest> requests : allKindsOfRequests.values()){
+        //             if(requests == null || requests.size() == 0){
+        //                 count++;
+        //             }else{
+        //                 count = 0;
+        //                 String serviceName = requests.peek().getServiceName();
+        //                 sendRequestCore(serviceName, requests);
+        //             }
+        //         }
+        //         try {
+        //             Thread.sleep(REQUEST_QUEUE_TIME_THRESHOLD);
+        //             log.info("sleep.....");
+        //         } catch (InterruptedException e) {
+        //             log.error(e.getMessage());
+        //         }
+        //         if(count != 0 && count >= (allKindsOfRequests.size() >> 1))
+        //             break;
+        //     }
+        // });
     }
     
 
@@ -93,13 +123,23 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * @return
      */
     public RpcFuture sendRequest(BasicRequest request){
+        RpcFuture future = new RpcFuture(request);
+        rpcFutures.put(request.getRequestId(), future);
+        sendRequestCore(request);
+        return future;
+    }
+
+    /**
+     * 发送请求核心方法
+     * 注意：此方法未检查队列是否为 null和队列的大小
+     * @param serviceName
+     * @param requests
+     */
+    private void sendRequestCore(BasicRequest request){
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(request.getServiceName());
         Channel channel = channelHandler.getChannel();
 
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        RpcFuture future = new RpcFuture(request);
-        rpcFutures.put(request.getRequestId(), future);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
         channel.writeAndFlush(request).addListener(new ChannelFutureListener(){
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
@@ -111,6 +151,5 @@ public class ClientServiceHandler extends AbstractServiceHandler {
         }catch(InterruptedException e){
             log.error(e.getMessage());
         }
-        return future;
     }
 }
