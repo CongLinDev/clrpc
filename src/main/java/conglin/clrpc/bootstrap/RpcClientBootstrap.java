@@ -52,7 +52,7 @@ public class RpcClientBootstrap {
      */
     public <T> T getService(Class<T> interfaceClass, String serviceName){
         clientTransfer.findService(serviceName);
-        return serviceHandler.getService(interfaceClass, serviceName);
+        return serviceHandler.getService(interfaceClass, serviceName, clientTransfer.getSender());
     }
 
     /**
@@ -71,7 +71,7 @@ public class RpcClientBootstrap {
      */
     public ObjectProxy getAsynchronousService(String serviceName){
         clientTransfer.findService(serviceName);
-        return serviceHandler.getAsynchronousService(serviceName);
+        return serviceHandler.getAsynchronousService(serviceName, clientTransfer.getSender());
     }
 
     /**
@@ -79,7 +79,7 @@ public class RpcClientBootstrap {
      */
     public void start(){
         clientTransfer.start(serviceHandler);
-        serviceHandler.start(clientTransfer);
+        serviceHandler.start();
     }
 
     /**

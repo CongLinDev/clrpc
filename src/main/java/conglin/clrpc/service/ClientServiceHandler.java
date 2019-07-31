@@ -3,7 +3,6 @@ package conglin.clrpc.service;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +10,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.transfer.net.ClientTransfer;
-import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
-import conglin.clrpc.transfer.net.message.BasicRequest;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
+import conglin.clrpc.transfer.net.sender.RequestSender;
 
 
 public class ClientServiceHandler extends AbstractServiceHandler {
@@ -25,18 +19,9 @@ public class ClientServiceHandler extends AbstractServiceHandler {
 
     private final Map<String, RpcFuture> rpcFutures;
 
-    // private final int REQUEST_QUEUE_MAX_SIZE;
-    // private final int REQUEST_QUEUE_TIME_THRESHOLD;
-    // private final Map<String, Queue<BasicRequest>> allKindsOfRequests;
-
-    private ClientTransfer clientTransfer;
-
     public ClientServiceHandler(){
         super();
         rpcFutures = new ConcurrentHashMap<>();
-        // allKindsOfRequests = new ConcurrentHashMap<>();
-        // REQUEST_QUEUE_MAX_SIZE = ConfigParser.getOrDefault("service.request-queue.max-size", 20);
-        // REQUEST_QUEUE_TIME_THRESHOLD = ConfigParser.getOrDefault("service.request-queue.time-threshold", 100);
     }
 
     /**
@@ -44,50 +29,32 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * @param <T>
      * @param interfaceClass
      * @param serviceName
+     * @param sender
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getService(Class<T> interfaceClass, String serviceName){
+    public <T> T getService(Class<T> interfaceClass, String serviceName, RequestSender sender){
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
-            new BasicObjectProxy(serviceName, this));
+            new BasicObjectProxy(serviceName, sender));
     }
 
     /**
      * 获取异步服务代理
      * @param serviceName
+     * @param sender
      * @return
      */
-    public ObjectProxy getAsynchronousService(String serviceName){
-        return new BasicObjectProxy(serviceName, this);
+    public ObjectProxy getAsynchronousService(String serviceName, RequestSender sender){
+        return new BasicObjectProxy(serviceName, sender);
     }
 
-    public void start(ClientTransfer clientTransfer){
-        this.clientTransfer = clientTransfer;
-        //轮询线程，负责发送请求
-        // super.execute(()->{
-        //     while(!Thread.interrupted()){
-        //         int count = 0;//标志位，记录遍历过的空队列个数
-        //         for(Queue<BasicRequest> requests : allKindsOfRequests.values()){
-        //             if(requests == null || requests.size() == 0){
-        //                 count++;
-        //             }else{
-        //                 count = 0;
-        //                 String serviceName = requests.peek().getServiceName();
-        //                 sendRequestCore(serviceName, requests);
-        //             }
-        //         }
-        //         try {
-        //             Thread.sleep(REQUEST_QUEUE_TIME_THRESHOLD);
-        //             log.info("sleep.....");
-        //         } catch (InterruptedException e) {
-        //             log.error(e.getMessage());
-        //         }
-        //         if(count != 0 && count >= (allKindsOfRequests.size() >> 1))
-        //             break;
-        //     }
-        // });
+    /**
+     * 启动
+     */
+    public void start(){
+        log.info("conglin.clrpc.service.ClientServiceHandler#start() do nothing...");
     }
     
 
@@ -104,52 +71,30 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * 以下代码用于 RpcFuture 的管理和维护
      */
 
-    public void putFuture(String requestId, RpcFuture rpcFuture){
-        rpcFutures.put(requestId, rpcFuture);
-    }
-
-    public RpcFuture getFuture(String requestId){
-        return rpcFutures.get(requestId);
-    }
-
-    public RpcFuture removeFuture(String requestId){
-        return rpcFutures.remove(requestId);
-    }
-
-
     /**
-     * 发送 RPC请求
-     * @param request
+     * 加入 Future
+     * @param key
+     * @param rpcFuture
+     */
+    public void putFuture(String key, RpcFuture rpcFuture){
+        rpcFutures.put(key, rpcFuture);
+    }
+
+    /***
+     * 获取 Future
+     * @param key
      * @return
      */
-    public RpcFuture sendRequest(BasicRequest request){
-        RpcFuture future = new RpcFuture(request);
-        rpcFutures.put(request.getRequestId(), future);
-        sendRequestCore(request);
-        return future;
+    public RpcFuture getFuture(String key){
+        return rpcFutures.get(key);
     }
 
     /**
-     * 发送请求核心方法
-     * 注意：此方法未检查队列是否为 null和队列的大小
-     * @param serviceName
-     * @param requests
+     * 移除 Future
+     * @param key
+     * @return
      */
-    private void sendRequestCore(BasicRequest request){
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(request.getServiceName());
-        Channel channel = channelHandler.getChannel();
-
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        channel.writeAndFlush(request).addListener(new ChannelFutureListener(){
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                countDownLatch.countDown();
-            }
-        });
-        try{
-            countDownLatch.await();
-        }catch(InterruptedException e){
-            log.error(e.getMessage());
-        }
+    public RpcFuture removeFuture(String key){
+        return rpcFutures.remove(key);
     }
 }

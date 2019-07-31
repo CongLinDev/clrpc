@@ -16,13 +16,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.common.util.net.IPAddressUtil;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
-import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelInitializer;
+import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
+import conglin.clrpc.transfer.net.sender.BasicRequestSender;
+import conglin.clrpc.transfer.net.sender.RequestSender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -42,6 +45,8 @@ public class ClientTransfer {
 
     private final Map<String, ClientTransferNode> transferNodes;
 
+    private RequestSender sender;
+
     public ClientTransfer() {
         transferNodes = new ConcurrentHashMap<>();
     }
@@ -58,13 +63,9 @@ public class ClientTransfer {
             int workerThread = ConfigParser.getOrDefault("client.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
-
-        String zookeeperAddress = (String) ConfigParser.get("zookeeper.discovery.address");
-        if (zookeeperAddress == null) {
-            log.debug("Config 'zookeeper.discovery.address' is null. And default values will be used.");
-        }else{
-            log.debug("Discovering zookeeper service address = " + zookeeperAddress);
-        }
+        this.sender = new BasicRequestSender();
+        this.sender.init(this);
+        serviceHandler.submit(this.sender);
     }
 
     /**
@@ -100,6 +101,24 @@ public class ClientTransfer {
             workerGroup.shutdownGracefully();
 
         transferNodes.values().forEach(node -> node.stop());
+    }
+
+
+    /**
+     * 获取发送器
+     * @return the sender
+     */
+    public RequestSender getSender() {
+        return sender;
+    }
+
+    /**
+     * 暂存future
+     * @param key
+     * @param future
+     */
+    public void saveFuture(String key, RpcFuture future){
+        serviceHandler.putFuture(key, future);
     }
 
     /**
@@ -171,7 +190,6 @@ public class ClientTransfer {
             return null;
         }
     }
-
 
 
     /**

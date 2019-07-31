@@ -2,24 +2,23 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.util.concurrent.RpcFuture;
-import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
+import conglin.clrpc.transfer.net.sender.RequestSender;
 
 public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
 
     private final String serviceName;
-    private final ClientServiceHandler serviceHandler;
+    private final RequestSender sender;
 
-    public BasicObjectProxy(String serviceName, ClientServiceHandler serviceHandler){
+    public BasicObjectProxy(String serviceName, RequestSender sender){
         this.serviceName = serviceName;
-        this.serviceHandler = serviceHandler;
+        this.sender = sender;
     }
 
     @Override
@@ -73,8 +72,9 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
      * @return
      */
     private RpcFuture callCore(String serviceName, String methodName, Object...args){
+        // 构造 BasicRequest 时未设置 requestID
+        // 交由发送器进行设置
         BasicRequest request = BasicRequest.builder()
-            .requestId(UUID.randomUUID().toString())
             //.className(null)
             .methodName(methodName)
             .parameters(args)
@@ -82,7 +82,7 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
             .serviceName(serviceName)
             .build();
         log.debug(request.toString());
-        return serviceHandler.sendRequest(request);
+        return sender.sendRequest(request);
     }
 
     /**
@@ -92,8 +92,9 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
      * @return
      */
     private RpcFuture callCore(Method method, Object... args){
+        // 构造 BasicRequest 时未设置 requestID
+        // 交由发送器进行设置
         BasicRequest request = BasicRequest.builder()
-            .requestId(UUID.randomUUID().toString())
             .className(method.getDeclaringClass().getName())
             .methodName(method.getName())
             .parameterTypes(method.getParameterTypes())
@@ -101,7 +102,7 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
             .serviceName(this.serviceName)
             .build();
         log.debug(request.toString());
-        return serviceHandler.sendRequest(request);
+        return sender.sendRequest(request);
     }
 
     private Class<?>[] getClassType(Object[] objs){

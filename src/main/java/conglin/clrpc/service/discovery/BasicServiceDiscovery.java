@@ -41,7 +41,8 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
 
         //服务注册地址
         registryAddress = ConfigParser.getOrDefault("zookeeper.discovery.address", "localhost:2181");
-
+        log.debug("Discovering zookeeper service address = " + registryAddress);
+        
         String path = ConfigParser.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
