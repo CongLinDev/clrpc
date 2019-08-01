@@ -33,8 +33,8 @@ public class RpcServerBootstrap {
 
 
     public RpcServerBootstrap() {
-        serverTransfer = new ServerTransfer();
         serviceHandler = new ServerServiceHandler();
+        serverTransfer = new ServerTransfer();
     }
 
     /**

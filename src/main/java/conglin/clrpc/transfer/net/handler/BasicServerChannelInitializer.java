@@ -7,11 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.codec.CodecFactory;
 import conglin.clrpc.transfer.codec.protostuff.ProtostuffCodecFactory;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
+import conglin.clrpc.transfer.net.receiver.RequestReceiver;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -42,11 +42,11 @@ public class BasicServerChannelInitializer
         }
     }
 
-    private final ServerServiceHandler serviceHandler;
+    private final RequestReceiver requestReceiver;
     
-    public BasicServerChannelInitializer(ServerServiceHandler serviceHandler){
+    public BasicServerChannelInitializer(RequestReceiver requestReceiver){
         super();
-        this.serviceHandler = serviceHandler;
+        this.requestReceiver = requestReceiver;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class BasicServerChannelInitializer
         .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0))
         .addLast(codecFactory.getDecoder(BasicRequest.class))
         .addLast(codecFactory.getEncoder(BasicResponse.class))
-        .addLast(new BasicServerChannelHandler(serviceHandler));
+        .addLast(new BasicServerChannelHandler(requestReceiver));
         // you can add more handlers
     }
 }

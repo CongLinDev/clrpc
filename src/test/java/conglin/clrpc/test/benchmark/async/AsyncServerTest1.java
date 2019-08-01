@@ -1,7 +1,6 @@
 package conglin.clrpc.test.benchmark.async;
 
 import conglin.clrpc.bootstrap.RpcServerBootstrap;
-import conglin.clrpc.test.service.UserService;
 import conglin.clrpc.test.service.impl.UserServiceImpl;
 
 /**
@@ -13,7 +12,7 @@ public class AsyncServerTest1 {
         try {
             System.out.println("Server opening...");
             
-            serverBootstrap.addService(UserService.class, UserServiceImpl.class).start();
+            serverBootstrap.addService("UserService", UserServiceImpl.class).start();
             
         }finally{
             serverBootstrap.stop();

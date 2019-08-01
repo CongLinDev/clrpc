@@ -58,6 +58,4 @@ public class BasicClientChannelHandler
     public void close() {
         channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
-    
-
 }

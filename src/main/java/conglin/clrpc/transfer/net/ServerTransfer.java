@@ -10,6 +10,8 @@ import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtil;
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.handler.BasicServerChannelInitializer;
+import conglin.clrpc.transfer.net.receiver.BasicRequestReceiver;
+import conglin.clrpc.transfer.net.receiver.RequestReceiver;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -25,9 +27,10 @@ public class ServerTransfer{
 
     private final String serverAddress;
     
+    private RequestReceiver requestReceiver;
 
     public ServerTransfer(){
-        this.serverAddress = ConfigParser.getOrDefault("server.address", "localhost:5100");
+        this(ConfigParser.getOrDefault("server.address", "localhost:5100"));
     }
 
     public ServerTransfer(String serverAddress){
@@ -39,35 +42,37 @@ public class ServerTransfer{
      * @param serviceHandler
      */
     public void start(ServerServiceHandler serviceHandler){
-        if(bossGroup == null && workerGroup == null){
-            int bossThread = ConfigParser.getOrDefault("server.thread.boss", 1);
-            int workerThread = ConfigParser.getOrDefault("server.thread.worker", 4);
-            bossGroup = new NioEventLoopGroup(bossThread);
-            workerGroup = new NioEventLoopGroup(workerThread);
 
-            ServerBootstrap bootstrap = new ServerBootstrap();
-            bootstrap.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
-                //.handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new BasicServerChannelInitializer(serviceHandler))
-                .option(ChannelOption.SO_BACKLOG, 128)
-                .childOption(ChannelOption.SO_KEEPALIVE, true);
+        this.requestReceiver = new BasicRequestReceiver();
+        requestReceiver.init(serviceHandler);
 
-            try{
-                InetSocketAddress address= IPAddressUtil.splitHostnameAndPort(serverAddress);
+        int bossThread = ConfigParser.getOrDefault("server.thread.boss", 1);
+        int workerThread = ConfigParser.getOrDefault("server.thread.worker", 4);
+        bossGroup = new NioEventLoopGroup(bossThread);
+        workerGroup = new NioEventLoopGroup(workerThread);
 
-                ChannelFuture channelFuture = bootstrap.bind(address.getAddress(), address.getPort()).sync();
-                log.info("Server started on {}", address);
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(bossGroup, workerGroup)
+            .channel(NioServerSocketChannel.class)
+            //.handler(new LoggingHandler(LogLevel.INFO))
+            .childHandler(new BasicServerChannelInitializer(requestReceiver))
+            .option(ChannelOption.SO_BACKLOG, 128)
+            .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-                //注册到zookeeper
-                serviceHandler.registerService(serverAddress);
+        try{
+            InetSocketAddress address= IPAddressUtil.splitHostnameAndPort(serverAddress);
 
-                channelFuture.channel().closeFuture().sync();
-            }catch(UnknownHostException | InterruptedException e){
-                log.error(e.getMessage());
-            }finally{
-                stop();
-            }
+            ChannelFuture channelFuture = bootstrap.bind(address.getAddress(), address.getPort()).sync();
+            log.info("Server started on {}", address);
+            
+            //注册到zookeeper
+            serviceHandler.registerService(serverAddress);
+
+            channelFuture.channel().closeFuture().sync();
+        }catch(UnknownHostException | InterruptedException e){
+            log.error(e.getMessage());
+        }finally{
+            stop();
         }
     }
 

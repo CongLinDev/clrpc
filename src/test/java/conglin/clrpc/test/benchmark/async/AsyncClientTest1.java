@@ -1,10 +1,12 @@
 package conglin.clrpc.test.benchmark.async;
 
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 import conglin.clrpc.bootstrap.RpcClientBootstrap;
 import conglin.clrpc.common.util.concurrent.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
+import conglin.clrpc.test.pojo.User;
 
 /**
  * 测试异步调用服务
@@ -18,7 +20,7 @@ public class AsyncClientTest1 {
         ObjectProxy objectProxy = clientBootstrap.getAsynchronousService("UserService");
 
         Random random = new Random();
-
+        final CountDownLatch countDownLatch = new CountDownLatch(10);
         for(int i = 0; i < 10; i++){
             new Thread(() -> {
                 final long id = random.nextLong();
@@ -27,19 +29,22 @@ public class AsyncClientTest1 {
 
                     @Override
                     public void success(Object result) {
-                        System.out.println(result);
+                        System.out.println(((User)result).toString());
+                        countDownLatch.countDown();
                     }
 
                     @Override
                     public void fail(Exception e) {
                         System.out.println(e);
+                        countDownLatch.countDown();
                     }
 
                 });
             }).start();
         }
-
+        
         try{
+            countDownLatch.await();
             clientBootstrap.stop();
         }catch(InterruptedException e){
             e.printStackTrace();

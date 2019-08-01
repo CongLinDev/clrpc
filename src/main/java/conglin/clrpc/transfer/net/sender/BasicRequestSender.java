@@ -1,7 +1,6 @@
 package conglin.clrpc.transfer.net.sender;
 
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +10,6 @@ import conglin.clrpc.transfer.net.ClientTransfer;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 
 public class BasicRequestSender implements RequestSender {
 
@@ -32,7 +29,7 @@ public class BasicRequestSender implements RequestSender {
 
     @Override
     public void run() {
-        log.info("conglin.clrpc.transfer.net.sender.BasicRequestSender do nothing in background...");
+        log.debug("conglin.clrpc.transfer.net.sender.BasicRequestSender#run() do nothing in background...");
         //轮询线程，负责发送请求
         // super.execute(()->{
         //     while(!Thread.interrupted()){
@@ -78,19 +75,19 @@ public class BasicRequestSender implements RequestSender {
     private void sendRequestCore(BasicRequest request){
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(request.getServiceName());
         Channel channel = channelHandler.getChannel();
-
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        channel.writeAndFlush(request).addListener(new ChannelFutureListener(){
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                countDownLatch.countDown();
-            }
-        });
-        try{
-            countDownLatch.await();
-        }catch(InterruptedException e){
-            log.error(e.getMessage());
-        }
+        channel.writeAndFlush(request);
+        // CountDownLatch countDownLatch = new CountDownLatch(1);
+        // channel.writeAndFlush(request).addListener(new ChannelFutureListener(){
+        //     @Override
+        //     public void operationComplete(ChannelFuture future) throws Exception {
+        //         countDownLatch.countDown();
+        //     }
+        // });
+        // try{
+        //     countDownLatch.await();
+        // }catch(InterruptedException e){
+        //     log.error(e.getMessage());
+        // }
     }
     
 }

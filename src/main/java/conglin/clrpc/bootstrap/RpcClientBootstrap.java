@@ -79,7 +79,7 @@ public class RpcClientBootstrap {
      */
     public void start(){
         clientTransfer.start(serviceHandler);
-        serviceHandler.start();
+        //serviceHandler.start();
     }
 
     /**
