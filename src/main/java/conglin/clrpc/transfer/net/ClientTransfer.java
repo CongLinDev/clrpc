@@ -1,5 +1,6 @@
 package conglin.clrpc.transfer.net;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -63,7 +64,22 @@ public class ClientTransfer {
             int workerThread = ConfigParser.getOrDefault("client.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
-        this.sender = new BasicRequestSender();
+
+        String senderClassName = ConfigParser.getOrDefault("client.request-sender", "conglin.clrpc.transfer.net.sender.BasicRequestSender");
+
+        try {
+            this.sender = (RequestSender) Class.forName(senderClassName)
+                    .getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException e) {
+            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.net.sender.BasicRequestSender' rather than "
+                    + senderClassName);
+        }finally{
+            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.net.sender.BasicRequestSender}
+            this.sender = (this.sender == null) ? new BasicRequestSender() : this.sender;
+        }
+
         this.sender.init(this);
         serviceHandler.submit(this.sender);
     }
@@ -99,8 +115,9 @@ public class ClientTransfer {
 
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
-
+        
         transferNodes.values().forEach(node -> node.stop());
+        sender.stop();
     }
 
 

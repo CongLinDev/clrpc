@@ -12,8 +12,9 @@ import conglin.clrpc.transfer.net.ServerTransfer;
  * 使用如下代码启动
  * <blockquote><pre>
  *     RpcServerBootstrap bootstrap = new RpcServerBootstrap(); 
- *     bootstrap.addService(Interface1.class, Implement1.class)
- *              .addService(Interface2.class, Implement2.class)
+ *     bootstrap.addService("service1", ServiceBean1.class)
+ *              .addService("service2", new ServiceBean2())
+ *              .addService(Interface3.class, Implement3.class)
  *              .start();
  * </pre></blockquote>
  * 

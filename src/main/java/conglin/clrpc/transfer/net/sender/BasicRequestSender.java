@@ -11,11 +11,15 @@ import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import io.netty.channel.Channel;
 
+/**
+ * 基本的请求发送器
+ * 针对任意请求生成一个随机的请求ID
+ */
 public class BasicRequestSender implements RequestSender {
 
     private static final Logger log = LoggerFactory.getLogger(BasicRequestSender.class);
 
-    private ClientTransfer clientTransfer;
+    protected ClientTransfer clientTransfer;
 
     // private final int REQUEST_QUEUE_MAX_SIZE;
     // private final int REQUEST_QUEUE_TIME_THRESHOLD;
@@ -53,6 +57,7 @@ public class BasicRequestSender implements RequestSender {
         //             break;
         //     }
         // });
+        
     }
 
     @Override
@@ -63,7 +68,7 @@ public class BasicRequestSender implements RequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        String requestId = UUID.randomUUID().toString();
+        String requestId = generateRequestId(null);
         request.setRequestId(requestId);
 
         RpcFuture future = new RpcFuture(request);
@@ -72,7 +77,11 @@ public class BasicRequestSender implements RequestSender {
         return future;
     }
     
-    private void sendRequestCore(BasicRequest request){
+    /**
+     * 发送请求核心函数
+     * @param request
+     */
+    protected void sendRequestCore(BasicRequest request){
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(request.getServiceName());
         Channel channel = channelHandler.getChannel();
         channel.writeAndFlush(request);
@@ -89,5 +98,19 @@ public class BasicRequestSender implements RequestSender {
         //     log.error(e.getMessage());
         // }
     }
-    
+
+    /**
+     * 生成 RequestID
+     * 使用UUID随机分配
+     * @param serviceName
+     * @return
+     */
+    protected String generateRequestId(String serviceName){
+        return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void stop() {
+        // do nothing
+    }
 }

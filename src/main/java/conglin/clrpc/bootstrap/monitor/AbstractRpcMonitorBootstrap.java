@@ -70,6 +70,11 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
         return this;
     }
 
+    @Override
+    public void stop() throws InterruptedException {
+        zooKeeper.close();    
+    }
+
     /**
      * 处理节点和数据
      * 该方法由子类实现

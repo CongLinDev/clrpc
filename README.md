@@ -7,13 +7,17 @@
 ### 服务端
 
 ```java
-
+    // 创建服务端
     RpcServerBootstrap bootstrap = new RpcServerBootstrap();
+
     try{
-        bootstrap.addService(Interface1.class, Implement1.class)
-                 .addService(Interface2.class, Implement2.class)
+        // 添加服务并开启服务端
+        bootstrap.addService("service1", ServiceBean1.class)
+                 .addService("service2", new ServiceBean2())
+                 .addService(Interface3.class, Implement3.class)
                  .start();
     }finally{
+        // 关闭服务端
         bootstrap.stop();
     }
 ```
@@ -21,20 +25,22 @@
 ### 客户端
 
 ```java
-
+    // 创建客户端
     RpcClientBootstrap bootstrap = new RpcClientBootstrap();
+    // 开启客户端
     bootstrap.start();
 
-    // 同步服务
-    Interface1 i1 = bootstrap.getService(Interface1.class);
+    // 获取同步服务
+    Interface1 i1 = bootstrap.getService("service1");
     Interface2 i2 = bootstrap.getService(Interface2.class);
 
-    // 异步服务
-    ObjectProxy proxy = bootstrap.getAsynchronousService(Interface3.class);
+    // 获取异步服务
+    ObjectProxy proxy = bootstrap.getAsynchronousService("service3");
 
     // 下面是你的业务逻辑代码
     // ......
 
+    // 关闭客户端
     bootstrap.stop();
 ```
 
@@ -48,12 +54,15 @@
         // 设置监视器的配置以及你需要监视的服务
         // 并开启监视器
         bootstrap.monitor().monitorService().start();
+
+        // 下面是你的业务逻辑代码
+        // ......
+
+        // 关闭监视器
+        bootstrap.stop();
     } catch (InterruptedException e) {
         // 处理中断异常
         e.printStackTrace();
-    }finally{
-        // 关闭监视器
-        bootstrap.stop();
     }
 ```
 
@@ -85,9 +94,11 @@
 | server.address | String | YES | localhost:5100 | 服务提供者地址 |
 | server.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | server.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
+| server.request-receiver | conglin.clrpc.<br>transfer.net.<br>receiver.RequestReceiver | YES | conglin.clrpc.<br>transfer.net.<br>receiver.BasicRequestReceiver | 请求接收器 |
 | client.address | String | YES | localhost:5200 | 服务使用者地址 |
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
+| client.request-sender | conglin.clrpc.<br>transfer.net.<br>sender.RequestSender | YES | conglin.clrpc.<br>transfer.net.<br>sender.BasicRequestSender | 请求发送器 |
 | service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |

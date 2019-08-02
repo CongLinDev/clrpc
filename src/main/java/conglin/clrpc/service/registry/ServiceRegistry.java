@@ -8,4 +8,9 @@ public interface ServiceRegistry{
      * @param data
      */
     void registerProvider(String serviceName, String data);
+
+    /**
+     * 关闭注册中心
+     */
+    void stop();
 }

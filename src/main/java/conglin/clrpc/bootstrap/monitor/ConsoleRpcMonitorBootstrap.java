@@ -20,7 +20,8 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     }
 
     @Override
-    public void stop() {
+    public void stop() throws InterruptedException {
+        super.stop();
         log.info("Console monitor stoped.");
     }
 

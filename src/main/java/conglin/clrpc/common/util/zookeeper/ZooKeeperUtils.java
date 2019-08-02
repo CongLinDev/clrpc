@@ -27,10 +27,11 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path   绝对路径
-     * @param data
+     * @param data   存储数据
+     * @return 节点路径
      */
-    public static void createNode(final ZooKeeper keeper, String path, String data) {
-        createNode(keeper, path, data, CreateMode.PERSISTENT);
+    public static String createNode(final ZooKeeper keeper, String path, String data) {
+        return createNode(keeper, path, data, CreateMode.PERSISTENT);
     }
 
     /**
@@ -38,12 +39,13 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path   绝对路径
-     * @param data
+     * @param data   存储数据
      * @param mode   节点类型
+     * @return 节点路径
      */
-    public static void createNode(final ZooKeeper keeper, String path, String data, CreateMode mode) {
+    public static String createNode(final ZooKeeper keeper, String path, String data, CreateMode mode) {
         // 创建上级节点
-        int index = path.lastIndexOf("/");
+        int index = path.lastIndexOf('/');
         createNode(keeper, path.substring(0, index));
 
         try {
@@ -51,10 +53,12 @@ public class ZooKeeperUtils {
             if (stat == null) {
                 String subPath = keeper.create(path, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, mode);
                 log.debug("create zookeeper node : " + subPath);
+                return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
             log.error(e.getMessage());
         }
+        return null;
     }
 
     /**
@@ -62,22 +66,25 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path   绝对路径
+     * @return 节点路径
      */
-    public static void createNode(final ZooKeeper keeper, String path) {
+    public static String createNode(final ZooKeeper keeper, String path) {
         if ("".equals(path))
-            return;
+            return null;
         try {
             Stat stat = keeper.exists(path, false);
             if (stat == null) {
-                int index = path.lastIndexOf("/");
+                int index = path.lastIndexOf('/');
                 String higherLevelPath = path.substring(0, index);
                 createNode(keeper, higherLevelPath);
                 String subPath = keeper.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
                 log.debug("create zookeeper node :" + subPath);
+                return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
             log.error(e.getMessage());
         }
+        return null;
     }
 
     /**

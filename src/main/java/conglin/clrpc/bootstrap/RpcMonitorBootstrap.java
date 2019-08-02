@@ -56,5 +56,5 @@ public interface RpcMonitorBootstrap{
     /**
      * 关闭监视器
      */
-    void stop();
+    void stop()  throws InterruptedException;
 }

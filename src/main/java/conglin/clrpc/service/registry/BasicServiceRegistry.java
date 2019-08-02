@@ -22,18 +22,18 @@ public class BasicServiceRegistry implements ServiceRegistry {
 
     private static final Logger log = LoggerFactory.getLogger(BasicServiceRegistry.class);
 
-    private final String registryAddress; // 服务注册地址
-
     private final String rootPath; //zookeeper根地址
-
-    private final int sessionTimeout;
+    private final ZooKeeper zooKeeper;
 
     public BasicServiceRegistry() {
-        // 服务注册地址
-        registryAddress = ConfigParser.getOrDefault("zookeeper.registry.address", "localhost:2181");
+
         String path = ConfigParser.getOrDefault("zookeeper.registry.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length()-1) : path;//去除最后一个 /
-        sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
+
+        // 服务注册地址
+        String registryAddress = ConfigParser.getOrDefault("zookeeper.registry.address", "localhost:2181");
+        int sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
+        zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 
     /**
@@ -43,7 +43,6 @@ public class BasicServiceRegistry implements ServiceRegistry {
      */
     @Override
     public void registerProvider(String serviceName, String data){
-        ZooKeeper zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
         if (zooKeeper != null) {
             //创建服务节点
             String serviceNode = rootPath + "/service/" + serviceName;
@@ -54,6 +53,18 @@ public class BasicServiceRegistry implements ServiceRegistry {
             ZooKeeperUtils.createNode(zooKeeper, providerNode, data, CreateMode.EPHEMERAL_SEQUENTIAL);
 
             log.debug("Create a service provider which provides " + serviceName);
+        }
+    }
+
+    @Override
+    public void stop() {
+        if(zooKeeper != null){
+            try {
+                zooKeeper.close();
+                log.debug("Service registry shuts down.");
+            } catch (InterruptedException e) {
+                log.error(e.getMessage());
+            }
         }
     }
 }

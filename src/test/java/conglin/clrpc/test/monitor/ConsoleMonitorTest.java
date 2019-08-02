@@ -10,10 +10,9 @@ public class ConsoleMonitorTest {
         
         try {
             bootstrap.monitor().monitorService().start();
+            bootstrap.stop();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }finally{
-            bootstrap.stop();
         }
     }
 }

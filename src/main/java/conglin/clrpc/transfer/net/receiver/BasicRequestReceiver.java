@@ -19,7 +19,7 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     private static final Logger log = LoggerFactory.getLogger(BasicRequestReceiver.class);
 
-    private ServerServiceHandler serviceHandler;
+    protected ServerServiceHandler serviceHandler;
 
     @Override
     public void init(ServerServiceHandler serviceHandler) {
@@ -51,13 +51,13 @@ public class BasicRequestReceiver implements RequestReceiver {
         });
     }
 
-       /**
+    /**
      * 处理客户端请求并生成结果
      * @param request
      * @return
      * @throws InvocationTargetException
      */
-    public Object handleRequestCore(BasicRequest request) throws NoSuchServiceException, ServiceExecutionException{
+    protected Object handleRequestCore(BasicRequest request) throws NoSuchServiceException, ServiceExecutionException{
 
         String serviceName = request.getServiceName();
         //获取服务实现类

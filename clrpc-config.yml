@@ -16,6 +16,7 @@ server:
   thread:
     boss: 1
     worker: 4
+  request-receiver: conglin.clrpc.transfer.net.receiver.BasicRequestReceiver
 
 client:
   address: localhost:5200
@@ -23,6 +24,7 @@ client:
     timeout: 5000 #ms
   thread:
     worker: 4
+  request-sender: conglin.clrpc.transfer.net.sender.BasicRequestSender
 
 service:
   thread:

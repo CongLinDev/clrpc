@@ -1,5 +1,6 @@
 package conglin.clrpc.transfer.net;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
@@ -27,7 +28,7 @@ public class ServerTransfer{
 
     private final String serverAddress;
     
-    private RequestReceiver requestReceiver;
+    private RequestReceiver receiver;
 
     public ServerTransfer(){
         this(ConfigParser.getOrDefault("server.address", "localhost:5100"));
@@ -43,8 +44,23 @@ public class ServerTransfer{
      */
     public void start(ServerServiceHandler serviceHandler){
 
-        this.requestReceiver = new BasicRequestReceiver();
-        requestReceiver.init(serviceHandler);
+        this.receiver = new BasicRequestReceiver();
+
+        String receiverClassName = ConfigParser.getOrDefault("server.request-receiver", "conglin.clrpc.transfer.net.receiver.BasicRequestReceiver");
+
+        try {
+            this.receiver = (RequestReceiver) Class.forName(receiverClassName)
+                    .getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException e) {
+            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.net.receiver.BasicRequestReceiver' rather than "
+                    + receiverClassName);
+        }finally{
+            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.net.receiver.BasicRequestReceiver}
+            this.receiver = (this.receiver == null) ? new BasicRequestReceiver() : this.receiver;
+        }
+        receiver.init(serviceHandler);
 
         int bossThread = ConfigParser.getOrDefault("server.thread.boss", 1);
         int workerThread = ConfigParser.getOrDefault("server.thread.worker", 4);
@@ -55,7 +71,7 @@ public class ServerTransfer{
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             //.handler(new LoggingHandler(LogLevel.INFO))
-            .childHandler(new BasicServerChannelInitializer(requestReceiver))
+            .childHandler(new BasicServerChannelInitializer(receiver))
             .option(ChannelOption.SO_BACKLOG, 128)
             .childOption(ChannelOption.SO_KEEPALIVE, true);
 

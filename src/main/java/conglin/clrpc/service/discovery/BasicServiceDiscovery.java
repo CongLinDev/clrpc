@@ -1,12 +1,8 @@
 package conglin.clrpc.service.discovery;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,30 +35,16 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
         this.serviceName = serviceName;
         this.clientTransfer = clientTransfer;
 
-        //服务注册地址
-        registryAddress = ConfigParser.getOrDefault("zookeeper.discovery.address", "localhost:2181");
-        log.debug("Discovering zookeeper service address = " + registryAddress);
-        
         String path = ConfigParser.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
+        //服务注册地址
+        registryAddress = ConfigParser.getOrDefault("zookeeper.discovery.address", "localhost:2181");
+        log.debug("Discovering zookeeper service address = " + registryAddress);
         //session timeout in milliseconds
         int sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
 
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        try{
-            zooKeeper = new ZooKeeper(registryAddress, sessionTimeout, new Watcher(){
-                @Override
-                public void process(WatchedEvent event) {
-                    if(event.getState() == Event.KeeperState.SyncConnected){
-                        countDownLatch.countDown();
-                    }
-                }
-            });
-            countDownLatch.await();
-        }catch(IOException | InterruptedException e){
-            log.error(e.getMessage());
-        }
+        zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 
     @Override

@@ -18,4 +18,9 @@ public interface RequestSender extends Runnable{
      * @return
      */
     public RpcFuture sendRequest(BasicRequest request);
+
+    /**
+     * 关闭发送器
+     */
+    public void stop();
 }

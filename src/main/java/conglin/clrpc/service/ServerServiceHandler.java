@@ -75,9 +75,10 @@ public class ServerServiceHandler extends AbstractServiceHandler {
      * @param data
      */
     public void registerService(String data){
-        //只把简单的类名注册到zookeeper上
+        //把服务名注册到zookeeper上
         services.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, data)
         );
+        serviceRegistry.stop();
     }
 }
