@@ -1,6 +1,8 @@
 # clrpc
 
-这是一个基于 `Java` 由 **Netty** 负责传输，由 **Protobuf** 负责编解码的简单的RPC(远程过程调用)软件。服务端将服务注册到 **Zookeeper** 上，客户端查找服务后调用。
+这是一个基于 `Java` 、 由 **Netty** 负责传输 、**Protostuff** 负责编解码的简单的RPC(远程过程调用)工具。
+
+服务提供者将服务注册到 **ZooKeeper** 上后，服务消费者请求 **ZooKeeper** 查找服务后调用服务( *同步服务* 和 *异步服务* )。
 
 ## 开始
 
@@ -80,8 +82,6 @@
 
 文件位置默认在项目根目录下。
 
-~~若要更改配置文件目录，则必须在创建启动类之前调用 `ConfigParser.setConfigFilePath()` 方法。~~
-
 ### 配置项
 
 | Field | Type | Null | Default | Remark |
@@ -94,11 +94,11 @@
 | server.address | String | YES | localhost:5100 | 服务提供者地址 |
 | server.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | server.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
-| server.request-receiver | conglin.clrpc.<br>transfer.net.<br>receiver.RequestReceiver | YES | conglin.clrpc.<br>transfer.net.<br>receiver.BasicRequestReceiver | 请求接收器 |
+| server.request-receiver | conglin.clrpc.<br>transfer.net.<br>receiver.<br>RequestReceiver | YES | conglin.clrpc.<br>transfer.net.<br>receiver.<br>BasicRequestReceiver | 请求接收器 |
 | client.address | String | YES | localhost:5200 | 服务使用者地址 |
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
-| client.request-sender | conglin.clrpc.<br>transfer.net.<br>sender.RequestSender | YES | conglin.clrpc.<br>transfer.net.<br>sender.BasicRequestSender | 请求发送器 |
+| client.request-sender | conglin.clrpc.<br>transfer.net.<br>sender.<br>RequestSender | YES | conglin.clrpc.<br>transfer.net.<br>sender.<br>BasicRequestSender | 请求发送器 |
 | service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |

@@ -119,7 +119,13 @@ public class RpcServerBootstrap {
      */
     public void start() {
         // 启动Netty并将其注册到zookeeper中
+        serviceHandler.start();
         serverTransfer.start(serviceHandler);
+
+        // 关闭jvm时 调用stop方法
+        Runtime.getRuntime().addShutdownHook(new Thread(()->{
+            this.stop();
+        }));
     }
 
     /**

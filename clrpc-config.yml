@@ -19,7 +19,7 @@ server:
   request-receiver: conglin.clrpc.transfer.net.receiver.BasicRequestReceiver
 
 client:
-  address: localhost:5200
+  address: localhost:5201
   session:
     timeout: 5000 #ms
   thread:

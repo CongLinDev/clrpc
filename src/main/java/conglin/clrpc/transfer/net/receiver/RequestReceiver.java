@@ -19,4 +19,9 @@ public interface RequestReceiver{
      * @param request
      */
     public void handleRequest(Channel channel, BasicRequest request);
+
+    /**
+     * 关闭请求接收器
+     */
+    public void stop();
 }

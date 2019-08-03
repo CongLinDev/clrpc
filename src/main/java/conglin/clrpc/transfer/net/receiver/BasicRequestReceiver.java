@@ -51,6 +51,11 @@ public class BasicRequestReceiver implements RequestReceiver {
         });
     }
 
+    @Override
+    public void stop() {
+        // do nothing
+    }
+
     /**
      * 处理客户端请求并生成结果
      * @param request

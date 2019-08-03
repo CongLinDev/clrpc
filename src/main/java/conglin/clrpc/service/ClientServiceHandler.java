@@ -54,7 +54,7 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * 启动
      */
     public void start(){
-        log.debug("conglin.clrpc.service.ClientServiceHandler#start() do nothing...");
+        // do nothing
     }
     
 

@@ -78,8 +78,8 @@ public class RpcClientBootstrap {
      * 启动
      */
     public void start(){
+        serviceHandler.start();
         clientTransfer.start(serviceHandler);
-        //serviceHandler.start();
     }
 
     /**
