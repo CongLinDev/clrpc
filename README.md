@@ -105,7 +105,7 @@
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
 | service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
-| service.codec.factory-class| conglin.clrpc.<br>transfer.codec.<br>CodecFactory | YES | conglin.clrpc.<br>transfer.codec.<br>protostuff.<br>ProtostuffCodecFactory | 编解码器工厂，默认使用 Protostuff |
+| service.codec.serialization-handler | conglin.clrpc.<br>transfer.codec.<br>SerializationHandler | YES | conglin.clrpc.<br>transfer.codec.<br>protostuff.<br>ProtostuffSerializationHandler | 序列化处理器，默认使用 Protostuff |
 
 ## 测试
 

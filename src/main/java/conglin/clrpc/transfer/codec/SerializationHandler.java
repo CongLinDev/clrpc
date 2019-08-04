@@ -1,5 +1,9 @@
 package conglin.clrpc.transfer.codec;
 
+/**
+ * 实现了该接口的序列化处理器的类
+ * 必须添加 getInstance() 静态方法
+ */
 public interface SerializationHandler{
     /**
      * 序列化
