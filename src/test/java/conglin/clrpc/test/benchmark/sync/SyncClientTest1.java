@@ -14,7 +14,8 @@ public class SyncClientTest1{
 
         HelloService helloService = clientBootstrap.getService(HelloService.class);
         String s = helloService.hello();
-        System.out.println(s);
+        String x = helloService.hello();
+        System.out.println(s + x);
         try{
             clientBootstrap.stop();
         }catch(InterruptedException e){

@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.common.util.net.IPAddressUtil;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
@@ -80,7 +79,7 @@ public class ClientTransfer {
             this.sender = (this.sender == null) ? new BasicRequestSender() : this.sender;
         }
 
-        this.sender.init(this);
+        this.sender.init(serviceHandler, this);
         serviceHandler.submit(this.sender);
     }
 
@@ -127,15 +126,6 @@ public class ClientTransfer {
      */
     public RequestSender getSender() {
         return sender;
-    }
-
-    /**
-     * 暂存future
-     * @param key
-     * @param future
-     */
-    public void saveFuture(String key, RpcFuture future){
-        serviceHandler.putFuture(key, future);
     }
 
     /**

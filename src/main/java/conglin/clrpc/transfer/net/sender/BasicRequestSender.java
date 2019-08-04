@@ -2,10 +2,8 @@ package conglin.clrpc.transfer.net.sender;
 
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.common.util.concurrent.RpcFuture;
+import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
@@ -18,6 +16,7 @@ import io.netty.channel.Channel;
 public class BasicRequestSender implements RequestSender {
 
     protected ClientTransfer clientTransfer;
+    protected ClientServiceHandler serviceHandler;
 
     @Override
     public void run() {
@@ -25,7 +24,8 @@ public class BasicRequestSender implements RequestSender {
     }
 
     @Override
-    public void init(ClientTransfer clientTransfer) {
+    public void init(ClientServiceHandler serviceHandler, ClientTransfer clientTransfer) {
+        this.serviceHandler = serviceHandler;
         this.clientTransfer = clientTransfer;
     }
 
@@ -36,7 +36,7 @@ public class BasicRequestSender implements RequestSender {
         request.setRequestId(requestId);
 
         RpcFuture future = new RpcFuture(request);
-        clientTransfer.saveFuture(requestId, future);
+        serviceHandler.putFuture(requestId, future);
         sendRequestCore(request);
         return future;
     }

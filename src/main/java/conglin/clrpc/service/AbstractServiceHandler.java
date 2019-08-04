@@ -80,5 +80,6 @@ abstract public class AbstractServiceHandler {
     public void stop(){
         if(businessTheardExecutorService != null)
             businessTheardExecutorService.shutdown();
+        log.info("Theard Executor shuts down.");
     }
 }

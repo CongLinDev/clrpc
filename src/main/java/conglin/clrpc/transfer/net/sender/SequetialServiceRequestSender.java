@@ -18,7 +18,7 @@ public class SequetialServiceRequestSender extends SequetialRequestSender {
         request.setRequestId(requestId);
 
         RpcFuture future = new RpcFuture(request);
-        super.clientTransfer.saveFuture(requestId, future);
+        super.serviceHandler.putFuture(requestId, future);
         sendRequestCore(request);
         return future;
     }
