@@ -32,7 +32,7 @@ public class BasicRequestSender implements RequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        String requestId = generateRequestId(null);
+        Long requestId = generateRequestId(null);
         request.setRequestId(requestId);
 
         RpcFuture future = new RpcFuture(request);
@@ -57,8 +57,8 @@ public class BasicRequestSender implements RequestSender {
      * @param serviceName
      * @return
      */
-    protected String generateRequestId(String serviceName){
-        return UUID.randomUUID().toString();
+    protected Long generateRequestId(String serviceName){
+        return UUID.randomUUID().getLeastSignificantBits();
     }
 
     @Override

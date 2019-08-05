@@ -8,7 +8,7 @@ public final class BasicRequestBuilder extends AbstractBuilder<BasicRequest> {
         super(product);
     }
 
-    public BasicRequestBuilder requestId(String requestId){
+    public BasicRequestBuilder requestId(Long requestId){
         product.setRequestId(requestId);
         return this;
     }

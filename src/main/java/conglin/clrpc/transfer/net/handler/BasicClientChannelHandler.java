@@ -27,7 +27,7 @@ public class BasicClientChannelHandler
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, BasicResponse msg) throws Exception {
-        String requestId = msg.getRequestId();
+        Long requestId = msg.getRequestId();
         
         //直接移除
         RpcFuture future = serviceHandler.removeFuture(requestId);

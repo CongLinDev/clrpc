@@ -17,7 +17,7 @@ public class ClientServiceHandler extends AbstractServiceHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ClientServiceHandler.class);
 
-    private final Map<String, RpcFuture> rpcFutures;
+    private final Map<Long, RpcFuture> rpcFutures;
 
     public ClientServiceHandler(){
         super();
@@ -76,7 +76,7 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * @param key
      * @param rpcFuture
      */
-    public void putFuture(String key, RpcFuture rpcFuture){
+    public void putFuture(Long key, RpcFuture rpcFuture){
         rpcFutures.put(key, rpcFuture);
     }
 
@@ -85,7 +85,7 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * @param key
      * @return
      */
-    public RpcFuture getFuture(String key){
+    public RpcFuture getFuture(Long key){
         return rpcFutures.get(key);
     }
 
@@ -94,7 +94,7 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      * @param key
      * @return
      */
-    public RpcFuture removeFuture(String key){
+    public RpcFuture removeFuture(Long key){
         return rpcFutures.remove(key);
     }
 }

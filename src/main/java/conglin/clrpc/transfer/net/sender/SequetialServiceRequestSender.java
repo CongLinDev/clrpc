@@ -14,7 +14,7 @@ public class SequetialServiceRequestSender extends SequetialRequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        String requestId = generateRequestId(request.getServiceName());
+        Long requestId = generateRequestId(request.getServiceName());
         request.setRequestId(requestId);
 
         RpcFuture future = new RpcFuture(request);
@@ -24,11 +24,12 @@ public class SequetialServiceRequestSender extends SequetialRequestSender {
     }
 
     @Override
-    protected String generateRequestId(String serviceName) {
+    protected Long generateRequestId(String serviceName) {
         if (super.keeper != null) {
             String sequetialNode = rootPath + "/service/" + serviceName + "/request/id";
-            String sequetialId = ZooKeeperUtils.createNode(super.keeper, sequetialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
-            return sequetialId.substring(sequetialId.lastIndexOf('/') + 3, sequetialId.length());
+            String nodeSequetialId = ZooKeeperUtils.createNode(keeper, sequetialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
+            String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
+            return Long.parseLong(id);
         }
         return super.generateRequestId(null);
     }

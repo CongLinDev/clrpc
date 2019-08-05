@@ -51,7 +51,7 @@ public class QueueRequestSender extends BasicRequestSender {
     @Override
     public RpcFuture sendRequest(BasicRequest request) {
 
-        String requestId = generateRequestId(null);
+        Long requestId = generateRequestId(null);
         request.setRequestId(requestId);
 
         RpcFuture future = new RpcFuture(request);

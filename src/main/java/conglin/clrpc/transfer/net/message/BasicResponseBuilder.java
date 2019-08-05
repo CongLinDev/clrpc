@@ -8,7 +8,7 @@ public final class BasicResponseBuilder extends AbstractBuilder<BasicResponse>{
         super(product);
     }
 
-    public BasicResponseBuilder requestId(String requestId){
+    public BasicResponseBuilder requestId(Long requestId){
         product.setRequestId(requestId);
         return this;
     }

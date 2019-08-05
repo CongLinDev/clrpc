@@ -6,3 +6,5 @@ target/*
 architecture/*
 logs/*
 .project
+.idea/*
+clrpc.iml
