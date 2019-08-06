@@ -12,7 +12,6 @@ import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
 public class BasicRequestReceiver implements RequestReceiver {
@@ -28,26 +27,19 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     @Override
     public void handleRequest(Channel channel, BasicRequest request) {
-        serviceHandler.submit(new Runnable() {
-            @Override
-            public void run() {
-                log.debug("Receive request " + request.getRequestId());
-                BasicResponse response = BasicResponse.builder().requestId(request.getRequestId()).build();
-                try {
-                    Object result = handleRequestCore(request);
-                    response.setResult(result);
-                } catch (NoSuchServiceException | ServiceExecutionException e) {
-                    log.error("Request failed: " + e.getMessage());
-                    response.setError(e.getDescription());
-                }
-
-                channel.writeAndFlush(response).addListener(new ChannelFutureListener(){
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        log.debug("Send response for request " + request.getRequestId());
-                    }
-                });
+        serviceHandler.submit(() -> {
+            log.debug("Receive request " + request.getRequestId());
+            BasicResponse response = BasicResponse.builder().requestId(request.getRequestId()).build();
+            try {
+                Object result = handleRequestCore(request);
+                response.setResult(result);
+            } catch (NoSuchServiceException | ServiceExecutionException e) {
+                log.error("Request failed: " + e.getMessage());
+                response.setError(e.getDescription());
             }
+
+            channel.writeAndFlush(response).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+            log.debug("Sending response for request id=" + request.getRequestId());
         });
     }
 

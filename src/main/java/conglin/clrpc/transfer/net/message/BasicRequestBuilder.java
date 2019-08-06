@@ -13,11 +13,6 @@ public final class BasicRequestBuilder extends AbstractBuilder<BasicRequest> {
         return this;
     }
 
-	public BasicRequestBuilder className(String className){
-        product.setClassName(className);
-        return this;
-    }
-
     public BasicRequestBuilder methodName(String methodName){
         product.setMethodName(methodName);
         return this;

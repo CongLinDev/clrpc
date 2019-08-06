@@ -13,14 +13,8 @@ import conglin.clrpc.transfer.net.message.BasicRequest;
 public class SequetialServiceRequestSender extends SequetialRequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
-        // BasicRequestSender 发送器使用 UUID 生成 requestID
-        Long requestId = generateRequestId(request.getServiceName());
-        request.setRequestId(requestId);
-
-        RpcFuture future = new RpcFuture(request);
-        super.serviceHandler.putFuture(requestId, future);
-        sendRequestCore(request);
-        return future;
+        sendRequestCore(this::generateRequestId, request);
+        return generateFuture(request);
     }
 
     @Override
@@ -31,7 +25,7 @@ public class SequetialServiceRequestSender extends SequetialRequestSender {
             String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
             return Long.parseLong(id);
         }
-        return super.generateRequestId(null);
+        return super.generateRequestId(serviceName);
     }
 
 }

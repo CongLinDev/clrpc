@@ -5,7 +5,6 @@ import java.util.Arrays;
 public class BasicRequest {
     private Long requestId;
     private String serviceName;
-    private String className;
     private String methodName;
     private Class<?>[] parameterTypes;
     private Object[] parameters;
@@ -28,14 +27,6 @@ public class BasicRequest {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
     }
 
     public String getMethodName() {
@@ -64,9 +55,9 @@ public class BasicRequest {
 
     @Override
     public String toString() {
-        return "BasicRequest [className=" + className + ", methodName=" + methodName + ", parameterTypes="
-                + Arrays.toString(parameterTypes) + ", parameters=" + Arrays.toString(parameters) + ", requestId="
-                + requestId + ", serviceName=" + serviceName + "]";
+        return "BasicRequest [requestId=" + requestId + ", serviceName=" + serviceName
+                + ", methodName=" + methodName + ", parameters=" + Arrays.toString(parameters) + ", parameterTypes="
+                + Arrays.toString(parameterTypes) + "]";
     }
 
 }

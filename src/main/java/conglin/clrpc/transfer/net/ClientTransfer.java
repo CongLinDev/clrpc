@@ -28,7 +28,6 @@ import conglin.clrpc.transfer.net.sender.BasicRequestSender;
 import conglin.clrpc.transfer.net.sender.RequestSender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -154,34 +153,26 @@ public class ClientTransfer {
 
     /**
      * 连接某个特定的服务提供者
+     * @param serviceName
+     * @param remoteAddress
      */
     private void connectServerNode(String serviceName, final InetSocketAddress remoteAddress) {
-        serviceHandler.submit(new Runnable() {
-            @Override
-            public void run() {
-                Bootstrap bootstrap = new Bootstrap();
-                ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
-                bootstrap.localAddress(LOCAL_ADDRESS.getPort())
-                        .group(workerGroup)
-                        .channel(NioSocketChannel.class)
-                        .handler(channelInitializer);
-                log.info("Client started on {}", LOCAL_ADDRESS.toString());
-                ChannelFuture channelFuture = bootstrap.connect(remoteAddress);
+        serviceHandler.submit(() -> {
+            Bootstrap bootstrap = new Bootstrap();
+            ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
+            bootstrap.localAddress(LOCAL_ADDRESS.getPort()).group(workerGroup).channel(NioSocketChannel.class)
+                    .handler(channelInitializer);
+            log.info("Client started on {}", LOCAL_ADDRESS.toString());
+            ChannelFuture channelFuture = bootstrap.connect(remoteAddress);
 
-                channelFuture.addListener(new ChannelFutureListener(){
-                
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        if(future.isSuccess()){
-                            log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
-                            transferNodes.get(serviceName)
-                                .addChannelHandler(channelInitializer.getBasicClientChannelHandler());
-                        }else{
-                            log.error("Cannot connect to remote server. Remote Address : " + remoteAddress.toString());
-                        }
-                    }
-                });
-            }
+            channelFuture.addListener(future -> {
+                if (future.isSuccess()) {
+                    log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
+                    transferNodes.get(serviceName).addChannelHandler(channelInitializer.getBasicClientChannelHandler());
+                } else {
+                    log.error("Cannot connect to remote server. Remote Address : " + remoteAddress.toString());
+                }
+            });
         });
     }
 
@@ -207,7 +198,7 @@ public class ClientTransfer {
 
     class ClientTransferNode {
     
-        private final CopyOnWriteArrayList<BasicClientChannelHandler> connectedHandlers;
+        private final List<BasicClientChannelHandler> connectedHandlers;
         private final Map<InetSocketAddress, BasicClientChannelHandler> connectedServerNodes;
     
         private final ReentrantLock lock;
@@ -228,15 +219,14 @@ public class ClientTransfer {
             lock = new ReentrantLock();
             connected = lock.newCondition();
             roundCounter = new AtomicInteger(0);
-    
-            serviceDiscovery = new BasicServiceDiscovery(ClientTransfer.this, serviceName);
+            serviceDiscovery = new BasicServiceDiscovery(serviceName);
         }
 
         /**
          * 初始化
          */
         public void init(){
-            serviceDiscovery.init();
+            serviceDiscovery.init(LOCAL_ADDRESS.toString(), this::updateConnectedServer);
         }
     
         /**

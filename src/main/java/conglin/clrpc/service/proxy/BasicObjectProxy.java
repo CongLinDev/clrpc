@@ -56,26 +56,7 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        return callCore(serviceName, methodName, args);
-    }
-
-    @Override
-    public RpcFuture call(Method method, Object... args) {
-        return callCore(method, args);
-    }
-
-    /**
-     * 请求核心函数(用于异步请求)
-     * @param serviceName
-     * @param methodName
-     * @param args
-     * @return
-     */
-    private RpcFuture callCore(String serviceName, String methodName, Object...args){
-        // 构造 BasicRequest 时未设置 requestID
-        // 交由发送器进行设置
         BasicRequest request = BasicRequest.builder()
-            //.className(null)
             .methodName(methodName)
             .parameters(args)
             .parameterTypes(getClassType(args))
@@ -85,17 +66,9 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
         return sender.sendRequest(request);
     }
 
-    /**
-     * 请求核心函数(用于同步请求)
-     * @param method
-     * @param args
-     * @return
-     */
-    private RpcFuture callCore(Method method, Object... args){
-        // 构造 BasicRequest 时未设置 requestID
-        // 交由发送器进行设置
+    @Override
+    public RpcFuture call(Method method, Object... args) {
         BasicRequest request = BasicRequest.builder()
-            .className(method.getDeclaringClass().getName())
             .methodName(method.getName())
             .parameterTypes(method.getParameterTypes())
             .parameters(args)

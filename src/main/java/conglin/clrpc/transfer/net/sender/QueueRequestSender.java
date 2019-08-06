@@ -13,6 +13,7 @@ import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 
 public class QueueRequestSender extends BasicRequestSender {
     private static final Logger log = LoggerFactory.getLogger(QueueRequestSender.class);
@@ -34,10 +35,11 @@ public class QueueRequestSender extends BasicRequestSender {
             while(!Thread.currentThread().isInterrupted()){
                 for(Queue<BasicRequest> requests : allKindsOfRequests.values()){
                     if(requests.size() != 0){
-                        sendRequestCore(requests);
+                        sendRequestQueue(requests);
                     }
                 }
                 try {
+                    // 队列时间阈值发送条件
                     Thread.sleep(REQUEST_QUEUE_TIME_THRESHOLD);
                     log.info("sleep.....");
                 } catch (InterruptedException e) {
@@ -54,27 +56,30 @@ public class QueueRequestSender extends BasicRequestSender {
         Long requestId = generateRequestId(null);
         request.setRequestId(requestId);
 
-        RpcFuture future = new RpcFuture(request);
-        serviceHandler.putFuture(requestId, future);
-
         Queue<BasicRequest> queue = putAndCheckCacheQueue(request);
         if(queue != null)
-            sendRequestCore(queue);
+            sendRequestQueue(queue);
 
-        return future;
+        return generateFuture(request);
     }
 
-    protected void sendRequestCore(Queue<BasicRequest> requests){
+    protected void sendRequestQueue(Queue<BasicRequest> requests){
         String serviceName = requests.peek().getServiceName();
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName);
         Channel channel = channelHandler.getChannel();
         while(!requests.isEmpty()){
             BasicRequest r = requests.poll();
-            channel.write(r);
+            channel.write(r).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         }
         channel.flush();
     }
 
+    /**
+     * 将请求加入队列中，并检查队列是否满足发送条件
+     * 队列数量发送条件为 queue.size() >= (REQUEST_QUEUE_MAX_SIZE / 2
+     * @param request
+     * @return
+     */
     private Queue<BasicRequest> putAndCheckCacheQueue(BasicRequest request){
         Queue<BasicRequest> queue = allKindsOfRequests.getOrDefault(request.getServiceName(), new ConcurrentLinkedQueue<>());
         queue.offer(request);

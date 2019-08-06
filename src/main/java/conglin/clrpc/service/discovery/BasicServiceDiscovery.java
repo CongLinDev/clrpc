@@ -1,6 +1,7 @@
 package conglin.clrpc.service.discovery;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
@@ -9,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
-import conglin.clrpc.transfer.net.ClientTransfer;
 import io.netty.util.internal.ThreadLocalRandom;
 
 /**
@@ -27,13 +27,10 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
 
     private volatile List<String> dataList;
 
-    private ClientTransfer clientTransfer;
-
     private String serviceName;
 
-    public BasicServiceDiscovery(ClientTransfer clientTransfer, String serviceName){
+    public BasicServiceDiscovery(String serviceName){
         this.serviceName = serviceName;
-        this.clientTransfer = clientTransfer;
 
         String path = ConfigParser.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
@@ -48,24 +45,16 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     }
 
     @Override
-    public void init(){
+    public void init(String localAddress, Consumer<List<String>> initMethod) {
         if(zooKeeper != null){
-            registerConsumer(serviceName, ClientTransfer.LOCAL_ADDRESS.toString());
+            registerConsumer(serviceName, localAddress);
             String absPath = rootPath + "/service/" + serviceName + "/providers";
-
             ZooKeeperUtils.watchChildrenData(zooKeeper, absPath, 
                 data -> {
                 BasicServiceDiscovery.this.dataList = data;
-                updateConnectedServer();
+                initMethod.accept(BasicServiceDiscovery.this.dataList);
             });
         }
-    }
-
-    /**
-     * 更新连接的服务器
-     */
-    private void updateConnectedServer(){
-        clientTransfer.updateConnectedServer(serviceName, dataList);
     }
 
     @Override

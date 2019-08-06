@@ -35,7 +35,11 @@ public class BasicResponse {
 
     @Override
     public String toString() {
-        return "BasicResponse [error=" + error + ", requestId=" + requestId + ", result=" + result + "]";
+        if(isError()){
+            return "BasicResponse [requestId=" + requestId + ", error=" + error + "]";
+        }else{
+            return "BasicResponse [requestId=" + requestId + ", result=" + result + "]";
+        }
     }
 
     public static BasicResponseBuilder builder() {

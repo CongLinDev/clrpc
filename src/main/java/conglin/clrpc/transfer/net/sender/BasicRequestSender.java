@@ -1,6 +1,7 @@
 package conglin.clrpc.transfer.net.sender;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
@@ -8,6 +9,7 @@ import conglin.clrpc.transfer.net.ClientTransfer;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 
 /**
  * 基本的请求发送器
@@ -32,23 +34,35 @@ public class BasicRequestSender implements RequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        Long requestId = generateRequestId(null);
-        request.setRequestId(requestId);
-
-        RpcFuture future = new RpcFuture(request);
-        serviceHandler.putFuture(requestId, future);
-        sendRequestCore(request);
-        return future;
+        sendRequestCore(this::generateRequestId, request);
+        return generateFuture(request);
     }
     
+
     /**
-     * 发送请求核心函数
+     * 生成 RPCFuture 并且将其保存
+     * @param request
+     * @return
+     */
+    protected RpcFuture generateFuture(BasicRequest request){
+        RpcFuture future = new RpcFuture(request);
+        serviceHandler.putFuture(request.getRequestId(), future);
+        return future;
+    }
+
+    /**
+     * 生成请求ID，并发送请求
+     * @param requestIdGenerator 请求ID生成器。输入为服务名，输出为生成的ID。
      * @param request
      */
-    protected void sendRequestCore(BasicRequest request){
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(request.getServiceName());
+    protected void sendRequestCore(Function<String, Long> requestIdGenerator, BasicRequest request){
+        String serviceName = request.getServiceName();
+        Long requestId = requestIdGenerator.apply(serviceName);
+        request.setRequestId(requestId);
+
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName);
         Channel channel = channelHandler.getChannel();
-        channel.writeAndFlush(request);
+        channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
 
     /**

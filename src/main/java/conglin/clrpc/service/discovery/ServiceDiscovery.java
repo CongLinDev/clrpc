@@ -1,9 +1,10 @@
 package conglin.clrpc.service.discovery;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 /**
- * 扫描当前工程下的所有注解为
- * {@link RpcService} 的接口
- * 并将其注册到Zookeeper上
+ * 扫描当前工程下的所有注解为 {@link RpcService} 的接口 并将其注册到Zookeeper上
  */
 public interface ServiceDiscovery{
     /**
@@ -26,6 +27,8 @@ public interface ServiceDiscovery{
 
     /**
      * 初始化
+     * @param localAddress
+     * @param initMethod
      */
-    void init();
+    void init(String localAddress, Consumer<List<String>> initMethod);
 }
