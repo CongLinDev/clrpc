@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.exception.NoSuchServiceException;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.service.ServerServiceHandler;
@@ -18,7 +19,13 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     private static final Logger log = LoggerFactory.getLogger(BasicRequestReceiver.class);
 
+    private final String serverAddress;
+
     protected ServerServiceHandler serviceHandler;
+
+    public BasicRequestReceiver(){
+        this.serverAddress = ConfigParser.getOrDefault("server.address", "localhost:5100");
+    }
 
     @Override
     public void init(ServerServiceHandler serviceHandler) {
@@ -29,7 +36,10 @@ public class BasicRequestReceiver implements RequestReceiver {
     public void handleRequest(Channel channel, BasicRequest request) {
         serviceHandler.submit(() -> {
             log.debug("Receive request " + request.getRequestId());
-            BasicResponse response = BasicResponse.builder().requestId(request.getRequestId()).build();
+            BasicResponse response = BasicResponse.builder()
+                    .requestId(request.getRequestId())
+                    .remoteAddress(serverAddress)
+                    .build();
             try {
                 Object result = handleRequestCore(request);
                 response.setResult(result);

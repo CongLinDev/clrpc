@@ -1,5 +1,6 @@
 package conglin.clrpc.transfer.net.sender;
 
+import conglin.clrpc.common.exception.NoSuchServerException;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.net.ClientTransfer;
@@ -20,6 +21,16 @@ public interface RequestSender extends Runnable{
      * @return
      */
     public RpcFuture sendRequest(BasicRequest request);
+
+    /**
+     * 发送请求
+     * 指定远端地址
+     * @param remoteAddress
+     * @param request
+     * @return
+     * @throws NoSuchServerException
+     */
+    public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException;
 
     /**
      * 关闭发送器

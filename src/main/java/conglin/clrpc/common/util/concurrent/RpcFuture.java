@@ -96,8 +96,7 @@ public class RpcFuture implements Future<Object> {
 
     /**
      * 添加回调函数
-     * 选择在此创建回调函数集合以及和可重入锁的原因是
-     * 有些 {@link RpcFuture} 并没有回调函数
+     * 后添加的回调函数会覆盖前添加的回调函数
      * @param callback
      */
     public void addCallback(Callback callback){
@@ -135,11 +134,15 @@ public class RpcFuture implements Future<Object> {
         }
     }
 
+    /**
+     * 运行回调函数
+     * @param callback
+     */
     private void runCallbackCore(Callback callback){
         if(!response.isError()){
             callback.success(response.getResult());
         }else{
-            callback.fail(new ResponseException(response));
+            callback.fail(response.getRemoteAddress(), new ResponseException(response));
         }
     }
 

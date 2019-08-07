@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.exception.NoSuchServerException;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.sender.RequestSender;
@@ -67,6 +68,18 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
     }
 
     @Override
+    public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchServerException {
+        BasicRequest request = BasicRequest.builder()
+            .methodName(methodName)
+            .parameters(args)
+            .parameterTypes(getClassType(args))
+            .serviceName(serviceName)
+            .build();
+        log.debug(request.toString());
+        return sender.sendRequest(remoteAddress, request);
+    }
+
+    @Override
     public RpcFuture call(Method method, Object... args) {
         BasicRequest request = BasicRequest.builder()
             .methodName(method.getName())
@@ -76,6 +89,18 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
             .build();
         log.debug(request.toString());
         return sender.sendRequest(request);
+    }
+
+    @Override
+    public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchServerException {
+        BasicRequest request = BasicRequest.builder()
+            .methodName(method.getName())
+            .parameterTypes(method.getParameterTypes())
+            .parameters(args)
+            .serviceName(this.serviceName)
+            .build();
+        log.debug(request.toString());
+        return sender.sendRequest(remoteAddress, request);
     }
 
     private Class<?>[] getClassType(Object[] objs){

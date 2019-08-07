@@ -2,6 +2,7 @@ package conglin.clrpc.transfer.net.sender;
 
 import org.apache.zookeeper.CreateMode;
 
+import conglin.clrpc.common.exception.NoSuchServerException;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
 import conglin.clrpc.transfer.net.message.BasicRequest;
@@ -14,6 +15,12 @@ public class SequetialServiceRequestSender extends SequetialRequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         sendRequestCore(this::generateRequestId, request);
+        return generateFuture(request);
+    }
+
+    @Override
+    public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException {
+        sendRequestCore(remoteAddress, this::generateRequestId, request);
         return generateFuture(request);
     }
 

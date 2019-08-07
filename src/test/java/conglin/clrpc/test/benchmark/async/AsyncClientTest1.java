@@ -34,8 +34,8 @@ public class AsyncClientTest1 {
                     }
 
                     @Override
-                    public void fail(Exception e) {
-                        System.out.println(e);
+                    public void fail(String remoteAddress, Exception e) {
+                        System.out.println(remoteAddress + ": " + e.getMessage());
                         countDownLatch.countDown();
                     }
 

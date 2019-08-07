@@ -18,8 +18,8 @@ abstract public class AbstractServiceHandler {
     private final ExecutorService businessTheardExecutorService;
 
     /**
-     * 你可以创建一个实现了 {@link conglin.clrpc.common.util.threadpool.ThreadPool}
-     * 或是继承了  {@link conglin.clrpc.common.util.threadpool.CustomizedThreadPool}
+     * 你可以创建一个实现了 {@link ThreadPool}
+     * 或是继承了 {@link CustomizedThreadPool}
      * 的线程池创建器来创建一个你想要的业务线程池，只需要在配置文件中写出其完整类名即可
      * 需要注意的是，你创建的线程池必须有一个无参的构造函数
      */

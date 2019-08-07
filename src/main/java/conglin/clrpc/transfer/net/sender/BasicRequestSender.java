@@ -3,6 +3,7 @@ package conglin.clrpc.transfer.net.sender;
 import java.util.UUID;
 import java.util.function.Function;
 
+import conglin.clrpc.common.exception.NoSuchServerException;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.net.ClientTransfer;
@@ -39,6 +40,13 @@ public class BasicRequestSender implements RequestSender {
     }
     
 
+    @Override
+    public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException {
+        // BasicRequestSender 发送器使用 UUID 生成 requestID
+        sendRequestCore(remoteAddress, this::generateRequestId, request);
+        return generateFuture(request);
+    }
+
     /**
      * 生成 RPCFuture 并且将其保存
      * @param request
@@ -61,6 +69,19 @@ public class BasicRequestSender implements RequestSender {
         request.setRequestId(requestId);
 
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName);
+        Channel channel = channelHandler.getChannel();
+        channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+    }
+
+    protected void sendRequestCore(String address, Function<String, Long> requestIdGenerator, BasicRequest request)
+        throws NoSuchServerException{
+        String serviceName = request.getServiceName();
+        Long requestId = requestIdGenerator.apply(serviceName);
+        request.setRequestId(requestId);
+
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName, address);
+        if(channelHandler == null) throw new NoSuchServerException(address, request);
+
         Channel channel = channelHandler.getChannel();
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }

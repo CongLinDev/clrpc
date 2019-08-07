@@ -3,6 +3,8 @@ package conglin.clrpc.common.util.concurrent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.service.proxy.ObjectProxy;
+
 /**
  * 回调接口
  */
@@ -16,10 +18,13 @@ public interface Callback{
 
     /**
      * 失败
-     * @param e
+     * 失败后可以调用 {@link ObjectProxy#call(String, String, Object...)} 或
+     * {@link ObjectProxy#call(String, java.lang.reflect.Method, Object...)} 方法
+     * 来进行重试或回滚
+     * @param remoteAddress 服务提供者地址
+     * @param e 抛出异常
      */
-    void fail(Exception e);
-
+    void fail(String remoteAddress, Exception e);
 
 
 
@@ -35,8 +40,8 @@ public interface Callback{
         }
     
         @Override
-        public void fail(Exception e) {
-            log.error(e.getMessage());
+        public void fail(String remoteAddress, Exception e) {
+            log.error(remoteAddress + ": " + e.getMessage());
         }
     };
 }

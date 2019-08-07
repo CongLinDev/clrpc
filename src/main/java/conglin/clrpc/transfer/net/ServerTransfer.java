@@ -31,21 +31,18 @@ public class ServerTransfer{
     private RequestReceiver receiver;
 
     public ServerTransfer(){
-        this(ConfigParser.getOrDefault("server.address", "localhost:5100"));
+        this.serverAddress = ConfigParser.getOrDefault("server.address", "localhost:5100");
     }
 
-    public ServerTransfer(String serverAddress){
-        this.serverAddress = serverAddress;
-    }
+    // public ServerTransfer(String serverAddress){
+    //     this.serverAddress = serverAddress;
+    // }
 
     /**
      * 启动Netty 并将其注册到zookeeper中
      * @param serviceHandler
      */
     public void start(ServerServiceHandler serviceHandler){
-
-        this.receiver = new BasicRequestReceiver();
-
         String receiverClassName = ConfigParser.getOrDefault("server.request-receiver", "conglin.clrpc.transfer.net.receiver.BasicRequestReceiver");
 
         try {

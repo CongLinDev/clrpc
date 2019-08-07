@@ -178,12 +178,26 @@ public class ClientTransfer {
 
     /**
      * 挑选服务发布者
-     * @param serviceName
+     * @param serviceName 服务名
      * @return
      */
     public BasicClientChannelHandler chooseChannelHandler(String serviceName){
         if(transferNodes.containsKey(serviceName)){
             return transferNodes.get(serviceName).chooseChannelHandler();
+        }else{
+            return null;
+        }
+    }
+
+    /**
+     * 寻找服务发布者
+     * @param serviceName 服务名
+     * @param address 服务提供者地址
+     * @return 若服务端突然短线可能会返回null
+     */
+    public BasicClientChannelHandler chooseChannelHandler(String serviceName, String address){
+        if(transferNodes.containsKey(serviceName)){
+            return transferNodes.get(serviceName).getChannelHandler(address);
         }else{
             return null;
         }
@@ -333,6 +347,15 @@ public class ClientTransfer {
     
             int index = roundCounter.getAndIncrement() % connectedHandlers.size();
             return connectedHandlers.get(index);
+        }
+
+        /**
+         * 根据地址获取指定的 {@link BasicClientChannelHandler}
+         * @param address
+         * @return
+         */
+        public BasicClientChannelHandler getChannelHandler(String address){
+            return connectedServerNodes.get(IPAddressUtil.splitHostnameAndPortSilently(address));
         }
     
         /**
