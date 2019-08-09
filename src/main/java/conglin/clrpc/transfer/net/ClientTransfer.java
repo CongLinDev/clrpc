@@ -2,14 +2,9 @@ package conglin.clrpc.transfer.net;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,6 +16,8 @@ import conglin.clrpc.common.util.net.IPAddressUtil;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
+import conglin.clrpc.service.loadbalance.ConsistentHashHandler;
+import conglin.clrpc.service.loadbalance.LoadBalanceHandler;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelInitializer;
 import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
@@ -42,12 +39,20 @@ public class ClientTransfer {
     private EventLoopGroup workerGroup;
     private ClientServiceHandler serviceHandler;
 
-    private final Map<String, ClientTransferNode> transferNodes;
+    private final ReentrantLock lock;
+    private final Condition connected;
 
     private RequestSender sender;
 
+    private ServiceDiscovery serviceDiscovery;
+    private LoadBalanceHandler<String, BasicClientChannelHandler> loadBalanceHandler;
+
     public ClientTransfer() {
-        transferNodes = new ConcurrentHashMap<>();
+        loadBalanceHandler = new ConsistentHashHandler<>();
+        serviceDiscovery = new BasicServiceDiscovery();
+
+        lock = new ReentrantLock();
+        connected = lock.newCondition();
     }
 
     /**
@@ -99,9 +104,8 @@ public class ClientTransfer {
      * @param serviceName
      */
     public <T> void findService(String serviceName){
-        ClientTransferNode node = new ClientTransferNode(serviceName);
-        transferNodes.put(serviceName, node);
-        node.init();
+        serviceDiscovery.registerConsumer(serviceName, LOCAL_ADDRESS.toString());
+        serviceDiscovery.discover(serviceName, this::updateConnectedServer);
     }
 
     /**
@@ -113,8 +117,7 @@ public class ClientTransfer {
 
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
-        
-        transferNodes.values().forEach(node -> node.stop());
+        serviceDiscovery.stop();
         sender.stop();
     }
 
@@ -134,21 +137,18 @@ public class ClientTransfer {
      * @param serverAddress 服务器地址
      */
     public void updateConnectedServer(String serviceName, List<String> serverAddress) {
-        if (transferNodes.containsKey(serviceName)) {
-            log.debug("Starting to update connected provider whose service name is " + serviceName);
-            transferNodes.get(serviceName).updateConnectedServer(serverAddress);
-        }
+        loadBalanceHandler.update(serviceName, serverAddress, 
+            addr -> connectServerNode(serviceName, IPAddressUtil.splitHostnameAndPortSilently(addr)),
+            channelHandler -> channelHandler.close()
+        );
+        signalAvailableChannelHandler();
     }
 
     /**
      * 取消连接所有节点的服务器
      */
     private void disconnectAllServerNode() {
-        transferNodes.values().forEach(node -> node.disconnectAllServerNode());
-    }
-
-    private void signalAvailableChannelHandler() {
-        transferNodes.values().forEach(node -> node.signalAvailableChannelHandler());
+        loadBalanceHandler.forEach(channelHandler -> channelHandler.close());
     }
 
     /**
@@ -156,37 +156,51 @@ public class ClientTransfer {
      * @param serviceName
      * @param remoteAddress
      */
-    private void connectServerNode(String serviceName, final InetSocketAddress remoteAddress) {
-        serviceHandler.submit(() -> {
-            Bootstrap bootstrap = new Bootstrap();
-            ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
-            bootstrap.localAddress(LOCAL_ADDRESS.getPort()).group(workerGroup).channel(NioSocketChannel.class)
-                    .handler(channelInitializer);
-            log.info("Client started on {}", LOCAL_ADDRESS.toString());
-            ChannelFuture channelFuture = bootstrap.connect(remoteAddress);
+    private BasicClientChannelHandler connectServerNode(String serviceName, final InetSocketAddress remoteAddress) {    
+        Bootstrap bootstrap = new Bootstrap();
+        ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
+        bootstrap.localAddress(LOCAL_ADDRESS.getPort())
+                .group(workerGroup)
+                .channel(NioSocketChannel.class)
+                .handler(channelInitializer);
+        log.info("Client started on {}", LOCAL_ADDRESS.toString());
+        ChannelFuture channelFuture = bootstrap.connect(remoteAddress);
 
-            channelFuture.addListener(future -> {
-                if (future.isSuccess()) {
-                    log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
-                    transferNodes.get(serviceName).addChannelHandler(channelInitializer.getBasicClientChannelHandler());
-                } else {
-                    log.error("Cannot connect to remote server. Remote Address : " + remoteAddress.toString());
-                }
-            });
+        CountDownLatch latch = new CountDownLatch(1);
+        
+        channelFuture.addListener(future -> {
+            if (future.isSuccess()) {
+                log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
+            } else {
+                log.error("Cannot connect to remote server. Remote Address : " + remoteAddress.toString());
+            }
+            latch.countDown();
         });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+        
+        return channelInitializer.getBasicClientChannelHandler();
     }
 
     /**
      * 挑选服务发布者
      * @param serviceName 服务名
+     * @param random 随机因子
      * @return
      */
-    public BasicClientChannelHandler chooseChannelHandler(String serviceName){
-        if(transferNodes.containsKey(serviceName)){
-            return transferNodes.get(serviceName).chooseChannelHandler();
-        }else{
-            return null;
+    public BasicClientChannelHandler chooseChannelHandler(String serviceName, Object random){
+        while(!loadBalanceHandler.hasNext(serviceName)){
+            try{
+                waitingForChannelHandler();
+            }catch(InterruptedException e){
+                log.error("Waiting for available node is interrupted!", e);
+            }
         }
+        return loadBalanceHandler.get(serviceName, random);
     }
 
     /**
@@ -196,174 +210,35 @@ public class ClientTransfer {
      * @return 若服务端突然短线可能会返回null
      */
     public BasicClientChannelHandler chooseChannelHandler(String serviceName, String address){
-        if(transferNodes.containsKey(serviceName)){
-            return transferNodes.get(serviceName).getChannelHandler(address);
-        }else{
-            return null;
+        return loadBalanceHandler.get(serviceName, address);
+    }
+
+    /**
+     * 等待可用的服务提供者
+     * @return
+     * @throws InterruptedException
+     */
+    private boolean waitingForChannelHandler() throws InterruptedException{
+        lock.lock();
+        long timeout = ConfigParser.getOrDefault("client.session.timeout", 5000);
+        try{
+            log.info("Waiting for Channel Handler " + timeout + " mm...");
+            return connected.await(timeout,TimeUnit.MILLISECONDS);
+        } finally {
+            lock.unlock();
         }
     }
 
-
     /**
-     * 每个 ClientTransferNode 节点都持有一个指定服务名称的服务
-     * 该服务由一个或多个服务器进行提供。
-     * 客户端请求该服务时，目前使用轮询的办法进行处理
+     * 有可用的ChannelHandler存在
+     * 唤醒等待的线程
      */
-
-    class ClientTransferNode {
-    
-        private final List<BasicClientChannelHandler> connectedHandlers;
-        private final Map<InetSocketAddress, BasicClientChannelHandler> connectedServerNodes;
-    
-        private final ReentrantLock lock;
-        private final Condition connected;
-    
-        private final AtomicInteger roundCounter;
-    
-        private final ServiceDiscovery serviceDiscovery;
-    
-        private final String serviceName;
-    
-        public ClientTransferNode(String serviceName) {
-            this.serviceName = serviceName;
-    
-            connectedHandlers = new CopyOnWriteArrayList<>();
-            connectedServerNodes = new ConcurrentHashMap<>();
-    
-            lock = new ReentrantLock();
-            connected = lock.newCondition();
-            roundCounter = new AtomicInteger(0);
-            serviceDiscovery = new BasicServiceDiscovery(serviceName);
-        }
-
-        /**
-         * 初始化
-         */
-        public void init(){
-            serviceDiscovery.init(LOCAL_ADDRESS.toString(), this::updateConnectedServer);
-        }
-    
-        /**
-         * 更新服务地址
-         * @param serverAddress
-         */
-        public void updateConnectedServer(List<String> serverAddress) {
-            if (serverAddress != null) {
-                if (serverAddress.size() > 0) {
-                    Set<InetSocketAddress> serverNodeSet = IPAddressUtil.splitHostnameAndPort(serverAddress);
-    
-                    // 添加新节点
-                    for (final InetSocketAddress address : serverNodeSet) {
-                        if (!connectedServerNodes.keySet().contains(address)) {
-                            log.info("Connecting server address = " + address);
-                            connectServerNode(serviceName, address);
-                        }
-                    }
-    
-                    // 关闭并移除无效节点
-                    for (BasicClientChannelHandler channelHandler : connectedHandlers) {
-                        SocketAddress address = channelHandler.getChannel().remoteAddress();
-                        if (!serverNodeSet.contains(address)) {
-                            log.info("Remove invalid server node " + address);
-                            BasicClientChannelHandler connectedChannelHandler = connectedServerNodes.get(address);
-                            if (connectedChannelHandler != null)
-                                connectedChannelHandler.close();
-    
-                            connectedServerNodes.remove(address);
-                            connectedHandlers.remove(channelHandler);
-                        }
-                    }
-    
-                } else {
-                    log.error("No available server node. All server nodes are down.");
-                    // 关闭并移除所有节点
-                    disconnectAllServerNode();
-                    connectedHandlers.clear();
-                }
-            }
-        }
-    
-        /**
-         * 取消连接所有的服务提供者
-         */
-        public void disconnectAllServerNode(){
-            for(final BasicClientChannelHandler serverHandler : connectedHandlers){
-                SocketAddress address = serverHandler.getChannel().remoteAddress();
-    
-                BasicClientChannelHandler handler = connectedServerNodes.get(address);
-                connectedServerNodes.remove(handler.getChannel().remoteAddress());
-                handler.close(); 
-            }
-        }
-    
-        /**
-         * 添加服务提供者的Channel
-         * @param channelHandler
-         */
-        public void addChannelHandler(BasicClientChannelHandler channelHandler){
-            connectedHandlers.add(channelHandler);
-            SocketAddress address = channelHandler.getChannel().remoteAddress();
-            connectedServerNodes.put((InetSocketAddress)address, channelHandler);
-            signalAvailableChannelHandler();
-        }
-    
-        public void signalAvailableChannelHandler(){
-            lock.lock();
-            try{
-                connected.signalAll();
-            }finally{
-                lock.unlock();
-            }
-        }
-    
-        /**
-         * 等待可用的服务提供者
-         * @return
-         * @throws InterruptedException
-         */
-        private boolean waitingForChannelHandler() throws InterruptedException{
-            lock.lock();
-            long timeout = ConfigParser.getOrDefault("client.session.timeout", 5000);
-            try{
-                log.info("Waiting for Channel Handler " + timeout + " mm...");
-                return connected.await(timeout,TimeUnit.MILLISECONDS);
-            } finally {
-                lock.unlock();
-            }
-        }
-    
-        /**
-         * 选择一个服务提供者
-         * 目前采用轮询的办法进行选择
-         */
-        public BasicClientChannelHandler chooseChannelHandler(){
-            while(connectedHandlers.size() == 0){
-                try{
-                    waitingForChannelHandler();
-                }catch(InterruptedException e){
-                    log.error("Waiting for available node is interrupted!", e);
-                }
-            }
-    
-            int index = roundCounter.getAndIncrement() % connectedHandlers.size();
-            return connectedHandlers.get(index);
-        }
-
-        /**
-         * 根据地址获取指定的 {@link BasicClientChannelHandler}
-         * @param address
-         * @return
-         */
-        public BasicClientChannelHandler getChannelHandler(String address){
-            return connectedServerNodes.get(IPAddressUtil.splitHostnameAndPortSilently(address));
-        }
-    
-        /**
-         * 停止服务
-         */
-        public void stop(){
-            if(serviceDiscovery != null)
-                serviceDiscovery.stop();
+    private void signalAvailableChannelHandler(){
+        lock.lock();
+        try{
+            connected.signalAll();
+        }finally{
+            lock.unlock();
         }
     }
 }

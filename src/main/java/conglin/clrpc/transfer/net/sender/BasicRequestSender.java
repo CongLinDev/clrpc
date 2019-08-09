@@ -3,6 +3,9 @@ package conglin.clrpc.transfer.net.sender;
 import java.util.UUID;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import conglin.clrpc.common.exception.NoSuchServerException;
 import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
@@ -17,6 +20,8 @@ import io.netty.channel.ChannelFutureListener;
  * 针对任意请求生成一个随机的请求ID
  */
 public class BasicRequestSender implements RequestSender {
+    
+    private static final Logger log = LoggerFactory.getLogger(BasicRequestSender.class);
 
     protected ClientTransfer clientTransfer;
     protected ClientServiceHandler serviceHandler;
@@ -35,55 +40,69 @@ public class BasicRequestSender implements RequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        sendRequestCore(this::generateRequestId, request);
-        return generateFuture(request);
+        RpcFuture future = generateFuture(this::generateRequestId, request);
+        sendRequestCore(request);
+        return future;
     }
     
 
     @Override
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        sendRequestCore(remoteAddress, this::generateRequestId, request);
-        return generateFuture(request);
+        RpcFuture future = generateFuture(this::generateRequestId, request);
+        sendRequestCore(remoteAddress, request);
+        return future;
     }
 
     /**
+     * 生成请求ID 后
      * 生成 RPCFuture 并且将其保存
+     * @param requestIdGenerator 请求ID生成器。输入为服务名，输出为生成的ID。
      * @param request
      * @return
      */
-    protected RpcFuture generateFuture(BasicRequest request){
+    protected RpcFuture generateFuture(Function<String, Long> requestIdGenerator, BasicRequest request){
+        String serviceName = request.getServiceName();
+        Long requestId = requestIdGenerator.apply(serviceName);
+        request.setRequestId(requestId);
+
         RpcFuture future = new RpcFuture(request);
         serviceHandler.putFuture(request.getRequestId(), future);
         return future;
     }
 
     /**
-     * 生成请求ID，并发送请求
+     * 发送请求核心函数
      * @param requestIdGenerator 请求ID生成器。输入为服务名，输出为生成的ID。
      * @param request
      */
-    protected void sendRequestCore(Function<String, Long> requestIdGenerator, BasicRequest request){
+    protected void sendRequestCore(BasicRequest request){
         String serviceName = request.getServiceName();
-        Long requestId = requestIdGenerator.apply(serviceName);
-        request.setRequestId(requestId);
+        Long requestId = request.getRequestId();
 
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName);
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName, requestId);
         Channel channel = channelHandler.getChannel();
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        log.debug("Send request Id = " + requestId);
     }
 
-    protected void sendRequestCore(String address, Function<String, Long> requestIdGenerator, BasicRequest request)
+    /**
+     * 发送请求核心函数
+     * @param address 指定地址发送
+     * @param request
+     * @throws NoSuchServerException
+     */
+    protected void sendRequestCore(String address, BasicRequest request)
         throws NoSuchServerException{
         String serviceName = request.getServiceName();
-        Long requestId = requestIdGenerator.apply(serviceName);
-        request.setRequestId(requestId);
+        Long requestId = request.getRequestId();
 
         BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName, address);
         if(channelHandler == null) throw new NoSuchServerException(address, request);
 
         Channel channel = channelHandler.getChannel();
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        log.debug("Send request Id = " + requestId);
     }
 
     /**

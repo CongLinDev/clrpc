@@ -1,7 +1,7 @@
 package conglin.clrpc.service.discovery;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
-import io.netty.util.internal.ThreadLocalRandom;
 
 /**
  * 服务发现
@@ -20,17 +19,11 @@ import io.netty.util.internal.ThreadLocalRandom;
 public class BasicServiceDiscovery implements ServiceDiscovery{
 
     private static final Logger log = LoggerFactory.getLogger(BasicServiceDiscovery.class);
-
     private final String registryAddress; //服务注册地址
     private ZooKeeper zooKeeper;
     private final String rootPath;
 
-    private volatile List<String> dataList;
-
-    private String serviceName;
-
-    public BasicServiceDiscovery(String serviceName){
-        this.serviceName = serviceName;
+    public BasicServiceDiscovery(){
 
         String path = ConfigParser.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
@@ -45,27 +38,11 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     }
 
     @Override
-    public void init(String localAddress, Consumer<List<String>> initMethod) {
+    public void discover(String serviceName, BiConsumer<String, List<String>> updateMethod) {
         if(zooKeeper != null){
-            registerConsumer(serviceName, localAddress);
             String absPath = rootPath + "/service/" + serviceName + "/providers";
             ZooKeeperUtils.watchChildrenData(zooKeeper, absPath, 
-                data -> {
-                BasicServiceDiscovery.this.dataList = data;
-                initMethod.accept(BasicServiceDiscovery.this.dataList);
-            });
-        }
-    }
-
-    @Override
-    public String discover() {
-        int size = dataList.size();
-        if(size == 0) return null;
-
-        if(size == 1){
-            return dataList.get(0);
-        }else{
-            return dataList.get(ThreadLocalRandom.current().nextInt());
+                list -> updateMethod.accept(serviceName, list));
         }
     }
 

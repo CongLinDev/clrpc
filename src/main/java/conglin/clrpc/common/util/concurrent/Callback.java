@@ -22,7 +22,7 @@ public interface Callback{
      * {@link ObjectProxy#call(String, java.lang.reflect.Method, Object...)} 方法
      * 来进行重试或回滚
      * @param remoteAddress 服务提供者地址
-     * @param e 抛出异常
+     * @param e 抛出的异常
      */
     void fail(String remoteAddress, Exception e);
 

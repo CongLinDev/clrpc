@@ -14,14 +14,16 @@ import conglin.clrpc.transfer.net.message.BasicRequest;
 public class SequetialServiceRequestSender extends SequetialRequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
-        sendRequestCore(this::generateRequestId, request);
-        return generateFuture(request);
+        RpcFuture future = generateFuture(this::generateRequestId, request);
+        sendRequestCore(request);
+        return future;
     }
 
     @Override
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException {
-        sendRequestCore(remoteAddress, this::generateRequestId, request);
-        return generateFuture(request);
+        RpcFuture future = generateFuture(this::generateRequestId, request);
+        sendRequestCore(remoteAddress, request);
+        return future;
     }
 
     @Override

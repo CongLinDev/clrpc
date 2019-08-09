@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 public class BasicClientChannelHandler 
-        extends SimpleChannelInboundHandler<BasicResponse> {
+        extends SimpleChannelInboundHandler<BasicResponse> implements Comparable<String>{
 
     private static final Logger log = LoggerFactory.getLogger(BasicClientChannelHandler.class);
 
@@ -28,7 +28,6 @@ public class BasicClientChannelHandler
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, BasicResponse msg) throws Exception {
         Long requestId = msg.getRequestId();
-        
         //直接移除
         RpcFuture future = serviceHandler.removeFuture(requestId);
 
@@ -57,5 +56,10 @@ public class BasicClientChannelHandler
 
     public void close() {
         channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+    }
+
+    @Override
+    public int compareTo(String o) {
+        return channel.remoteAddress().toString().compareTo(o);
     }
 }
