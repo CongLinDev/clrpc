@@ -27,13 +27,13 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
 
     // descriptions 中存储着 K 和 Integer
     // K为一致性哈希的键
-    // Integer 前16位代表该键所在的区域 region 
-    // 后16位代表 该键的 epoch 方便淘汰算法将无效的V值淘汰
+    // Integer 高16位代表该键所在的区域 region 
+    // 低16位代表 该键的 epoch 方便淘汰算法将无效的V值淘汰
     private Map<K, Integer> descriptions;
 
     // circle 模拟环来存放 V
-    // Integer 前16位为 descriptions 中的区域 region
-    // 后16位为 hash(V) 将 V 打乱
+    // Integer 高16位为 descriptions 中的区域 region
+    // 低16位为 hash(V) 将 V 打乱
     // 这样，只需要到指定的区域中寻找满足条件的值即可
     private TreeMap<Integer, Node<V>> circle;
 
@@ -71,10 +71,9 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         int headHash = code & _32_16_BIT_MASK;
         int number = headHash | (randomHash & _16_BIT_MASK);
         int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
-
-        int count = 0;
-        while((count++) < 3){ // 防止陷入死循环
-            Map.Entry<Integer, Node<V>> entry = circle.ceilingEntry(number);
+         
+        for(int count = 0; count < 2; count++){ // 检查两轮即可
+            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(number);
             
             if(entry != null && (number = entry.getKey()) <= maxNumber){
                 return entry.getValue().getValue();
@@ -113,9 +112,9 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         int headHash = code & _32_16_BIT_MASK;
         int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        int number = headHash + 1;
+        int number = headHash;
         while(number <= maxNumber){
-            Map.Entry<Integer, Node<V>> entry = circle.ceilingEntry(number);
+            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(number);
             V v = entry.getValue().getValue();
             if(predicate.test(v)) return v;
             number = entry.getKey() + 1;
@@ -195,8 +194,6 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
                     }
                     break;
                 }else if(node.getValue().compareTo(s) == 0){ // 更新epoch
-                    int innerEpoch = node.getEpoch();
-                    // TODO: CAS 替换
                     node.setEpoch(epoch);
                     log.debug("Update old node = " + s);
                     break;
@@ -207,8 +204,8 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         }
 
         // 删除无效节点
-        int nextHash = headHash + 1;
-        while(nextHash <= maxNumber){
+        int nextHash = headHash;
+        do{
             Map.Entry<Integer, Node<V>> entry = circle.ceilingEntry(nextHash);
             if(entry == null) break;
             nextHash = entry.getKey() + 1;
@@ -220,8 +217,7 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
                 } 
                 entry = null; // help gc
             }
-        }
-
+        }while(nextHash <= maxNumber);
     }
 
     private int hash(Object obj){

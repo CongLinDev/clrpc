@@ -9,9 +9,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IPAddressUtil{
+public class IPAddressUtils{
 
-    private static final Logger log = LoggerFactory.getLogger(IPAddressUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(IPAddressUtils.class);
+
+    public static InetSocketAddress splitHostnameAndPortResolved(String data) throws UnknownHostException{
+        String [] hostnameAndPort = data.trim().split(":");
+        if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
+        return new InetSocketAddress(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
+    }
 
     /**
      * 分割host和端口
@@ -57,5 +63,25 @@ public class IPAddressUtil{
             log.error("Error address = " + data + " And it can not be converted");
             return null;
         }
+    }
+
+    /**
+     * 获取端口号
+     * @param data
+     * @return
+     */
+    public static int getPort(String data){
+        String [] hostnameAndPort = data.trim().split(":");
+        return Integer.parseInt(hostnameAndPort[1]);
+    }
+
+    /**
+     * 获取主机名
+     * @param data
+     * @return
+     */
+    public static String getHostname(String data){
+        String [] hostnameAndPort = data.trim().split(":");
+        return hostnameAndPort[0];
     }
 }

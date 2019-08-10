@@ -1,5 +1,7 @@
 package conglin.clrpc.transfer.net.handler;
 
+import java.net.InetSocketAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +62,6 @@ public class BasicClientChannelHandler
 
     @Override
     public int compareTo(String o) {
-        return channel.remoteAddress().toString().compareTo(o);
+        return ((InetSocketAddress)channel.remoteAddress()).toString().compareTo(o);
     }
 }

@@ -1,6 +1,7 @@
 package conglin.clrpc.service;
 
 import java.lang.reflect.Proxy;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,9 +53,13 @@ public class ClientServiceHandler extends AbstractServiceHandler {
 
     /**
      * 启动
+     * 获得请求发送器，用于检查超时Future
+     * 重发请求
+     * @param sender
      */
-    public void start(){
-        // do nothing
+    public void start(final RequestSender sender){
+        // testing future check...
+        // checkFuture(sender);
     }
     
 
@@ -96,5 +101,26 @@ public class ClientServiceHandler extends AbstractServiceHandler {
      */
     public RpcFuture removeFuture(Long key){
         return rpcFutures.remove(key);
+    }
+
+    /**
+     * 轮询线程，检查超时 RpcFuture
+     * 超时重试
+     * @param sender
+     */
+    private void checkFuture(final RequestSender sender){
+        final int MAX_DELARY = 3000; //最大延迟为3000 ms
+        submit(()->{
+            while(!Thread.currentThread().isInterrupted()){
+                Iterator<RpcFuture> iterator = rpcFutures.values().iterator();
+                while(iterator.hasNext()){
+                    RpcFuture f = iterator.next();
+                    if(f.futureTime() > MAX_DELARY){
+                        f.resetTime();
+                        sender.sendRequest(f);
+                    }
+                }
+            }
+        });
     }
 }

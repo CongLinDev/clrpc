@@ -78,8 +78,10 @@ public class RpcClientBootstrap {
      * 启动
      */
     public void start(){
-        serviceHandler.start();
         clientTransfer.start(serviceHandler);
+        // RequestSender 在 ClientTransfer#start() 方法中构建
+        // 注意不要交换两个顺序
+        serviceHandler.start(clientTransfer.getSender());
     }
 
     /**

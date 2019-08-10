@@ -33,6 +33,14 @@ public interface RequestSender extends Runnable{
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException;
 
     /**
+     * 该方法仅用于未收到请求后的重试
+     * @param future
+     * @return
+     * @throws NoSuchServerException
+     */
+    public void sendRequest(RpcFuture future) throws NoSuchServerException;
+
+    /**
      * 关闭发送器
      */
     public void stop();

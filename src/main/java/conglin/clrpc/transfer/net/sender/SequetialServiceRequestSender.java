@@ -15,7 +15,8 @@ public class SequetialServiceRequestSender extends SequetialRequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         RpcFuture future = generateFuture(this::generateRequestId, request);
-        sendRequestCore(request);
+        String addr = sendRequestCore(request);
+        future.setRemoteAddress(addr);
         return future;
     }
 

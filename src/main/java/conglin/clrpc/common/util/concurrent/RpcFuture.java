@@ -24,8 +24,9 @@ public class RpcFuture implements Future<Object> {
 
     private final BasicRequest request;
     private BasicResponse response;
+    private String remoteAddress;
 
-    private final long startTime;
+    private long startTime;
     private static final long timeThreshold = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
 
     private Callback futureCallback;
@@ -85,13 +86,55 @@ public class RpcFuture implements Future<Object> {
             return;
         }
 
-        long responseTime = System.currentTimeMillis() - startTime;
+        long responseTime = futureTime();
         if(responseTime > timeThreshold){
             log.warn("Service response time is too slow. Request ID = "
                  + response.getRequestId()
                  + " Response Time(ms) = "
                  + responseTime);
         }
+    }
+
+    /**
+     * 返回该 Future 从创建到调用该函数所经历的时间
+     * 单位为 ms
+     * @return
+     */
+    public long futureTime(){
+        return System.currentTimeMillis() - startTime;
+    }
+
+    /**
+     * 重置开始时间
+     */
+    public void resetTime(){
+        this.startTime = System.currentTimeMillis();
+    }
+
+    /**
+     * 获得与该 RpcFuture 相关联的 BasicRequest
+     * @return
+     */
+    public BasicRequest getRequest(){
+        return this.request;
+    }
+
+    /**
+     * 获取该 RpcFuture 相关的远端地址
+     * 即 请求发送的目的地地址
+     * @return
+     */
+    public String getRemoteAddress(){
+        return this.remoteAddress;
+    }
+
+    /**
+     * 设置该 RpcFuture 相关的远端地址
+     * 即 请求发送的目的地地址
+     * @param addr
+     */
+    public void setRemoteAddress(String addr){
+        this.remoteAddress = addr;
     }
 
     /**
@@ -119,6 +162,8 @@ public class RpcFuture implements Future<Object> {
         RpcFuture.serviceHandler = serviceHandler;
     }
 
+    // public void future
+
     /**
      * 若存在有注册的 {@link ServiceHandler} ，则使用此线程池
      * 反之使用当前线程顺序执行
@@ -142,7 +187,7 @@ public class RpcFuture implements Future<Object> {
         if(!response.isError()){
             callback.success(response.getResult());
         }else{
-            callback.fail(response.getRemoteAddress(), new ResponseException(response));
+            callback.fail(remoteAddress, new ResponseException(response));
         }
     }
 

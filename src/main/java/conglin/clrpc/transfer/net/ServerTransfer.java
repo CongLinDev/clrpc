@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.util.net.IPAddressUtil;
+import conglin.clrpc.common.util.net.IPAddressUtils;
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.handler.BasicServerChannelInitializer;
 import conglin.clrpc.transfer.net.receiver.BasicRequestReceiver;
@@ -37,7 +37,7 @@ public class ServerTransfer{
     // public ServerTransfer(String serverAddress){
     //     this.serverAddress = serverAddress;
     // }
-
+    
     /**
      * 启动Netty 并将其注册到zookeeper中
      * @param serviceHandler
@@ -73,9 +73,9 @@ public class ServerTransfer{
             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         try{
-            InetSocketAddress address= IPAddressUtil.splitHostnameAndPort(serverAddress);
+            InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(serverAddress);
+            ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
-            ChannelFuture channelFuture = bootstrap.bind(address.getAddress(), address.getPort()).sync();
             log.info("Server started on {}", address);
             
             //注册到zookeeper

@@ -22,9 +22,4 @@ public final class BasicResponseBuilder extends AbstractBuilder<BasicResponse>{
         product.setResult(result);
         return this;
     }
-
-    public BasicResponseBuilder remoteAddress(String remoteAddress){
-        product.setRemoteAddress(remoteAddress);
-        return this;
-    }
 }

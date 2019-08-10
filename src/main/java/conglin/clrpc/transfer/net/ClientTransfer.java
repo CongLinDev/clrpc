@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.util.net.IPAddressUtil;
+import conglin.clrpc.common.util.net.IPAddressUtils;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
@@ -33,8 +33,7 @@ public class ClientTransfer {
 
     private static final Logger log = LoggerFactory.getLogger(ClientTransfer.class);
 
-    public static final InetSocketAddress LOCAL_ADDRESS = IPAddressUtil
-            .splitHostnameAndPortSilently(ConfigParser.getOrDefault("client.address", "localhost:5200"));
+    public final String LOCAL_ADDRESS;
 
     private EventLoopGroup workerGroup;
     private ClientServiceHandler serviceHandler;
@@ -53,6 +52,8 @@ public class ClientTransfer {
 
         lock = new ReentrantLock();
         connected = lock.newCondition();
+
+        LOCAL_ADDRESS = ConfigParser.getOrDefault("client.address", "localhost:5200");
     }
 
     /**
@@ -89,22 +90,18 @@ public class ClientTransfer {
 
     /**
      * 在 ZooKeeper中寻找服务提供者
-     * 
-     * @param <T>
      * @param interfaceClass 提供该服务的类
      */
-    public <T> void findService(Class<T> interfaceClass) {
+    public void findService(Class<?> interfaceClass) {
         findService(interfaceClass.getSimpleName());
     }
 
     /**
      * 在 ZooKeeper中寻找服务提供者
-     * 
-     * @param <T>
      * @param serviceName
      */
-    public <T> void findService(String serviceName){
-        serviceDiscovery.registerConsumer(serviceName, LOCAL_ADDRESS.toString());
+    public void findService(String serviceName){
+        serviceDiscovery.registerConsumer(serviceName, LOCAL_ADDRESS);
         serviceDiscovery.discover(serviceName, this::updateConnectedServer);
     }
 
@@ -138,7 +135,7 @@ public class ClientTransfer {
      */
     public void updateConnectedServer(String serviceName, List<String> serverAddress) {
         loadBalanceHandler.update(serviceName, serverAddress, 
-            addr -> connectServerNode(serviceName, IPAddressUtil.splitHostnameAndPortSilently(addr)),
+            addr -> connectServerNode(serviceName, addr),
             channelHandler -> channelHandler.close()
         );
         signalAvailableChannelHandler();
@@ -156,23 +153,25 @@ public class ClientTransfer {
      * @param serviceName
      * @param remoteAddress
      */
-    private BasicClientChannelHandler connectServerNode(String serviceName, final InetSocketAddress remoteAddress) {    
+    private BasicClientChannelHandler connectServerNode(String serviceName, String remoteAddress) {    
         Bootstrap bootstrap = new Bootstrap();
         ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
-        bootstrap.localAddress(LOCAL_ADDRESS.getPort())
+        bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS))
                 .group(workerGroup)
                 .channel(NioSocketChannel.class)
                 .handler(channelInitializer);
-        log.info("Client started on {}", LOCAL_ADDRESS.toString());
-        ChannelFuture channelFuture = bootstrap.connect(remoteAddress);
+        log.info("Client started on {}", LOCAL_ADDRESS);
+
+        InetSocketAddress socketRemoteAddress = IPAddressUtils.splitHostnameAndPortSilently(remoteAddress);
+        ChannelFuture channelFuture = bootstrap.connect(socketRemoteAddress);
 
         CountDownLatch latch = new CountDownLatch(1);
         
         channelFuture.addListener(future -> {
             if (future.isSuccess()) {
-                log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress.toString());
+                log.debug("Connect to remote server successfully. Remote Address : " + remoteAddress);
             } else {
-                log.error("Cannot connect to remote server. Remote Address : " + remoteAddress.toString());
+                log.error("Cannot connect to remote server. Remote Address : " + remoteAddress);
             }
             latch.countDown();
         });

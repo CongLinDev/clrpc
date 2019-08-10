@@ -79,7 +79,6 @@ public class ServerServiceHandler extends AbstractServiceHandler {
         services.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, data)
         );
-        
     }
 
     public void start(){

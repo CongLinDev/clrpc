@@ -1,5 +1,6 @@
 package conglin.clrpc.transfer.net.sender;
 
+import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -41,7 +42,8 @@ public class BasicRequestSender implements RequestSender {
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
         RpcFuture future = generateFuture(this::generateRequestId, request);
-        sendRequestCore(request);
+        String addr = sendRequestCore(request);
+        future.setRemoteAddress(addr);
         return future;
     }
     
@@ -52,6 +54,11 @@ public class BasicRequestSender implements RequestSender {
         RpcFuture future = generateFuture(this::generateRequestId, request);
         sendRequestCore(remoteAddress, request);
         return future;
+    }
+
+    @Override
+    public void sendRequest(RpcFuture future) throws NoSuchServerException {
+        sendRequestCore(future.getRemoteAddress(), future.getRequest());
     }
 
     /**
@@ -76,7 +83,7 @@ public class BasicRequestSender implements RequestSender {
      * @param requestIdGenerator 请求ID生成器。输入为服务名，输出为生成的ID。
      * @param request
      */
-    protected void sendRequestCore(BasicRequest request){
+    protected String sendRequestCore(BasicRequest request){
         String serviceName = request.getServiceName();
         Long requestId = request.getRequestId();
 
@@ -84,6 +91,7 @@ public class BasicRequestSender implements RequestSender {
         Channel channel = channelHandler.getChannel();
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         log.debug("Send request Id = " + requestId);
+        return ((InetSocketAddress)(channel.remoteAddress())).toString();
     }
 
     /**
