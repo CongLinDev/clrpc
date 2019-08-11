@@ -1,9 +1,10 @@
 package conglin.clrpc.service.loadbalance;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -38,7 +39,7 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     private TreeMap<Integer, Node<V>> circle;
 
     public ConsistentHashHandler(){
-        descriptions = new HashMap<>();
+        descriptions = new ConcurrentHashMap<>();
         circle = new TreeMap<>();
     }
 
@@ -245,7 +246,7 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
 }
 
 class Node<V>{
-    private int epoch;
+    private AtomicInteger epoch;
     private V value;
 
     public Node(){
@@ -257,16 +258,16 @@ class Node<V>{
     }
 
     public Node(int epoch, V value) {
-        this.epoch = epoch;
+        this.epoch.set(epoch);
         this.value = value;
     }
 
     public int getEpoch(){
-        return epoch;
+        return epoch.get();
     }
 
     public void setEpoch(int epoch){
-        this.epoch = epoch;
+        while(!this.epoch.compareAndSet(epoch - 1, epoch));
     }
 
     public V getValue(){
