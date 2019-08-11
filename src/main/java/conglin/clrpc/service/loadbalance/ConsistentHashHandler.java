@@ -57,9 +57,11 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
             log.debug("Update region head number = " + (code & _32_16_BIT_MASK) + " Epoch = " + epoch);
         }
         // 区域头节点的Hash值
-        int headHash = code & _32_16_BIT_MASK;
-
-        update(headHash, epoch, data, start, stop); 
+        int head = code & _32_16_BIT_MASK;
+        // 创建或更新有效节点
+        createOrUpdateNode(head, epoch, data, start); 
+        // 删除无效节点 (不删除区域头节点)
+        removeInvalidNode(head, epoch, stop);
     }
 
     @Override
@@ -68,17 +70,17 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         if((code = descriptions.get(key)) == null) return null;
 
         int randomHash = hash(random);
-        int headHash = code & _32_16_BIT_MASK;
-        int number = headHash | (randomHash & _16_BIT_MASK);
-        int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
+        int head = code & _32_16_BIT_MASK;
+        int next = head | (randomHash & _16_BIT_MASK);
+        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
          
         for(int count = 0; count < 2; count++){ // 检查两轮即可
-            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(number);
+            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(next);
             
-            if(entry != null && (number = entry.getKey()) <= maxNumber){
+            if(entry != null && (next = entry.getKey()) <= tail){
                 return entry.getValue().getValue();
             }
-            number = headHash + 1;
+            next = head + 1;
         }
         return null;
     }
@@ -89,17 +91,17 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         if((code = descriptions.get(key)) == null) return null;
 
         int randomHash = hash(string);
-        int headHash = code & _32_16_BIT_MASK;
-        int number = headHash | (randomHash & _16_BIT_MASK);
-        int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
+        int head = code & _32_16_BIT_MASK;
+        int next = head | (randomHash & _16_BIT_MASK);
+        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         Node<V> node;
-        while((node = circle.get(number)) != null){
+        while((node = circle.get(next)) != null){
             if(node.getValue().compareTo(string) == 0)
                 return node.getValue();
 
-            if(++number > maxNumber)
-                number = headHash + 1;
+            if(++next > tail)
+                next = head + 1;
         }
         return null;
     }
@@ -109,15 +111,15 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         // 遍历查找，寻找满足条件的 V
         Integer code;
         if((code = descriptions.get(key)) == null) return null;
-        int headHash = code & _32_16_BIT_MASK;
-        int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
+        int head = code & _32_16_BIT_MASK;
+        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        int number = headHash;
-        while(number <= maxNumber){
-            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(number);
+        int next = head;
+        while(next <= tail){
+            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(next);
             V v = entry.getValue().getValue();
             if(predicate.test(v)) return v;
-            number = entry.getKey() + 1;
+            next = entry.getKey() + 1;
         }
 
         return null;
@@ -136,17 +138,24 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     public boolean hasNext(K key) {
         Integer code;
         if((code = descriptions.get(key)) == null) return false;
-        int headHash = code & _32_16_BIT_MASK;
-        int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
+        int head = code & _32_16_BIT_MASK;
+        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        Integer higher = circle.higherKey(headHash);
-        if(higher == null || higher > maxNumber)
+        Integer next = circle.higherKey(head);
+        if(next == null || next > tail)
             return false;
         return true;
     }
 
+    @Override
+    public void clear() {
+        circle.clear();
+        descriptions.clear();
+    }
+
     /**
      * 首次更新
+     * 确定区域并添加区域头节点
      * @param key
      * @return 返回 descriptions中 key所对应的值。即前16位代表区域 region; 后16位代表 该键所在的区域 region。
      */
@@ -162,7 +171,7 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
 
         // 创建区域头节点
         // 头节点不保存任何值，只是一个区域的标志
-        // 即代表这个区域以及被某个 Key 占用了
+        // 即代表这个区域已经被某个 Key 占用了
         circle.put(regionHead, new Node<V>());
         // 刚好 regionHead 的 低16位为0，即 epoch 为 0
         descriptions.put(key, regionHead);
@@ -170,26 +179,24 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     }
 
     /**
-     * 
-     * @param headHash 区域头节点 Hash
+     * 创建或更新有效节点
+     * @param head 区域头节点
      * @param epoch
      * @param data 数据
      * @param start 添加V的工作
-     * @param stop 移除数据的收尾工作
      */
-    private void update(int headHash, int epoch, List<String> data, Function<String, V> start, Consumer<V> stop){
-
-        int maxNumber = headHash | _16_BIT_MASK;// 区域编号不得超过最大编号
+    private void createOrUpdateNode(int head, int epoch, List<String> data, Function<String, V> start){
+        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         for(String s : data){
-            int number = hash(s);//获取区域编号
-            number = (number & _16_BIT_MASK) | headHash;
+            int next = hash(s);//获取区域编号
+            next = (next & _16_BIT_MASK) | head;
 
             do{
                 Node<V> node;
-                if((node = circle.get(number)) == null){ // 插入新值
+                if((node = circle.get(next)) == null){ // 插入新值
                     if(start != null){
-                        circle.put(number, new Node<V>(epoch, start.apply(s)));
+                        circle.put(next, new Node<V>(epoch, start.apply(s)));
                         log.debug("Add new node = " + s);
                     }
                     break;
@@ -198,18 +205,29 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
                     log.debug("Update old node = " + s);
                     break;
                 }else{ // 发生冲撞
-                    number++; // 将 v 更新到该节点的后面
+                    next++; // 将 v 更新到该节点的后面
                 }
-            }while(number <= maxNumber);
+            }while(next <= tail);
         }
+    }
 
-        // 删除无效节点
-        int nextHash = headHash;
-        do{
-            Map.Entry<Integer, Node<V>> entry = circle.ceilingEntry(nextHash);
-            if(entry == null) break;
-            nextHash = entry.getKey() + 1;
-            if(entry.getValue().getEpoch() < epoch){
+    /**
+     * 移除无效节点，即
+     * 移除 {@link Node#getEpoch()} < currentEpoch 的节点
+     * 范围为 (head, tail]
+     * 其中 tail = head | _16_BIT_MASK
+     * @param head 头节点位置
+     * @param currentEpoch 当前 epoch
+     * @param stop 结束工作
+     */
+    private void removeInvalidNode(int head, int currentEpoch, Consumer<V> stop){
+        int tail = head | _16_BIT_MASK;// 尾节点位置
+
+        int next = head;
+        Map.Entry<Integer, Node<V>> entry;
+        while((entry = circle.higherEntry(next)) != null // 下一个节点不为空
+                &&  (next = entry.getKey()) <= tail){ // 且下一个节点确保在范围内
+            if(entry.getValue().getEpoch() < currentEpoch){
                 circle.remove(entry.getKey());
                 log.debug("Remove valid node.");
                 if(stop != null){
@@ -217,7 +235,7 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
                 } 
                 entry = null; // help gc
             }
-        }while(nextHash <= maxNumber);
+        }
     }
 
     private int hash(Object obj){

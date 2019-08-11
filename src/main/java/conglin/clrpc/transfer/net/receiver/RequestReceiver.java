@@ -10,7 +10,7 @@ public interface RequestReceiver{
      * 初始化
      * @param serviceHandler
      */
-    public void init(ServerServiceHandler serviceHandler);
+    void init(ServerServiceHandler serviceHandler);
 
 
     /**
@@ -18,10 +18,10 @@ public interface RequestReceiver{
      * @param channel
      * @param request
      */
-    public void handleRequest(Channel channel, BasicRequest request);
+    void handleRequest(Channel channel, BasicRequest request);
 
     /**
      * 关闭请求接收器
      */
-    public void stop();
+    void stop();
 }

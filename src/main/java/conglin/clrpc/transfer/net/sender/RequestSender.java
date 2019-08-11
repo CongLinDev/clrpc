@@ -13,14 +13,14 @@ public interface RequestSender extends Runnable{
      * @param serviceHandler
      * @param clientTransfer
      */
-    public void init(ClientServiceHandler serviceHandler, ClientTransfer clientTransfer);
+    void init(ClientServiceHandler serviceHandler, ClientTransfer clientTransfer);
 
     /**
      * 发送请求
      * @param request
      * @return
      */
-    public RpcFuture sendRequest(BasicRequest request);
+    RpcFuture sendRequest(BasicRequest request);
 
     /**
      * 发送请求
@@ -30,7 +30,7 @@ public interface RequestSender extends Runnable{
      * @return
      * @throws NoSuchServerException
      */
-    public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException;
+    RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchServerException;
 
     /**
      * 该方法仅用于未收到请求后的重试
@@ -38,10 +38,10 @@ public interface RequestSender extends Runnable{
      * @return
      * @throws NoSuchServerException
      */
-    public void sendRequest(RpcFuture future) throws NoSuchServerException;
+    void sendRequest(RpcFuture future) throws NoSuchServerException;
 
     /**
      * 关闭发送器
      */
-    public void stop();
+    void stop();
 }

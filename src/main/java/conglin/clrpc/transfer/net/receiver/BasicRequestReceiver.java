@@ -73,6 +73,13 @@ public class BasicRequestReceiver implements RequestReceiver {
         return jdkReflectInvoke(serviceBean, request);
     }
 
+    /**
+     * 使用jdk反射来调用方法
+     * @param serviceBean
+     * @param request
+     * @return
+     * @throws ServiceExecutionException
+     */
     protected Object jdkReflectInvoke(Object serviceBean, BasicRequest request)
             throws ServiceExecutionException{
         Class<?> serviceBeanClass = serviceBean.getClass();

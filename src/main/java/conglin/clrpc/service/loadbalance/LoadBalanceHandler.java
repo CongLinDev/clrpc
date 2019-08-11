@@ -48,4 +48,9 @@ public interface LoadBalanceHandler<K, V> {
      * @param consumer
      */
     void forEach(Consumer<V> consumer);
+
+    /**
+     * 清空容器内所有数据
+     */
+    void clear();
 }
