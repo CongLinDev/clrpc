@@ -44,7 +44,7 @@ public class ClientTransfer {
     private RequestSender sender;
 
     private ServiceDiscovery serviceDiscovery;
-    private LoadBalanceHandler<String, BasicClientChannelHandler> loadBalanceHandler;
+    private LoadBalanceHandler<String, String, BasicClientChannelHandler> loadBalanceHandler;
 
     public ClientTransfer() {
         loadBalanceHandler = new ConsistentHashHandler<>();
@@ -191,7 +191,7 @@ public class ClientTransfer {
      * @param random 随机因子
      * @return
      */
-    public BasicClientChannelHandler chooseChannelHandler(String serviceName, Object random){
+    public BasicClientChannelHandler chooseChannelHandler(String serviceName, int random){
         while(!loadBalanceHandler.hasNext(serviceName)){
             try{
                 waitingForChannelHandler();

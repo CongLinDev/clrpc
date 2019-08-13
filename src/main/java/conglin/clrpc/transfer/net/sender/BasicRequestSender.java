@@ -87,7 +87,7 @@ public class BasicRequestSender implements RequestSender {
         String serviceName = request.getServiceName();
         Long requestId = request.getRequestId();
 
-        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName, requestId);
+        BasicClientChannelHandler channelHandler = clientTransfer.chooseChannelHandler(serviceName, requestId.intValue());
         Channel channel = channelHandler.getChannel();
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         log.debug("Send request Id = " + requestId);

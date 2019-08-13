@@ -1,47 +1,58 @@
 package conglin.clrpc.service.loadbalance;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface LoadBalanceHandler<K, V> {
+/**
+ * 该接口用作负载均衡
+ * 适合一个 type 对应多个 key-value 的负载均衡
+ * @param <T> type
+ * @param <K> key
+ * @param <V> value
+ */
+public interface LoadBalanceHandler<T, K, V> {
 
     /**
-     * 使用String列表更新数据
-     * @param key
+     * 使用列表更新数据
+     * @param type
      * @param data
      * @param start 添加V的工作
      * @param stop 移除的V的收尾工作
      */
-    void update(K key, List<String> data, Function<String, V> start, Consumer<V> stop);
+    void update(T type, Collection<K> data, Function<K, V> start, Consumer<V> stop);
 
     /**
      * 根据指定算法返回对象
-     * @param key
+     * @param type
      * @param random
      * @return
      */
-    V get(K key, Object random);
+    V get(T type, int random);
 
     /**
      * 根据条件返回指定对象
-     * @param key
-     * @param string
+     * @param type
+     * @param k
      * @return
      */
-    V get(K key, String string);
+    V get(T type, K k);
 
     /**
      * 根据条件返回指定对象
-     * @param key
+     * @param type
      * @param predicate
      * @return
      */
-    V get(K key, Predicate<V> predicate);
+    V get(T type, Predicate<V> predicate);
 
-
-    boolean hasNext(K key);
+    /**
+     * 是否有满足 type 的可用的对象
+     * @param type
+     * @return
+     */
+    boolean hasNext(T type);
 
     /**
      * 对所有节点做出某个操作

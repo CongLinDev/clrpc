@@ -1,6 +1,6 @@
 package conglin.clrpc.service.loadbalance;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,11 +14,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 该类用作一致性哈希负载均衡
- * 适合一个 key 对应多个 value 的负载均衡
- * @param <K> key的类型
- * @param <V> value的类型
+ * 适合一个 type 对应多个 key-value 的负载均衡
+ * @param <T> type
+ * @param <K> key
+ * @param <V> value
  */
-public class ConsistentHashHandler<K, V extends Comparable<String>> implements LoadBalanceHandler<K, V> {
+public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements LoadBalanceHandler<T, K, V> {
 
     private static final Logger log = LoggerFactory.getLogger(ConsistentHashHandler.class);
 
@@ -26,15 +27,15 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     private final int _32_16_BIT_MASK = 0xFFFF0000;
     private final int _32_16_BIT_POSITIVE_MASK = 0x7FFF0000;
 
-    // descriptions 中存储着 K 和 Integer
-    // K为一致性哈希的键
+    // descriptions 中存储着 T 和 Integer
+    // T为类型
     // Integer 高16位代表该键所在的区域 region 
     // 低16位代表 该键的 epoch 方便淘汰算法将无效的V值淘汰
-    private Map<K, Integer> descriptions;
+    private Map<T, AtomicInteger> descriptions;
 
-    // circle 模拟环来存放 V
+    // circle 模拟环来存放 K-V
     // Integer 高16位为 descriptions 中的区域 region
-    // 低16位为 hash(V) 将 V 打乱
+    // 低16位为 hash(K) 将 K-V 打乱
     // 这样，只需要到指定的区域中寻找满足条件的值即可
     private TreeMap<Integer, Node<V>> circle;
 
@@ -44,21 +45,20 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     }
 
     @Override
-    public void update(K key, List<String> data, Function<String, V> start, Consumer<V> stop) {
-        Integer code = null;
+    public void update(T type, Collection<K> data, Function<K, V> start, Consumer<V> stop) {
+        AtomicInteger code = null;
         int epoch = 0;
-        if((code = descriptions.get(key)) == null){
-            code = firstUpdate(key);
+        if((code = descriptions.get(type)) == null){
+            code= firstUpdate(type);
             log.debug("First update region head number = " + code);
         }else{
             // 非第一次更新的话 更新epoch
-            epoch = code & _16_BIT_MASK;
-            epoch++; 
-            descriptions.put(key, (code & _32_16_BIT_MASK) | epoch);
-            log.debug("Update region head number = " + (code & _32_16_BIT_MASK) + " Epoch = " + epoch);
+            code.incrementAndGet();
+            epoch = code.get() & _16_BIT_MASK;
+            log.debug("Update region head number = " + (code.get() & _32_16_BIT_MASK) + " Epoch = " + epoch);
         }
         // 区域头节点的Hash值
-        int head = code & _32_16_BIT_MASK;
+        int head = code.get() & _32_16_BIT_MASK;
         // 创建或更新有效节点
         createOrUpdateNode(head, epoch, data, start); 
         // 删除无效节点 (不删除区域头节点)
@@ -66,13 +66,13 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     }
 
     @Override
-    public V get(K key, Object random) {
-        Integer code;
-        if((code = descriptions.get(key)) == null) return null;
+    public V get(T type, int random) {
+        AtomicInteger regionAndEpoch = descriptions.get(type);
+        if(regionAndEpoch == null) return null;
+        int code = regionAndEpoch.get();
 
-        int randomHash = hash(random);
         int head = code & _32_16_BIT_MASK;
-        int next = head | (randomHash & _16_BIT_MASK);
+        int next = head | (random & _16_BIT_MASK);
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
          
         for(int count = 0; count < 2; count++){ // 检查两轮即可
@@ -87,18 +87,19 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     }
 
     @Override
-    public V get(K key, String string) {
-        Integer code;
-        if((code = descriptions.get(key)) == null) return null;
+    public V get(T type, K k) {
+        AtomicInteger regionAndEpoch = descriptions.get(type);
+        if(regionAndEpoch == null) return null;
+        int code = regionAndEpoch.get();
 
-        int randomHash = hash(string);
+        int randomHash = hash(k);
         int head = code & _32_16_BIT_MASK;
         int next = head | (randomHash & _16_BIT_MASK);
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         Node<V> node;
         while((node = circle.get(next)) != null){
-            if(node.getValue().compareTo(string) == 0)
+            if(node.getValue().compareTo(k) == 0)
                 return node.getValue();
 
             if(++next > tail)
@@ -108,10 +109,12 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     }
 
     @Override
-    public V get(K key, Predicate<V> predicate) {
+    public V get(T type, Predicate<V> predicate) {
         // 遍历查找，寻找满足条件的 V
-        Integer code;
-        if((code = descriptions.get(key)) == null) return null;
+        AtomicInteger regionAndEpoch = descriptions.get(type);
+        if(regionAndEpoch == null) return null;
+        int code = regionAndEpoch.get();
+
         int head = code & _32_16_BIT_MASK;
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
@@ -136,9 +139,11 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     }
 
     @Override
-    public boolean hasNext(K key) {
-        Integer code;
-        if((code = descriptions.get(key)) == null) return false;
+    public boolean hasNext(T type) {
+        AtomicInteger regionAndEpoch = descriptions.get(type);
+        if(regionAndEpoch == null) return false;
+        int code = regionAndEpoch.get();
+
         int head = code & _32_16_BIT_MASK;
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
@@ -157,12 +162,12 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
     /**
      * 首次更新
      * 确定区域并添加区域头节点
-     * @param key
-     * @return 返回 descriptions中 key所对应的值。即前16位代表区域 region; 后16位代表 该键所在的区域 region。
+     * @param type
+     * @return 返回 descriptions中 type 所对应的值。即前16位代表区域 region; 后16位代表 该键所在的区域 region。
      */
-    private int firstUpdate(K key){
+    private AtomicInteger firstUpdate(T type){
         int regionHead;
-        int hashcode = key.hashCode();
+        int hashcode = type.hashCode();
         do{
             // 对hashcode再次hash计算
             hashcode = hash(hashcode);
@@ -172,11 +177,12 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
 
         // 创建区域头节点
         // 头节点不保存任何值，只是一个区域的标志
-        // 即代表这个区域已经被某个 Key 占用了
+        // 即代表这个区域已经被某个 Type 占用了
         circle.put(regionHead, new Node<V>());
         // 刚好 regionHead 的 低16位为0，即 epoch 为 0
-        descriptions.put(key, regionHead);
-        return regionHead;
+        AtomicInteger regionAndEpoch = new AtomicInteger(regionHead);
+        AtomicInteger temp = descriptions.putIfAbsent(type, regionAndEpoch); // 以最先放入的服务为准
+        return temp == null ? regionAndEpoch : temp;
     }
 
     /**
@@ -186,24 +192,24 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
      * @param data 数据
      * @param start 添加V的工作
      */
-    private void createOrUpdateNode(int head, int epoch, List<String> data, Function<String, V> start){
+    private void createOrUpdateNode(int head, int epoch, Collection<K> data, Function<K, V> start){
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        for(String s : data){
-            int next = hash(s);//获取区域编号
+        for(K k : data){
+            int next = hash(k);//获取区域编号
             next = (next & _16_BIT_MASK) | head;
 
             do{
                 Node<V> node;
                 if((node = circle.get(next)) == null){ // 插入新值
                     if(start != null){
-                        circle.put(next, new Node<V>(epoch, start.apply(s)));
-                        log.debug("Add new node = " + s);
+                        circle.put(next, new Node<V>(epoch, start.apply(k)));
+                        log.debug("Add new node = " + k);
                     }
                     break;
-                }else if(node.getValue().compareTo(s) == 0){ // 更新epoch
-                    node.setEpoch(epoch);
-                    log.debug("Update old node = " + s);
+                }else if(node.getValue().compareTo(k) == 0){ // 更新epoch
+                    if(!node.setEpoch(epoch)) continue;
+                    log.debug("Update old node = " + k);
                     break;
                 }else{ // 发生冲撞
                     next++; // 将 v 更新到该节点的后面
@@ -228,7 +234,7 @@ public class ConsistentHashHandler<K, V extends Comparable<String>> implements L
         Map.Entry<Integer, Node<V>> entry;
         while((entry = circle.higherEntry(next)) != null // 下一个节点不为空
                 &&  (next = entry.getKey()) <= tail){ // 且下一个节点确保在范围内
-            if(entry.getValue().getEpoch() < currentEpoch){
+            if(entry.getValue().getEpoch() + 1 == currentEpoch){ // 只移除上一代未更新的节点
                 circle.remove(entry.getKey());
                 log.debug("Remove valid node.");
                 if(stop != null){
@@ -258,7 +264,7 @@ class Node<V>{
     }
 
     public Node(int epoch, V value) {
-        this.epoch.set(epoch);
+        this.epoch = new AtomicInteger(epoch);
         this.value = value;
     }
 
@@ -266,8 +272,8 @@ class Node<V>{
         return epoch.get();
     }
 
-    public void setEpoch(int epoch){
-        while(!this.epoch.compareAndSet(epoch - 1, epoch));
+    public boolean setEpoch(int epoch){
+        return this.epoch.compareAndSet(epoch - 1, epoch);
     }
 
     public V getValue(){
