@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import conglin.clrpc.bootstrap.RpcClientBootstrap;
-import conglin.clrpc.common.util.concurrent.Callback;
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.test.service.HelloService;
 

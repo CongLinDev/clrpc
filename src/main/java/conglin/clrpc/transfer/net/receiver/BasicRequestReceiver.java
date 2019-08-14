@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.NoSuchServiceException;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.service.ServerServiceHandler;
@@ -92,12 +93,19 @@ public class BasicRequestReceiver implements RequestReceiver {
    
         try {
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
+            handleAnnotation(method);
             method.setAccessible(true);
             return method.invoke(serviceBean, parameters);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new ServiceExecutionException(request, e);
         }
+    }
+
+    protected void handleAnnotation(Method method) throws NoSuchMethodException{
+        IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
+        if(ignoreService != null && ignoreService.ignore())
+            throw new NoSuchMethodException(method.getName());
     }
 
     // remove cglib reflect

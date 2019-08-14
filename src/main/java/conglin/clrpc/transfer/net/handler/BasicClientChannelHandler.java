@@ -5,8 +5,8 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.service.ClientServiceHandler;
+import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.net.message.BasicResponse;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;

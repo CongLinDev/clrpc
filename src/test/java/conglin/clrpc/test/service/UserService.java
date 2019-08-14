@@ -7,6 +7,6 @@ public interface UserService {
     User getUser(Long userId, String username);
 
     String postUser(User user);
-
+    
     String postUserInfo(UserInfo userInfo);
 }

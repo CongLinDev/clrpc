@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.NoSuchServerException;
-import conglin.clrpc.common.util.concurrent.RpcFuture;
+import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.sender.RequestSender;
 

@@ -1,4 +1,4 @@
-package conglin.clrpc.common.util.concurrent;
+package conglin.clrpc.service.future;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -9,12 +9,12 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.exception.ResponseException;
 import conglin.clrpc.service.AbstractServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
-
 
 public class RpcFuture implements Future<Object> {
 

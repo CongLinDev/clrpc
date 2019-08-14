@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.exception.NoSuchServerException;
-import conglin.clrpc.common.util.concurrent.RpcFuture;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
+import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 
 /**

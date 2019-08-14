@@ -4,7 +4,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 import conglin.clrpc.bootstrap.RpcClientBootstrap;
-import conglin.clrpc.common.util.concurrent.Callback;
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.test.pojo.User;
 

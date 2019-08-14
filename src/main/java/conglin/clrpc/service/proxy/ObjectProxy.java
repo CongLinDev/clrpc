@@ -3,8 +3,7 @@ package conglin.clrpc.service.proxy;
 import java.lang.reflect.Method;
 
 import conglin.clrpc.common.exception.NoSuchServerException;
-import conglin.clrpc.common.util.concurrent.Callback;
-import conglin.clrpc.common.util.concurrent.RpcFuture;
+import conglin.clrpc.service.future.RpcFuture;
 
 /**
  * 针对服务消费者的对象代理

@@ -1,8 +1,9 @@
 package conglin.clrpc.transfer.net.sender;
 
 import conglin.clrpc.common.exception.NoSuchServerException;
-import conglin.clrpc.common.util.concurrent.RpcFuture;
+
 import conglin.clrpc.service.ClientServiceHandler;
+import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.net.ClientTransfer;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 

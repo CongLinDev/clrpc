@@ -60,7 +60,7 @@ public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements Loa
         // 区域头节点的Hash值
         int head = code.get() & _32_16_BIT_MASK;
         // 创建或更新有效节点
-        createOrUpdateNode(head, epoch, data, start); 
+        createOrUpdateNode(code, epoch, data, start); 
         // 删除无效节点 (不删除区域头节点)
         removeInvalidNode(head, epoch, stop);
     }
@@ -187,13 +187,14 @@ public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements Loa
 
     /**
      * 创建或更新有效节点
-     * @param head 区域头节点
-     * @param epoch
+     * @param headAndEpoch 区域头节点和当前epoch
+     * @param epoch 本轮的epoch
      * @param data 数据
      * @param start 添加V的工作
      */
-    private void createOrUpdateNode(int head, int epoch, Collection<K> data, Function<K, V> start){
-        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
+    private void createOrUpdateNode(AtomicInteger headAndEpoch, int epoch, Collection<K> data, Function<K, V> start){
+        int head = headAndEpoch.get() & _32_16_BIT_MASK;
+        int tail = headAndEpoch.get() | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         for(K k : data){
             int next = hash(k);//获取区域编号
@@ -202,13 +203,13 @@ public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements Loa
             do{
                 Node<V> node;
                 if((node = circle.get(next)) == null){ // 插入新值
-                    if(start != null){
+                    if(start != null && epoch == (headAndEpoch.get() & _16_BIT_MASK)){
                         circle.put(next, new Node<V>(epoch, start.apply(k)));
                         log.debug("Add new node = " + k);
                     }
                     break;
                 }else if(node.getValue().compareTo(k) == 0){ // 更新epoch
-                    if(!node.setEpoch(epoch)) continue;
+                    if(epoch > node.getEpoch() && !node.setEpoch(epoch)) continue;
                     log.debug("Update old node = " + k);
                     break;
                 }else{ // 发生冲撞

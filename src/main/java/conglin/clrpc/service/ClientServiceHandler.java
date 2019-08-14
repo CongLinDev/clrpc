@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.concurrent.RpcFuture;
+import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.transfer.net.sender.RequestSender;
