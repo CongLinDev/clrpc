@@ -80,11 +80,6 @@ public class RpcFuture implements Future<Object> {
         synchronizer.release(1);
 
         runCallback(futureCallback);
-        
-        if(response == null || response.isError() == true){
-            log.error(response.getError());
-            return;
-        }
 
         long responseTime = futureTime();
         if(responseTime > timeThreshold){

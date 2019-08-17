@@ -57,48 +57,48 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        BasicRequest request = BasicRequest.builder()
-            .methodName(methodName)
-            .parameters(args)
-            .parameterTypes(getClassType(args))
-            .serviceName(serviceName)
-            .build();
+        BasicRequest request = new BasicRequest();
+        request.setServiceName(serviceName);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        request.setParameterTypes(getClassType(args));
+
         log.debug(request.toString());
         return sender.sendRequest(request);
     }
 
     @Override
     public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchServerException {
-        BasicRequest request = BasicRequest.builder()
-            .methodName(methodName)
-            .parameters(args)
-            .parameterTypes(getClassType(args))
-            .serviceName(serviceName)
-            .build();
+        BasicRequest request = new BasicRequest();
+        request.setServiceName(serviceName);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        request.setParameterTypes(getClassType(args));
+        
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }
 
     @Override
     public RpcFuture call(Method method, Object... args) {
-        BasicRequest request = BasicRequest.builder()
-            .methodName(method.getName())
-            .parameterTypes(method.getParameterTypes())
-            .parameters(args)
-            .serviceName(this.serviceName)
-            .build();
+        BasicRequest request = new BasicRequest();
+        request.setServiceName(serviceName);
+        request.setMethodName(method.getName());
+        request.setParameters(args);
+        request.setParameterTypes(method.getParameterTypes());
+
         log.debug(request.toString());
         return sender.sendRequest(request);
     }
 
     @Override
     public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchServerException {
-        BasicRequest request = BasicRequest.builder()
-            .methodName(method.getName())
-            .parameterTypes(method.getParameterTypes())
-            .parameters(args)
-            .serviceName(this.serviceName)
-            .build();
+        BasicRequest request = new BasicRequest();
+        request.setServiceName(serviceName);
+        request.setMethodName(method.getName());
+        request.setParameters(args);
+        request.setParameterTypes(method.getParameterTypes());
+        
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }

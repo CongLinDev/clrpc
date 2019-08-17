@@ -9,10 +9,6 @@ public class BasicRequest {
     private Class<?>[] parameterTypes;
     private Object[] parameters;
 
-    public static BasicRequestBuilder builder(){
-        return new BasicRequestBuilder(new BasicRequest());
-    }
-
     public Long getRequestId() {
         return requestId;
     }

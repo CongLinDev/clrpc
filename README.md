@@ -99,6 +99,8 @@
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
 | client.request-sender | conglin.clrpc.<br>transfer.net.<br>sender.<br>RequestSender | YES | conglin.clrpc.<br>transfer.net.<br>sender.<br>BasicRequestSender | 请求发送器 |
+| client.response-receiver | conglin.clrpc.<br>transfer.net.<br>receiver.<br>ResponseReceiver | YES |
+conglin.clrpc.<br>transfer.net.<br>receiver.<br>BasicResponseReceiver | 回复接收器 |
 | service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |

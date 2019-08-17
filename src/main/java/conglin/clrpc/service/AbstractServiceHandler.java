@@ -12,7 +12,7 @@ import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.threadpool.CustomizedThreadPool;
 import conglin.clrpc.common.util.threadpool.ThreadPool;
 
-abstract public class AbstractServiceHandler {
+abstract public class AbstractServiceHandler implements ThreadPool {
     private static final Logger log = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
     private final ExecutorService businessTheardExecutorService;
@@ -81,5 +81,10 @@ abstract public class AbstractServiceHandler {
         if(businessTheardExecutorService != null)
             businessTheardExecutorService.shutdown();
         log.info("Theard Executor shuts down.");
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return businessTheardExecutorService;
     }
 }

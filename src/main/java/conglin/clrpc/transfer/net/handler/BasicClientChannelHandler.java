@@ -5,9 +5,8 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.ClientServiceHandler;
-import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.net.message.BasicResponse;
+import conglin.clrpc.transfer.net.receiver.ResponseReceiver;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -19,23 +18,17 @@ public class BasicClientChannelHandler
 
     private static final Logger log = LoggerFactory.getLogger(BasicClientChannelHandler.class);
 
-    private final ClientServiceHandler serviceHandler;
+    private final ResponseReceiver receiver;
 
     private Channel channel;
 
-    public BasicClientChannelHandler(ClientServiceHandler serviceHandler){
-        this.serviceHandler = serviceHandler;
+    public BasicClientChannelHandler(ResponseReceiver receiver){
+        this.receiver = receiver;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, BasicResponse msg) throws Exception {
-        Long requestId = msg.getRequestId();
-        //直接移除
-        RpcFuture future = serviceHandler.removeFuture(requestId);
-
-        if(future != null){
-            future.done(msg);
-        }
+        receiver.handleResponse(msg);
     }
 
     @Override

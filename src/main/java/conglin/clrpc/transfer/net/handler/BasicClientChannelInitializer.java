@@ -1,10 +1,10 @@
 package conglin.clrpc.transfer.net.handler;
 
-import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.transfer.codec.RpcDecoder;
 import conglin.clrpc.transfer.codec.RpcEncoder;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
+import conglin.clrpc.transfer.net.receiver.ResponseReceiver;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -16,17 +16,17 @@ public class BasicClientChannelInitializer
     
     private BasicClientChannelHandler clientChannelHandler;
 
-    private final ClientServiceHandler serviceHandler;
+    private final ResponseReceiver receiver;
 
-    public BasicClientChannelInitializer(ClientServiceHandler serviceHandler){
-        this.serviceHandler = serviceHandler;
+    public BasicClientChannelInitializer(ResponseReceiver receiver){
+        this.receiver = receiver;
     }
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline channelPipeline = ch.pipeline();
 
-        clientChannelHandler = new BasicClientChannelHandler(serviceHandler);
+        clientChannelHandler = new BasicClientChannelHandler(receiver);
 
         channelPipeline.addLast(RpcEncoder.getEncoder(BasicRequest.class))
                 .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0))

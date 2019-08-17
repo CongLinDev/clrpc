@@ -1,6 +1,5 @@
 package conglin.clrpc.transfer.net;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtils;
-import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.loadbalance.ConsistentHashHandler;
@@ -21,7 +19,7 @@ import conglin.clrpc.service.loadbalance.LoadBalanceHandler;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelHandler;
 import conglin.clrpc.transfer.net.handler.BasicClientChannelInitializer;
 import conglin.clrpc.transfer.net.handler.ClientChannelInitializer;
-import conglin.clrpc.transfer.net.sender.BasicRequestSender;
+import conglin.clrpc.transfer.net.receiver.ResponseReceiver;
 import conglin.clrpc.transfer.net.sender.RequestSender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -36,12 +34,12 @@ public class ClientTransfer {
     public final String LOCAL_ADDRESS;
 
     private EventLoopGroup workerGroup;
-    private ClientServiceHandler serviceHandler;
 
     private final ReentrantLock lock;
     private final Condition connected;
 
     private RequestSender sender;
+    private ResponseReceiver receiver;
 
     private ServiceDiscovery serviceDiscovery;
     private LoadBalanceHandler<String, String, BasicClientChannelHandler> loadBalanceHandler;
@@ -57,35 +55,18 @@ public class ClientTransfer {
     }
 
     /**
-     * 开启传输服务 先检查配置文件中是否有 zookeeper 的url地址 若有，则将zookeeper中的服务加入当前服务。
-     * 没有则读取配置文件中的ip进行直连服务
-     * 
+     * 开启传输服务
+     * @param sender
      * @param serviceHandler
      */
-    public void start(ClientServiceHandler serviceHandler) {
-        this.serviceHandler = serviceHandler;
+    public void start(RequestSender sender, ResponseReceiver receiver) {
+        this.sender = sender;
+        this.receiver = receiver;
+
         if (workerGroup == null) {
             int workerThread = ConfigParser.getOrDefault("client.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
-
-        String senderClassName = ConfigParser.getOrDefault("client.request-sender", "conglin.clrpc.transfer.net.sender.BasicRequestSender");
-
-        try {
-            this.sender = (RequestSender) Class.forName(senderClassName)
-                    .getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException
-                | ClassNotFoundException e) {
-            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.net.sender.BasicRequestSender' rather than "
-                    + senderClassName);
-        }finally{
-            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.net.sender.BasicRequestSender}
-            this.sender = (this.sender == null) ? new BasicRequestSender() : this.sender;
-        }
-
-        this.sender.init(serviceHandler, this);
-        serviceHandler.submit(this.sender);
     }
 
     /**
@@ -115,12 +96,14 @@ public class ClientTransfer {
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
         serviceDiscovery.stop();
+
         sender.stop();
+        receiver.stop();
     }
 
 
     /**
-     * 获取发送器
+     * 获取请求发送器
      * @return the sender
      */
     public RequestSender getSender() {
@@ -155,7 +138,7 @@ public class ClientTransfer {
      */
     private BasicClientChannelHandler connectServerNode(String serviceName, String remoteAddress) {    
         Bootstrap bootstrap = new Bootstrap();
-        ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(serviceHandler);
+        ClientChannelInitializer channelInitializer = new BasicClientChannelInitializer(receiver);
         bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS))
                 .group(workerGroup)
                 .channel(NioSocketChannel.class)

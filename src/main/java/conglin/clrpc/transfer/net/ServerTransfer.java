@@ -1,17 +1,15 @@
 package conglin.clrpc.transfer.net;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtils;
-import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.handler.BasicServerChannelInitializer;
-import conglin.clrpc.transfer.net.receiver.BasicRequestReceiver;
 import conglin.clrpc.transfer.net.receiver.RequestReceiver;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -27,7 +25,7 @@ public class ServerTransfer{
     private EventLoopGroup workerGroup;
 
     private final String serverAddress;
-    
+
     private RequestReceiver receiver;
 
     public ServerTransfer(){
@@ -39,26 +37,12 @@ public class ServerTransfer{
     // }
     
     /**
-     * 启动Netty 并将其注册到zookeeper中
-     * @param serviceHandler
+     * 启动Netty
+     * @param receiver 
+     * @param preparation 准备工作，其中包含将服务其注册到zookeeper中
      */
-    public void start(ServerServiceHandler serviceHandler){
-        String receiverClassName = ConfigParser.getOrDefault("server.request-receiver", "conglin.clrpc.transfer.net.receiver.BasicRequestReceiver");
-
-        try {
-            this.receiver = (RequestReceiver) Class.forName(receiverClassName)
-                    .getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException
-                | ClassNotFoundException e) {
-            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.net.receiver.BasicRequestReceiver' rather than "
-                    + receiverClassName);
-        }finally{
-            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.net.receiver.BasicRequestReceiver}
-            this.receiver = (this.receiver == null) ? new BasicRequestReceiver() : this.receiver;
-        }
-        receiver.init(serviceHandler);
-
+    public void start(RequestReceiver receiver, Consumer<String> preparation){
+        this.receiver = receiver;
         int bossThread = ConfigParser.getOrDefault("server.thread.boss", 1);
         int workerThread = ConfigParser.getOrDefault("server.thread.worker", 4);
         bossGroup = new NioEventLoopGroup(bossThread);
@@ -78,8 +62,8 @@ public class ServerTransfer{
 
             log.info("Server started on {}", address);
             
-            //注册到zookeeper
-            serviceHandler.registerService(serverAddress);
+            //进行准备工作
+            preparation.accept(serverAddress);
 
             channelFuture.channel().closeFuture().sync();
         }catch(UnknownHostException | InterruptedException e){
@@ -95,5 +79,6 @@ public class ServerTransfer{
     public void stop(){
         if(bossGroup != null) bossGroup.shutdownGracefully();
         if(workerGroup != null) workerGroup.shutdownGracefully();
+        receiver.stop();
     }
 }

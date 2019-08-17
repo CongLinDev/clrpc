@@ -8,9 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * 该注解用于提供服务的 ServiceBean 的方法上
- * 若注解不存在 或 {@link IgnoreService#ignore()} 为 false
- * 则向外部提供该方法的服务
- * 若 {@link IgnoreService#ignore()} 为 true 则不提供该方法的服务
+ * 
+ * {@link IgnoreService#ignore()} 为 true 时不向外界提供该方法的服务调用
  */
 
 @Documented

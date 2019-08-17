@@ -1,8 +1,18 @@
 package conglin.clrpc.bootstrap;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.service.ClientServiceHandler;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.transfer.net.ClientTransfer;
+import conglin.clrpc.transfer.net.receiver.BasicResponseReceiver;
+import conglin.clrpc.transfer.net.receiver.ResponseReceiver;
+import conglin.clrpc.transfer.net.sender.BasicRequestSender;
+import conglin.clrpc.transfer.net.sender.RequestSender;
 
 /**
  * RPC client端启动类
@@ -23,6 +33,8 @@ import conglin.clrpc.transfer.net.ClientTransfer;
  */
 
 public class RpcClientBootstrap {
+
+    private static final Logger log = LoggerFactory.getLogger(RpcClientBootstrap.class);
 
     private ClientTransfer clientTransfer;
 
@@ -78,9 +90,7 @@ public class RpcClientBootstrap {
      * 启动
      */
     public void start(){
-        clientTransfer.start(serviceHandler);
-        // RequestSender 在 ClientTransfer#start() 方法中构建
-        // 注意不要交换两个顺序
+        clientTransfer.start(initRequestSender(), initResponseReceiver());
         serviceHandler.start(clientTransfer.getSender());
     }
 
@@ -90,5 +100,52 @@ public class RpcClientBootstrap {
     public void stop() throws InterruptedException{
         serviceHandler.stop();
         clientTransfer.stop();
+    }
+
+    /**
+     * 获取一个 {@link RequestSender} 
+     * 并调用 {@link RequestSender#init(ClientServiceHandler, ClientTransfer)} 进行初始化
+     * @return
+     */
+    protected RequestSender initRequestSender(){
+        String senderClassName = ConfigParser.getOrDefault("client.request-sender", "conglin.clrpc.transfer.net.sender.BasicRequestSender");
+        RequestSender sender = null;
+        try {
+            sender = (RequestSender) Class.forName(senderClassName)
+                    .getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException e) {
+            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.net.sender.BasicRequestSender' rather than "
+                    + senderClassName);
+        }finally{
+            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.net.sender.BasicRequestSender}
+            sender = (sender == null) ? new BasicRequestSender() : sender;
+        }
+
+        sender.init(serviceHandler, clientTransfer);
+        //serviceHandler.submit(sender);
+        return sender;
+    }
+
+    protected ResponseReceiver initResponseReceiver(){
+        String receiverClassName = ConfigParser.getOrDefault("client.response-receiver", "conglin.clrpc.transfer.net.receiver.BasicResponseReceiver");
+        ResponseReceiver receiver = null;
+
+        try {
+            receiver = (ResponseReceiver) Class.forName(receiverClassName)
+                    .getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException e) {
+            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.net.receiver.BasicResponseReceiver' rather than "
+                    + receiverClassName);
+        }finally{
+            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.net.receiver.BasicResponseReceiver}
+            receiver = (receiver == null) ? new BasicResponseReceiver() : receiver;
+        }
+
+        receiver.init(serviceHandler);
+        return receiver;
     }
 }

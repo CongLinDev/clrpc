@@ -2,6 +2,7 @@ package conglin.clrpc.transfer.net.receiver;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,6 @@ import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
 import conglin.clrpc.transfer.net.message.BasicResponse;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
 
 public class BasicRequestReceiver implements RequestReceiver {
 
@@ -31,29 +30,30 @@ public class BasicRequestReceiver implements RequestReceiver {
     }
 
     @Override
-    public void handleRequest(Channel channel, BasicRequest request) {
-        serviceHandler.submit(() -> {
-            log.debug("Receive request " + request.getRequestId());
-            BasicResponse response = BasicResponse.builder()
-                    .requestId(request.getRequestId())
-                    .build();
-            try {
-                Object result = handleRequestCore(request);
-                response.setResult(result);
-            } catch (NoSuchServiceException | ServiceExecutionException e) {
-                log.error("Request failed: " + e.getMessage());
-                response.setError(e.getDescription());
-            }
-
-            channel.writeAndFlush(response).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-            log.debug("Sending response for request id=" + request.getRequestId());
-        });
+    public BasicResponse handleRequest(BasicRequest request) {
+        log.debug("Receive request " + request.getRequestId());
+        BasicResponse response = new BasicResponse();
+        response.setRequestId(request.getRequestId());
+        try {
+            Object result = handleRequestCore(request);
+            response.setResult(result);
+        } catch (NoSuchServiceException | ServiceExecutionException e) {
+            log.error("Request failed: " + e.getMessage());
+            response.setResult(e);
+        }
+        return response;
     }
 
     @Override
     public void stop() {
         // do nothing
     }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        //if(serviceHandler == null) return null;
+        return serviceHandler.getExecutorService();
+	}
 
     /**
      * 处理客户端请求并生成结果
@@ -107,6 +107,8 @@ public class BasicRequestReceiver implements RequestReceiver {
         if(ignoreService != null && ignoreService.ignore())
             throw new NoSuchMethodException(method.getName());
     }
+
+
 
     // remove cglib reflect
     // private Object cglibReflectInvoke(Object serviceBean, BasicRequest request) throws ServiceExecutionException {

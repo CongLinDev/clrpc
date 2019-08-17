@@ -1,10 +1,11 @@
 package conglin.clrpc.transfer.net.receiver;
 
+import conglin.clrpc.common.util.threadpool.ThreadPool;
 import conglin.clrpc.service.ServerServiceHandler;
 import conglin.clrpc.transfer.net.message.BasicRequest;
-import io.netty.channel.Channel;
+import conglin.clrpc.transfer.net.message.BasicResponse;
 
-public interface RequestReceiver{
+public interface RequestReceiver extends ThreadPool{
     
     /**
      * 初始化
@@ -15,10 +16,10 @@ public interface RequestReceiver{
 
     /**
      * 处理请求
-     * @param channel
      * @param request
+     * @return
      */
-    void handleRequest(Channel channel, BasicRequest request);
+    BasicResponse handleRequest(BasicRequest request);
 
     /**
      * 关闭请求接收器

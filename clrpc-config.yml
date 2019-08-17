@@ -25,6 +25,7 @@ client:
   thread:
     worker: 4
   request-sender: conglin.clrpc.transfer.net.sender.BasicRequestSender
+  response-receiver: conglin.clrpc.transfer.net.receiver.BasicResponseReceiver
 
 service:
   thread:
