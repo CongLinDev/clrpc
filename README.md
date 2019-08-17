@@ -4,9 +4,15 @@
 
 服务提供者将服务注册到 **ZooKeeper** 上后，服务消费者请求 **ZooKeeper** 查找服务后调用服务( *同步服务* 和 *异步服务* )。
 
-## 开始
+## Setup
 
-### 服务端
+**开发阶段** 暂时不提供依赖配置。
+
+你可以使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地进行使用。
+
+## Usage
+
+### Service Provider
 
 ```java
     // 创建服务端
@@ -24,7 +30,7 @@
     }
 ```
 
-### 客户端
+### Service Consumer
 
 ```java
     // 创建客户端
@@ -46,7 +52,7 @@
     bootstrap.stop();
 ```
 
-### 监视器
+### Service Monitor
 
 ```java
     // 由监视器工厂创建监视器
@@ -68,21 +74,21 @@
     }
 ```
 
-## 架构
+## Architecture
 
-![architecture.png](https://i.loli.net/2019/08/09/7B2nMXNZJS1cmDH.png)
+![architecture.png](https://i.loli.net/2019/08/17/tuz5amEcxgZseHM.png)
 
-## 配置
+## Config
 
 配置文件名为 `clrpc-config.yml`，位置默认在项目根目录下。
 
 [配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml)。
 
-### 配置文件位置
+### Config File
 
-文件位置默认在项目根目录下。
+配置文件位置默认在项目根目录下，使用 `.yml` 文件进行配置。
 
-### 配置项
+### Config Items
 
 | Field | Type | Null | Default | Remark |
 | :------: | :------: | :------: | :------: | :------: |
@@ -99,8 +105,7 @@
 | client.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | client.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
 | client.request-sender | conglin.clrpc.<br>transfer.net.<br>sender.<br>RequestSender | YES | conglin.clrpc.<br>transfer.net.<br>sender.<br>BasicRequestSender | 请求发送器 |
-| client.response-receiver | conglin.clrpc.<br>transfer.net.<br>receiver.<br>ResponseReceiver | YES |
-conglin.clrpc.<br>transfer.net.<br>receiver.<br>BasicResponseReceiver | 回复接收器 |
+| client.response-receiver | conglin.clrpc.<br>transfer.net.<br>receiver.<br>ResponseReceiver | YES |conglin.clrpc.<br>transfer.net.<br>receiver.<br>BasicResponseReceiver | 回复接收器 |
 | service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
@@ -109,9 +114,9 @@ conglin.clrpc.<br>transfer.net.<br>receiver.<br>BasicResponseReceiver | 回复�
 | service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
 | service.codec.serialization-handler | conglin.clrpc.<br>transfer.codec.<br>SerializationHandler | YES | conglin.clrpc.<br>transfer.codec.<br>protostuff.<br>ProtostuffSerializationHandler | 序列化处理器，默认使用 Protostuff |
 
-## 测试
+## Test
 
-### 同步
+### Synchronous Test
 
 在同步测试中，**尽量了排除业务逻辑占用时间的干扰**。
 
@@ -125,14 +130,14 @@ conglin.clrpc.<br>transfer.net.<br>receiver.<br>BasicResponseReceiver | 回复�
 2. 处理器：Inter(R) Core(TM) i5-6300HQ CPU @ 2.30GHz
 3. 内存: 12.0 GB
 
-### 结论
+### Conclusion
 
 1. 本机基础上，且只有一台服务器的情况下，1000次的*同步请求*大约在 **650毫秒** 内完成。
 2. 本机基础上，且只有一台服务器的情况下，10000次的*同步请求*大约在 **3300毫秒** 内完成。
 3. 本机基础上，且只有一台服务器的情况下，100000次的*同步请求*大约在 **23000毫秒** 内完成。
 
-## 扩展
+## Extends
 
-`clrpc` 自身暂时不支持 熔断、服务降级等功能。
+`clrpc` 自身暂时不支持**熔断**、**服务降级**等功能。
 
 你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 **熔断**、**高频控制**、**隔离**、**限流**、**限时**、**重试**。
