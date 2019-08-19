@@ -142,3 +142,7 @@
 `clrpc` 自身暂时不支持**熔断**、**服务降级**等功能。
 
 你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 **熔断**、**高频控制**、**隔离**、**限流**、**限时**、**重试**。
+
+## LICENSE
+
+[Apache 2.0](http://apache.org/licenses/LICENSE-2.0)
