@@ -1,6 +1,6 @@
 package conglin.clrpc.common.exception;
 
-import conglin.clrpc.transfer.net.message.BasicRequest;
+import conglin.clrpc.transfer.message.BasicRequest;
 
 public class NoSuchServiceException extends RpcServiceException {
 

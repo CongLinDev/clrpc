@@ -2,7 +2,7 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
-import conglin.clrpc.common.exception.NoSuchServerException;
+import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.future.RpcFuture;
 
 /**
@@ -36,9 +36,9 @@ public interface ObjectProxy {
      * @param methodName 方法名
      * @param args 参数
      * @return
-     * @throws NoSuchServerException
+     * @throws NoSuchProviderException
      */
-    RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchServerException;
+    RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException;
 
     /**
      * 异步调用函数
@@ -49,7 +49,7 @@ public interface ObjectProxy {
      * @param method 方法
      * @param args 参数
      * @return
-     * @throws NoSuchServerException
+     * @throws NoSuchProviderException
      */
-    RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchServerException;
+    RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException;
 }

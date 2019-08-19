@@ -5,7 +5,7 @@ import conglin.clrpc.test.service.HelloService;
 public class HelloServiceImpl implements HelloService{
     @Override
     public String hello() {
-        //System.out.println("hello-server");
-        return "hello-client";
+        //System.out.println("hello-provider");
+        return "hello-consumer";
     }
 }

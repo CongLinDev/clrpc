@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.exception.InvalidZooKeeperNodeException;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
 
 abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap {
@@ -30,14 +29,14 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
     }
 
     @Override
-    public RpcMonitorBootstrap monitor() throws InvalidZooKeeperNodeException {
+    public RpcMonitorBootstrap monitor(){
         String monitorAddress = ConfigParser.getOrDefault("zookeeper.monitor.address", "localhost:2181");
         String configRootPath = ConfigParser.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         return monitor(monitorAddress, configRootPath);
     }
 
     @Override
-    public RpcMonitorBootstrap monitor(String zooKeeperAddress, String rootPath) throws InvalidZooKeeperNodeException {
+    public RpcMonitorBootstrap monitor(String zooKeeperAddress, String rootPath) {
         // 连接ZooKeeper
         if (rootPath.endsWith("/"))
             rootPath = rootPath.substring(0, rootPath.length() - 1);

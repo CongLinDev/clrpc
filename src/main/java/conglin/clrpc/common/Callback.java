@@ -3,6 +3,7 @@ package conglin.clrpc.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.service.proxy.ObjectProxy;
 
 /**
@@ -24,7 +25,7 @@ public interface Callback{
      * @param remoteAddress 服务提供者地址
      * @param e 抛出的异常
      */
-    void fail(String remoteAddress, Exception e);
+    void fail(String remoteAddress, RpcServiceException e);
 
 
 
@@ -40,7 +41,7 @@ public interface Callback{
         }
     
         @Override
-        public void fail(String remoteAddress, Exception e) {
+        public void fail(String remoteAddress, RpcServiceException e) {
             log.error(remoteAddress + ": " + e.getMessage());
         }
     };

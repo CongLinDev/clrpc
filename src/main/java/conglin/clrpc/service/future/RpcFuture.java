@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.exception.ResponseException;
+import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.service.AbstractServiceHandler;
-import conglin.clrpc.transfer.net.message.BasicRequest;
-import conglin.clrpc.transfer.net.message.BasicResponse;
+import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transfer.message.BasicResponse;
 
 public class RpcFuture implements Future<Object> {
 
@@ -182,7 +182,7 @@ public class RpcFuture implements Future<Object> {
         if(!response.isError()){
             callback.success(response.getResult());
         }else{
-            callback.fail(remoteAddress, new ResponseException(response));
+            callback.fail(remoteAddress, (RpcServiceException)response.getResult());
         }
     }
 

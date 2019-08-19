@@ -11,21 +11,22 @@ zookeeper:
   session:
     timeout: 5000 #ms
 
-server:
+provider:
   address: localhost:5100
   thread:
     boss: 1
     worker: 4
-  request-receiver: conglin.clrpc.transfer.net.receiver.BasicRequestReceiver
+  response-sender: conglin.clrpc.transfer.sender.BasicResponseSender
+  request-receiver: conglin.clrpc.transfer.receiver.BasicRequestReceiver
 
-client:
+consumer:
   address: localhost:5200
   session:
     timeout: 5000 #ms
   thread:
     worker: 4
-  request-sender: conglin.clrpc.transfer.net.sender.BasicRequestSender
-  response-receiver: conglin.clrpc.transfer.net.receiver.BasicResponseReceiver
+  request-sender: conglin.clrpc.transfer.sender.BasicRequestSender
+  response-receiver: conglin.clrpc.transfer.receiver.BasicResponseReceiver
 
 service:
   thread:
@@ -38,4 +39,4 @@ service:
   session:
     time-threshold: 5000 #ms
   codec:
-    serialization-handler: conglin.clrpc.transfer.codec.protostuff.ProtostuffSerializationHandler
+    serialization-handler: conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler

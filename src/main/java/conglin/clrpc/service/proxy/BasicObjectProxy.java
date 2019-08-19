@@ -6,10 +6,10 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.exception.NoSuchServerException;
+import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transfer.net.message.BasicRequest;
-import conglin.clrpc.transfer.net.sender.RequestSender;
+import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transfer.sender.RequestSender;
 
 public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
@@ -68,7 +68,7 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
     }
 
     @Override
-    public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchServerException {
+    public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException {
         BasicRequest request = new BasicRequest();
         request.setServiceName(serviceName);
         request.setMethodName(methodName);
@@ -92,7 +92,7 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
     }
 
     @Override
-    public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchServerException {
+    public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException {
         BasicRequest request = new BasicRequest();
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
