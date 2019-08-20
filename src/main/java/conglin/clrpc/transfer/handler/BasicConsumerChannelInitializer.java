@@ -5,6 +5,7 @@ import conglin.clrpc.transfer.handler.codec.RpcEncoder;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -14,7 +15,7 @@ public class BasicConsumerChannelInitializer
         extends ChannelInitializer<SocketChannel>
         implements ConsumerChannelInitializer{
     
-    private BasicConsumerChannelHandler consumerChannelHandler;
+    private ChannelPipeline channelPipeline;
 
     private final ResponseReceiver receiver;
 
@@ -24,18 +25,16 @@ public class BasicConsumerChannelInitializer
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-        ChannelPipeline channelPipeline = ch.pipeline();
-
-        consumerChannelHandler = new BasicConsumerChannelHandler(receiver);
-
-        channelPipeline.addLast(RpcEncoder.getEncoder(BasicRequest.class))
+        this.channelPipeline = ch.pipeline();
+        this.channelPipeline.addLast(RpcEncoder.getEncoder(BasicRequest.class))
                 .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0))
                 .addLast(RpcDecoder.getDecoder(BasicResponse.class))
-                .addLast(consumerChannelHandler);
+                .addLast(new BasicConsumerChannelHandler(receiver));
     }
 
+
     @Override
-    public BasicConsumerChannelHandler getBasicConsumerChannelHandler(){
-        return consumerChannelHandler;
+    public Channel channel(){
+        return channelPipeline.channel();
     }
 }

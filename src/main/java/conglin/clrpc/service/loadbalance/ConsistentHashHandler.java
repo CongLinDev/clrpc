@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * @param <K> key
  * @param <V> value
  */
-public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements LoadBalanceHandler<T, K, V> {
+public class ConsistentHashHandler<T, K, V> implements LoadBalanceHandler<T, K, V> {
 
     private static final Logger log = LoggerFactory.getLogger(ConsistentHashHandler.class);
 
@@ -39,7 +40,11 @@ public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements Loa
     // 这样，只需要到指定的区域中寻找满足条件的值即可
     private TreeMap<Integer, Node<V>> circle;
 
-    public ConsistentHashHandler(){
+    // 用于自定义比较 K 和 V 是否匹配
+    private final BiPredicate<K, V> equalPredicate;
+
+    public ConsistentHashHandler(BiPredicate<K, V> equalPredicate){
+        this.equalPredicate = equalPredicate;
         descriptions = new ConcurrentHashMap<>();
         circle = new TreeMap<>();
     }
@@ -99,7 +104,7 @@ public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements Loa
 
         Node<V> node;
         while((node = circle.get(next)) != null){
-            if(node.getValue().compareTo(k) == 0)
+            if(equalPredicate.test(k, node.getValue()))
                 return node.getValue();
 
             if(++next > tail)
@@ -208,7 +213,7 @@ public class ConsistentHashHandler<T, K, V extends Comparable<K>> implements Loa
                         log.debug("Add new node = " + k);
                     }
                     break;
-                }else if(node.getValue().compareTo(k) == 0){ // 更新epoch
+                }else if(equalPredicate.test(k, node.getValue())){ // 更新epoch
                     if(epoch > node.getEpoch() && !node.setEpoch(epoch)) continue;
                     log.debug("Update old node = " + k);
                     break;

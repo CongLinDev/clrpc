@@ -1,5 +1,7 @@
 package conglin.clrpc.transfer.handler;
 
+import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,7 @@ public class BasicProviderChannelHandler extends SimpleChannelInboundHandler<Bas
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, BasicRequest msg) throws Exception {
-        receiver.getExecutorService().submit(()->{
+        executorService().submit(()->{
             BasicResponse response = receiver.handleRequest(msg);
             sender.sendResponse(ctx.channel(), response);
         });
@@ -36,6 +38,10 @@ public class BasicProviderChannelHandler extends SimpleChannelInboundHandler<Bas
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error(cause.getMessage());
         ctx.close();
+    }
+
+    protected ExecutorService executorService(){
+        return receiver.getExecutorService();
     }
 
 }

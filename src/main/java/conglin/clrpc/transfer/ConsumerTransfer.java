@@ -16,7 +16,6 @@ import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.loadbalance.ConsistentHashHandler;
 import conglin.clrpc.service.loadbalance.LoadBalanceHandler;
-import conglin.clrpc.transfer.handler.BasicConsumerChannelHandler;
 import conglin.clrpc.transfer.handler.BasicConsumerChannelInitializer;
 import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
@@ -43,10 +42,11 @@ public class ConsumerTransfer {
     private ResponseReceiver receiver;
 
     private ServiceDiscovery serviceDiscovery;
-    private LoadBalanceHandler<String, String, BasicConsumerChannelHandler> loadBalanceHandler;
+    private LoadBalanceHandler<String, String, Channel> loadBalanceHandler;
 
     public ConsumerTransfer() {
-        loadBalanceHandler = new ConsistentHashHandler<>();
+        loadBalanceHandler = new ConsistentHashHandler<>(
+            (addr, ch)->((InetSocketAddress)ch.remoteAddress()).toString().compareTo(addr) == 0);
         serviceDiscovery = new BasicServiceDiscovery();
 
         lock = new ReentrantLock();
@@ -120,7 +120,7 @@ public class ConsumerTransfer {
     public void updateConnectedProvider(String serviceName, List<String> providerAddress) {
         loadBalanceHandler.update(serviceName, providerAddress, 
             addr -> connectProviderNode(serviceName, addr),
-            channelHandler -> channelHandler.close()
+            channel -> channel.close()
         );
         signalAvailableChannelHandler();
     }
@@ -137,7 +137,7 @@ public class ConsumerTransfer {
      * @param serviceName
      * @param remoteAddress
      */
-    private BasicConsumerChannelHandler connectProviderNode(String serviceName, String remoteAddress) {    
+    private Channel connectProviderNode(String serviceName, String remoteAddress) {    
         Bootstrap bootstrap = new Bootstrap();
         ConsumerChannelInitializer channelInitializer = new BasicConsumerChannelInitializer(receiver);
         bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS))
@@ -165,8 +165,8 @@ public class ConsumerTransfer {
         } catch (InterruptedException e) {
             log.error(e.getMessage());
         }
-        
-        return channelInitializer.getBasicConsumerChannelHandler();
+
+        return channelInitializer.channel();
     }
 
     /**
@@ -175,7 +175,7 @@ public class ConsumerTransfer {
      * @param random 随机因子
      * @return
      */
-    private BasicConsumerChannelHandler chooseChannelHandler(String serviceName, int random){
+    private Channel chooseChannel(String serviceName, int random){
         while(!loadBalanceHandler.hasNext(serviceName)){
             try{
                 waitingForChannelHandler();
@@ -193,10 +193,9 @@ public class ConsumerTransfer {
      * @return
      */
     public Channel chooseChannel(String serviceName, Object object){
-        if(!(object instanceof String)) return chooseChannelHandler(serviceName, object.hashCode()).getChannel();
-
-        BasicConsumerChannelHandler channelHandler = loadBalanceHandler.get(serviceName, (String)object);
-        return (channelHandler == null) ? null : channelHandler.getChannel();
+        if(!(object instanceof String)) 
+            return chooseChannel(serviceName, object.hashCode());
+        return loadBalanceHandler.get(serviceName, (String)object);
     }
 
     /**

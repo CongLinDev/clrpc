@@ -15,40 +15,38 @@
 ### Service Provider
 
 ```java
-    // 创建服务端
+    // 创建服务提供者
     RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
-    try{
-        // 发布服务并开启服务端
-        bootstrap.publishService("service1", ServiceBean1.class)
-                 .publishService("service2", new ServiceBean2())
-                 .publishService(Interface3.class, Implement3.class)
-                 .start();
-    }finally{
-        // 关闭服务端
-        bootstrap.stop();
-    }
+    // 发布服务并开启服务
+    bootstrap.publishService("service1", ServiceBean1.class)
+                .publishService("service2", new ServiceBean2())
+                .publishService(Interface3.class, Implement3.class)
+                .start();
+    // 关闭服务
+    bootstrap.stop();
+
 ```
 
 ### Service Consumer
 
 ```java
-    // 创建客户端
+    // 创建服务消费者
     RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-    // 开启客户端
+    // 开启服务消费者
     bootstrap.start();
 
     // 订阅同步服务
     Interface1 i1 = bootstrap.subscribeService("service1");
     Interface2 i2 = bootstrap.subscribeService(Interface2.class);
 
-    // 获取异步服务
+    // 订阅异步服务
     ObjectProxy proxy = bootstrap.subscribeAsynchronousService("service3");
 
     // 下面是你的业务逻辑代码
     // ......
 
-    // 关闭客户端
+    // 关闭服务消费者
     bootstrap.stop();
 ```
 
@@ -76,7 +74,7 @@
 
 ## Architecture
 
-![architecture.png](https://i.loli.net/2019/08/17/tuz5amEcxgZseHM.png)
+![architecture.png](https://i.loli.net/2019/08/19/8dj7hsVFIpqXaAv.png)
 
 ## Config
 
