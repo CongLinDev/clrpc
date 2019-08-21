@@ -74,7 +74,7 @@
 
 ## Architecture
 
-![architecture.png](https://i.loli.net/2019/08/19/8dj7hsVFIpqXaAv.png)
+![architecture.png](https://i.loli.net/2019/08/21/Olznx6P2HImWqgX.png)
 
 ## Config
 
@@ -135,12 +135,12 @@
 2. 本机基础上，且只有一台服务器的情况下，10000次的*同步请求*大约在 **3300毫秒** 内完成。
 3. 本机基础上，且只有一台服务器的情况下，100000次的*同步请求*大约在 **23000毫秒** 内完成。
 
-## Extends
+## Extension
 
 `clrpc` 自身暂时不支持**熔断**、**服务降级**等功能。
 
 你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 **熔断**、**高频控制**、**隔离**、**限流**、**限时**、**重试**。
 
-## LICENSE
+## License
 
 [Apache 2.0](http://apache.org/licenses/LICENSE-2.0)

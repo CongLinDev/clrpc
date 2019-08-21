@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory;
  * @param <K> key
  * @param <V> value
  */
-public class ConsistentHashHandler<T, K, V> implements LoadBalanceHandler<T, K, V> {
+public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V> {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsistentHashHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsistentHashLoadBalancer.class);
 
     private final int _16_BIT_MASK = 0xFFFF;
     private final int _32_16_BIT_MASK = 0xFFFF0000;
@@ -32,18 +32,18 @@ public class ConsistentHashHandler<T, K, V> implements LoadBalanceHandler<T, K, 
     // T为类型
     // Integer 高16位代表该键所在的区域 region 
     // 低16位代表 该键的 epoch 方便淘汰算法将无效的V值淘汰
-    private Map<T, AtomicInteger> descriptions;
+    protected Map<T, AtomicInteger> descriptions;
 
     // circle 模拟环来存放 K-V
     // Integer 高16位为 descriptions 中的区域 region
     // 低16位为 hash(K) 将 K-V 打乱
     // 这样，只需要到指定的区域中寻找满足条件的值即可
-    private TreeMap<Integer, Node<V>> circle;
+    protected TreeMap<Integer, Node<V>> circle;
 
     // 用于自定义比较 K 和 V 是否匹配
-    private final BiPredicate<K, V> equalPredicate;
+    protected final BiPredicate<K, V> equalPredicate;
 
-    public ConsistentHashHandler(BiPredicate<K, V> equalPredicate){
+    public ConsistentHashLoadBalancer(BiPredicate<K, V> equalPredicate){
         this.equalPredicate = equalPredicate;
         descriptions = new ConcurrentHashMap<>();
         circle = new TreeMap<>();
@@ -209,8 +209,11 @@ public class ConsistentHashHandler<T, K, V> implements LoadBalanceHandler<T, K, 
                 Node<V> node;
                 if((node = circle.get(next)) == null){ // 插入新值
                     if(start != null && epoch == (headAndEpoch.get() & _16_BIT_MASK)){
-                        circle.put(next, new Node<V>(epoch, start.apply(k)));
-                        log.debug("Add new node = " + k);
+                        V v = start.apply(k);
+                        if(v != null){
+                            circle.put(next, new Node<V>(epoch, v));
+                            log.debug("Add new node = " + k);
+                        }
                     }
                     break;
                 }else if(equalPredicate.test(k, node.getValue())){ // 更新epoch

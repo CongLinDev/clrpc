@@ -58,13 +58,11 @@ public class BasicServiceRegistry implements ServiceRegistry {
 
     @Override
     public void stop() {
-        if(zooKeeper != null){
-            try {
-                zooKeeper.close();
-                log.debug("Service registry shuts down.");
-            } catch (InterruptedException e) {
-                log.error(e.getMessage());
-            }
+        try{
+            ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
+            log.debug("Service registry shuted down.");
+        }catch(InterruptedException e){
+            log.error(e.getMessage());
         }
     }
 }

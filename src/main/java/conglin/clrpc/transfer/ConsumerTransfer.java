@@ -2,7 +2,6 @@ package conglin.clrpc.transfer;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -14,15 +13,14 @@ import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtils;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
-import conglin.clrpc.service.loadbalance.ConsistentHashHandler;
-import conglin.clrpc.service.loadbalance.LoadBalanceHandler;
+import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
+import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.transfer.handler.BasicConsumerChannelInitializer;
 import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
 import conglin.clrpc.transfer.sender.RequestSender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -42,10 +40,10 @@ public class ConsumerTransfer {
     private ResponseReceiver receiver;
 
     private ServiceDiscovery serviceDiscovery;
-    private LoadBalanceHandler<String, String, Channel> loadBalanceHandler;
+    private LoadBalancer<String, String, Channel> loadBalancer;
 
     public ConsumerTransfer() {
-        loadBalanceHandler = new ConsistentHashHandler<>(
+        loadBalancer = new ConsistentHashLoadBalancer<>(
             (addr, ch)->((InetSocketAddress)ch.remoteAddress()).toString().compareTo(addr) == 0);
         serviceDiscovery = new BasicServiceDiscovery();
 
@@ -118,10 +116,9 @@ public class ConsumerTransfer {
      * @param providerAddress 服务器地址
      */
     public void updateConnectedProvider(String serviceName, List<String> providerAddress) {
-        loadBalanceHandler.update(serviceName, providerAddress, 
+        loadBalancer.update(serviceName, providerAddress, 
             addr -> connectProviderNode(serviceName, addr),
-            channel -> channel.close()
-        );
+            Channel::close);
         signalAvailableChannelHandler();
     }
 
@@ -129,7 +126,7 @@ public class ConsumerTransfer {
      * 取消连接所有节点的服务器
      */
     private void disconnectAllProviderNode() {
-        loadBalanceHandler.forEach(channelHandler -> channelHandler.close());
+        loadBalancer.forEach(Channel::close);
     }
 
     /**
@@ -147,25 +144,13 @@ public class ConsumerTransfer {
         log.info("Consumer started on {}", LOCAL_ADDRESS);
 
         InetSocketAddress socketRemoteAddress = IPAddressUtils.splitHostnameAndPortSilently(remoteAddress);
-        ChannelFuture channelFuture = bootstrap.connect(socketRemoteAddress);
-
-        CountDownLatch latch = new CountDownLatch(1);
-        
-        channelFuture.addListener(future -> {
-            if (future.isSuccess()) {
-                log.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
-            } else {
-                log.error("Cannot connect to remote provider. Remote Address : " + remoteAddress);
-            }
-            latch.countDown();
-        });
-
         try {
-            latch.await();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            bootstrap.connect(socketRemoteAddress).sync();
+        } catch (InterruptedException e1) {
+            log.error("Cannot connect to remote provider. Remote Address : " + remoteAddress);
+            return null;
         }
-
+        log.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
         return channelInitializer.channel();
     }
 
@@ -176,14 +161,14 @@ public class ConsumerTransfer {
      * @return
      */
     private Channel chooseChannel(String serviceName, int random){
-        while(!loadBalanceHandler.hasNext(serviceName)){
+        while(!loadBalancer.hasNext(serviceName)){
             try{
                 waitingForChannelHandler();
             }catch(InterruptedException e){
                 log.error("Waiting for available node is interrupted!", e);
             }
         }
-        return loadBalanceHandler.get(serviceName, random);
+        return loadBalancer.get(serviceName, random);
     }
 
     /**
@@ -195,7 +180,7 @@ public class ConsumerTransfer {
     public Channel chooseChannel(String serviceName, Object object){
         if(!(object instanceof String)) 
             return chooseChannel(serviceName, object.hashCode());
-        return loadBalanceHandler.get(serviceName, (String)object);
+        return loadBalancer.get(serviceName, (String)object);
     }
 
     /**

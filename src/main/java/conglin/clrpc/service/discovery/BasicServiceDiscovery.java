@@ -48,12 +48,11 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
 
     @Override
     public void stop(){
-        if(zooKeeper != null){
-            try{
-                zooKeeper.close();
-            }catch(InterruptedException e){
-                log.error("ZooKeeper stops with error. " + e.getMessage());
-            }
+        try{
+            ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
+            log.debug("Service discovery shuted down.");
+        }catch(InterruptedException e){
+            log.error(e.getMessage());
         }
     }
 

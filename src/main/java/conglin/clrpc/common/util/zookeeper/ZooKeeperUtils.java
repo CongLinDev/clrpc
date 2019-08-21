@@ -113,6 +113,18 @@ public class ZooKeeperUtils {
         return keeper;
     }
 
+
+    /**
+     * 关闭与ZooKeeper的连接
+     * @param keeper
+     * @throws InterruptedException
+     */
+    public static void disconnectZooKeeper(ZooKeeper keeper) throws InterruptedException {
+        if(keeper != null){
+            keeper.close();
+        }
+    }
+
     /**
      * 监视指定路径下所有子节点的数据
      * 

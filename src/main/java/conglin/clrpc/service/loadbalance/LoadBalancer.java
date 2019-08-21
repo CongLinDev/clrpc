@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  * @param <K> key
  * @param <V> value
  */
-public interface LoadBalanceHandler<T, K, V> {
+public interface LoadBalancer<T, K, V> {
 
     /**
      * 使用列表更新数据

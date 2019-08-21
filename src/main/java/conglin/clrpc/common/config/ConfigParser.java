@@ -30,8 +30,10 @@ public class ConfigParser{
             tempConfig = (Map<String, Object>)Map.class.cast(yaml.load(inputStream));
         }catch(FileNotFoundException e){
             log.error("You must add config file named 'clrpc-config.yml' in your project.");
+            tempConfig = new HashMap<>();
         }catch(IOException | ClassCastException e){
             log.error(e.getMessage());
+            tempConfig = new HashMap<>();
         }finally{
             configs = tempConfig;
         }

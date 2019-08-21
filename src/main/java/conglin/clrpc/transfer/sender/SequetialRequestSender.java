@@ -60,12 +60,11 @@ public class SequetialRequestSender extends BasicRequestSender {
 
     @Override
     public void stop() {
-        if(keeper != null){
-            try {
-                keeper.close();
-            } catch (InterruptedException e) {
-                log.error(e.getMessage());
-            }
+        try{
+            ZooKeeperUtils.disconnectZooKeeper(keeper);
+            log.debug("Sequetial request sender shuted down.");
+        }catch(InterruptedException e){
+            log.error(e.getMessage());
         }
     }
 }

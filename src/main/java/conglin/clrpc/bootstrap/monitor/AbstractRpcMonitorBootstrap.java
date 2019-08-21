@@ -71,7 +71,7 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
 
     @Override
     public void stop() throws InterruptedException {
-        zooKeeper.close();    
+        ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
     }
 
     /**

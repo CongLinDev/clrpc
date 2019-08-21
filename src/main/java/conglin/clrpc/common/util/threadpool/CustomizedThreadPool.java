@@ -34,7 +34,8 @@ public class CustomizedThreadPool implements ThreadPool {
         return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS,
             queues == 0 ? new SynchronousQueue<Runnable>() :
                 (queues < 0 ? new LinkedBlockingQueue<Runnable>() :
-                     new LinkedBlockingQueue<Runnable>(queues))
+                     new LinkedBlockingQueue<Runnable>(queues)),
+                new ThreadPoolExecutor.CallerRunsPolicy()
             );
     }
 }
