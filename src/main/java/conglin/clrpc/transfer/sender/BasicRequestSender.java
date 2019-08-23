@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.ConsumerServiceHandler;
+import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 import io.netty.channel.Channel;
@@ -40,7 +41,7 @@ public class BasicRequestSender implements RequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
-        RpcFuture future = generateFuture(this::generateRequestId, request);
+        BasicFuture future = generateFuture(this::generateRequestId, request);
         String addr = sendRequestCore(request);
         future.setRemoteAddress(addr);
         return future;
@@ -56,8 +57,8 @@ public class BasicRequestSender implements RequestSender {
     }
 
     @Override
-    public void sendRequest(RpcFuture future) throws NoSuchProviderException {
-        sendRequestCore(future.getRemoteAddress(), future.getRequest());
+    public void resendRequest(String remoteAddress, BasicRequest request) throws NoSuchProviderException {
+        sendRequestCore(remoteAddress, request);
     }
 
     /**
@@ -67,12 +68,12 @@ public class BasicRequestSender implements RequestSender {
      * @param request
      * @return
      */
-    protected RpcFuture generateFuture(Function<String, Long> requestIdGenerator, BasicRequest request){
+    protected BasicFuture generateFuture(Function<String, Long> requestIdGenerator, BasicRequest request){
         String serviceName = request.getServiceName();
         Long requestId = requestIdGenerator.apply(serviceName);
         request.setRequestId(requestId);
 
-        RpcFuture future = new RpcFuture(request);
+        BasicFuture future = new BasicFuture(this, request);
         serviceHandler.putFuture(request.getRequestId(), future);
         return future;
     }

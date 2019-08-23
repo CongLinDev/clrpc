@@ -33,10 +33,6 @@ public class ProviderTransfer{
     public ProviderTransfer(){
         this.providerAddress = ConfigParser.getOrDefault("provider.address", "localhost:5100");
     }
-
-    // public ProviderTransfer(String providerAddress){
-    //     this.providerAddress = providerAddress;
-    // }
     
     /**
      * 启动Netty

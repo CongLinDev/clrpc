@@ -4,6 +4,7 @@ import org.apache.zookeeper.CreateMode;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
+import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 
@@ -14,7 +15,7 @@ import conglin.clrpc.transfer.message.BasicRequest;
 public class SequetialServiceRequestSender extends SequetialRequestSender {
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
-        RpcFuture future = generateFuture(this::generateRequestId, request);
+        BasicFuture future = generateFuture(this::generateRequestId, request);
         String addr = sendRequestCore(request);
         future.setRemoteAddress(addr);
         return future;

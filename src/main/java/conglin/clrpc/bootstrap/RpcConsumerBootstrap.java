@@ -93,7 +93,7 @@ public class RpcConsumerBootstrap {
      */
     public void start(){
         consumerTransfer.start(initSender(), initReceiver());
-        serviceHandler.start(consumerTransfer.getSender());
+        serviceHandler.start();
     }
 
     /**

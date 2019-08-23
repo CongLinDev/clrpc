@@ -1,7 +1,10 @@
 package conglin.clrpc.service;
 
 import java.lang.reflect.Proxy;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -56,9 +59,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 重发请求
      * @param sender
      */
-    public void start(final RequestSender sender){
-        // testing future check...
-        // checkFuture(sender);
+    public void start(){
+        checkFuture();
     }
     
 
@@ -107,26 +109,21 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 超时重试
      * @param sender
      */
-    // private void checkFuture(final RequestSender sender){
-    //     final long MAX_DELARY = 3000; //最大延迟为3000 ms
-    //     // submit(()->{
-    //     //     while(!Thread.currentThread().isInterrupted()){
-    //     //         Iterator<RpcFuture> iterator = rpcFutures.values().iterator();
-    //     //         while(iterator.hasNext()){
-    //     //             RpcFuture f = iterator.next();
-    //     //             if(f.futureTime() > MAX_DELARY){
-    //     //                 f.resetTime();
-    //     //                 sender.sendRequest(f);
-    //     //             }
-    //     //         }
-    //     //     }
-    //     // });
-    //     // new Timer("check uncomplete future", true).schedule(new TimerTask(){
+    private void checkFuture(){
+        final long MAX_DELARY = 3000; //最大延迟为3000 ms
+        new Timer("check-uncomplete-future", true).schedule(new TimerTask(){
         
-    //     //     @Override
-    //     //     public void run() {
-                
-    //     //     }
-    //     // }, MAX_DELARY);
-    // }
+            @Override
+            public void run() {
+                Iterator<RpcFuture> iterator = rpcFutures.values().iterator();
+                while(iterator.hasNext()){
+                    RpcFuture f = iterator.next();
+                    if(!f.isDone() && f.timeout()){
+                        f.retry();
+                        log.warn("Service response time is too slow. Request ID = " + f.identifier() + ". Retry...");
+                    }
+                }
+            }
+        }, MAX_DELARY);
+    }
 }

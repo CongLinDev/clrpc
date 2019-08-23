@@ -2,7 +2,7 @@
 
 这是一个基于 `Java` 、 由 **Netty** 负责传输 、**Protostuff** 负责编解码的简单的RPC(远程过程调用)工具。
 
-服务提供者将服务发布注册到 **ZooKeeper** 上后，服务消费者请求 **ZooKeeper** 查找订阅服务后调用服务( *同步服务* 和 *异步服务* )。
+服务提供者将服务发布注册到 **ZooKeeper** 上后，服务消费者请求 **ZooKeeper** 查找订阅服务后与服务提供者通信调用服务( 支持 *同步服务* 和 *异步服务* )。
 
 ## Setup
 
@@ -110,7 +110,7 @@
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
-| service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值，单位为毫秒 |
+| service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值即最大超时时间，单位为毫秒 |
 | service.codec.serialization-handler | conglin.clrpc<br>.common.codec<br>.SerializationHandler | YES | conglin.clrpc.<br>common.codec.<br>protostuff.<br>ProtostuffSerializationHandler | 序列化处理器，默认使用 Protostuff |
 
 ## Test

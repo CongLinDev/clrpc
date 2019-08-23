@@ -1,135 +1,70 @@
 package conglin.clrpc.service.future;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.exception.RpcServiceException;
-import conglin.clrpc.service.AbstractServiceHandler;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transfer.sender.RequestSender;
 
-public class RpcFuture implements Future<Object> {
+abstract public class RpcFuture implements Future<Object> {
+    protected final FutureSynchronizer synchronizer;
 
-    private static final Logger log = LoggerFactory.getLogger(RpcFuture.class);
+    protected static ExecutorService executorService;
+    protected Callback futureCallback;
 
-    private final FutureSynchronizer synchronizer;
+    protected static final long TIME_THRESHOLD = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
 
-    private final BasicRequest request;
-    private BasicResponse response;
-    private String remoteAddress;
+    protected long startTime; // 开始时间
 
-    private long startTime;
-    private static final long timeThreshold = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
+    protected RequestSender sender;
 
-    private Callback futureCallback;
-
-    private static AbstractServiceHandler serviceHandler;
-
-    public RpcFuture(BasicRequest request){
-        this.request = request;
+    public RpcFuture(RequestSender sender){
+        this.sender = sender;
         this.synchronizer = new FutureSynchronizer();
-        this.startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
     }
 
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        throw new UnsupportedOperationException();
-    }
+    
+    /**
+     * 重试
+     */
+    abstract public void retry();
+
+    abstract public long identifier();
 
     @Override
-    public boolean isCancelled() {
-        throw new UnsupportedOperationException();
-    }
+    abstract public boolean cancel(boolean mayInterruptIfRunning);
 
     @Override
-    public boolean isDone() {
-        return synchronizer.isDone();
-    }
+    abstract public boolean isCancelled();
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException {
-        synchronizer.acquire(-1);
-        return (response != null) ? response.getResult() : null;
-    }
+    abstract public boolean isDone();
 
     @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        if(synchronizer.tryAcquireNanos(-1, unit.toNanos(timeout))){
-            return (response != null) ? response.getResult() : null;
-        }else{
-            throw new TimeoutException("Timeout: " + request.toString());
-        }
-    }
+    abstract public Object get() throws InterruptedException, ExecutionException;
+
+    @Override
+    abstract public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 
     /**
      * 收到回复信息后
      * 调用回调函数
-     * 判断回复时间是否超过阈值
-     * @param response
+     * @param result
      */
-    public void done(BasicResponse response){
-        this.response = response;
-        synchronizer.release(1);
-
-        runCallback(futureCallback);
-
-        long responseTime = futureTime();
-        if(responseTime > timeThreshold){
-            log.warn("Service response time is too slow. Request ID = "
-                 + response.getRequestId()
-                 + " Response Time(ms) = "
-                 + responseTime);
-        }
-    }
+    abstract public void done(Object result);
 
     /**
-     * 返回该 Future 从创建到调用该函数所经历的时间
-     * 单位为 ms
+     * 返回该future是否超时
      * @return
      */
-    public long futureTime(){
-        return System.currentTimeMillis() - startTime;
-    }
-
-    /**
-     * 重置开始时间
-     */
-    public void resetTime(){
-        this.startTime = System.currentTimeMillis();
-    }
-
-    /**
-     * 获得与该 RpcFuture 相关联的 BasicRequest
-     * @return
-     */
-    public BasicRequest getRequest(){
-        return this.request;
-    }
-
-    /**
-     * 获取该 RpcFuture 相关的远端地址
-     * 即 请求发送的目的地地址
-     * @return
-     */
-    public String getRemoteAddress(){
-        return this.remoteAddress;
-    }
-
-    /**
-     * 设置该 RpcFuture 相关的远端地址
-     * 即 请求发送的目的地地址
-     * @param addr
-     */
-    public void setRemoteAddress(String addr){
-        this.remoteAddress = addr;
+    public boolean timeout(){
+        return TIME_THRESHOLD + startTime > System.currentTimeMillis();
     }
 
     /**
@@ -147,46 +82,42 @@ public class RpcFuture implements Future<Object> {
     }
 
     /**
-     * 注册到一个 {@link AbstractServiceHandler} 上
-     * {@link RpcFuture#runCallback(Callback)} 中的
-     * 回调函数将提交到这个线程池中
-     * 
-     * @param serviceHandler
-     */
-    public static void registerThreadPool(AbstractServiceHandler serviceHandler){
-        RpcFuture.serviceHandler = serviceHandler;
-    }
-
-    // public void future
-
-    /**
      * 若存在有注册的 {@link ServiceHandler} ，则使用此线程池
      * 反之使用当前线程顺序执行
      * @param callback
      */
-    private void runCallback(Callback callback){
+    protected void runCallback(Callback callback){
         if(callback == null) return;
         
-        if(serviceHandler != null){
-            serviceHandler.submit(() -> runCallbackCore(callback));
+        if(executorService != null){
+            executorService.submit(() -> runCallbackCore(callback));
         }else{
             runCallbackCore(callback);
         }
     }
 
     /**
-     * 运行回调函数
+     * 回调函数具体实现函数
      * @param callback
      */
-    private void runCallbackCore(Callback callback){
-        if(!response.isError()){
-            callback.success(response.getResult());
-        }else{
-            callback.fail(remoteAddress, (RpcServiceException)response.getResult());
-        }
+    abstract protected void runCallbackCore(Callback callback);
+
+    /**
+     * 重置开始时间
+     */
+    protected void resetTime(){
+        this.startTime = System.currentTimeMillis();
     }
 
     /**
+     * 注册一个线程池
+     * @param executorService
+     */
+    public static void registerThreadPool(ExecutorService executorService){
+        RpcFuture.executorService = executorService;
+    }
+
+        /**
      * 用于RpcFuture的同步器
      */
     class FutureSynchronizer extends AbstractQueuedSynchronizer{
@@ -219,5 +150,4 @@ public class RpcFuture implements Future<Object> {
             return getState() == DONE;
         }
     }
-
 }

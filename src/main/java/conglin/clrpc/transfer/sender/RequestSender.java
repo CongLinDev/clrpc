@@ -45,11 +45,13 @@ public interface RequestSender extends Runnable{
 
     /**
      * 该方法仅用于未收到请求后的重试
-     * @param future
+     * 使用者应该使用 {@link RpcFuture#retry()} 进行重试
+     * @param remoteAddress
+     * @param request
      * @return
      * @throws NoSuchProviderException
      */
-    void sendRequest(RpcFuture future) throws NoSuchProviderException;
+    void resendRequest(String remoteAddress, BasicRequest request) throws NoSuchProviderException;
 
     /**
      * 关闭发送器
