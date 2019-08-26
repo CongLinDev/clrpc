@@ -49,7 +49,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @param sender
      * @return
      */
-    public ObjectProxy subscribeAsynchronousService(String serviceName, RequestSender sender){
+    public ObjectProxy subscribeServiceAsync(String serviceName, RequestSender sender){
         return new BasicObjectProxy(serviceName, sender);
     }
 

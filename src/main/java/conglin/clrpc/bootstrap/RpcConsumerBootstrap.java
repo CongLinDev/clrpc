@@ -27,7 +27,7 @@ import conglin.clrpc.transfer.sender.RequestSender;
  *     Interface2 i2 = bootstrap.subscribeService(Interface2.class);
  * 
  *     // 订阅异步服务
- *     ObjectProxy proxy = bootstrap.subscribeAsynchronousService("service3");
+ *     ObjectProxy proxy = bootstrap.subscribeServiceAsync("service3");
  *     
  * </pre></blockquote>
  * 
@@ -74,8 +74,8 @@ public class RpcConsumerBootstrap {
      * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeAsynchronousService(Class<?> interfaceClass){
-        return subscribeAsynchronousService(interfaceClass.getSimpleName());
+    public ObjectProxy subscribeServiceAsync(Class<?> interfaceClass){
+        return subscribeServiceAsync(interfaceClass.getSimpleName());
     }
 
     /**
@@ -83,9 +83,9 @@ public class RpcConsumerBootstrap {
      * @param serviceName 返回代理服务类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeAsynchronousService(String serviceName){
+    public ObjectProxy subscribeServiceAsync(String serviceName){
         consumerTransfer.subscribeService(serviceName);
-        return serviceHandler.subscribeAsynchronousService(serviceName, consumerTransfer.getSender());
+        return serviceHandler.subscribeServiceAsync(serviceName, consumerTransfer.getSender());
     }
 
     /**

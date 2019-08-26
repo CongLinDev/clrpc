@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.annotation.CacheableService;
 import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.NoSuchServiceException;
@@ -21,6 +22,8 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     protected ProviderServiceHandler serviceHandler;
 
+    protected CacheManager<BasicRequest, BasicResponse> cacheManager;
+
     public BasicRequestReceiver(){
         
     }
@@ -30,13 +33,27 @@ public class BasicRequestReceiver implements RequestReceiver {
         this.serviceHandler = serviceHandler;
     }
 
+
+    @Override
+    public void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager) {
+        this.cacheManager = cacheManager;
+    }
+
     @Override
     public BasicResponse handleRequest(BasicRequest request) {
         log.debug("Receive request " + request.getRequestId());
-        BasicResponse response = new BasicResponse();
+        BasicResponse response = null;
+
+        // fetch from cache
+        if((response = getCache(request)) != null) return response;
+
+        response = new BasicResponse();
         response.setRequestId(request.getRequestId());
         try {
             handleRequestCore(request, response);
+
+            // put cache
+            putCache(request, response);
         } catch (NoSuchServiceException | ServiceExecutionException e) {
             log.error("Request failed: " + e.getMessage());
             response.signError();
@@ -52,9 +69,30 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     @Override
     public ExecutorService getExecutorService() {
-        //if(serviceHandler == null) return null;
         return serviceHandler.getExecutorService();
-	}
+    }
+    
+    /**
+     * 检查缓存中是否有需要的结果
+     * @param request
+     * @return
+     */
+    protected BasicResponse getCache(BasicRequest request){
+        if(cacheManager == null) return null;
+        log.debug("Fetching cached response. Request id = " + request.getRequestId());
+        return cacheManager.get(request);
+    }
+
+    /**
+     * 将可缓存的数据放入缓存
+     * @param request
+     * @param response
+     */
+    protected void putCache(BasicRequest request, BasicResponse response){
+        if(cacheManager == null || !response.canCacheForProvider()) return;
+        log.debug("Caching request and response. Request id = " + request.getRequestId());
+        cacheManager.put(request, response);
+    }
 
     /**
      * 处理客户端请求并生成结果

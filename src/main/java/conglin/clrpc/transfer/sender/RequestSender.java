@@ -2,10 +2,12 @@ package conglin.clrpc.transfer.sender;
 
 import java.util.function.BiFunction;
 
+import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transfer.message.BasicResponse;
 import io.netty.channel.Channel;
 
 public interface RequestSender extends Runnable{
@@ -25,6 +27,13 @@ public interface RequestSender extends Runnable{
      *                        返回值为 {@link io.netty.channel.Channel} 使用该对象发送消息
      */
     void init(ConsumerServiceHandler serviceHandler, BiFunction<String, Object, Channel> providerChooser);
+
+
+    /**
+     * 注册缓冲池
+     * @param cacheManager
+     */
+    void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager);
 
     /**
      * 发送请求

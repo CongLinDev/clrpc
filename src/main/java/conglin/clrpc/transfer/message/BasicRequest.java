@@ -56,4 +56,18 @@ public class BasicRequest {
                 + Arrays.toString(parameterTypes) + "]";
     }
 
+    @Override
+    public int hashCode() {
+        return serviceName.hashCode() ^ methodName.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this) return true;
+        if(! (obj instanceof BasicRequest)) return false;
+        BasicRequest r = (BasicRequest)obj;
+        return this.serviceName.equals(r.getServiceName()) &&
+                this.methodName.equals(r.getMethodName());
+    }
+
 }

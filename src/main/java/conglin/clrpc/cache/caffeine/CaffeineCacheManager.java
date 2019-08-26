@@ -46,13 +46,15 @@ public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, Bas
             .build();
     }
 
-
     public void put(BasicRequest key, BasicResponse value) {
         cache.put(key, value);
     }
 
 
     public BasicResponse get(BasicRequest key) {
-        return cache.getIfPresent(key);
+        BasicResponse value = cache.getIfPresent(key);
+        if(value == null) return null;
+        value.setRequestId(key.getRequestId());
+        return value;
     }
 }

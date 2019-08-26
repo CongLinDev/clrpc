@@ -1,5 +1,6 @@
 package conglin.clrpc.transfer.receiver;
 
+import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.util.threadpool.ThreadPool;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.transfer.message.BasicRequest;
@@ -12,6 +13,12 @@ public interface RequestReceiver extends ThreadPool{
      * @param serviceHandler
      */
     void init(ProviderServiceHandler serviceHandler);
+
+    /**
+     * 注册缓冲池
+     * @param cacheManager
+     */
+    void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager);
 
 
     /**

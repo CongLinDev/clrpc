@@ -15,7 +15,7 @@ public class AsyncConsumerTimeTest {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
         System.out.println("Consumer opening...");
         bootstrap.start();
-        ObjectProxy objectProxy = bootstrap.subscribeAsynchronousService(HelloService.class);
+        ObjectProxy objectProxy = bootstrap.subscribeServiceAsync(HelloService.class);
 
         ExecutorService executorService = Executors.newFixedThreadPool(4);
         final CountDownLatch countDownLatch = new CountDownLatch(1000);

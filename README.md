@@ -41,7 +41,7 @@
     Interface2 i2 = bootstrap.subscribeService(Interface2.class);
 
     // 订阅异步服务
-    ObjectProxy proxy = bootstrap.subscribeAsynchronousService("service3");
+    ObjectProxy proxy = bootstrap.subscribeServiceAsync("service3");
 
     // 下面是你的业务逻辑代码
     // ......

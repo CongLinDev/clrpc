@@ -8,11 +8,13 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transfer.message.BasicResponse;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 
@@ -27,6 +29,8 @@ public class BasicRequestSender implements RequestSender {
     protected ConsumerServiceHandler serviceHandler;
     protected BiFunction<String, Object, Channel> providerChooser;
 
+    protected CacheManager<BasicRequest, BasicResponse> cacheManager;
+
     @Override
     public void run() {
         // do nothing
@@ -38,10 +42,20 @@ public class BasicRequestSender implements RequestSender {
         this.providerChooser = providerChooser;
     }
 
+    /**
+     * 注册缓冲池
+     * @param cacheManager
+     */
+    public void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager){
+        this.cacheManager = cacheManager;
+    }
+
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
         BasicFuture future = generateFuture(this::generateRequestId, request);
+        if(!putFuture(request, future)) return future;
+
         String addr = sendRequestCore(request);
         future.setRemoteAddress(addr);
         return future;
@@ -52,6 +66,8 @@ public class BasicRequestSender implements RequestSender {
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchProviderException {
         // BasicRequestSender 发送器使用 UUID 生成 requestID
         RpcFuture future = generateFuture(this::generateRequestId, request);
+        if(!putFuture(request, future)) return future;
+
         sendRequestCore(remoteAddress, request);
         return future;
     }
@@ -71,11 +87,27 @@ public class BasicRequestSender implements RequestSender {
     protected BasicFuture generateFuture(Function<String, Long> requestIdGenerator, BasicRequest request){
         String serviceName = request.getServiceName();
         Long requestId = requestIdGenerator.apply(serviceName);
-        request.setRequestId(requestId);
+        request.setRequestId(requestId);    
+        return new BasicFuture(this, request);
+    }
 
-        BasicFuture future = new BasicFuture(this, request);
-        serviceHandler.putFuture(request.getRequestId(), future);
-        return future;
+    /**
+     * 保存future（实质为读取缓存）
+     * 若能从缓存读取信息则不保存future，返回 false
+     * @param request
+     * @param future
+     * @return
+     */
+    protected boolean putFuture(BasicRequest request, RpcFuture future){
+        BasicResponse responseCache = null;
+        if(cacheManager != null &&
+            (responseCache = cacheManager.get(request)) != null ){
+            log.debug("Fetching cached response. Request id = " + request.getRequestId());
+            future.done(responseCache);
+            return false;
+        }
+        serviceHandler.putFuture(future.identifier(), future);
+        return true;
     }
 
     /**
