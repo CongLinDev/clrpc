@@ -74,7 +74,7 @@
 
 ## Architecture
 
-![architecture.png](https://i.loli.net/2019/08/21/Olznx6P2HImWqgX.png)
+![architecture.png](https://i.loli.net/2019/08/26/1zLRAK3Cvsmtqce.png)
 
 ## Config
 

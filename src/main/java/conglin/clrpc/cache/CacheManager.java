@@ -14,4 +14,9 @@ public interface CacheManager<K, V>{
      * @param value
      */
     void put(K key, V value);
+
+    /**
+     * 清空缓存
+     */
+    void clear();
 }

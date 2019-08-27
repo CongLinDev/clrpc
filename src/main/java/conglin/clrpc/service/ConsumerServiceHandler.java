@@ -2,14 +2,18 @@ package conglin.clrpc.service;
 
 import java.lang.reflect.Proxy;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.service.discovery.BasicServiceDiscovery;
+import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
@@ -22,9 +26,15 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private final Map<Long, RpcFuture> rpcFutures;
 
-    public ConsumerServiceHandler(){
+    private ServiceDiscovery serviceDiscovery;
+
+    private final String LOCAL_ADDRESS;
+
+    public ConsumerServiceHandler(String localAddress){
         super();
+        this.LOCAL_ADDRESS = localAddress;
         rpcFutures = new ConcurrentHashMap<>();
+        serviceDiscovery = new BasicServiceDiscovery();
     }
 
     /**
@@ -36,7 +46,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T subscribeService(Class<T> interfaceClass, String serviceName, RequestSender sender){
+    public <T> T getPrxoy(Class<T> interfaceClass, String serviceName, RequestSender sender){
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
@@ -49,7 +59,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @param sender
      * @return
      */
-    public ObjectProxy subscribeServiceAsync(String serviceName, RequestSender sender){
+    public ObjectProxy getPrxoy(String serviceName, RequestSender sender){
         return new BasicObjectProxy(serviceName, sender);
     }
 
@@ -62,8 +72,37 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     public void start(){
         checkFuture();
     }
+
+    @Override
+    public void stop(){
+        super.stop();
+        serviceDiscovery.stop();
+    }
+
+
+    /**
+     * 发现服务
+     * 共两步 1. 注册消费者
+     *       2. 发现服务并进行连接服务提供者
+     * @param serviceName
+     * @param updateMethod
+     */
+    public void findService(String serviceName, BiConsumer<String, List<String>> updateMethod){
+        serviceDiscovery.registerConsumer(serviceName, LOCAL_ADDRESS);
+        serviceDiscovery.discover(serviceName, updateMethod);
+    }
     
 
+    /**
+     * 发现服务
+     * 共两步 1. 注册消费者
+     *       2. 发现服务并进行连接服务提供者
+     * @param interfaceClass
+     * @param updateMethod
+     */
+    public void findService(Class<?> interfaceClass, BiConsumer<String, List<String>> updateMethod){
+        findService(interfaceClass.getSimpleName(), updateMethod);
+    }
 
 
 

@@ -18,10 +18,13 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     //String保存服务名 Object保存服务实现类
     private final Map<String, Object> services;
 
+    private final String LOCAL_ADDRESS;
+
     private final ServiceRegistry serviceRegistry;
 
-    public ProviderServiceHandler() {
+    public ProviderServiceHandler(String localAddress) {
         super();
+        this.LOCAL_ADDRESS = localAddress;
         services = new HashMap<>();
         serviceRegistry = new BasicServiceRegistry();
     }
@@ -79,6 +82,15 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         services.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, data)
         );
+    }
+
+    /**
+     * 将本机地址注册到zookeeper上
+     */
+    public void registerService(){
+        services.keySet().forEach(
+            serviceName -> serviceRegistry.registerProvider(serviceName, LOCAL_ADDRESS)
+        ); 
     }
 
     public void start(){

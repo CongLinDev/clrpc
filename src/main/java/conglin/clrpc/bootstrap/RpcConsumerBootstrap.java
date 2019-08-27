@@ -38,13 +38,19 @@ public class RpcConsumerBootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
 
-    private ConsumerTransfer consumerTransfer;
+    public final String LOCAL_ADDRESS;
 
+    private ConsumerTransfer consumerTransfer;
     private ConsumerServiceHandler serviceHandler;
 
     public RpcConsumerBootstrap(){
-        serviceHandler = new ConsumerServiceHandler();
-        consumerTransfer = new ConsumerTransfer();
+        this(ConfigParser.getOrDefault("consumer.address", "localhost:5200"));
+    }
+
+    public RpcConsumerBootstrap(String localAddress){
+        this.LOCAL_ADDRESS = localAddress;
+        serviceHandler = new ConsumerServiceHandler(LOCAL_ADDRESS);
+        consumerTransfer = new ConsumerTransfer(LOCAL_ADDRESS);
     }
 
     /**
@@ -65,8 +71,8 @@ public class RpcConsumerBootstrap {
      * @return 返回代理服务类
      */
     public <T> T subscribeService(Class<T> interfaceClass, String serviceName){
-        consumerTransfer.subscribeService(serviceName);
-        return serviceHandler.subscribeService(interfaceClass, serviceName, consumerTransfer.getSender());
+        serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
+        return serviceHandler.getPrxoy(interfaceClass, serviceName, consumerTransfer.getSender());
     }
 
     /**
@@ -84,8 +90,8 @@ public class RpcConsumerBootstrap {
      * @return 返回代理服务类
      */
     public ObjectProxy subscribeServiceAsync(String serviceName){
-        consumerTransfer.subscribeService(serviceName);
-        return serviceHandler.subscribeServiceAsync(serviceName, consumerTransfer.getSender());
+        serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
+        return serviceHandler.getPrxoy(serviceName, consumerTransfer.getSender());
     }
 
     /**

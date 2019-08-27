@@ -39,10 +39,16 @@ public class RpcProviderBootstrap {
     // 管理服务
     private ProviderServiceHandler serviceHandler;
 
+    public final String LOCAL_ADDRESS;
 
     public RpcProviderBootstrap() {
-        serviceHandler = new ProviderServiceHandler();
-        providerTransfer = new ProviderTransfer();
+        this(ConfigParser.getOrDefault("provider.address", "localhost:5100"));
+    }
+
+    public RpcProviderBootstrap(String localAddress){
+        this.LOCAL_ADDRESS = localAddress;
+        serviceHandler = new ProviderServiceHandler(LOCAL_ADDRESS);
+        providerTransfer = new ProviderTransfer(LOCAL_ADDRESS);
     }
 
     /**

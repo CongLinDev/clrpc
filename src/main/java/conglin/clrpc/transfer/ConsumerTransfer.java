@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtils;
-import conglin.clrpc.service.discovery.BasicServiceDiscovery;
-import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.transfer.handler.BasicConsumerChannelInitializer;
@@ -29,7 +27,7 @@ public class ConsumerTransfer {
 
     private static final Logger log = LoggerFactory.getLogger(ConsumerTransfer.class);
 
-    public final String LOCAL_ADDRESS;
+    private final String LOCAL_ADDRESS;
 
     private EventLoopGroup workerGroup;
 
@@ -39,18 +37,16 @@ public class ConsumerTransfer {
     private RequestSender sender;
     private ResponseReceiver receiver;
 
-    private ServiceDiscovery serviceDiscovery;
+
     private LoadBalancer<String, String, Channel> loadBalancer;
 
-    public ConsumerTransfer() {
+    public ConsumerTransfer(String localAddress){
         loadBalancer = new ConsistentHashLoadBalancer<>(
             (addr, ch)->((InetSocketAddress)ch.remoteAddress()).toString().compareTo(addr) == 0);
-        serviceDiscovery = new BasicServiceDiscovery();
-
+        
         lock = new ReentrantLock();
         connected = lock.newCondition();
-
-        LOCAL_ADDRESS = ConfigParser.getOrDefault("consumer.address", "localhost:5200");
+        this.LOCAL_ADDRESS = localAddress;
     }
 
     /**
@@ -69,23 +65,6 @@ public class ConsumerTransfer {
     }
 
     /**
-     * 在 ZooKeeper中寻找服务提供者
-     * @param interfaceClass 提供该服务的类
-     */
-    public void subscribeService(Class<?> interfaceClass) {
-        subscribeService(interfaceClass.getSimpleName());
-    }
-
-    /**
-     * 在 ZooKeeper中寻找服务提供者
-     * @param serviceName
-     */
-    public void subscribeService(String serviceName){
-        serviceDiscovery.registerConsumer(serviceName, LOCAL_ADDRESS);
-        serviceDiscovery.discover(serviceName, this::updateConnectedProvider);
-    }
-
-    /**
      * 停止服务
      */
     public void stop() {
@@ -94,7 +73,6 @@ public class ConsumerTransfer {
 
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
-        serviceDiscovery.stop();
 
         sender.stop();
         receiver.stop();

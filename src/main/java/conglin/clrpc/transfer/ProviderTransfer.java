@@ -25,13 +25,13 @@ public class ProviderTransfer{
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    private final String providerAddress;
+    private final String LOCAL_ADDRESS;
 
     private ResponseSender sender;
     private RequestReceiver receiver;
 
-    public ProviderTransfer(){
-        this.providerAddress = ConfigParser.getOrDefault("provider.address", "localhost:5100");
+    public ProviderTransfer(String localAddress){
+        this.LOCAL_ADDRESS = localAddress;
     }
     
     /**
@@ -57,13 +57,13 @@ public class ProviderTransfer{
             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         try{
-            InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(providerAddress);
+            InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(LOCAL_ADDRESS);
             ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
             log.info("Provider started on {}", address);
             
             //进行准备工作
-            preparation.accept(providerAddress);
+            preparation.accept(LOCAL_ADDRESS);
 
             channelFuture.channel().closeFuture().sync();
         }catch(UnknownHostException | InterruptedException e){
