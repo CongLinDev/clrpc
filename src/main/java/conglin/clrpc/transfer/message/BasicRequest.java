@@ -1,8 +1,13 @@
 package conglin.clrpc.transfer.message;
 
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
-public class BasicRequest {
+public class BasicRequest implements Serializable {
+
+    private static final long serialVersionUID = 8095197377322231798L;
+    
     private Long requestId;
     private String serviceName;
     private String methodName;
@@ -58,7 +63,10 @@ public class BasicRequest {
 
     @Override
     public int hashCode() {
-        return serviceName.hashCode() ^ methodName.hashCode();
+        return serviceName.hashCode() ^
+                methodName.hashCode() ^
+                Objects.hash((Object [])parameterTypes) ^
+                Objects.hash(parameters);
     }
 
     @Override
@@ -67,7 +75,9 @@ public class BasicRequest {
         if(! (obj instanceof BasicRequest)) return false;
         BasicRequest r = (BasicRequest)obj;
         return this.serviceName.equals(r.getServiceName()) &&
-                this.methodName.equals(r.getMethodName());
+                this.methodName.equals(r.getMethodName()) && 
+                Objects.deepEquals(parameterTypes, r.getParameterTypes()) &&
+                Objects.deepEquals(parameters, r.getParameters());
     }
 
 }

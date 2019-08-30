@@ -54,7 +54,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         AtomicInteger code = null;
         int epoch = 0;
         if((code = descriptions.get(type)) == null){
-            code= firstUpdate(type);
+            code = firstUpdate(type);
             log.debug("First update region head number = " + code);
         }else{
             // 非第一次更新的话 更新epoch

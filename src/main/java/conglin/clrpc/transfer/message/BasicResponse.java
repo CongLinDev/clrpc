@@ -1,6 +1,10 @@
 package conglin.clrpc.transfer.message;
 
-public class BasicResponse {
+import java.io.Serializable;
+
+public class BasicResponse implements Serializable{
+    private static final long serialVersionUID = 7123186624198529783L;
+    
     private Long requestId;
     private Object result;
     private int flag;

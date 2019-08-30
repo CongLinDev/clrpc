@@ -9,6 +9,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.transfer.sender.RequestSender;
 
 abstract public class RpcFuture implements Future<Object> {
@@ -28,13 +29,16 @@ abstract public class RpcFuture implements Future<Object> {
         this.synchronizer = new FutureSynchronizer();
         startTime = System.currentTimeMillis();
     }
-
     
     /**
      * 重试
      */
     abstract public void retry();
 
+    /**
+     * 返回该 Future 的标识符
+     * @return
+     */
     abstract public long identifier();
 
     @Override
@@ -47,10 +51,10 @@ abstract public class RpcFuture implements Future<Object> {
     abstract public boolean isDone();
 
     @Override
-    abstract public Object get() throws InterruptedException, ExecutionException;
+    abstract public Object get() throws InterruptedException, ExecutionException, RpcServiceException;
 
     @Override
-    abstract public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
+    abstract public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException;
 
     /**
      * 收到回复信息后
@@ -123,23 +127,23 @@ abstract public class RpcFuture implements Future<Object> {
     class FutureSynchronizer extends AbstractQueuedSynchronizer{
     
         private static final long serialVersionUID = -3359796046494665489L;
-        
-        private final int DONE = 1;// 完成
-        private final int PENDING = 0;//等待
-        //private final int CANCEL = -1;//取消
+             
+        private final int PENDING = 0;  // 等待
+        private final int DONE = 1;     // 完成
+        private final int USED = 2;     // 占用
     
         @Override
         protected boolean tryAcquire(int arg) {
-            return getState() == DONE;
+            return compareAndSetState(DONE, USED);
         }
     
         @Override
         protected boolean tryRelease(int arg) {
-            if(getState() == PENDING){
-               return compareAndSetState(PENDING, DONE);
-            }else{
-                return true;
-            }
+            if(getState() == USED)
+                return compareAndSetState(USED, DONE);
+            if(getState() == PENDING)
+                return compareAndSetState(PENDING, DONE);
+            return true;
         }
     
         /**
@@ -148,6 +152,21 @@ abstract public class RpcFuture implements Future<Object> {
          */
         public boolean isDone(){
             return getState() == DONE;
+        }
+
+        /**
+         * 是否被占用
+         * @return
+         */
+        public boolean isUsed(){
+            return getState() == USED;
+        }
+
+        /**
+         * 重试
+         */
+        public void retry(){
+            setState(PENDING);
         }
     }
 }

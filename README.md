@@ -94,6 +94,8 @@
 | zookeeper.registry.root-path | String | YES | /clrpc | 服务注册根节点 |
 | zookeeper.discovery.address | String | YES | localhost:2181 | 服务搜索地址 |
 | zookeeper.discovery.root-path | String | YES | /clrpc | 服务搜索根节点 |
+| zookeeper.monitor.address | String | YES | localhost:2181 | 服务监视地址 |
+| zookeeper.monitor.root-path | String | YES | /clrpc | 服务监视根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
 | provider.address | String | YES | localhost:5100 | 服务提供者地址 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |

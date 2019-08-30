@@ -14,7 +14,7 @@ public class IPAddressUtils{
     private static final Logger log = LoggerFactory.getLogger(IPAddressUtils.class);
 
     public static InetSocketAddress splitHostnameAndPortResolved(String data) throws UnknownHostException{
-        String [] hostnameAndPort = data.trim().split(":");
+        String[] hostnameAndPort = data.trim().split(":");
         if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
         return new InetSocketAddress(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
     }
@@ -26,8 +26,7 @@ public class IPAddressUtils{
      * @throws UnknownHostException
      */
     public static InetSocketAddress splitHostnameAndPort(String data) throws UnknownHostException {
-
-        String [] hostnameAndPort = data.trim().split(":");
+        String[] hostnameAndPort = data.trim().split(":");
         if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
         return InetSocketAddress.createUnresolved(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
     }

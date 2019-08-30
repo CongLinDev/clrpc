@@ -37,33 +37,44 @@ public class BasicFuture extends RpcFuture {
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException {
-        synchronizer.acquire(-1);
-        return (response != null) ? response.getResult() : null;
-    }
-
-    @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        if(synchronizer.tryAcquireNanos(-1, unit.toNanos(timeout))){
-            return (response != null) ? response.getResult() : null;
-        }else{
-            throw new TimeoutException("Timeout: " + request.toString());
+    public Object get() throws InterruptedException, ExecutionException, RpcServiceException {
+        try{
+            synchronizer.acquire(0);
+            if(response == null) return null;
+            if(response.isError()) throw (RpcServiceException)response.getResult();
+            return response.getResult();
+        }finally{
+            synchronizer.release(0);
         }
     }
 
-    
+    @Override
+    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException {
+        try{
+            if(synchronizer.tryAcquireNanos(0, unit.toNanos(timeout))){
+                if(response == null) return null;
+                if(response.isError()) throw (RpcServiceException)response.getResult();
+                return response.getResult();
+            }else{
+                throw new TimeoutException("Timeout: " + request.toString());
+            }
+        }finally{
+            synchronizer.release(0);
+        }
+    }
+
     @Override
     public void done(Object result) {
-        this.response = (BasicResponse)response;
-        synchronizer.release(1);
+        this.response = (BasicResponse)result;
+        synchronizer.release(0);
         runCallback(futureCallback);
     }
 
-
     @Override
     public void retry() {
-        sender.resendRequest(remoteAddress, request);
+        synchronizer.retry();
         resetTime();
+        sender.resendRequest(remoteAddress, request);
     }
 
     @Override
@@ -75,7 +86,7 @@ public class BasicFuture extends RpcFuture {
      * 获得与该 RpcFuture 相关联的 BasicRequest
      * @return
      */
-    public BasicRequest getRequest(){
+    public BasicRequest request(){
         return this.request;
     }
 
