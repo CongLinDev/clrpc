@@ -31,13 +31,11 @@ public class AsyncConsumerTest1 {
                     @Override
                     public void success(Object result) {
                         System.out.println(((User)result).toString());
-                        countDownLatch.countDown();
                     }
 
                     @Override
                     public void fail(String remoteAddress, RpcServiceException e) {
                         System.out.println(remoteAddress + ": " + e.getMessage());
-                        countDownLatch.countDown();
                     }
 
                 });
@@ -45,7 +43,6 @@ public class AsyncConsumerTest1 {
         }
         
         try{
-            countDownLatch.await();
             bootstrap.stop();
         }catch(InterruptedException e){
             e.printStackTrace();

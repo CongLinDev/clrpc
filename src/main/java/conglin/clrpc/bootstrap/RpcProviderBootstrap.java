@@ -131,22 +131,16 @@ public class RpcProviderBootstrap {
      * 启动
      */
     public void start() {
-        // 启动Netty并将其注册到zookeeper中
         serviceHandler.start();
         providerTransfer.start(initSender(), initReceiver(), serviceHandler::registerService);
-
-        // 关闭jvm时 调用stop方法
-        // Runtime.getRuntime().addShutdownHook(new Thread(()->{
-        //     this.stop();
-        // }));
     }
 
     /**
      * 关闭
      */
     public void stop() {
-        providerTransfer.stop();
         serviceHandler.stop();
+        providerTransfer.stop();
     }
 
     /**

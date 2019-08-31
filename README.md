@@ -117,7 +117,13 @@
 
 ## Test
 
-### Synchronous Test
+使用 [默认配置](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml) 进行本机模拟RPC测试。
+
+1. 操作系统：Windows 10 (18362.239) 企业版
+2. 处理器：Inter(R) Core(TM) i5-6300HQ CPU @ 2.30GHz
+3. 内存: 12.0 GB
+
+### Synchronous Test (without cache)
 
 在同步测试中，**尽量了排除业务逻辑占用时间的干扰**。
 
@@ -125,23 +131,31 @@
 
 [客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/benchmark/sync/SyncConsumerTimeTest.java)
 
-使用 [默认配置](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml) 进行本机模拟RPC测试。
-
-1. 操作系统：Windows 10 (18362.239) 企业版
-2. 处理器：Inter(R) Core(TM) i5-6300HQ CPU @ 2.30GHz
-3. 内存: 12.0 GB
-
-### Conclusion
+Conclusion:
 
 1. 本机基础上，且只有一台服务器的情况下，1000次的*同步请求*大约在 **650毫秒** 内完成。
 2. 本机基础上，且只有一台服务器的情况下，10000次的*同步请求*大约在 **3300毫秒** 内完成。
 3. 本机基础上，且只有一台服务器的情况下，100000次的*同步请求*大约在 **23000毫秒** 内完成。
 
+### Asynchronous Test (without cache)
+
+在异步测试中，**尽量了排除业务逻辑占用时间的干扰**。
+
+[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/benchmark/async/AsyncProviderTimeTest.java)
+
+[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/benchmark/async/AsyncConsumerTimeTest.java)
+
+Conclusion:
+
+1. 本机基础上，且只有一台服务器的情况下，1000次的*异步请求*大约在 **760毫秒** 内完成。（请求调用完成后每500毫秒检查一次）
+2. 本机基础上，且只有一台服务器的情况下，10000次的*异步请求*大约在 **1200毫秒** 内完成。（请求调用完成后每500毫秒检查一次）
+3. 本机基础上，且只有一台服务器的情况下，100000次的*异步请求*大约在 **3100毫秒** 内完成。（请求调用完成后每500毫秒检查一次）
+
 ## Extension
 
 `clrpc` 自身暂时不支持**熔断**、**服务降级**等功能。
 
-你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 **熔断**、**高频控制**、**隔离**、**限流**、**限时**、**重试**。
+你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 **熔断**、**高频控制**、**隔离**、**限流**。
 
 ## License
 

@@ -36,6 +36,7 @@ public class BasicProviderChannelHandler extends SimpleChannelInboundHandler<Bas
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
         log.error(cause.getMessage());
         ctx.close();
     }

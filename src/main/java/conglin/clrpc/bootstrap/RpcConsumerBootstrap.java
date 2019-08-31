@@ -98,8 +98,8 @@ public class RpcConsumerBootstrap {
      * 启动
      */
     public void start(){
-        consumerTransfer.start(initSender(), initReceiver());
         serviceHandler.start();
+        consumerTransfer.start(initSender(), initReceiver());
     }
 
     /**

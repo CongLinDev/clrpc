@@ -75,6 +75,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     @Override
     public void stop(){
+        waitForUncompleteFuture();
         super.stop();
         serviceDiscovery.stop();
     }
@@ -159,10 +160,25 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
                     RpcFuture f = iterator.next();
                     if(!f.isDone() && f.timeout()){
                         f.retry();
-                        log.warn("Service response time is too slow. Request ID = " + f.identifier() + ". Retry...");
+                        log.warn("Service response(requestId=" + f.identifier() + ") is too slow. Retry...");
                     }
                 }
             }
         }, MAX_DELARY);
+    }
+
+    /**
+     * 等待所有未完成的 {@link conglin.clrpc.service.future.RpcFuture}
+     * 用于优雅的关闭 {@link conglin.clrpc.service.ConsumerServiceHandler}
+     */
+    private void waitForUncompleteFuture(){
+        while(rpcFutures.size() != 0){
+            try {
+                log.info("Waiting uncomplete futures for 500 ms.");
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                log.error(e.getMessage());
+            }
+        }
     }
 }
