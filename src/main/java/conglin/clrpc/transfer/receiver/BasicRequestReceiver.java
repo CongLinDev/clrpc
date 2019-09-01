@@ -7,11 +7,11 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.annotation.CacheableService;
 import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.NoSuchServiceException;
 import conglin.clrpc.common.exception.ServiceExecutionException;
+import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
@@ -35,7 +35,7 @@ public class BasicRequestReceiver implements RequestReceiver {
 
 
     @Override
-    public void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager) {
+    public void bindCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager) {
         this.cacheManager = cacheManager;
     }
 

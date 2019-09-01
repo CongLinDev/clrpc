@@ -1,11 +1,7 @@
 package conglin.clrpc.test.benchmark.async;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.test.service.HelloService;
 
 public class AsyncConsumerTimeTest {
     public static void main(String[] args) {

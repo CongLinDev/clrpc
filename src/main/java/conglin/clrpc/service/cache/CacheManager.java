@@ -1,4 +1,4 @@
-package conglin.clrpc.cache;
+package conglin.clrpc.service.cache;
 
 public interface CacheManager<K, V>{
     /**

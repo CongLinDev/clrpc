@@ -8,7 +8,7 @@ import org.apache.zookeeper.Watcher.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
+import conglin.clrpc.bootstrap.monitor.RpcMonitorBootstrap;
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
 

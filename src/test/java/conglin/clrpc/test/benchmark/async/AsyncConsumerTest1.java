@@ -1,7 +1,6 @@
 package conglin.clrpc.test.benchmark.async;
 
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
@@ -21,7 +20,6 @@ public class AsyncConsumerTest1 {
         ObjectProxy objectProxy = bootstrap.subscribeServiceAsync("UserService");
 
         Random random = new Random();
-        final CountDownLatch countDownLatch = new CountDownLatch(10);
         for(int i = 0; i < 10; i++){
             new Thread(() -> {
                 final long id = random.nextLong();

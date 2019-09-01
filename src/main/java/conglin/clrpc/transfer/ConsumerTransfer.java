@@ -168,7 +168,7 @@ public class ConsumerTransfer {
      */
     private boolean waitingForChannelHandler() throws InterruptedException{
         lock.lock();
-        long timeout = ConfigParser.getOrDefault("consumer.session.timeout", 5000);
+        long timeout = ConfigParser.getOrDefault("consumer.session.wait-time", 5000);
         try{
             log.info("Waiting for Channel Handler " + timeout + " mm...");
             return connected.await(timeout,TimeUnit.MILLISECONDS);

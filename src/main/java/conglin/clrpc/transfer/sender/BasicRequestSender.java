@@ -8,9 +8,9 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.ConsumerServiceHandler;
+import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
@@ -42,11 +42,9 @@ public class BasicRequestSender implements RequestSender {
         this.providerChooser = providerChooser;
     }
 
-    /**
-     * 注册缓冲池
-     * @param cacheManager
-     */
-    public void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager){
+
+    @Override
+    public void bindCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager){
         this.cacheManager = cacheManager;
     }
 

@@ -29,7 +29,7 @@ import conglin.clrpc.transfer.sender.ResponseSender;
  *      结束后不要忘记关闭服务端，释放资源。
  */
 
-public class RpcProviderBootstrap {
+public class RpcProviderBootstrap extends CacheableBoostrap {
 
     private static final Logger log = LoggerFactory.getLogger(RpcProviderBootstrap.class);
 
@@ -46,6 +46,9 @@ public class RpcProviderBootstrap {
     }
 
     public RpcProviderBootstrap(String localAddress){
+        // cache
+        super(ConfigParser.getOrDefault("provider.cache.enable", false));
+
         this.LOCAL_ADDRESS = localAddress;
         serviceHandler = new ProviderServiceHandler(LOCAL_ADDRESS);
         providerTransfer = new ProviderTransfer(LOCAL_ADDRESS);
@@ -188,6 +191,7 @@ public class RpcProviderBootstrap {
             if(receiver == null) receiver = new BasicRequestReceiver();
         }
         receiver.init(serviceHandler);
+        receiver.bindCachePool(cacheManager);
         return receiver;
     }
 }

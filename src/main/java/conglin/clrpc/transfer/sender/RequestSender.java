@@ -2,9 +2,9 @@ package conglin.clrpc.transfer.sender;
 
 import java.util.function.BiFunction;
 
-import conglin.clrpc.cache.CacheManager;
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.ConsumerServiceHandler;
+import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
@@ -30,10 +30,10 @@ public interface RequestSender extends Runnable{
 
 
     /**
-     * 注册缓冲池
+     * 绑定缓冲池
      * @param cacheManager
      */
-    void registerCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager);
+    void bindCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager);
 
     /**
      * 发送请求

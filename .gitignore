@@ -1,10 +1,10 @@
-.factorypath
-.classpath
-.vscode
-.settings
 target/*
 architecture/*
 logs/*
-.project
 .idea/*
+.vscode/*
+.factorypath
+.classpath
+.settings
+.project
 clrpc.iml

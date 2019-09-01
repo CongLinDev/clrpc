@@ -1,4 +1,4 @@
-package conglin.clrpc.cache;
+package conglin.clrpc.service.cache;
 
 import conglin.clrpc.common.config.ConfigParser;
 

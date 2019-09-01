@@ -13,6 +13,8 @@ zookeeper:
 
 provider:
   address: localhost:5100
+  cache:
+    enable: false
   thread:
     boss: 1
     worker: 4
@@ -21,8 +23,10 @@ provider:
 
 consumer:
   address: localhost:5200
+  cache:
+    enable: false
   session:
-    timeout: 5000 #ms
+    wait-time: 5000 #ms
   thread:
     worker: 4
   request-sender: conglin.clrpc.transfer.sender.BasicRequestSender

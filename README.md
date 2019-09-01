@@ -74,7 +74,7 @@
 
 ## Architecture
 
-![architecture.png](https://i.loli.net/2019/08/26/1zLRAK3Cvsmtqce.png)
+![architecture.png](https://i.loli.net/2019/09/01/YbK3NuPi7UcQW9o.png)
 
 ## Config
 
@@ -98,12 +98,14 @@
 | zookeeper.monitor.root-path | String | YES | /clrpc | 服务监视根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
 | provider.address | String | YES | localhost:5100 | 服务提供者地址 |
+| provider.cache.enable | Boolean | YES | false | 是否开启缓存 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
 | provider.response-sender | conglin.clrpc.<br>transfer.sender.<br>ResponseSender | YES | conglin.clrpc.<br>transfer.<br>sender.<br>BasicResponseSender | 回复发送器 |
 | provider.request-receiver | conglin.clrpc.<br>transfer.receiver.<br>RequestReceiver | YES | conglin.clrpc.<br>transfer.<br>receiver.<br>BasicRequestReceiver | 请求接收器 |
 | consumer.address | String | YES | localhost:5200 | 服务使用者地址 |
-| consumer.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
+| consumer.cache.enable | Boolean | YES | false | 是否开启缓存 |
+| consumer.session.wait-time | Integer | YES | 5000 | 无服务提供者时等待重试时间，单位为毫秒 |
 | consumer.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
 | consumer.request-sender | conglin.clrpc.<br>transfer.sender.<br>RequestSender | YES | conglin.clrpc.<br>transfer.<br>sender.<br>BasicRequestSender | 请求发送器 |
 | consumer.response-receiver | conglin.clrpc.<br>transfer.receiver.<br>ResponseReceiver | YES |conglin.clrpc.<br>transfer.<br>receiver.<br>BasicResponseReceiver | 回复接收器 |
@@ -112,7 +114,7 @@
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
-| service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值即最大超时时间，单位为毫秒 |
+| service.session.time-threshold | Integer | YES | 5000 | 响应时间阈值即请求最大超时时间，单位为毫秒 |
 | service.codec.serialization-handler | conglin.clrpc<br>.common.codec<br>.SerializationHandler | YES | conglin.clrpc.<br>common.codec.<br>protostuff.<br>ProtostuffSerializationHandler | 序列化处理器，默认使用 Protostuff |
 
 ## Test

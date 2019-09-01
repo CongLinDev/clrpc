@@ -34,7 +34,7 @@ import conglin.clrpc.transfer.sender.RequestSender;
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 
-public class RpcConsumerBootstrap {
+public class RpcConsumerBootstrap extends CacheableBoostrap{
 
     private static final Logger log = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
 
@@ -48,6 +48,9 @@ public class RpcConsumerBootstrap {
     }
 
     public RpcConsumerBootstrap(String localAddress){
+        // cache
+        super(ConfigParser.getOrDefault("consumer.cache.enable", false));
+
         this.LOCAL_ADDRESS = localAddress;
         serviceHandler = new ConsumerServiceHandler(LOCAL_ADDRESS);
         consumerTransfer = new ConsumerTransfer(LOCAL_ADDRESS);
@@ -132,6 +135,7 @@ public class RpcConsumerBootstrap {
         }
 
         sender.init(serviceHandler, consumerTransfer::chooseChannel);
+        sender.bindCachePool(cacheManager);
         //serviceHandler.submit(sender);
         return sender;
     }

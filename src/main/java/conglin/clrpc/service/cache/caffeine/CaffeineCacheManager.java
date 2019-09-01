@@ -1,4 +1,4 @@
-package conglin.clrpc.cache.caffeine;
+package conglin.clrpc.service.cache.caffeine;
 
 import java.util.concurrent.TimeUnit;
 
@@ -9,7 +9,7 @@ import com.github.benmanes.caffeine.cache.Expiry;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import conglin.clrpc.cache.AbstractCacheManager;
+import conglin.clrpc.service.cache.AbstractCacheManager;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 
