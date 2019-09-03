@@ -109,7 +109,7 @@
 | consumer.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
 | consumer.request-sender | conglin.clrpc.<br>transfer.sender.<br>RequestSender | YES | conglin.clrpc.<br>transfer.<br>sender.<br>BasicRequestSender | 请求发送器 |
 | consumer.response-receiver | conglin.clrpc.<br>transfer.receiver.<br>ResponseReceiver | YES |conglin.clrpc.<br>transfer.<br>receiver.<br>BasicResponseReceiver | 回复接收器 |
-| service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>FixedThreadPool | 业务线程池 |
+| service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>CustomizedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |

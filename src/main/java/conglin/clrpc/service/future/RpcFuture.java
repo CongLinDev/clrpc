@@ -45,16 +45,12 @@ abstract public class RpcFuture implements Future<Object> {
     abstract public boolean cancel(boolean mayInterruptIfRunning);
 
     @Override
-    abstract public boolean isCancelled();
+    abstract public Object get() 
+        throws InterruptedException, ExecutionException, RpcServiceException;
 
     @Override
-    abstract public boolean isDone();
-
-    @Override
-    abstract public Object get() throws InterruptedException, ExecutionException, RpcServiceException;
-
-    @Override
-    abstract public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException;
+    abstract public Object get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException;
 
     /**
      * 收到回复信息后
@@ -62,6 +58,24 @@ abstract public class RpcFuture implements Future<Object> {
      * @param result
      */
     abstract public void done(Object result);
+
+    @Override
+    public boolean isCancelled() {
+        return synchronizer.isCancelled();
+    }
+
+    @Override
+    public boolean isDone() {
+        return synchronizer.isDone();
+    }
+
+    /**
+     * 是否正在等待中
+     * @return
+     */
+    public boolean isPending(){
+        return synchronizer.isPending();
+    }
 
     /**
      * 返回该future是否超时
@@ -91,7 +105,7 @@ abstract public class RpcFuture implements Future<Object> {
      * @param callback
      */
     protected void runCallback(Callback callback){
-        if(callback == null) return;
+        if(isCancelled() || callback == null) return;
         
         if(executorService != null){
             executorService.submit(() -> runCallbackCore(callback));
@@ -127,21 +141,23 @@ abstract public class RpcFuture implements Future<Object> {
     class FutureSynchronizer extends AbstractQueuedSynchronizer{
     
         private static final long serialVersionUID = -3359796046494665489L;
-             
+
+        private final int CANCELLED = -1;  // 取消
         private final int PENDING = 0;  // 等待
         private final int DONE = 1;     // 完成
         private final int USED = 2;     // 占用
     
         @Override
         protected boolean tryAcquire(int arg) {
+            if(isCancelled()) return true;
             return compareAndSetState(DONE, USED);
         }
     
         @Override
         protected boolean tryRelease(int arg) {
-            if(getState() == USED)
+            if(isUsed())
                 return compareAndSetState(USED, DONE);
-            if(getState() == PENDING)
+            if(isPending())
                 return compareAndSetState(PENDING, DONE);
             return true;
         }
@@ -151,7 +167,15 @@ abstract public class RpcFuture implements Future<Object> {
          * @return
          */
         public boolean isDone(){
-            return getState() == DONE;
+            return getState() >= DONE;
+        }
+
+        /**
+         * 是否取消
+         * @return
+         */
+        public boolean isCancelled(){
+            return getState() == CANCELLED;
         }
 
         /**
@@ -160,6 +184,21 @@ abstract public class RpcFuture implements Future<Object> {
          */
         public boolean isUsed(){
             return getState() == USED;
+        }
+
+        /**
+         * 是否等待中
+         * @return
+         */
+        public boolean isPending(){
+            return getState() == PENDING;
+        }
+
+        /**
+         * 取消
+         */
+        public void cancel(){
+            setState(CANCELLED);
         }
 
         /**

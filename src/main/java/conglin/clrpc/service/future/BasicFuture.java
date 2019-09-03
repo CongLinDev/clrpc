@@ -23,21 +23,14 @@ public class BasicFuture extends RpcFuture {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        throw new UnsupportedOperationException();
+        boolean canCancel = !synchronizer.isDone();
+        synchronizer.cancel();
+        return canCancel;
     }
 
     @Override
-    public boolean isCancelled() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isDone() {
-        return synchronizer.isDone();
-    }
-
-    @Override
-    public Object get() throws InterruptedException, ExecutionException, RpcServiceException {
+    public Object get()
+        throws InterruptedException, ExecutionException, RpcServiceException {
         try{
             synchronizer.acquire(0);
             if(response == null) return null;
@@ -49,7 +42,8 @@ public class BasicFuture extends RpcFuture {
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException {
+    public Object get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException {
         try{
             if(synchronizer.tryAcquireNanos(0, unit.toNanos(timeout))){
                 if(response == null) return null;

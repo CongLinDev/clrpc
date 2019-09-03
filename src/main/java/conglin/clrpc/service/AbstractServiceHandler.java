@@ -18,9 +18,8 @@ abstract public class AbstractServiceHandler implements ThreadPool {
     private final ExecutorService businessTheardExecutorService;
 
     /**
-     * 你可以创建一个实现了 {@link ThreadPool}
-     * 或是继承了 {@link CustomizedThreadPool}
-     * 的线程池创建器来创建一个你想要的业务线程池，只需要在配置文件中写出其完整类名即可
+     * 你可以创建一个实现了 {@link ThreadPool} 或是继承了 {@link CustomizedThreadPool}
+     * 的线程池创建器来创建一个你想要的业务线程池
      * 需要注意的是，你创建的线程池必须有一个无参的构造函数
      */
     public AbstractServiceHandler(){
@@ -38,7 +37,7 @@ abstract public class AbstractServiceHandler implements ThreadPool {
             log.warn(e.getMessage() + ". Loading 'conglin.clrpc.common.util.threadpool.CustomizedThreadPool' rather than "
                     + threadpoolName);
         }finally{
-            // 如果类名错误，则默认加载 {@link conglin.clrpc.common.util.threadpool.FixedThreadPool}
+            // 如果类名错误，则默认加载 {@link conglin.clrpc.common.util.threadpool.CustomizedThreadPool}
             businessTheardExecutorService = 
                 (executorService == null) 
                     ? (new CustomizedThreadPool()).getExecutorService()

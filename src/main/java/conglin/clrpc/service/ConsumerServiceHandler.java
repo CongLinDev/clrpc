@@ -158,7 +158,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
                 Iterator<RpcFuture> iterator = rpcFutures.values().iterator();
                 while(iterator.hasNext()){
                     RpcFuture f = iterator.next();
-                    if(!f.isDone() && f.timeout()){
+                    if(f.isPending() && f.timeout()){
                         f.retry();
                         log.warn("Service response(requestId=" + f.identifier() + ") is too slow. Retry...");
                     }

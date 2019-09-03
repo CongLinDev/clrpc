@@ -45,14 +45,13 @@ public class RpcDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if (in.readableBytes() <= 4)
-            return;
+        if (in.readableBytes() <= 4) return;
 
         in.markReaderIndex();
 
         int dataLengh = in.readInt();
-        if (dataLengh <= 0)
-            return;
+        if (dataLengh <= 0) return;
+        
         if (in.readableBytes() < dataLengh) {
             in.resetReaderIndex();
             return;
