@@ -4,23 +4,16 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class BasicRequest implements Serializable {
+public class BasicRequest extends Message implements Serializable {
 
     private static final long serialVersionUID = 8095197377322231798L;
+
+    transient public static final int MESSAGE_TYPE = 2;
     
-    private Long requestId;
-    private String serviceName;
-    private String methodName;
-    private Class<?>[] parameterTypes;
-    private Object[] parameters;
-
-    public Long getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(Long requestId) {
-        this.requestId = requestId;
-    }
+    protected String serviceName;
+    protected String methodName;
+    protected Class<?>[] parameterTypes;
+    protected Object[] parameters;
 
     public String getServiceName() {
         return serviceName;

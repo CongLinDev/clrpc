@@ -16,17 +16,17 @@ import conglin.clrpc.transfer.sender.ResponseSender;
 /**
  * RPC provider端启动类
  * 
- * 使用如下代码启动
- * <blockquote><pre>
- *     RpcProviderBootstrap bootstrap = new RpcProviderBootstrap(); 
- *     bootstrap.publishService("service1", ServiceBean1.class)
- *              .publishService("service2", new ServiceBean2())
- *              .publishService(Interface3.class, Implement3.class)
- *              .start();
- * </pre></blockquote>
+ * 使用如下代码启动 <blockquote>
  * 
- * 注意：若服务接口相同，先添加的服务会被覆盖。
- *      结束后不要忘记关闭服务端，释放资源。
+ * <pre>
+ * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
+ * bootstrap.publishService("service1", ServiceBean1.class).publishService("service2", new ServiceBean2())
+ *         .publishService(Interface3.class, Implement3.class).start();
+ * </pre>
+ * 
+ * </blockquote>
+ * 
+ * 注意：若服务接口相同，先添加的服务会被覆盖。 结束后不要忘记关闭服务端，释放资源。
  */
 
 public class RpcProviderBootstrap extends CacheableBoostrap {
@@ -45,7 +45,7 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
         this(ConfigParser.getOrDefault("provider.address", "localhost:5100"));
     }
 
-    public RpcProviderBootstrap(String localAddress){
+    public RpcProviderBootstrap(String localAddress) {
         // cache
         super(ConfigParser.getOrDefault("provider.cache.enable", false));
 
@@ -56,13 +56,14 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
 
     /**
      * 保存即将发布的服务
-     * @param interfaceClass 接口类
+     * @param interfaceClass   接口类
      * @param serviceBeanClass 实现类
      * @return
      */
     public RpcProviderBootstrap publishService(Class<?> interfaceClass, Class<?> serviceBeanClass) {
         if (!interfaceClass.isAssignableFrom(serviceBeanClass)) {
-            log.error(serviceBeanClass.getSimpleName() + " is not permitted. And it will not be added Services");
+            log.error("Service is not permitted. Because "
+                 + interfaceClass.getName() + "is not assignableFrom " + serviceBeanClass.getName());
             return this;
         } else {
             return publishService(interfaceClass.getSimpleName(), serviceBeanClass);
@@ -76,11 +77,12 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
      */
     public RpcProviderBootstrap publishService(Class<?> serviceBeanClass) {
         String serviceBeanClassName = serviceBeanClass.getSimpleName();
-        if (!serviceBeanClassName.endsWith("ServiceImpl")){
+        if (!serviceBeanClassName.endsWith("ServiceImpl")) {
             log.error(serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
             return this;
-        }else{
-            return publishService(serviceBeanClassName.substring(0, serviceBeanClassName.length()-4), serviceBeanClass);
+        } else {
+            return publishService(serviceBeanClassName.substring(0, serviceBeanClassName.length() - 4),
+                    serviceBeanClass);
         }
     }
 
@@ -92,12 +94,17 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
      */
     public RpcProviderBootstrap publishService(String serviceName, Class<?> serviceBeanClass) {
         if (serviceBeanClass.isInterface()) {
-            log.error(serviceBeanClass.getSimpleName() + " is not a service class. And it will not be added Services");
-            return this;
-        }else {
-            serviceHandler.publishService(serviceName, serviceBeanClass);
-            return this;
+            log.error(serviceBeanClass.getName() + " is not a service class. And it will not be published");
+        } else {
+            try {
+                Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
+                return publishService(serviceName, serviceBean);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                log.error("Can not publish service. " + e.getMessage());
+            }
         }
+        return this;
     }
 
     /**
@@ -107,6 +114,7 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
      * @return
      */
     public RpcProviderBootstrap publishService(String serviceName, Object serviceBean){
+        log.info("Publish service named " + serviceName);
         serviceHandler.publishService(serviceName, serviceBean);
         return this;
     }

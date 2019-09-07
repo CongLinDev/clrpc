@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtils;
-import conglin.clrpc.transfer.handler.BasicProviderChannelInitializer;
+import conglin.clrpc.transfer.handler.ProviderChannelInitializer;
 import conglin.clrpc.transfer.receiver.RequestReceiver;
 import conglin.clrpc.transfer.sender.ResponseSender;
 import io.netty.bootstrap.ServerBootstrap;
@@ -52,7 +52,7 @@ public class ProviderTransfer{
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             //.handler(new LoggingHandler(LogLevel.INFO))
-            .childHandler(new BasicProviderChannelInitializer(sender, receiver))
+            .childHandler(new ProviderChannelInitializer(sender, receiver))
             .option(ChannelOption.SO_BACKLOG, 128)
             .childOption(ChannelOption.SO_KEEPALIVE, true);
 

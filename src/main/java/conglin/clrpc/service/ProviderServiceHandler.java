@@ -33,22 +33,6 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * 手动添加服务 此时服务并未注册
      * 且若服务名相同，后添加的服务会覆盖前添加的服务
      * @param serviceName
-     * @param serviceBeanClass
-     */
-    public void publishService(String serviceName, Class<?> serviceBeanClass){
-        try {
-            Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
-            publishService(serviceName, serviceBean);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            log.error("Can not add service. " + e.getMessage());
-        }
-    }
-
-    /**
-     * 手动添加服务 此时服务并未注册
-     * 且若服务名相同，后添加的服务会覆盖前添加的服务
-     * @param serviceName
      * @param serviceBean
      */
     public void publishService(String serviceName, Object serviceBean){

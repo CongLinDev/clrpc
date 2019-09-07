@@ -13,7 +13,6 @@ import conglin.clrpc.common.config.ConfigParser;
 import conglin.clrpc.common.util.net.IPAddressUtils;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
-import conglin.clrpc.transfer.handler.BasicConsumerChannelInitializer;
 import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
 import conglin.clrpc.transfer.sender.RequestSender;
@@ -114,7 +113,7 @@ public class ConsumerTransfer {
      */
     private Channel connectProviderNode(String serviceName, String remoteAddress) {    
         Bootstrap bootstrap = new Bootstrap();
-        ConsumerChannelInitializer channelInitializer = new BasicConsumerChannelInitializer(receiver);
+        ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(receiver);
         bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS))
                 .group(workerGroup)
                 .channel(NioSocketChannel.class)

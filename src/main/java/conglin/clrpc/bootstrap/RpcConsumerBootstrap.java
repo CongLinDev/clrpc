@@ -74,6 +74,7 @@ public class RpcConsumerBootstrap extends CacheableBoostrap{
      * @return 返回代理服务类
      */
     public <T> T subscribeService(Class<T> interfaceClass, String serviceName){
+        log.info("Subscribe synchronous service named " + serviceName);
         serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
         return serviceHandler.getPrxoy(interfaceClass, serviceName, consumerTransfer.getSender());
     }
@@ -93,6 +94,7 @@ public class RpcConsumerBootstrap extends CacheableBoostrap{
      * @return 返回代理服务类
      */
     public ObjectProxy subscribeServiceAsync(String serviceName){
+        log.info("Subscribe asynchronous service named " + serviceName);
         serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
         return serviceHandler.getPrxoy(serviceName, consumerTransfer.getSender());
     }
