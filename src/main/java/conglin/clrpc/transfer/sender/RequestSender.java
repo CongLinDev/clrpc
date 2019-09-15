@@ -12,12 +12,6 @@ import io.netty.channel.Channel;
 
 public interface RequestSender extends Runnable{
 
-     /**
-      * 初始化函数
-      * @param serviceHandler
-      * @param providerChooser 服务提供者选择器 第一个参数为服务名，第二个参数若是String
-      */
-
     /**
      * 初始化函数
      * @param serviceHandler

@@ -6,7 +6,8 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.transfer.message.Message;
 import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler;
 import io.netty.buffer.ByteBuf;
@@ -37,9 +38,9 @@ public class RpcEncoder extends MessageToByteEncoder{
         }
     }
 
-    private final Class<?> genericClass;
+    private final Class<? extends Message> genericClass;
 
-    private RpcEncoder(Class<?> genericClass){
+    private RpcEncoder(Class<? extends Message> genericClass){
         this.genericClass = genericClass;
     }
 
@@ -47,6 +48,10 @@ public class RpcEncoder extends MessageToByteEncoder{
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
         if(genericClass.isInstance(msg)){
             byte[] data = serializationHandler.serialize(msg);
+            System.out.println(data.length);
+            int messageHeader = genericClass.getDeclaredField("MESSAGE_TYPE").getInt(msg);
+            System.out.println("send message type=" + messageHeader);
+            out.writeInt(messageHeader);
             out.writeInt(data.length);
             out.writeBytes(data);
         }
@@ -57,7 +62,7 @@ public class RpcEncoder extends MessageToByteEncoder{
      * @param genericClass
      * @return
      */
-    public static RpcEncoder getEncoder(Class<?> genericClass){
+    public static RpcEncoder getEncoder(Class<? extends Message> genericClass){
         return new RpcEncoder(genericClass);
     }
 }

@@ -1,4 +1,4 @@
-package conglin.clrpc.common.util.net;
+package conglin.clrpc.common.util;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;

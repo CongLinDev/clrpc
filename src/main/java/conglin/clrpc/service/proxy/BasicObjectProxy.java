@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.sender.RequestSender;
@@ -16,10 +17,12 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
 
     private final String serviceName;
     private final RequestSender sender;
+    private final IdentifierGenerator identifierGenerator;
 
-    public BasicObjectProxy(String serviceName, RequestSender sender){
+    public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator){
         this.serviceName = serviceName;
         this.sender = sender;
+        this.identifierGenerator = identifierGenerator;
     }
 
     @Override
@@ -51,6 +54,8 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
 
+        request.setRequestId(identifierGenerator.generateIndentifier(methodName));
+
         log.debug(request.toString());
         return sender.sendRequest(request);
     }
@@ -62,6 +67,8 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
         request.setMethodName(methodName);
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
+
+        request.setRequestId(identifierGenerator.generateIndentifier(methodName));
         
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
@@ -75,6 +82,8 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
 
+        request.setRequestId(identifierGenerator.generateIndentifier(method.getName()));
+
         log.debug(request.toString());
         return sender.sendRequest(request);
     }
@@ -86,12 +95,14 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
         request.setMethodName(method.getName());
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
+
+        request.setRequestId(identifierGenerator.generateIndentifier(method.getName()));
         
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }
 
-    private Class<?>[] getClassType(Object[] objs){
+    protected Class<?>[] getClassType(Object[] objs){
         Class<?>[] types = new Class[objs.length];
         for (int i = 0; i < objs.length; i++) {
             types[i] = objs[i].getClass();

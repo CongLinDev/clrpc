@@ -96,19 +96,17 @@
 | zookeeper.discovery.root-path | String | YES | /clrpc | 服务搜索根节点 |
 | zookeeper.monitor.address | String | YES | localhost:2181 | 服务监视地址 |
 | zookeeper.monitor.root-path | String | YES | /clrpc | 服务监视根节点 |
+| zookeeper.atomicity.address | String | YES | localhost:2181 | 原子性服务地址 |
+| zookeeper.atomicity.root-path | String | YES | /clrpc | 原子性服务根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
 | provider.address | String | YES | localhost:5100 | 服务提供者地址 |
 | provider.cache.enable | Boolean | YES | false | 是否开启缓存 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
-| provider.response-sender | conglin.clrpc.<br>transfer.sender.<br>ResponseSender | YES | conglin.clrpc.<br>transfer.<br>sender.<br>BasicResponseSender | 回复发送器 |
-| provider.request-receiver | conglin.clrpc.<br>transfer.receiver.<br>RequestReceiver | YES | conglin.clrpc.<br>transfer.<br>receiver.<br>BasicRequestReceiver | 请求接收器 |
 | consumer.address | String | YES | localhost:5200 | 服务使用者地址 |
 | consumer.cache.enable | Boolean | YES | false | 是否开启缓存 |
 | consumer.session.wait-time | Integer | YES | 5000 | 无服务提供者时等待重试时间，单位为毫秒 |
 | consumer.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
-| consumer.request-sender | conglin.clrpc.<br>transfer.sender.<br>RequestSender | YES | conglin.clrpc.<br>transfer.<br>sender.<br>BasicRequestSender | 请求发送器 |
-| consumer.response-receiver | conglin.clrpc.<br>transfer.receiver.<br>ResponseReceiver | YES |conglin.clrpc.<br>transfer.<br>receiver.<br>BasicResponseReceiver | 回复接收器 |
 | service.thread.pool.class | conglin.clrpc.<br>common.util.<br>threadpool.<br>ThreadPool | YES | conglin.clrpc.<br>common.util.<br>threadpool.<br>CustomizedThreadPool | 业务线程池 |
 | service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |

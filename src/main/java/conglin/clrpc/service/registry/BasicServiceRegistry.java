@@ -5,8 +5,8 @@ import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.util.zookeeper.ZooKeeperUtils;
+import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.util.ZooKeeperUtils;
 
 /**
  * 注册服务类

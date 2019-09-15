@@ -8,7 +8,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.common.util.threadpool.CustomizedThreadPool;
 import conglin.clrpc.common.util.threadpool.ThreadPool;
 

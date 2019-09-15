@@ -9,8 +9,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.util.net.IPAddressUtils;
+import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;

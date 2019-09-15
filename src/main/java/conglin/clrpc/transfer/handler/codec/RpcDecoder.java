@@ -7,7 +7,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.transfer.message.Message;
 import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler;
 import io.netty.buffer.ByteBuf;
@@ -37,20 +38,39 @@ public class RpcDecoder extends ByteToMessageDecoder {
         }
     }
 
-    private final Class<?> genericClass;
+    private final Class<? extends Message> genericClass;
+    private final int MESSAGE_TYPE;
 
-    private RpcDecoder(Class<?> genericClass) {
+    private RpcDecoder(Class<? extends Message> genericClass) {
         this.genericClass = genericClass;
+
+        int messageType = 0;
+        try {
+            messageType = genericClass.getDeclaredField("MESSAGE_TYPE").getInt(null);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            log.error("Error message decoder. " + e.getMessage());
+        }finally{
+            MESSAGE_TYPE = messageType;
+        }
     }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if (in.readableBytes() <= 4) return;
-
+        if (in.readableBytes() <= 8) return;
         in.markReaderIndex();
+        
+        int messageHeader = in.readInt();
+
+        System.out.println(messageHeader);
+
+        if(messageHeader != MESSAGE_TYPE){
+            in.resetReaderIndex();
+            return;
+        }
 
         int dataLengh = in.readInt();
         if (dataLengh <= 0) return;
+        System.out.println(dataLengh);
         
         if (in.readableBytes() < dataLengh) {
             in.resetReaderIndex();
@@ -68,7 +88,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
      * @param genericClass
      * @return
      */
-    public static RpcDecoder getDecoder(Class<?> genericClass){
+    public static RpcDecoder getDecoder(Class<? extends Message> genericClass){
         return new RpcDecoder(genericClass);
     }
 }

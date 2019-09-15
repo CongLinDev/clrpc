@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
-import conglin.clrpc.common.util.net.IPAddressUtils;
+import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.transfer.handler.ProviderChannelInitializer;
 import conglin.clrpc.transfer.receiver.RequestReceiver;
 import conglin.clrpc.transfer.sender.ResponseSender;

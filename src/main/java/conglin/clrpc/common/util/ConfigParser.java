@@ -1,4 +1,4 @@
-package conglin.clrpc.common.config;
+package conglin.clrpc.common.util;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

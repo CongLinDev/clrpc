@@ -1,9 +1,7 @@
 package conglin.clrpc.transfer.sender;
 
 import java.net.InetSocketAddress;
-import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +48,7 @@ public class BasicRequestSender implements RequestSender {
 
     @Override
 	public RpcFuture sendRequest(BasicRequest request) {
-        // BasicRequestSender 发送器使用 UUID 生成 requestID
-        BasicFuture future = generateFuture(this::generateRequestId, request);
+        BasicFuture future = new BasicFuture(this, request);
         if(!putFuture(request, future)) return future;
 
         String addr = sendRequestCore(request);
@@ -62,8 +59,7 @@ public class BasicRequestSender implements RequestSender {
 
     @Override
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) throws NoSuchProviderException {
-        // BasicRequestSender 发送器使用 UUID 生成 requestID
-        RpcFuture future = generateFuture(this::generateRequestId, request);
+        BasicFuture future = new BasicFuture(this, request);
         if(!putFuture(request, future)) return future;
 
         sendRequestCore(remoteAddress, request);
@@ -73,20 +69,6 @@ public class BasicRequestSender implements RequestSender {
     @Override
     public void resendRequest(String remoteAddress, BasicRequest request) throws NoSuchProviderException {
         sendRequestCore(remoteAddress, request);
-    }
-
-    /**
-     * 生成请求ID 后
-     * 生成 RPCFuture 并且将其保存
-     * @param requestIdGenerator 请求ID生成器。输入为服务名，输出为生成的ID。
-     * @param request
-     * @return
-     */
-    protected BasicFuture generateFuture(Function<String, Long> requestIdGenerator, BasicRequest request){
-        String serviceName = request.getServiceName();
-        Long requestId = requestIdGenerator.apply(serviceName);
-        request.setRequestId(requestId);    
-        return new BasicFuture(this, request);
     }
 
     /**
@@ -143,15 +125,6 @@ public class BasicRequestSender implements RequestSender {
         log.debug("Send request Id = " + requestId);
     }
 
-    /**
-     * 生成 RequestID
-     * 使用UUID随机分配
-     * @param serviceName
-     * @return
-     */
-    protected Long generateRequestId(String serviceName){
-        return UUID.randomUUID().getLeastSignificantBits();
-    }
 
     @Override
     public void stop() {

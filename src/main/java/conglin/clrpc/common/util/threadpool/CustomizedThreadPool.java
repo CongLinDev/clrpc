@@ -6,7 +6,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
 
 public class CustomizedThreadPool implements ThreadPool {
 

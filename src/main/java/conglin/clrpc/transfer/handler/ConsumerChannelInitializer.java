@@ -4,6 +4,7 @@ import conglin.clrpc.transfer.handler.codec.RpcDecoder;
 import conglin.clrpc.transfer.handler.codec.RpcEncoder;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transfer.message.TransactionRequest;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -27,7 +28,8 @@ public class ConsumerChannelInitializer
         this.channelPipeline = ch.pipeline();
         this.channelPipeline
                 .addLast(RpcEncoder.getEncoder(BasicRequest.class))
-                .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0))
+                // .addLast(RpcEncoder.getEncoder(TransactionRequest.class))
+                // .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 8, 0, 0))
                 .addLast(RpcDecoder.getDecoder(BasicResponse.class))
                 .addLast(new BasicConsumerChannelHandler(receiver));
     }

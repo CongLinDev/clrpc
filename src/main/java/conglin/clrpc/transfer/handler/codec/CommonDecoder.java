@@ -6,10 +6,11 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 import conglin.clrpc.transfer.message.Message;
+import conglin.clrpc.transfer.message.TransactionRequest;
 import conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler;
 import conglin.clrpc.common.codec.SerializationHandler;
 import io.netty.buffer.ByteBuf;
@@ -71,9 +72,12 @@ public class CommonDecoder extends LengthFieldBasedFrameDecoder {
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+        System.out.println("helloooooooooooooo");
         ByteBuf byteBuf = (ByteBuf)super.decode(ctx, in);
         if(byteBuf == null) return null;
+        System.out.println(byteBuf.readableBytes());
         int messageHeader = byteBuf.readInt();
+        log.info("decode message " + messageHeader);
         byte[] messageBody = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(messageBody);
         return decode(messageHeader, messageBody);
@@ -100,9 +104,12 @@ public class CommonDecoder extends LengthFieldBasedFrameDecoder {
                 result = serializationHandler.deserialize(messageBody, BasicRequest.class);
             case BasicResponse.MESSAGE_TYPE:
                 result = serializationHandler.deserialize(messageBody, BasicResponse.class);
+            case TransactionRequest.MESSAGE_TYPE:
+                result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
             default:
                 log.error("Can not decode message type=" + messageType);
         }
+        System.out.println(result);
         return result;
     }
 }

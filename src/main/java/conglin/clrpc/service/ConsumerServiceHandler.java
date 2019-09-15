@@ -12,6 +12,8 @@ import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.identifier.BasicIdentifierGenerator;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.future.RpcFuture;
@@ -26,9 +28,12 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private final Map<Long, RpcFuture> rpcFutures;
 
-    private ServiceDiscovery serviceDiscovery;
+    private final ServiceDiscovery serviceDiscovery;
 
     private final String LOCAL_ADDRESS;
+
+    // 基本的ID生成器
+    private final IdentifierGenerator identifierGenerator = new BasicIdentifierGenerator();
 
     public ConsumerServiceHandler(String localAddress){
         super();
@@ -50,7 +55,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
-            new BasicObjectProxy(serviceName, sender));
+            new BasicObjectProxy(serviceName, sender, identifierGenerator));
     }
 
     /**
@@ -60,7 +65,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @return
      */
     public ObjectProxy getPrxoy(String serviceName, RequestSender sender){
-        return new BasicObjectProxy(serviceName, sender);
+        return new BasicObjectProxy(serviceName, sender, identifierGenerator);
     }
 
     /**

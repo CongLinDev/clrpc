@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.transfer.ProviderTransfer;
 import conglin.clrpc.transfer.receiver.BasicRequestReceiver;
@@ -29,7 +29,7 @@ import conglin.clrpc.transfer.sender.ResponseSender;
  * 注意：若服务接口相同，先添加的服务会被覆盖。 结束后不要忘记关闭服务端，释放资源。
  */
 
-public class RpcProviderBootstrap extends CacheableBoostrap {
+public class RpcProviderBootstrap extends CacheableBootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(RpcProviderBootstrap.class);
 
@@ -159,22 +159,22 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
      * @return
      */
     protected ResponseSender initSender(){
-        String senderClassName = ConfigParser.getOrDefault("consumer.response-sender", "conglin.clrpc.transfer.sender.BasicResponseSender");
-        ResponseSender sender = null;
-        try {
-            sender = (ResponseSender) Class.forName(senderClassName)
-                    .getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException
-                | ClassNotFoundException e) {
-            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.sender.BasicResponseSender' rather than "
-                    + senderClassName);
-        }finally{
-            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.sender.BasicResponseSender}
-            if(sender == null)
-                sender = new BasicResponseSender();
-        }
-
+        // String senderClassName = ConfigParser.getOrDefault("consumer.response-sender", "conglin.clrpc.transfer.sender.BasicResponseSender");
+        // ResponseSender sender = null;
+        // try {
+        //     sender = (ResponseSender) Class.forName(senderClassName)
+        //             .getConstructor().newInstance();
+        // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+        //         | InvocationTargetException | NoSuchMethodException | SecurityException
+        //         | ClassNotFoundException e) {
+        //     log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.sender.BasicResponseSender' rather than "
+        //             + senderClassName);
+        // }finally{
+        //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.sender.BasicResponseSender}
+        //     if(sender == null)
+        //         sender = new BasicResponseSender();
+        // }
+        ResponseSender sender = new BasicResponseSender();
         return sender;
     }
 
@@ -184,20 +184,21 @@ public class RpcProviderBootstrap extends CacheableBoostrap {
      * @return
      */
     protected RequestReceiver initReceiver(){
-        String receiverClassName = ConfigParser.getOrDefault("provider.request-receiver", "conglin.clrpc.transfer.receiver.BasicRequestReceiver");
-        RequestReceiver receiver = null;
-        try {
-            receiver = (RequestReceiver) Class.forName(receiverClassName)
-                    .getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException
-                | ClassNotFoundException e) {
-            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.receiver.BasicRequestReceiver' rather than "
-                    + receiverClassName);
-        }finally{
-            // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.receiver.BasicRequestReceiver}
-            if(receiver == null) receiver = new BasicRequestReceiver();
-        }
+        // String receiverClassName = ConfigParser.getOrDefault("provider.request-receiver", "conglin.clrpc.transfer.receiver.BasicRequestReceiver");
+        // RequestReceiver receiver = null;
+        // try {
+        //     receiver = (RequestReceiver) Class.forName(receiverClassName)
+        //             .getConstructor().newInstance();
+        // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+        //         | InvocationTargetException | NoSuchMethodException | SecurityException
+        //         | ClassNotFoundException e) {
+        //     log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.receiver.BasicRequestReceiver' rather than "
+        //             + receiverClassName);
+        // }finally{
+        //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.receiver.BasicRequestReceiver}
+        //     if(receiver == null) receiver = new BasicRequestReceiver();
+        // }
+        RequestReceiver receiver = new BasicRequestReceiver();
         receiver.init(serviceHandler);
         receiver.bindCachePool(cacheManager);
         return receiver;

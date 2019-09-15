@@ -8,7 +8,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.transfer.sender.RequestSender;
 

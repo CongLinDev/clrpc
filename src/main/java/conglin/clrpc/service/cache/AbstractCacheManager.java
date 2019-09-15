@@ -1,6 +1,6 @@
 package conglin.clrpc.service.cache;
 
-import conglin.clrpc.common.config.ConfigParser;
+import conglin.clrpc.common.util.ConfigParser;
 
 abstract public class AbstractCacheManager<K, V> implements CacheManager<K, V>{
 

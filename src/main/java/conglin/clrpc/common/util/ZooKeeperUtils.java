@@ -1,4 +1,4 @@
-package conglin.clrpc.common.util.zookeeper;
+package conglin.clrpc.common.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
