@@ -1,16 +1,13 @@
 package conglin.clrpc.transfer.handler;
 
-import conglin.clrpc.transfer.handler.codec.RpcDecoder;
-import conglin.clrpc.transfer.handler.codec.RpcEncoder;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
-import conglin.clrpc.transfer.message.TransactionRequest;
+import conglin.clrpc.transfer.handler.codec.BasicRequestEncoder;
+import conglin.clrpc.transfer.handler.codec.CommonDecoder;
+import conglin.clrpc.transfer.handler.codec.TransactionRequestEncoder;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 public class ConsumerChannelInitializer 
         extends ChannelInitializer<SocketChannel>{
@@ -27,11 +24,11 @@ public class ConsumerChannelInitializer
     protected void initChannel(SocketChannel ch) throws Exception {
         this.channelPipeline = ch.pipeline();
         this.channelPipeline
-                .addLast(RpcEncoder.getEncoder(BasicRequest.class))
-                // .addLast(RpcEncoder.getEncoder(TransactionRequest.class))
-                // .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 8, 0, 0))
-                .addLast(RpcDecoder.getDecoder(BasicResponse.class))
+                .addLast(new BasicRequestEncoder())
+                .addLast(new TransactionRequestEncoder())
+                .addLast(new CommonDecoder())
                 .addLast(new BasicConsumerChannelHandler(receiver));
+        // you can add more handlers
     }
 
     public Channel channel(){

@@ -13,16 +13,8 @@ public class ProtostuffSerializationHandler implements SerializationHandler{
 
     private final Map<Class<?>, Schema<?>> cachedSchema;
     
-    private ProtostuffSerializationHandler(){
+    public ProtostuffSerializationHandler(){
         cachedSchema = new ConcurrentHashMap<>();
-    }
-
-    public static SerializationHandler getInstance() {
-        return SingletonHolder.SERIALIZATION_HANDLER;
-    }
-
-    private static class SingletonHolder {
-        private static final SerializationHandler SERIALIZATION_HANDLER = new ProtostuffSerializationHandler();
     }
 
     @Override
