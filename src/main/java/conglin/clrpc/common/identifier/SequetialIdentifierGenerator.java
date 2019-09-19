@@ -21,7 +21,7 @@ public class SequetialIdentifierGenerator extends BasicIdentifierGenerator{
         keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
 
         String path = ConfigParser.getOrDefault("zookeeper.registry.root-path", "/clrpc");
-        rootPath = path.endsWith("/") ? path.substring(0, path.length()-1) : path;//去除最后一个 /
+        rootPath = path.endsWith("/") ? path + "atomic/id" : path + "/atomic/id";
     }
 
     @Override
@@ -32,8 +32,7 @@ public class SequetialIdentifierGenerator extends BasicIdentifierGenerator{
     @Override
     public Long generateIndentifier(String key) {
         if (keeper != null) {
-            String sequetialNode = rootPath + "/request/id";
-            String nodeSequetialId = ZooKeeperUtils.createNode(keeper, sequetialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
+            String nodeSequetialId = ZooKeeperUtils.createNode(keeper, rootPath, CreateMode.EPHEMERAL_SEQUENTIAL);
             String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
             return Long.parseLong(id);
         }

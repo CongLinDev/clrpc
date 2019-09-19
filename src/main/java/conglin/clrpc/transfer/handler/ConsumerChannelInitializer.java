@@ -24,10 +24,10 @@ public class ConsumerChannelInitializer
     protected void initChannel(SocketChannel ch) throws Exception {
         this.channelPipeline = ch.pipeline();
         this.channelPipeline
-                .addLast(new BasicRequestEncoder())
-                .addLast(new TransactionRequestEncoder())
-                .addLast(new CommonDecoder())
-                .addLast(new BasicConsumerChannelHandler(receiver));
+                .addLast("BasicRequest Encoder", new BasicRequestEncoder())
+                .addLast("TransactionRequest Encoder", new TransactionRequestEncoder())
+                .addLast("Common Decoder", new CommonDecoder())
+                .addLast("Consumer ChannelHandler", new BasicConsumerChannelHandler(receiver));
         // you can add more handlers
     }
 

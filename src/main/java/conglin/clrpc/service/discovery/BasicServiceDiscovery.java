@@ -26,7 +26,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     public BasicServiceDiscovery(){
 
         String path = ConfigParser.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
-        rootPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         //服务注册地址
         registryAddress = ConfigParser.getOrDefault("zookeeper.discovery.address", "localhost:2181");
@@ -40,7 +40,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     @Override
     public void discover(String serviceName, BiConsumer<String, List<String>> updateMethod) {
         if(zooKeeper != null){
-            String absPath = rootPath + "/service/" + serviceName + "/providers";
+            String absPath = rootPath + "/" + serviceName + "/providers";
             ZooKeeperUtils.watchChildrenData(zooKeeper, absPath, 
                 list -> updateMethod.accept(serviceName, list));
         }
@@ -59,10 +59,10 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     @Override
     public void registerConsumer(String serviceName, String data) {
         //创建服务节点
-        String serviceNode = rootPath + "/service/" + serviceName;
+        String serviceNode = rootPath + "/" + serviceName;
         ZooKeeperUtils.createNode(zooKeeper,serviceNode, serviceName);
         //创建消费者节点
-        String absPath = rootPath + "/service/" + serviceName + "/consumers/consumer";
+        String absPath = rootPath + "/" + serviceName + "/consumers/consumer";
         ZooKeeperUtils.createNode(zooKeeper, absPath, data, CreateMode.EPHEMERAL_SEQUENTIAL);
     }
     

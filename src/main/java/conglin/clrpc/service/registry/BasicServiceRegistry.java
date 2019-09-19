@@ -28,7 +28,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
     public BasicServiceRegistry() {
 
         String path = ConfigParser.getOrDefault("zookeeper.registry.root-path", "/clrpc");
-        rootPath = path.endsWith("/") ? path.substring(0, path.length()-1) : path;//去除最后一个 /
+        rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         // 服务注册地址
         String registryAddress = ConfigParser.getOrDefault("zookeeper.registry.address", "localhost:2181");
@@ -45,11 +45,11 @@ public class BasicServiceRegistry implements ServiceRegistry {
     public void registerProvider(String serviceName, String data){
         if (zooKeeper != null) {
             //创建服务节点
-            String serviceNode = rootPath + "/service/" + serviceName;
+            String serviceNode = rootPath + "/" + serviceName;
             ZooKeeperUtils.createNode(zooKeeper,serviceNode, serviceName);
 
             //创建服务提供者节点
-            String providerNode = rootPath + "/service/" + serviceName + "/providers/provider";
+            String providerNode = rootPath + "/" + serviceName + "/providers/provider";
             ZooKeeperUtils.createNode(zooKeeper, providerNode, data, CreateMode.EPHEMERAL_SEQUENTIAL);
 
             log.debug("Create a service provider which provides " + serviceName);

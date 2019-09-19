@@ -21,9 +21,7 @@ provider:
   thread:
     boss: 1
     worker: 4
-  # response-sender: conglin.clrpc.transfer.sender.BasicResponseSender
-  # request-receiver: conglin.clrpc.transfer.receiver.BasicRequestReceiver
-
+    
 consumer:
   address: localhost:5200
   cache:
@@ -32,8 +30,6 @@ consumer:
     wait-time: 5000 #ms
   thread:
     worker: 4
-  # request-sender: conglin.clrpc.transfer.sender.BasicRequestSender
-  # response-receiver: conglin.clrpc.transfer.receiver.BasicResponseReceiver
 
 service:
   thread:

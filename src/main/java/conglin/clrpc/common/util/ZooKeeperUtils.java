@@ -39,6 +39,18 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path   绝对路径
+     * @param mode   节点创建模式
+     * @return
+     */
+    public static String createNode(final ZooKeeper keeper, String path, CreateMode mode) {
+        return createNode(keeper, path, "", mode);
+    }
+
+    /**
+     * 递归创建通用的节点 该节点不存储任何信息 采用 OPEN_ACL_UNSAFE 策略
+     * 
+     * @param keeper
+     * @param path   绝对路径
      * @param data   存储数据
      * @param mode   节点类型
      * @return 节点路径
@@ -82,6 +94,27 @@ public class ZooKeeperUtils {
                 return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * 删除节点（其版本总是最新的）
+     * 同时递归删除子节点
+     * 
+     * @param keeper
+     * @param path
+     * @return
+     */
+    public static String deleteNode(final ZooKeeper keeper, String path) {
+        try {
+            List<String> subNodes = keeper.getChildren(path, false);
+            for(String subNode : subNodes)
+                keeper.delete(path + "/" + subNode, -1);
+            keeper.delete(path, -1);
+            return path;
+        } catch (InterruptedException | KeeperException e) {
             log.error(e.getMessage());
         }
         return null;

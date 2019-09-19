@@ -22,9 +22,9 @@ public class ProviderChannelInitializer
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline()
-            .addLast(new CommonDecoder())
-            .addLast(new BasicResponseEncoder())
-            .addLast(new BasicProviderChannelHandler(sender, receiver));
+            .addLast("Common Decoder", new CommonDecoder())
+            .addLast("BasicResponse Encoder", new BasicResponseEncoder())
+            .addLast("Provider ChannelHandler", new BasicProviderChannelHandler(sender, receiver));
         // you can add more handlers
     }
 }

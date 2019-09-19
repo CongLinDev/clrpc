@@ -108,9 +108,9 @@ abstract public class RpcFuture implements Future<Object> {
         if(isCancelled() || callback == null) return;
         
         if(executorService != null){
-            executorService.submit(() -> runCallbackCore(callback));
+            executorService.submit(() -> doRunCallback(callback));
         }else{
-            runCallbackCore(callback);
+            doRunCallback(callback);
         }
     }
 
@@ -118,7 +118,7 @@ abstract public class RpcFuture implements Future<Object> {
      * 回调函数具体实现函数
      * @param callback
      */
-    abstract protected void runCallbackCore(Callback callback);
+    abstract protected void doRunCallback(Callback callback);
 
     /**
      * 重置开始时间

@@ -107,7 +107,7 @@ public class BasicFuture extends RpcFuture {
      * @param callback
      */
     @Override
-    protected void runCallbackCore(Callback callback){
+    protected void doRunCallback(Callback callback){
         if(!response.isError()){
             callback.success(response.getResult());
         }else{

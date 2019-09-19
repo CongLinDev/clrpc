@@ -51,7 +51,7 @@ public class BasicRequestSender implements RequestSender {
         BasicFuture future = new BasicFuture(this, request);
         if(!putFuture(request, future)) return future;
 
-        String addr = sendRequestCore(request);
+        String addr = doSendRequest(request);
         future.setRemoteAddress(addr);
         return future;
     }
@@ -62,13 +62,13 @@ public class BasicRequestSender implements RequestSender {
         BasicFuture future = new BasicFuture(this, request);
         if(!putFuture(request, future)) return future;
 
-        sendRequestCore(remoteAddress, request);
+        doSendRequest(remoteAddress, request);
         return future;
     }
 
     @Override
     public void resendRequest(String remoteAddress, BasicRequest request) throws NoSuchProviderException {
-        sendRequestCore(remoteAddress, request);
+        doSendRequest(remoteAddress, request);
     }
 
     /**
@@ -95,7 +95,7 @@ public class BasicRequestSender implements RequestSender {
      * @param requestIdGenerator 请求ID生成器。输入为服务名，输出为生成的ID。
      * @param request
      */
-    protected String sendRequestCore(BasicRequest request){
+    protected String doSendRequest(BasicRequest request){
         String serviceName = request.getServiceName();
         Long requestId = request.getRequestId();
 
@@ -113,7 +113,7 @@ public class BasicRequestSender implements RequestSender {
      * @param request
      * @throws NoSuchProviderException
      */
-    protected void sendRequestCore(String address, BasicRequest request)
+    protected void doSendRequest(String address, BasicRequest request)
         throws NoSuchProviderException{
         String serviceName = request.getServiceName();
         Long requestId = request.getRequestId();

@@ -12,17 +12,11 @@ import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.sender.RequestSender;
 
-public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
+public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
 
-    private final String serviceName;
-    private final RequestSender sender;
-    private final IdentifierGenerator identifierGenerator;
-
     public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator){
-        this.serviceName = serviceName;
-        this.sender = sender;
-        this.identifierGenerator = identifierGenerator;
+        super(serviceName, sender, identifierGenerator);
     }
 
     @Override
@@ -100,14 +94,6 @@ public class BasicObjectProxy implements ObjectProxy, InvocationHandler {
         
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
-    }
-
-    protected Class<?>[] getClassType(Object[] objs){
-        Class<?>[] types = new Class[objs.length];
-        for (int i = 0; i < objs.length; i++) {
-            types[i] = objs[i].getClass();
-        }
-        return types;
     }
 }
 

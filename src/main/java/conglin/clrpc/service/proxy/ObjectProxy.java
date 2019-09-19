@@ -52,4 +52,5 @@ public interface ObjectProxy {
      * @throws NoSuchProviderException
      */
     RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException;
+
 }

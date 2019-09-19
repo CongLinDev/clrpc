@@ -50,7 +50,7 @@ public class BasicRequestReceiver implements RequestReceiver {
         response = new BasicResponse();
         response.setRequestId(request.getRequestId());
         try {
-            handleRequestCore(request, response);
+            doHandleRequest(request, response);
 
             // put cache
             putCache(request, response);
@@ -100,7 +100,7 @@ public class BasicRequestReceiver implements RequestReceiver {
      * @param response
      * @throws InvocationTargetException
      */
-    protected void handleRequestCore(BasicRequest request, BasicResponse response) throws NoSuchServiceException, ServiceExecutionException{
+    protected void doHandleRequest(BasicRequest request, BasicResponse response) throws NoSuchServiceException, ServiceExecutionException{
 
         String serviceName = request.getServiceName();
         //获取服务实现类

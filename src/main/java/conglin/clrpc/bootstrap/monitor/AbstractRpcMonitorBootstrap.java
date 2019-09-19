@@ -16,8 +16,8 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
 
     private static final Logger log = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
 
-    private ZooKeeper zooKeeper;
-    private String rootPath;
+    protected ZooKeeper zooKeeper;
+    protected String rootPath;
     private final int sessionTimeout;
 
     public AbstractRpcMonitorBootstrap() {
@@ -31,26 +31,22 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
     @Override
     public RpcMonitorBootstrap monitor(){
         String monitorAddress = ConfigParser.getOrDefault("zookeeper.monitor.address", "localhost:2181");
-        String configRootPath = ConfigParser.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
-        return monitor(monitorAddress, configRootPath);
+        String path = ConfigParser.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
+        return monitor(monitorAddress, path);
     }
 
     @Override
-    public RpcMonitorBootstrap monitor(String zooKeeperAddress, String rootPath) {
+    public RpcMonitorBootstrap monitor(String zooKeeperAddress, String path) {
         // 连接ZooKeeper
-        if (rootPath.endsWith("/"))
-            rootPath = rootPath.substring(0, rootPath.length() - 1);
-
+        this.rootPath = path.endsWith("/") ? path + "service" : path + "/service";
         zooKeeper = ZooKeeperUtils.connectZooKeeper(zooKeeperAddress, sessionTimeout);
-        this.rootPath = rootPath;
-        log.info("Starting to monitor zookeeper whose address="+ zooKeeperAddress + "  root-path=" + rootPath);
+        log.info("Starting to monitor zookeeper whose address="+ zooKeeperAddress + "  root-path=" + path);
         return this;
     }
     
     @Override
     public RpcMonitorBootstrap monitorService() {
-        // String path = rootPath + "/service/" + serviceName;
-        List<String> services = ZooKeeperUtils.getChildrenNode(zooKeeper, rootPath + "/service", event -> {
+        List<String> services = ZooKeeperUtils.getChildrenNode(zooKeeper, rootPath, event -> {
             if (event.getType() == Event.EventType.NodeChildrenChanged) {
                 monitorService();
             }
@@ -61,8 +57,10 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
 
     @Override
     public RpcMonitorBootstrap monitorService(String serviceName) {
-        String providerPath = rootPath + "/service/" + serviceName + "/providers";
-        String consumerPath = rootPath + "/service/" + serviceName + "/consumers";
+        String concretePath = rootPath + "/" + serviceName;
+        String providerPath = concretePath + "/providers";
+        String consumerPath = concretePath + "/consumers";
+        
         log.info("Monitor service named " + serviceName);
         ZooKeeperUtils.watchChildrenNodeAndData(zooKeeper, providerPath, this::handleNodeInfo);
         ZooKeeperUtils.watchChildrenNodeAndData(zooKeeper, consumerPath, this::handleNodeInfo);

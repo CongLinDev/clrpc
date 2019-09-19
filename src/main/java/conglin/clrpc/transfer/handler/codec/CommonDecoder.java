@@ -50,19 +50,18 @@ public class CommonDecoder extends ByteToMessageDecoder {
          * 消息类型占用一个字节
          */
         int messageType = messageHeader & Message.MESSAGE_TYPE_MASK;
-
         switch (messageType) {
-        case BasicRequest.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, BasicRequest.class);
-            break;
-        case BasicResponse.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, BasicResponse.class);
-            break;
-        case TransactionRequest.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
-            break;
-        default:
-            log.error("Can not decode message type=" + messageType);
+            case BasicRequest.MESSAGE_TYPE:
+                result = serializationHandler.deserialize(messageBody, BasicRequest.class);
+                break;
+            case BasicResponse.MESSAGE_TYPE:
+                result = serializationHandler.deserialize(messageBody, BasicResponse.class);
+                break;
+            case TransactionRequest.MESSAGE_TYPE:
+                result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
+                break;
+            default:
+                log.error("Can not decode message type=" + messageType);
         }
         return result;
     }
