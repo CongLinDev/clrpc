@@ -1,27 +1,21 @@
 package conglin.clrpc.common.identifier;
 
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.common.util.ZooKeeperUtils;
+import conglin.clrpc.common.util.atomic.ZooKeeperAtomicService;
 
-public class SequetialIdentifierGenerator extends BasicIdentifierGenerator{
+public class SequetialIdentifierGenerator extends ZooKeeperAtomicService implements IdentifierGenerator{
 
     private static final Logger log = LoggerFactory.getLogger(SequetialIdentifierGenerator.class);
 
-    protected final String rootPath; //zookeeper根地址
-    protected final ZooKeeper keeper;
+    protected BasicIdentifierGenerator downgradeGenerator;
 
     public SequetialIdentifierGenerator(){
-        String registryAddress = ConfigParser.getOrDefault("zookeeper.atomicity.address", "localhost:2181");
-        int sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
-        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
-
-        String path = ConfigParser.getOrDefault("zookeeper.registry.root-path", "/clrpc");
-        rootPath = path.endsWith("/") ? path + "atomic/id" : path + "/atomic/id";
+        super("/request/id");
+        downgradeGenerator = new BasicIdentifierGenerator();
     }
 
     @Override
@@ -37,17 +31,12 @@ public class SequetialIdentifierGenerator extends BasicIdentifierGenerator{
             return Long.parseLong(id);
         }
         log.warn("'SequetialIdentifierGenerator' generated Indentifier failed. Starting use 'BasicIdentifierGenerator'.");
-        return super.generateIndentifier(key);
+        return downgradeGenerator.generateIdentifier(key);
     }
 
     @Override
     public void close() {
-        try{
-            ZooKeeperUtils.disconnectZooKeeper(keeper);
-            log.debug("Sequetial request sender shuted down.");
-        }catch(InterruptedException e){
-            log.error(e.getMessage());
-        }
+        super.close();
     }
 
 }

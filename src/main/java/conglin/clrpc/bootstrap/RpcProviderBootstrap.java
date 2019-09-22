@@ -12,6 +12,7 @@ import conglin.clrpc.transfer.receiver.BasicRequestReceiver;
 import conglin.clrpc.transfer.receiver.RequestReceiver;
 import conglin.clrpc.transfer.sender.BasicResponseSender;
 import conglin.clrpc.transfer.sender.ResponseSender;
+import io.netty.bootstrap.ServerBootstrap;
 
 /**
  * RPC provider端启动类
@@ -140,6 +141,8 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
 
     /**
      * 启动
+     * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
+     * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
      */
     public void start() {
         serviceHandler.start();
