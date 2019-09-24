@@ -1,24 +1,19 @@
 package conglin.clrpc.service.future;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
-import conglin.clrpc.transfer.message.TransactionRequest;
-import conglin.clrpc.transfer.sender.RequestSender;
 
-public class TransactionFuture extends RpcFuture {
+public class TransactionFuture extends CompositeFuture {
 
-    protected final List<TransactionRequest> requests;
     protected ZooKeeperTransactionHelper helper;
 
-    public TransactionFuture(RequestSender sender, List<TransactionRequest> requests, ZooKeeperTransactionHelper helper) {
-        super(sender);
-        this.requests = requests;
+    public TransactionFuture(ZooKeeperTransactionHelper helper) {
+        super();
+        this.helper = helper;
     }
 
     @Override
@@ -28,7 +23,7 @@ public class TransactionFuture extends RpcFuture {
 
     @Override
     public long identifier() {
-        return requests.get(0).getRequestId();
+        return super.identifier();
     }
 
     @Override
@@ -58,9 +53,8 @@ public class TransactionFuture extends RpcFuture {
     }
 
     @Override
-    protected void doRunCallback(Callback callback) {
-        // TODO Auto-generated method stub
-
+    protected void doRunCallback() {
+        super.doRunCallback();
     }
 
 }

@@ -1,10 +1,9 @@
 package conglin.clrpc.common.util.atomic;
 
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
 
-import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.common.util.ZooKeeperUtils;
+import conglin.clrpc.transfer.message.TransactionRequest;
 
 public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService {
 

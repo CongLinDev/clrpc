@@ -31,7 +31,7 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
             return Long.parseLong(id);
         }
         log.warn("'SequetialIdentifierGenerator' generated Indentifier failed. Starting use 'BasicIdentifierGenerator'.");
-        return downgradeGenerator.generateIdentifier(key);
+        return downgradeGenerator.generateIndentifier(key);
     }
 
     @Override

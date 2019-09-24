@@ -8,9 +8,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.common.exception.RpcServiceException;
-import conglin.clrpc.transfer.sender.RequestSender;
+import conglin.clrpc.common.util.ConfigParser;
 
 abstract public class RpcFuture implements Future<Object> {
     protected final FutureSynchronizer synchronizer;
@@ -22,10 +21,9 @@ abstract public class RpcFuture implements Future<Object> {
 
     protected long startTime; // 开始时间
 
-    protected RequestSender sender;
+    protected volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
-    public RpcFuture(RequestSender sender){
-        this.sender = sender;
+    public RpcFuture(){
         this.synchronizer = new FutureSynchronizer();
         startTime = System.currentTimeMillis();
     }
@@ -77,6 +75,24 @@ abstract public class RpcFuture implements Future<Object> {
         return synchronizer.isPending();
     }
 
+
+    /**
+     * 该{@link RpcFuture} 是否出错
+     * 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下
+     * 该方法的返回值才可信
+     * @return
+     */
+    public boolean isError(){
+        return error;
+    }
+
+    /**
+     * 设置错误标志位
+     */
+    protected void setError(){
+        this.error = true;
+    }
+
     /**
      * 返回该future是否超时
      * @return
@@ -92,10 +108,9 @@ abstract public class RpcFuture implements Future<Object> {
      */
     public void addCallback(Callback callback){
         if(callback == null) return;
+        this.futureCallback = callback;
         if(isDone()){
-            runCallback(callback);
-        }else{
-            futureCallback = callback;
+            runCallback();
         }
     }
 
@@ -104,21 +119,20 @@ abstract public class RpcFuture implements Future<Object> {
      * 反之使用当前线程顺序执行
      * @param callback
      */
-    protected void runCallback(Callback callback){
-        if(isCancelled() || callback == null) return;
+    protected void runCallback(){
+        if(isCancelled()) return;
         
         if(executorService != null){
-            executorService.submit(() -> doRunCallback(callback));
+            executorService.submit(this::doRunCallback);
         }else{
-            doRunCallback(callback);
+            doRunCallback();
         }
     }
 
     /**
      * 回调函数具体实现函数
-     * @param callback
      */
-    abstract protected void doRunCallback(Callback callback);
+    abstract protected void doRunCallback();
 
     /**
      * 重置开始时间

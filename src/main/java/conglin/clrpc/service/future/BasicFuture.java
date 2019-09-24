@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
@@ -16,8 +15,10 @@ public class BasicFuture extends RpcFuture {
     private BasicResponse response;
     private String remoteAddress;
 
+    protected RequestSender sender;
+
     public BasicFuture(RequestSender sender, BasicRequest request){
-        super(sender);
+        super();
         this.request = request;
     }
 
@@ -34,7 +35,10 @@ public class BasicFuture extends RpcFuture {
         try{
             synchronizer.acquire(0);
             if(response == null) return null;
-            if(response.isError()) throw (RpcServiceException)response.getResult();
+            if(response.isError()){
+                setError();
+                throw (RpcServiceException)response.getResult();
+            }
             return response.getResult();
         }finally{
             synchronizer.release(0);
@@ -47,7 +51,10 @@ public class BasicFuture extends RpcFuture {
         try{
             if(synchronizer.tryAcquireNanos(0, unit.toNanos(timeout))){
                 if(response == null) return null;
-                if(response.isError()) throw (RpcServiceException)response.getResult();
+                if(response.isError()){
+                    setError();
+                    throw (RpcServiceException)response.getResult();
+                }
                 return response.getResult();
             }else{
                 throw new TimeoutException("Timeout: " + request.toString());
@@ -61,7 +68,7 @@ public class BasicFuture extends RpcFuture {
     public void done(Object result) {
         this.response = (BasicResponse)result;
         synchronizer.release(0);
-        runCallback(futureCallback);
+        runCallback();
     }
 
     @Override
@@ -107,11 +114,11 @@ public class BasicFuture extends RpcFuture {
      * @param callback
      */
     @Override
-    protected void doRunCallback(Callback callback){
-        if(!response.isError()){
-            callback.success(response.getResult());
+    protected void doRunCallback(){
+        if(!isError()){
+            this.futureCallback.success(response.getResult());
         }else{
-            callback.fail(remoteAddress, (RpcServiceException)response.getResult());
+            this.futureCallback.fail(remoteAddress, (RpcServiceException)response.getResult());
         }
     }
 }
