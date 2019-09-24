@@ -6,7 +6,9 @@
 
 ## Setup
 
-**开发阶段** 暂时不提供依赖配置。
+**开发阶段** 均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
+
+目前只有 `0.X.0-SNAPSHOT` 版本的源码能够 **较为稳定** 地运行。
 
 你可以使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地进行使用。
 
