@@ -23,13 +23,6 @@ public class BasicFuture extends RpcFuture {
     }
 
     @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        boolean canCancel = !synchronizer.isDone();
-        synchronizer.cancel();
-        return canCancel;
-    }
-
-    @Override
     public Object get()
         throws InterruptedException, ExecutionException, RpcServiceException {
         try{

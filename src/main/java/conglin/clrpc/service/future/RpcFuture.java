@@ -40,7 +40,11 @@ abstract public class RpcFuture implements Future<Object> {
     abstract public long identifier();
 
     @Override
-    abstract public boolean cancel(boolean mayInterruptIfRunning);
+    public boolean cancel(boolean mayInterruptIfRunning){
+        boolean canCancel = !synchronizer.isDone();
+        synchronizer.cancel();
+        return canCancel;
+    }
 
     @Override
     abstract public Object get() 

@@ -29,7 +29,7 @@ public class ConfigParser{
             Yaml yaml = new Yaml();
             tempConfig = (Map<String, Object>)Map.class.cast(yaml.load(inputStream));
         }catch(FileNotFoundException e){
-            log.error("You must add config file named 'clrpc-config.yml' in your project.");
+            log.error("You had better add config file named 'clrpc-config.yml' in your project.");
             tempConfig = new HashMap<>();
         }catch(IOException | ClassCastException e){
             log.error(e.getMessage());
@@ -91,8 +91,10 @@ public class ConfigParser{
      * @param predicate
      * @return
      */
-    public static <T> T getOrDefaultWithCondition(String key, T t, Predicate<T> predicate){
+    public static <T> T getOrDefault(String key, T t, Predicate<T> predicate){
         T value = getOrDefault(key, t);
+        if(predicate == null) return value;
+        
         if(predicate.test(value)){
             return value;
         }else{

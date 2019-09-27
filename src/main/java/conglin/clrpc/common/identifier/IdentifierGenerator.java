@@ -3,13 +3,13 @@ package conglin.clrpc.common.identifier;
 public interface IdentifierGenerator{
 
     /**
-     * 生成一个一级标识符
+     * 生成一个标识符
      * @return
      */
     Long generateIdentifier();
 
     /**
-     * 根据key生成一个一级标识符
+     * 根据key生成一个标识符
      * @param key
      * @return
      */
