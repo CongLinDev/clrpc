@@ -19,19 +19,19 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
     }
 
     @Override
-    public Long generateIdentifier() {
-        return generateIndentifier(null);
+    public long generate() {
+        return generate(null);
     }
 
     @Override
-    public Long generateIndentifier(String key) {
+    public long generate(String key) {
         if (keeper != null) {
             String nodeSequetialId = ZooKeeperUtils.createNode(keeper, rootPath, CreateMode.EPHEMERAL_SEQUENTIAL);
             String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
             return Long.parseLong(id);
         }
         log.warn("'SequetialIdentifierGenerator' generated Indentifier failed. Starting use 'BasicIdentifierGenerator'.");
-        return downgradeGenerator.generateIndentifier(key);
+        return downgradeGenerator.generate(key);
     }
 
     @Override

@@ -4,16 +4,16 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-abstract public class RpcCompositeFuture extends RpcFuture {
+abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     protected final List<RpcFuture> futures;
 
-    public RpcCompositeFuture() {
+    public AbstractCompositeFuture() {
         super();
         this.futures = new LinkedList<>();
     }
 
-    public RpcCompositeFuture(Collection<? extends RpcFuture> collection){
+    public AbstractCompositeFuture(Collection<? extends RpcFuture> collection){
         super();
         this.futures = new LinkedList<>(collection);
     }
@@ -23,7 +23,7 @@ abstract public class RpcCompositeFuture extends RpcFuture {
      * @param future
      * @return
      */
-    public RpcCompositeFuture add(RpcFuture future){
+    public AbstractCompositeFuture add(RpcFuture future){
         futures.add(future);
         return this;
     }

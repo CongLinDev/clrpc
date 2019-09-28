@@ -5,12 +5,12 @@ import java.util.UUID;
 public class BasicIdentifierGenerator implements IdentifierGenerator {
 
     @Override
-    public Long generateIdentifier() {
-        return generateIndentifier(null);
+    public long generate() {
+        return generate(null);
     }
 
     @Override
-    public Long generateIndentifier(String key) {    
+    public long generate(String key) {    
         return UUID.randomUUID().getLeastSignificantBits();
     }
 

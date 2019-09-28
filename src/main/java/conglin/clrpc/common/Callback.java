@@ -31,7 +31,7 @@ public interface Callback{
 
     static final Logger log = LoggerFactory.getLogger(Callback.class);
     /**
-     * 这是一个基础的 Callback 实例
+     * 这是一个基础的 {@code Callback} 实例
      */
     Callback BASIC_CALLBACK = new Callback(){
     
@@ -43,6 +43,23 @@ public interface Callback{
         @Override
         public void fail(String remoteAddress, RpcServiceException e) {
             log.error(remoteAddress + ": " + e.getMessage());
+        }
+    };
+
+    /**
+     * 这是一个空的 {@code Callback} 实例
+     */
+    Callback EMPTY_CALLBACK = new Callback(){
+    
+        @Override
+        public void success(Object result) {
+            log.debug("EMPTY_CALLBACK: SUCCESSED.");
+            
+        }
+    
+        @Override
+        public void fail(String remoteAddress, RpcServiceException e) {
+            log.error("EMPTY_CALLBACK: FAILED.");
         }
     };
 }

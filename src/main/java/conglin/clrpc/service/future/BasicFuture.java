@@ -9,7 +9,7 @@ import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 import conglin.clrpc.transfer.sender.RequestSender;
 
-public class BasicFuture extends RpcFuture {
+public class BasicFuture extends AbstractFuture {
 
     private final BasicRequest request;
     private BasicResponse response;

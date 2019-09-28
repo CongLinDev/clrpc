@@ -11,12 +11,12 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
     private static final Logger log = LoggerFactory.getLogger(SpecialSequetialIdentifierGenerator.class);
 
     @Override
-    public Long generateIdentifier() {
-        return generateIndentifier("Anonymous");
+    public long generate() {
+        return generate("Anonymous");
     }
 
     @Override
-    public Long generateIndentifier(String key) {
+    public long generate(String key) {
         if (super.keeper != null) {
             String sequetialNode = rootPath + "/service/" + key + "/request/id";
             String nodeSequetialId = ZooKeeperUtils.createNode(keeper, sequetialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
@@ -24,7 +24,7 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
             return Long.parseLong(id);
         }
         log.warn("'SpecialSequetialIdentifierGenerator' generated Indentifier failed. Starting use 'SequetialIdentifierGenerator'.");
-        return super.generateIndentifier(key);
+        return super.generate(key);
     }
 
     @Override

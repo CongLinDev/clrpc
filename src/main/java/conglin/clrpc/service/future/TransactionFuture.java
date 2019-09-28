@@ -1,6 +1,5 @@
 package conglin.clrpc.service.future;
 
-import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -9,7 +8,7 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
 
-public class TransactionFuture extends RpcCompositeFuture {
+public class TransactionFuture extends AbstractCompositeFuture {
 
     protected ZooKeeperTransactionHelper helper;
 
@@ -67,24 +66,24 @@ public class TransactionFuture extends RpcCompositeFuture {
 
 
     @Override
-    public RpcCompositeFuture add(RpcFuture future) {
+    public AbstractCompositeFuture add(RpcFuture future) {
         super.add(future);
-        helper.callWithZooKeeper(future.identifier(), futures.size());
+        helper.call(future.identifier(), futures.size());
         return this;
     }
 
 
-    public RpcCompositeFuture submit(){
+    public AbstractCompositeFuture submit(){
         // TODO submit
         return this;
     }
 
-    public RpcCompositeFuture rollback(){
+    public AbstractCompositeFuture rollback(){
         // TODO rollback
         return this;
     }
 
-    public RpcCompositeFuture begin(){
+    public AbstractCompositeFuture begin(){
         // TODO begin
         return this;
     }

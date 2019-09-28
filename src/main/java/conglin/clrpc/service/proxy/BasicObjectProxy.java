@@ -48,7 +48,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
 
-        request.setRequestId(identifierGenerator.generateIndentifier(methodName));
+        request.setRequestId(identifierGenerator.generate(methodName));
 
         log.debug(request.toString());
         return sender.sendRequest(request);
@@ -62,7 +62,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
 
-        request.setRequestId(identifierGenerator.generateIndentifier(methodName));
+        request.setRequestId(identifierGenerator.generate(methodName));
         
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
@@ -76,7 +76,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
 
-        request.setRequestId(identifierGenerator.generateIndentifier(method.getName()));
+        request.setRequestId(identifierGenerator.generate(method.getName()));
 
         log.debug(request.toString());
         return sender.sendRequest(request);
@@ -90,7 +90,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
 
-        request.setRequestId(identifierGenerator.generateIndentifier(method.getName()));
+        request.setRequestId(identifierGenerator.generate(method.getName()));
         
         log.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);

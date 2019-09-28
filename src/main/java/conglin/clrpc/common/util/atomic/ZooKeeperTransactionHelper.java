@@ -19,7 +19,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService {
      * 在原子服务上注册一个 {@link TransactionRequest#getRequestId()} 的临时节点
      * @param requestId
      */
-    public void beginWithZooKeeper(Long requestId){
+    public void begin(Long requestId){
         // 创建临时节点
         ZooKeeperUtils.createNode(keeper, rootPath + "/" + requestId.toString(), PREPARE, CreateMode.EPHEMERAL);
     }
@@ -28,7 +28,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService {
      * 删除原子服务上的  {@link TransactionRequest#getRequestId()} 的临时节点
      * @param requestId
      */
-    public void clearWithZooKeeper(Long requestId){
+    public void clear(Long requestId){
         if(requestId == null) return;
         ZooKeeperUtils.deleteNode(keeper, rootPath + "/" + requestId);
     }
@@ -39,7 +39,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService {
      * @param requestId
      * @param serialNumber
      */
-    public void callWithZooKeeper(Long requestId, Integer serialNumber){
+    public void call(Long requestId, Integer serialNumber){
         // 创建临时子节点
         ZooKeeperUtils.createNode(keeper, 
             rootPath + "/" + requestId.toString() + "/" + serialNumber.toString(),

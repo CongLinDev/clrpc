@@ -6,14 +6,14 @@ public interface IdentifierGenerator{
      * 生成一个标识符
      * @return
      */
-    Long generateIdentifier();
+    long generate();
 
     /**
      * 根据key生成一个标识符
      * @param key
      * @return
      */
-    Long generateIndentifier(String key);
+    long generate(String key);
 
     /**
      * 关闭生成器
