@@ -4,7 +4,7 @@ import java.util.Random;
 
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.test.pojo.User;
 
@@ -32,7 +32,7 @@ public class AsyncConsumerTest1 {
                     }
 
                     @Override
-                    public void fail(String remoteAddress, RpcServiceException e) {
+                    public void fail(String remoteAddress, RequestException e) {
                         System.out.println(remoteAddress + ": " + e.getMessage());
                     }
 

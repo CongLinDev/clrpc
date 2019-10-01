@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import conglin.clrpc.common.exception.FutureCancelledException;
+
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     protected final List<RpcFuture> futures;
@@ -19,24 +21,30 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     /**
-     * 将future添加进来
+     * 将future合并进来
      * @param future
      * @return
      */
-    public AbstractCompositeFuture add(RpcFuture future){
-        futures.add(future);
-        return this;
+    public boolean combine(RpcFuture future){
+        beforeCombine(future);
+        return futures.add(future);
     }
 
-    // /**
-    //  * 将future添加进来
-    //  * @param collection
-    //  * @return
-    //  */
-    // public RpcCompositeFuture add(Collection<? extends RpcFuture> collection){
-    //     futures.addAll(collection);
-    //     return this;
-    // }
+    /**
+     * 将future合并进来
+     * @param collection
+     * @return
+     */
+    public boolean combine(Collection<? extends RpcFuture> collection){
+        collection.forEach(this::beforeCombine);
+        return futures.addAll(collection);
+    }
+
+    /**
+     * 合并前的操作
+     * @param future
+     */
+    abstract protected void beforeCombine(RpcFuture future);
 
     /**
      * 返回当前列表下的future数量
@@ -77,17 +85,4 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
 
 }
 
-class FutureCancelledException extends Exception{
 
-    private static final long serialVersionUID = -6235027907224439419L;
-
-    private final RpcFuture future;
-
-    public FutureCancelledException(RpcFuture future){
-        this.future = future;
-    }
-
-    public RpcFuture getFuture(){
-        return future;
-    }
-}

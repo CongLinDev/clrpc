@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 import conglin.clrpc.transfer.sender.RequestSender;
@@ -24,13 +24,13 @@ public class BasicFuture extends AbstractFuture {
 
     @Override
     public Object get()
-        throws InterruptedException, ExecutionException, RpcServiceException {
+        throws InterruptedException, ExecutionException, RequestException {
         try{
             synchronizer.acquire(0);
             if(response == null) return null;
             if(response.isError()){
                 setError();
-                throw (RpcServiceException)response.getResult();
+                throw (RequestException)response.getResult();
             }
             return response.getResult();
         }finally{
@@ -40,13 +40,13 @@ public class BasicFuture extends AbstractFuture {
 
     @Override
     public Object get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException {
+        throws InterruptedException, ExecutionException, TimeoutException, RequestException {
         try{
             if(synchronizer.tryAcquireNanos(0, unit.toNanos(timeout))){
                 if(response == null) return null;
                 if(response.isError()){
                     setError();
-                    throw (RpcServiceException)response.getResult();
+                    throw (RequestException)response.getResult();
                 }
                 return response.getResult();
             }else{
@@ -111,7 +111,7 @@ public class BasicFuture extends AbstractFuture {
         if(!isError()){
             this.futureCallback.success(response.getResult());
         }else{
-            this.futureCallback.fail(remoteAddress, (RpcServiceException)response.getResult());
+            this.futureCallback.fail(remoteAddress, (RequestException)response.getResult());
         }
     }
 }

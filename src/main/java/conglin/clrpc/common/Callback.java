@@ -3,7 +3,7 @@ package conglin.clrpc.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.service.proxy.ObjectProxy;
 
 /**
@@ -25,7 +25,7 @@ public interface Callback{
      * @param remoteAddress 服务提供者地址
      * @param e 抛出的异常
      */
-    void fail(String remoteAddress, RpcServiceException e);
+    void fail(String remoteAddress, RequestException e);
 
 
 
@@ -41,7 +41,7 @@ public interface Callback{
         }
     
         @Override
-        public void fail(String remoteAddress, RpcServiceException e) {
+        public void fail(String remoteAddress, RequestException e) {
             log.error(remoteAddress + ": " + e.getMessage());
         }
     };
@@ -58,7 +58,7 @@ public interface Callback{
         }
     
         @Override
-        public void fail(String remoteAddress, RpcServiceException e) {
+        public void fail(String remoteAddress, RequestException e) {
             log.error("EMPTY_CALLBACK: FAILED.");
         }
     };

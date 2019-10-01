@@ -292,4 +292,19 @@ public class ZooKeeperUtils {
             return new ArrayList<>();
         }
     }
+
+    /**
+     * 设置节点的值
+     * @param keeper
+     * @param rootPath
+     * @param newData 新的值
+     * @return
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    public static String setNodeData(final ZooKeeper keeper, String rootPath, String newData)
+            throws KeeperException, InterruptedException {
+        keeper.setData(rootPath, newData.getBytes(), -1);
+        return newData;
+    }
 }

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.annotation.CacheableService;
 import conglin.clrpc.common.annotation.IgnoreService;
-import conglin.clrpc.common.exception.NoSuchServiceException;
+import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.ProviderServiceHandler;
@@ -54,7 +54,7 @@ public class BasicRequestReceiver implements RequestReceiver {
 
             // put cache
             putCache(request, response);
-        } catch (NoSuchServiceException | ServiceExecutionException e) {
+        } catch (UnsupportedServiceException | ServiceExecutionException e) {
             log.error("Request failed: " + e.getMessage());
             response.signError();
             response.setResult(e);
@@ -100,14 +100,14 @@ public class BasicRequestReceiver implements RequestReceiver {
      * @param response
      * @throws InvocationTargetException
      */
-    protected void doHandleRequest(BasicRequest request, BasicResponse response) throws NoSuchServiceException, ServiceExecutionException{
+    protected void doHandleRequest(BasicRequest request, BasicResponse response) throws UnsupportedServiceException, ServiceExecutionException{
 
         String serviceName = request.getServiceName();
         //获取服务实现类
         Object serviceBean = serviceHandler.getService(serviceName);
         //如果服务实现类没有注册，抛出异常
         if(serviceBean == null){
-            throw new NoSuchServiceException(request);
+            throw new UnsupportedServiceException(request);
         }
         
         jdkReflectInvoke(serviceBean, request, response);

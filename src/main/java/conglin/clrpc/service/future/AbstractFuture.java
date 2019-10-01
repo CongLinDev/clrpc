@@ -7,7 +7,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.common.util.ConfigParser;
 
 abstract public class AbstractFuture implements RpcFuture {
@@ -36,11 +36,11 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     abstract public Object get() 
-        throws InterruptedException, ExecutionException, RpcServiceException;
+        throws InterruptedException, ExecutionException, RequestException;
 
     @Override
     abstract public Object get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException;
+        throws InterruptedException, ExecutionException, TimeoutException, RequestException;
 
     @Override
     public boolean isCancelled() {
@@ -134,7 +134,7 @@ abstract public class AbstractFuture implements RpcFuture {
         AbstractFuture.executorService = executorService;
     }
 
-        /**
+    /**
      * 用于RpcFuture的同步器
      */
     class FutureSynchronizer extends AbstractQueuedSynchronizer{

@@ -2,7 +2,7 @@ package conglin.clrpc.common.exception;
 
 import conglin.clrpc.transfer.message.BasicRequest;
 
-public class ServiceExecutionException extends RpcServiceException {
+public class ServiceExecutionException extends RequestException {
 
     private static final long serialVersionUID = 4259894135580173323L;
 

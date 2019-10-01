@@ -2,7 +2,7 @@ package conglin.clrpc.common.exception;
 
 import conglin.clrpc.transfer.message.BasicRequest;
 
-public class NoSuchProviderException extends RpcServiceException {
+public class NoSuchProviderException extends RequestException {
 
     private static final long serialVersionUID = -5999082213016050638L;
 
