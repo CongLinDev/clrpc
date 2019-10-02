@@ -59,5 +59,5 @@ public interface RequestSender extends Runnable{
     /**
      * 关闭发送器
      */
-    void stop();
+    void destory();
 }

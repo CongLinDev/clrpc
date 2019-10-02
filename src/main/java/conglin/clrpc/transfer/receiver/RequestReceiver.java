@@ -32,5 +32,5 @@ public interface RequestReceiver extends ThreadPool{
     /**
      * 关闭请求接收器
      */
-    void stop();
+    void destory();
 }

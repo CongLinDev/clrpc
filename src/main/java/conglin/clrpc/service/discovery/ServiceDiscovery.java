@@ -18,9 +18,9 @@ public interface ServiceDiscovery{
     void discover(String serviceName, BiConsumer<String, List<String>> updateMethod);
 
     /**
-     * 关闭服务
+     * 销毁服务
      */
-    void stop();
+    void destory();
 
     /**
      * 注册消费者

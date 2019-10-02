@@ -73,8 +73,8 @@ public class ConsumerTransfer {
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
 
-        sender.stop();
-        receiver.stop();
+        sender.destory();
+        receiver.destory();
     }
 
 

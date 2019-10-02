@@ -12,5 +12,5 @@ public interface ServiceRegistry{
     /**
      * 关闭注册中心
      */
-    void stop();
+    void destory();
 }

@@ -2,6 +2,7 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
+import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.atomic.TransactionHelper;
 import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
@@ -20,7 +21,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     protected final TransactionHelper helper;
 
-    protected TransactionFuture transactionFuture;
+    protected TransactionFuture future;
 
     public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator){
         super(null, sender, identifierGenerator);
@@ -28,8 +29,8 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     }
 
     @Override
-    public TransactionProxy begin() {
-        transactionFuture = new TransactionFuture();
+    public TransactionProxy begin() throws TransactionException {
+        future = new TransactionFuture();
         
         helper.clear(currentTransactionId); // 清除上个事务的记录
         currentTransactionId = identifierGenerator.generate(); // 生成一个新的ID
@@ -38,7 +39,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     }
 
     @Override
-    public TransactionProxy call(String serviceName, String method, Object... args) {
+    public TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException {
         TransactionRequest request = new TransactionRequest();
 
         request.setRequestId(currentTransactionId);
@@ -46,43 +47,44 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
         request.setMethodName(method);
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
-        request.setSerialNumber(transactionFuture.size() + 1); // 由transactionFuture进行控制序列号
+        request.setSerialNumber(future.size() + 1); // 由future进行控制序列号
         handleRequest(request);
         return this;
     }
 
     @Override
-    public TransactionProxy call(String serviceName, Method method, Object... args) {
+    public TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException {
         TransactionRequest request = new TransactionRequest();
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
-        request.setSerialNumber(transactionFuture.size() + 1); // 由transactionFuture进行控制序列号
+        request.setSerialNumber(future.size() + 1); // 由future进行控制序列号
         handleRequest(request);
         return this;
     }
 
     @Override
-    public RpcFuture commit() {
-        throw new UnsupportedOperationException();
+    public RpcFuture commit() throws TransactionException {
+        helper.commit(currentTransactionId);
+        return future;
     }
 
 	@Override
-	public boolean rollback() {
-		throw new UnsupportedOperationException();
+	public void rollback() throws TransactionException {
+		helper.rollback(currentTransactionId);
     }
     
     /**
      * 处理请求
      * @param request
-     * @return
+     * @throws TransactionException
      */
-    protected boolean handleRequest(TransactionRequest request){
+    protected void handleRequest(TransactionRequest request) throws TransactionException {
         RpcFuture f = sender.sendRequest(request);
-        return transactionFuture.combine(f) &&
+        if(future.combine(f)){
             helper.execute(currentTransactionId, request.getSerialNumber());
-
+        }
     }
 
     /**

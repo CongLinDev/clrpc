@@ -304,7 +304,22 @@ public class ZooKeeperUtils {
      */
     public static String setNodeData(final ZooKeeper keeper, String rootPath, String newData)
             throws KeeperException, InterruptedException {
-        keeper.setData(rootPath, newData.getBytes(), -1);
+        return setNodeData(keeper, rootPath, newData, -1);
+    }
+
+    /**
+     * 设置节点的值
+     * @param keeper
+     * @param rootPath
+     * @param newData 新的值
+     * @param version 版本号
+     * @return
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    public static String setNodeData(final ZooKeeper keeper, String rootPath, String newData, int version)
+            throws KeeperException, InterruptedException {
+        keeper.setData(rootPath, newData.getBytes(), version);
         return newData;
     }
 }

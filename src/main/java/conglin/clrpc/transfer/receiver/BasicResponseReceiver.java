@@ -27,7 +27,7 @@ public class BasicResponseReceiver implements ResponseReceiver {
     }
 
     @Override
-	public void stop() {
+	public void destory() {
 		// do nothing
 	}
 

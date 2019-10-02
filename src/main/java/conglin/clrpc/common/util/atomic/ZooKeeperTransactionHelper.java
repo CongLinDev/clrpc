@@ -22,50 +22,45 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void begin(Long requestId) {
+    public void begin(Long requestId) throws TransactionException {
         begin(requestId.toString());
     }
 
-    /**
-     * 在原子服务上注册一个 {@code subPath} 的临时节点
-     * 
-     * @param subPath
-     */
-    public void begin(String subPath) {
+    @Override
+    public void begin(String subPath) throws TransactionException {
         // 创建临时节点
-        ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath, PREPARE, CreateMode.EPHEMERAL);
+        if(ZooKeeperUtils.createNode(keeper, 
+                rootPath + "/" + subPath,
+                PREPARE,
+                CreateMode.EPHEMERAL) == null)
+            throw new TransactionException("Transaction begin failed. (sub_path = " + subPath + ")");
+
     }
 
     @Override
-    public void clear(Long requestId) {
+    public void clear(Long requestId) throws TransactionException {
         clear(requestId.toString());
     }
 
-    /**
-     * 删除原子服务上的 {@code subPath} 的临时节点
-     * 
-     * @param subPath
-     */
-    public void clear(String subPath) {
-        ZooKeeperUtils.deleteNode(keeper, rootPath + "/" + subPath);
+    @Override
+    public void clear(String subPath) throws TransactionException {
+        if(ZooKeeperUtils.deleteNode(keeper, rootPath + "/" + subPath) == null)
+            throw new TransactionException("Transaction clear failed. (sub_path = " + subPath + ")");
     }
 
     @Override
-    public boolean execute(Long requestId, Integer serialNumber) {
-        return execute(requestId.toString(), serialNumber.toString());
+    public void execute(Long requestId, Integer serialNumber) throws TransactionException {
+        execute(requestId.toString(), serialNumber.toString());
     }
 
-    /**
-     * 原子服务上的 {@code subPath} 的临时节点上创建 序列号 {@code serial} 子节点
-     * 
-     * @param subPath
-     * @param serial
-     * @return
-     */
-    public boolean execute(String subPath, String serial) {
+    @Override
+    public void execute(String subPath, String serial) throws TransactionException {
         // 创建临时子节点
-        return ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath + "/" + serial, PREPARE,
-                CreateMode.EPHEMERAL) != null;
+        if(ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath + "/" + serial,
+            PREPARE,
+            CreateMode.EPHEMERAL) == null)
+            throw new TransactionException("Transaction execute failed. (sub_path = " + 
+                subPath + ", serial=" + serial + " )");    
     }
 
     /**
@@ -81,23 +76,32 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void rollback(Long requestId) {
-        try {
-            updateState(rootPath + "/" + requestId, ROLLBACK);
-        } catch (KeeperException | InterruptedException e) {
-            String errorDesc = "Rollback failed. (requestId = " + requestId + ") "+ e.getMessage();
-            log.error(errorDesc);
-            throw new TransactionException(errorDesc);
-        }
-
+    public void rollback(Long requestId) throws TransactionException {
+        rollback(requestId.toString());
     }
 
     @Override
-    public void commit(Long requestId) {
+    public void rollback(String subPath) throws TransactionException {
         try {
-            updateState(rootPath + "/" + requestId, DONE);
+            updateState(rootPath + "/" + subPath, ROLLBACK);
         } catch (KeeperException | InterruptedException e) {
-            String errorDesc = "Commit failed. (requestId = " + requestId + ") "+ e.getMessage();
+            String errorDesc = "Rollback failed. (sub_path = " + subPath + ") "+ e.getMessage();
+            log.error(errorDesc);
+            throw new TransactionException(errorDesc);
+        }
+    }
+
+    @Override
+    public void commit(Long requestId) throws TransactionException {
+        commit(requestId.toString());
+    }
+
+    @Override
+    public void commit(String subPath) throws TransactionException {
+        try {
+            updateState(rootPath + "/" + subPath, DONE);
+        } catch (KeeperException | InterruptedException e) {
+            String errorDesc = "Commit failed. (sub_path = " + subPath + ") "+ e.getMessage();
             log.error(errorDesc);
             throw new TransactionException(errorDesc);
         }

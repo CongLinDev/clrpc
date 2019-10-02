@@ -18,7 +18,7 @@ public class BasicResponseSender implements ResponseSender {
     }
 
     @Override
-	public void stop() {
+	public void destory() {
 		// do nothing
 	}
 

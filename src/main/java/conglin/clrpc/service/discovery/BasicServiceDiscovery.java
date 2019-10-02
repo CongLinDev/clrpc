@@ -47,7 +47,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery{
     }
 
     @Override
-    public void stop(){
+    public void destory(){
         try{
             ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
             log.debug("Service discovery shuted down.");

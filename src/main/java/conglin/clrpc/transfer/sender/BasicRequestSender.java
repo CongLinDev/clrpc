@@ -127,7 +127,7 @@ public class BasicRequestSender implements RequestSender {
 
 
     @Override
-    public void stop() {
+    public void destory() {
         // do nothing
     }
 }

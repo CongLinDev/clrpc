@@ -2,43 +2,48 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
+import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.service.future.RpcFuture;
 
 public interface TransactionProxy{
 
     /**
      * 开始一个事务
-     * @return
+     * @return this object
+     * @throws TransactionException
      */
-    TransactionProxy begin();
+    TransactionProxy begin() throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
      * @param serviceName 服务名
      * @param method 服务方法
      * @param args 服务参数
-     * @return
+     * @return this object
+     * @throws TransactionException
      */
-    TransactionProxy call(String serviceName, String method, Object... args);
+    TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
      * @param serviceName 服务名
      * @param method 服务方法
      * @param args 服务参数
-     * @return
+     * @return this object
+     * @throws TransactionException
      */
-    TransactionProxy call(String serviceName, Method method, Object... args);
+    TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException;
 
     /**
      * 提交服务
-     * @return
+     * @return Future
+     * @throws TransactionException
      */
-    RpcFuture commit();
+    RpcFuture commit() throws TransactionException;
 
     /**
-     * 回滚服务
-     * @return
+     * 回滚事务
+     * @throws TransactionException
      */
-    boolean rollback();
+    void rollback() throws TransactionException;
 }

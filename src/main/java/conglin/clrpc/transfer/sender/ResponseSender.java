@@ -14,5 +14,5 @@ public interface ResponseSender {
     /**
      * 关闭发送器
      */
-    void stop();
+    void destory();
 }

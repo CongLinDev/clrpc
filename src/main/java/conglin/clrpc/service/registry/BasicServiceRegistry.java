@@ -57,7 +57,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
     }
 
     @Override
-    public void stop() {
+    public void destory() {
         try{
             ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
             log.debug("Service registry shuted down.");

@@ -63,7 +63,7 @@ public class BasicRequestReceiver implements RequestReceiver {
     }
 
     @Override
-    public void stop() {
+    public void destory() {
         // do nothing
     }
 

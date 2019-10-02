@@ -79,7 +79,7 @@ public class ProviderTransfer{
     public void stop(){
         if(bossGroup != null) bossGroup.shutdownGracefully();
         if(workerGroup != null) workerGroup.shutdownGracefully();
-        sender.stop();
-        receiver.stop();
+        sender.destory();
+        receiver.destory();
     }
 }

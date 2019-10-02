@@ -22,5 +22,5 @@ public interface ResponseReceiver extends ThreadPool {
     /**
      * 关闭回复接收器
      */
-    void stop();
+    void destory();
 }

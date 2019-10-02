@@ -76,7 +76,10 @@ abstract public class AbstractServiceHandler implements ThreadPool {
         businessTheardExecutorService.execute(task);
     }
 
-    public void stop(){
+    /**
+     * 销毁业务线程池
+     */
+    protected void destory(){
         if(businessTheardExecutorService != null)
             businessTheardExecutorService.shutdown();
         log.info("Theard Executor shuts down.");

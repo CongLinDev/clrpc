@@ -78,11 +78,13 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         checkFuture();
     }
 
-    @Override
+    /**
+     * 停止
+     */
     public void stop(){
         waitForUncompleteFuture();
-        super.stop();
-        serviceDiscovery.stop();
+        super.destory();
+        serviceDiscovery.destory();
     }
 
 

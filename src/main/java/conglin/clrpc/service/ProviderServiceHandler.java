@@ -80,9 +80,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         // do nothing
     }
     
-    @Override
     public void stop() {
-        super.stop();
-        serviceRegistry.stop();
+        super.destory();
+        serviceRegistry.destory();
     }
 }
