@@ -123,8 +123,8 @@ public class ConsumerTransfer {
         InetSocketAddress socketRemoteAddress = IPAddressUtils.splitHostnameAndPortSilently(remoteAddress);
         try {
             bootstrap.connect(socketRemoteAddress).sync();
-        } catch (InterruptedException e1) {
-            log.error("Cannot connect to remote provider. Remote Address : " + remoteAddress);
+        } catch (InterruptedException e) {
+            log.error("Cannot connect to remote provider. Remote Address : " + remoteAddress, e);
             return null;
         }
         log.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);

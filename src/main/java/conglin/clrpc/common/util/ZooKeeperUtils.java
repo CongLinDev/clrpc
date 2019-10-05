@@ -23,6 +23,44 @@ public class ZooKeeperUtils {
     private static final Logger log = LoggerFactory.getLogger(ZooKeeperUtils.class);
 
     /**
+     * 同步连接 ZooKeeper
+     * 
+     * @param address        ZooKeeper 地址
+     * @param sessionTimeout 超时时间
+     * @return
+     */
+    public static ZooKeeper connectZooKeeper(String address, int sessionTimeout) {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        ZooKeeper keeper = null;
+        try {
+            keeper = new ZooKeeper(address, sessionTimeout, event -> {
+                if (event.getState() == Event.KeeperState.SyncConnected) {
+                    countDownLatch.countDown();
+                    log.debug("ZooKeeper address=" + address + " is connected.");
+                }
+            });
+            log.debug("ZooKeeper address=" + address + " is connecting...");
+            countDownLatch.await();
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage());
+        }
+        return keeper;
+    }
+
+    /**
+     * 关闭与ZooKeeper的连接
+     * 
+     * @param keeper
+     * @throws InterruptedException
+     */
+    public static void disconnectZooKeeper(ZooKeeper keeper) throws InterruptedException {
+        if (keeper != null) {
+            keeper.close();
+        }
+    }
+
+    /**
      * 递归创建通用的持久节点 该节点不存储任何信息 采用 OPEN_ACL_UNSAFE 策略
      * 
      * @param keeper
@@ -100,8 +138,7 @@ public class ZooKeeperUtils {
     }
 
     /**
-     * 删除节点（其版本总是最新的）
-     * 同时递归删除子节点
+     * 删除节点（其版本总是最新的） 同时递归删除子节点
      * 
      * @param keeper
      * @param path
@@ -110,7 +147,7 @@ public class ZooKeeperUtils {
     public static String deleteNode(final ZooKeeper keeper, String path) {
         try {
             List<String> subNodes = keeper.getChildren(path, false);
-            for(String subNode : subNodes)
+            for (String subNode : subNodes)
                 keeper.delete(path + "/" + subNode, -1);
             keeper.delete(path, -1);
             return path;
@@ -121,41 +158,17 @@ public class ZooKeeperUtils {
     }
 
     /**
-     * 同步连接 ZooKeeper
-     * 
-     * @param address        ZooKeeper 地址
-     * @param sessionTimeout 超时时间
-     * @return
-     */
-    public static ZooKeeper connectZooKeeper(String address, int sessionTimeout) {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        ZooKeeper keeper = null;
-        try {
-            keeper = new ZooKeeper(address, sessionTimeout, event -> {
-                if (event.getState() == Event.KeeperState.SyncConnected) {
-                    countDownLatch.countDown();
-                    log.debug("ZooKeeper address=" + address + " is connected.");
-                }
-            });
-            log.debug("ZooKeeper address=" + address + " is connecting...");
-            countDownLatch.await();
-        } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage());
-        }
-        return keeper;
-    }
-
-
-    /**
-     * 关闭与ZooKeeper的连接
+     * 监视节点
      * @param keeper
+     * @param path
+     * @param watcher
+     * @throws KeeperException
      * @throws InterruptedException
      */
-    public static void disconnectZooKeeper(ZooKeeper keeper) throws InterruptedException {
-        if(keeper != null){
-            keeper.close();
-        }
+    public static void watchNode(final ZooKeeper keeper, String path, Watcher watcher) 
+        throws KeeperException, InterruptedException {
+            keeper.getData(path, watcher, null);
+        
     }
 
     /**
@@ -179,7 +192,7 @@ public class ZooKeeperUtils {
      */
     public static List<String> watchChildrenData(final ZooKeeper keeper, String path, Consumer<List<String>> consumer) {
         try {
-            List<String> nodeList = getChildrenNode(keeper,path, event -> {
+            List<String> nodeList = getChildrenNode(keeper, path, event -> {
                 if (event.getType() == Event.EventType.NodeChildrenChanged) {
                     watchChildrenData(keeper, path, consumer);
                 }
@@ -217,7 +230,7 @@ public class ZooKeeperUtils {
     public static Map<String, String> watchChildrenNodeAndData(final ZooKeeper keeper, String path,
             Consumer<Map<String, String>> consumer) {
         try {
-            List<String> nodeList = getChildrenNode(keeper,path, event -> {
+            List<String> nodeList = getChildrenNode(keeper, path, event -> {
                 if (event.getType() == Event.EventType.NodeChildrenChanged) {
                     watchChildrenNodeAndData(keeper, path, consumer);
                 }
@@ -236,20 +249,20 @@ public class ZooKeeperUtils {
      * 获取指定路径下所有子节点的名称和数据
      * 
      * @param keeper
-     * @param rootPath
+     * @param path
      * @param nodeList
      * @return
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public static Map<String, String> getChildrenNodeAndData(final ZooKeeper keeper, String rootPath,
+    public static Map<String, String> getChildrenNodeAndData(final ZooKeeper keeper, String path,
             List<String> nodeList) throws KeeperException, InterruptedException {
         Map<String, String> dataMap = new HashMap<>(nodeList.size());
 
         for (String node : nodeList) {
-            String path = rootPath + "/" + node;
-            String nodeData = new String(keeper.getData(path, false, null));
-            dataMap.put(path, nodeData);
+            String nodePath = path + "/" + node;
+            String nodeData = new String(keeper.getData(nodePath, false, null));
+            dataMap.put(nodePath, nodeData);
         }
         return dataMap;
     }
@@ -258,19 +271,19 @@ public class ZooKeeperUtils {
      * 获取指定路径下所有子节点的数据
      * 
      * @param keeper
-     * @param rootPath
+     * @param path
      * @param nodeList
      * @return
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public static List<String> getChildrenData(final ZooKeeper keeper, String rootPath, List<String> nodeList)
+    public static List<String> getChildrenData(final ZooKeeper keeper, String path, List<String> nodeList)
             throws KeeperException, InterruptedException {
         List<String> dataList = new ArrayList<>(nodeList.size());
 
         for (String node : nodeList) {
-            String path = rootPath + "/" + node;
-            String nodeData = new String(keeper.getData(path, false, null));
+            String nodePath = path + "/" + node;
+            String nodeData = new String(keeper.getData(nodePath, false, null));
             dataList.add(nodeData);
         }
         return dataList;
@@ -278,15 +291,16 @@ public class ZooKeeperUtils {
 
     /**
      * 获取并监视子节点
+     * 
      * @param keeper
-     * @param rootPath
+     * @param path
      * @param watcher
      * @return
      */
-    public static List<String> getChildrenNode(final ZooKeeper keeper, String rootPath, Watcher watcher) {
+    public static List<String> getChildrenNode(final ZooKeeper keeper, String path, Watcher watcher) {
 
         try {
-            return keeper.getChildren(rootPath, watcher);
+            return keeper.getChildren(path, watcher);
         } catch (KeeperException | InterruptedException e) {
             log.error(e.getMessage());
             return new ArrayList<>();
@@ -295,31 +309,55 @@ public class ZooKeeperUtils {
 
     /**
      * 设置节点的值
+     * 
      * @param keeper
-     * @param rootPath
-     * @param newData 新的值
+     * @param path
+     * @param newData  新的值
      * @return
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public static String setNodeData(final ZooKeeper keeper, String rootPath, String newData)
+    public static String setNodeData(final ZooKeeper keeper, String path, String newData)
             throws KeeperException, InterruptedException {
-        return setNodeData(keeper, rootPath, newData, -1);
+        return setNodeData(keeper, path, newData, -1);
     }
 
     /**
      * 设置节点的值
+     * 
      * @param keeper
-     * @param rootPath
-     * @param newData 新的值
-     * @param version 版本号
+     * @param path
+     * @param newData  新的值
+     * @param version  版本号
      * @return
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public static String setNodeData(final ZooKeeper keeper, String rootPath, String newData, int version)
+    public static String setNodeData(final ZooKeeper keeper, String path, String newData, int version)
             throws KeeperException, InterruptedException {
-        keeper.setData(rootPath, newData.getBytes(), version);
+        keeper.setData(path, newData.getBytes(), version);
         return newData;
+    }
+
+    /**
+     * CAS替换节点的值
+     * @param keeper
+     * @param path
+     * @param oldData
+     * @param newData
+     * @return
+     */
+    public static boolean compareAndSetNodeData(final ZooKeeper keeper, String path, String oldData, String newData) {
+        try {
+            Stat currentNodeStat = new Stat();
+            String currentData = new String(keeper.getData(path, false, currentNodeStat));
+            int currentNodeVersion = currentNodeStat.getVersion();
+            return currentData.equals(oldData) &&
+                (currentNodeVersion + 1) ==
+                    keeper.setData(path, newData.getBytes(), currentNodeVersion).getVersion();
+        } catch (KeeperException | InterruptedException e) {
+            log.error(e.getMessage());
+            return false;
+        }
     }
 }

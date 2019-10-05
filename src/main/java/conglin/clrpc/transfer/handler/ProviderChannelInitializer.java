@@ -7,8 +7,7 @@ import conglin.clrpc.transfer.sender.ResponseSender;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
-public class ProviderChannelInitializer 
-        extends ChannelInitializer<SocketChannel>{
+public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel>{
     
     private final ResponseSender sender;
     private final RequestReceiver receiver;
@@ -24,7 +23,7 @@ public class ProviderChannelInitializer
         ch.pipeline()
             .addLast("Common Decoder", new CommonDecoder())
             .addLast("BasicResponse Encoder", new BasicResponseEncoder())
-            .addLast("Provider ChannelHandler", new BasicProviderChannelHandler(sender, receiver));
+            .addLast("Provider ChannelHandler", new BasicRequestChannelHandler(sender, receiver));
         // you can add more handlers
     }
 }

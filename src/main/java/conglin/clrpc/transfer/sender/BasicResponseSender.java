@@ -13,6 +13,7 @@ public class BasicResponseSender implements ResponseSender {
     
     @Override
     public void sendResponse(Channel channel, BasicResponse response) {
+        if(response == null) return;
         channel.writeAndFlush(response).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         log.debug("Sending response for request id=" + response.getRequestId());
     }

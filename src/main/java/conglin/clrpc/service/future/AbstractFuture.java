@@ -11,15 +11,12 @@ import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.common.util.ConfigParser;
 
 abstract public class AbstractFuture implements RpcFuture {
-    protected final FutureSynchronizer synchronizer;
-
     protected static ExecutorService executorService;
-    protected Callback futureCallback;
-
     protected static final long TIME_THRESHOLD = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
 
+    protected final FutureSynchronizer synchronizer; // 同步器
+    protected Callback futureCallback; // 回调
     protected long startTime; // 开始时间
-
     protected volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
     public AbstractFuture(){
@@ -165,7 +162,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * 是否完成
          * @return
          */
-        public boolean isDone(){
+        protected boolean isDone(){
             return getState() >= DONE;
         }
 
@@ -173,7 +170,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * 是否取消
          * @return
          */
-        public boolean isCancelled(){
+        protected boolean isCancelled(){
             return getState() == CANCELLED;
         }
 
@@ -181,7 +178,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * 是否被占用
          * @return
          */
-        public boolean isUsed(){
+        protected boolean isUsed(){
             return getState() == USED;
         }
 
@@ -189,21 +186,21 @@ abstract public class AbstractFuture implements RpcFuture {
          * 是否等待中
          * @return
          */
-        public boolean isPending(){
+        protected boolean isPending(){
             return getState() == PENDING;
         }
 
         /**
          * 取消
          */
-        public void cancel(){
+        protected void cancel(){
             setState(CANCELLED);
         }
 
         /**
          * 重试
          */
-        public void retry(){
+        protected void retry(){
             setState(PENDING);
         }
     }

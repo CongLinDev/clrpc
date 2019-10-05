@@ -3,6 +3,10 @@ package conglin.clrpc.common.util.atomic;
 import conglin.clrpc.common.exception.TransactionException;
 
 public interface TransactionHelper{
+    // 事务状态
+    static final String PREPARE = "PREPARE";
+    static final String DONE = "DONE";
+    static final String ROLLBACK = "ROLLBACK";
 
     /**
      * 在原子服务上注册一个 {@link TransactionRequest#getRequestId()} 的临时节点
@@ -35,20 +39,72 @@ public interface TransactionHelper{
     /**
      * 原子服务上的 {@link TransactionRequest#getRequestId()} 的临时节点上创建 序列号
      * {@link TransactionRequest#getSerialNumber()} 子节点
+     * 子节点的值为 {@link TransactionHelper#PREPARE}
      * @param requestId
      * @param serialNumber
      * @throws TransactionException
      */
-    void execute(Long requestId, Integer serialNumber) throws TransactionException;
+    void prepare(Long requestId, Integer serialNumber) throws TransactionException;
 
     /**
      * 原子服务上的 {@code subPath} 的临时节点上创建 序列号 {@code serial} 子节点
-     * 
+     * 子节点的值为 {@link TransactionHelper#PREPARE}
      * @param subPath
      * @param serial
      * @throws TransactionException
      */
-    void execute(String subPath, String serial) throws TransactionException;
+    void prepare(String subPath, String serial) throws TransactionException;
+
+    /**
+     * 修改原子服务上的 {@link TransactionRequest#getRequestId()} 的临时节点上
+     * {@link TransactionRequest#getSerialNumber()} 子节点值
+     * 使用CAS将子节点的值由{@link TransactionHelper#PREPARE} 修改为 {@link TransactionHelper#DONE}
+     * @param requestId
+     * @param serialNumber
+     * @return 
+     */
+    boolean sign(Long requestId, Integer serialNumber);
+
+    /**
+     * 修改原子服务上的 {@code subPath} 的临时节点上创建 序列号 {@code serial} 子节点
+     * 使用CAS将子节点的值由{@link TransactionHelper#PREPARE} 修改为 {@link TransactionHelper#DONE}
+     * @param subPath
+     * @param serial
+     * @return 
+     */
+    boolean sign(String subPath, String serial);
+
+    /**
+     * 修改原子服务上的 {@link TransactionRequest#getRequestId()} 的临时节点上
+     * {@link TransactionRequest#getSerialNumber()} 子节点值修改为 {@link TransactionHelper#PREPARE}
+     * @param requestId
+     * @param serialNumber
+     * @throws TransactionException
+     */
+    void reparepare(Long requestId, Integer serialNumber) throws TransactionException;
+
+    /**
+     * 修改原子服务上的 {@code subPath} 的临时节点上创建 序列号 {@code serial} 子节点
+     * 子节点值修改为 {@link TransactionHelper#PREPARE}
+     * @param subPath
+     * @param serial
+     * @throws TransactionException
+     */
+    void reprepare(String subPath, String serial) throws TransactionException;
+
+    /**
+     * 监视提交
+     * @param requestId
+     * @throws TransactionException
+     */
+    void watch(Long requestId) throws TransactionException;
+
+    /**
+     * 监视提交
+     * @param subPath
+     * @throws TransactionException
+     */
+    void watch(String subPath) throws TransactionException;
 
     /**
      * 回滚

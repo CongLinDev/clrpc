@@ -8,7 +8,7 @@ import conglin.clrpc.transfer.message.BasicResponse;
 
 public class BasicResponseReceiver implements ResponseReceiver {
 
-    private ConsumerServiceHandler serviceHandler;
+    protected ConsumerServiceHandler serviceHandler;
 
     @Override
     public void init(ConsumerServiceHandler serviceHandler) {

@@ -28,7 +28,7 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void destroy() {
+        super.destroy();
     }
 }

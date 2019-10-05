@@ -34,7 +34,7 @@ abstract public class ZooKeeperAtomicService {
         keeper = ZooKeeperUtils.connectZooKeeper(atomicityAddress, sessionTimeout);
     }
 
-    public void close(){
+    public void destroy(){
         try{
             ZooKeeperUtils.disconnectZooKeeper(keeper);
             log.debug("ZooKeeper AtomicService shuted down.");

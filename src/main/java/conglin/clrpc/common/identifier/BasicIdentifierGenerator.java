@@ -15,7 +15,7 @@ public class BasicIdentifierGenerator implements IdentifierGenerator {
     }
 
     @Override
-    public void close() {
+    public void destroy() {
         // do nothing
     }
 }

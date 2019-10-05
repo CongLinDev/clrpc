@@ -83,7 +83,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     protected void handleRequest(TransactionRequest request) throws TransactionException {
         RpcFuture f = sender.sendRequest(request);
         if(future.combine(f)){
-            helper.execute(currentTransactionId, request.getSerialNumber());
+            helper.prepare(currentTransactionId, request.getSerialNumber());
         }
     }
 

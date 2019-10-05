@@ -35,8 +35,8 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void destroy() {
+        super.destroy();
     }
 
 }

@@ -13,14 +13,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 
-public class BasicProviderChannelHandler extends SimpleChannelInboundHandler<BasicRequest> {
+public class BasicRequestChannelHandler extends SimpleChannelInboundHandler<BasicRequest> {
 
-    private static final Logger log = LoggerFactory.getLogger(BasicProviderChannelHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(BasicRequestChannelHandler.class);
 
     private final ResponseSender sender;
     private final RequestReceiver receiver;
 
-    public BasicProviderChannelHandler(ResponseSender sender, RequestReceiver receiver) {
+    public BasicRequestChannelHandler(ResponseSender sender, RequestReceiver receiver) {
         super();
         this.sender = sender;
         this.receiver = receiver;
@@ -44,5 +44,4 @@ public class BasicProviderChannelHandler extends SimpleChannelInboundHandler<Bas
     protected ExecutorService executorService(){
         return receiver.getExecutorService();
     }
-
 }

@@ -9,8 +9,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
-public class ConsumerChannelInitializer 
-        extends ChannelInitializer<SocketChannel>{
+public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel>{
     
     private ChannelPipeline channelPipeline;
 
@@ -27,7 +26,7 @@ public class ConsumerChannelInitializer
                 .addLast("BasicRequest Encoder", new BasicRequestEncoder())
                 .addLast("TransactionRequest Encoder", new TransactionRequestEncoder())
                 .addLast("Common Decoder", new CommonDecoder())
-                .addLast("Consumer ChannelHandler", new BasicConsumerChannelHandler(receiver));
+                .addLast("Consumer ChannelHandler", new BasicResponseChannelHandler(receiver));
         // you can add more handlers
     }
 

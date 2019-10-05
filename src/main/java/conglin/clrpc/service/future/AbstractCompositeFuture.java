@@ -48,7 +48,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     /**
      * 返回当前列表下的future数量
-     * 若其中也存在 {@link RpcCompositeFuture} 则不会递归计算
+     * 若其中也存在 {@link AbstractCompositeFuture} 则不会递归计算
      * @return
      */
     public int size(){

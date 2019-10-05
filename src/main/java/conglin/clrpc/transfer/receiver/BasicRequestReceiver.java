@@ -24,10 +24,6 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     protected CacheManager<BasicRequest, BasicResponse> cacheManager;
 
-    public BasicRequestReceiver(){
-        
-    }
-
     @Override
     public void init(ProviderServiceHandler serviceHandler) {
         this.serviceHandler = serviceHandler;

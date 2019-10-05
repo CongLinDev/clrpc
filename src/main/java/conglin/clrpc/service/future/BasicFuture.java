@@ -11,9 +11,9 @@ import conglin.clrpc.transfer.sender.RequestSender;
 
 public class BasicFuture extends AbstractFuture {
 
-    private final BasicRequest request;
-    private BasicResponse response;
-    private String remoteAddress;
+    protected final BasicRequest request;
+    protected BasicResponse response;
+    protected String remoteAddress;
 
     protected RequestSender sender;
 

@@ -18,5 +18,5 @@ public interface IdentifierGenerator{
     /**
      * 关闭生成器
      */
-    void close();
+    void destroy();
 }
