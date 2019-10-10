@@ -33,7 +33,6 @@ public class BasicResponseReceiver implements ResponseReceiver {
 
     @Override
     public ExecutorService getExecutorService() {
-        // if(serviceHandler == null) return null;
         return serviceHandler.getExecutorService();
     }
 }

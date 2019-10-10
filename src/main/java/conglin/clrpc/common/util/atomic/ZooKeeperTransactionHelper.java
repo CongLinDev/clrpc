@@ -5,15 +5,11 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implements TransactionHelper {
-
-    private static final Logger log = LoggerFactory.getLogger(ZooKeeperTransactionHelper.class);
 
     public ZooKeeperTransactionHelper() {
         super("/transaction");
@@ -76,31 +72,37 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
         try {
             updateState(subPath + "/" + serial, PREPARE);
         } catch (KeeperException | InterruptedException e) {
-            String errorDesc = "Reprepare failed. (sub_path = " + subPath + ") " + e.getMessage();
-            log.error(errorDesc);
-            throw new TransactionException(errorDesc);
+            throw new TransactionException("Reprepare failed. (sub_path = " + subPath + ") " + e.getMessage());
         }
     }
 
     @Override
-    public void watch(Long requestId) throws TransactionException {
-        watch(requestId.toString());
+    public boolean watch(Long requestId) throws TransactionException {
+        return watch(requestId.toString());
     }
 
     @Override
-    public void watch(String subPath) throws TransactionException {
+    public boolean watch(String subPath) throws TransactionException {
         CountDownLatch latch = new CountDownLatch(1);
         try {
-            ZooKeeperUtils.watchNode(keeper, rootPath + "/" + subPath, event -> {
-                if(Event.EventType.NodeDataChanged == event.getType())
-                    latch.countDown();
-            });
-            latch.await();
+            while(latch.getCount() != 0){
+                String curState = ZooKeeperUtils.watchNode(keeper, rootPath + "/" + subPath, event -> {
+                    if(Event.EventType.NodeDataChanged == event.getType())
+                        latch.countDown();
+                });
+
+                if(curState.equals(DONE)){
+                    return true;
+                }else if(curState.equals(ROLLBACK)){
+                    return false;
+                }else{ // Prepapre
+                    latch.await();
+                }
+            }
         } catch (KeeperException | InterruptedException e) {
-            String errorDesc = "Watch failed. (sub_path = " + subPath + ") "+ e.getMessage();
-            log.error(errorDesc);
-            throw new TransactionException(errorDesc);
+            throw new TransactionException("Watch failed. (sub_path = " + subPath + ") "+ e.getMessage());
         }
+        return false;
     }
 
     @Override
@@ -113,9 +115,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
         try {
             updateState(subPath, ROLLBACK);
         } catch (KeeperException | InterruptedException e) {
-            String errorDesc = "Rollback failed. (sub_path = " + subPath + ") "+ e.getMessage();
-            log.error(errorDesc);
-            throw new TransactionException(errorDesc);
+            throw new TransactionException("Rollback failed. (sub_path = " + subPath + ") "+ e.getMessage());
         }
     }
 
@@ -129,9 +129,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
         try {
             updateState(subPath, DONE);
         } catch (KeeperException | InterruptedException e) {
-            String errorDesc = "Commit failed. (sub_path = " + subPath + ") "+ e.getMessage();
-            log.error(errorDesc);
-            throw new TransactionException(errorDesc);
+            throw new TransactionException("Commit failed. (sub_path = " + subPath + ") "+ e.getMessage());
         }
     }
 

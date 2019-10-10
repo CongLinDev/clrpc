@@ -13,7 +13,7 @@ public class SyncProviderTest1 {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         try {
             System.out.println("Provider opening...");
-            bootstrap.publishService(HelloService.class, HelloServiceImpl.class)
+            bootstrap.publish(HelloService.class, HelloServiceImpl.class)
                     .start();
             
         }finally{

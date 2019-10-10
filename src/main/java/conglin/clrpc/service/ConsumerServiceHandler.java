@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import org.apache.zookeeper.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,8 @@ import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
+import conglin.clrpc.service.proxy.TransactionProxy;
+import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 import conglin.clrpc.transfer.sender.RequestSender;
 
 
@@ -66,6 +69,15 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     public ObjectProxy getPrxoy(String serviceName, RequestSender sender){
         return new BasicObjectProxy(serviceName, sender, identifierGenerator);
+    }
+
+    /**
+     * 获取事务服务代理
+     * @param sender
+     * @return
+     */
+    public TransactionProxy getTransactionProxy(RequestSender sender){
+        return new ZooKeeperTransactionProxy(sender, identifierGenerator);
     }
 
     /**

@@ -8,7 +8,7 @@ public class AsyncProviderTimeTest {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         try {
             System.out.println("Provider opening...");
-            bootstrap.publishService("HelloService", HelloServiceImpl.class)
+            bootstrap.publish("HelloService", HelloServiceImpl.class)
                     .start();
             
         }finally{

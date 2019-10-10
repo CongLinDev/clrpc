@@ -21,9 +21,9 @@
     RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
     // 发布服务并开启服务
-    bootstrap.publishService("service1", ServiceBean1.class)
-                .publishService("service2", new ServiceBean2())
-                .publishService(Interface3.class, Implement3.class)
+    bootstrap.publish("service1", ServiceBean1.class)
+                .publish("service2", new ServiceBean2())
+                .publish(Interface3.class, Implement3.class)
                 .start();
     // 关闭服务
     bootstrap.stop();
@@ -39,11 +39,14 @@
     bootstrap.start();
 
     // 订阅同步服务
-    Interface1 i1 = bootstrap.subscribeService("service1");
-    Interface2 i2 = bootstrap.subscribeService(Interface2.class);
+    Interface1 i1 = bootstrap.subscribe("service1");
+    Interface2 i2 = bootstrap.subscribe(Interface2.class);
 
     // 订阅异步服务
-    ObjectProxy proxy = bootstrap.subscribeServiceAsync("service3");
+    ObjectProxy proxy = bootstrap.subscribeAsync("service3");
+
+    // 订阅事务服务
+    TransactionProxy transactionProxy = bootstrap.subscribeAsync();
 
     // 下面是你的业务逻辑代码
     // ......

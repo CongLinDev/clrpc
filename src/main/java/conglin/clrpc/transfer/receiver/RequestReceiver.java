@@ -1,13 +1,13 @@
 package conglin.clrpc.transfer.receiver;
 
-
+import conglin.clrpc.common.Chain;
 import conglin.clrpc.common.util.threadpool.ThreadPool;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 
-public interface RequestReceiver extends ThreadPool{
+public interface RequestReceiver extends Chain<BasicRequest>, ThreadPool{
     
     /**
      * 初始化

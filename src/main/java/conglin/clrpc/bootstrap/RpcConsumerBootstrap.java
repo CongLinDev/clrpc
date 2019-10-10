@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.proxy.ObjectProxy;
+import conglin.clrpc.service.proxy.TransactionProxy;
+import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 import conglin.clrpc.transfer.ConsumerTransfer;
 import conglin.clrpc.transfer.receiver.BasicResponseReceiver;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
@@ -21,11 +23,11 @@ import conglin.clrpc.transfer.sender.RequestSender;
  *     bootstrap.start();
  * 
  *     // 订阅同步服务
- *     Interface1 i1 = bootstrap.subscribeService("service1");
- *     Interface2 i2 = bootstrap.subscribeService(Interface2.class);
+ *     Interface1 i1 = bootstrap.subscribe("service1");
+ *     Interface2 i2 = bootstrap.subscribe(Interface2.class);
  * 
  *     // 订阅异步服务
- *     ObjectProxy proxy = bootstrap.subscribeServiceAsync("service3");
+ *     ObjectProxy proxy = bootstrap.subscribeAsync("service3");
  *     
  * </pre></blockquote>
  * 
@@ -60,8 +62,8 @@ public class RpcConsumerBootstrap extends CacheableBootstrap{
      * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
-    public <T> T subscribeService(Class<T> interfaceClass){
-        return subscribeService(interfaceClass, interfaceClass.getSimpleName());
+    public <T> T subscribe(Class<T> interfaceClass){
+        return subscribe(interfaceClass, interfaceClass.getSimpleName());
     }
 
     /**
@@ -71,7 +73,7 @@ public class RpcConsumerBootstrap extends CacheableBootstrap{
      * @param serviceName 服务名
      * @return 返回代理服务类
      */
-    public <T> T subscribeService(Class<T> interfaceClass, String serviceName){
+    public <T> T subscribe(Class<T> interfaceClass, String serviceName){
         log.info("Subscribe synchronous service named " + serviceName);
         serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
         return serviceHandler.getPrxoy(interfaceClass, serviceName, consumerTransfer.getSender());
@@ -82,8 +84,8 @@ public class RpcConsumerBootstrap extends CacheableBootstrap{
      * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeServiceAsync(Class<?> interfaceClass){
-        return subscribeServiceAsync(interfaceClass.getSimpleName());
+    public ObjectProxy subscribeAsync(Class<?> interfaceClass){
+        return subscribeAsync(interfaceClass.getSimpleName());
     }
 
     /**
@@ -91,10 +93,18 @@ public class RpcConsumerBootstrap extends CacheableBootstrap{
      * @param serviceName 返回代理服务类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeServiceAsync(String serviceName){
+    public ObjectProxy subscribeAsync(String serviceName){
         log.info("Subscribe asynchronous service named " + serviceName);
         serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
         return serviceHandler.getPrxoy(serviceName, consumerTransfer.getSender());
+    }
+
+    /**
+     * 订阅事务服务
+     * @return
+     */
+    public TransactionProxy subscribeAsync(){
+        return serviceHandler.getTransactionProxy(consumerTransfer.getSender());
     }
 
     /**

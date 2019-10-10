@@ -162,13 +162,13 @@ public class ZooKeeperUtils {
      * @param keeper
      * @param path
      * @param watcher
+     * @return
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public static void watchNode(final ZooKeeper keeper, String path, Watcher watcher) 
+    public static String watchNode(final ZooKeeper keeper, String path, Watcher watcher) 
         throws KeeperException, InterruptedException {
-            keeper.getData(path, watcher, null);
-        
+            return new String(keeper.getData(path, watcher, null));        
     }
 
     /**

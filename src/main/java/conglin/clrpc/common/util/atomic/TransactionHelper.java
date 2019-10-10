@@ -93,18 +93,20 @@ public interface TransactionHelper{
     void reprepare(String subPath, String serial) throws TransactionException;
 
     /**
-     * 监视提交
+     * 监视提交（阻塞方法）
      * @param requestId
+     * @return 是否可以提交
      * @throws TransactionException
      */
-    void watch(Long requestId) throws TransactionException;
+    boolean watch(Long requestId) throws TransactionException;
 
     /**
-     * 监视提交
+     * 监视提交（阻塞方法）
      * @param subPath
+     * @return 是否可以提交
      * @throws TransactionException
      */
-    void watch(String subPath) throws TransactionException;
+    boolean watch(String subPath) throws TransactionException;
 
     /**
      * 回滚

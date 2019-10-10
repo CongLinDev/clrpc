@@ -1,6 +1,8 @@
 package conglin.clrpc.common;
 
-public interface Chain<T>{
+import java.util.function.Consumer;
+
+public interface Chain<T> {
 
     /**
      * 返回链上的下一个元素
@@ -13,7 +15,13 @@ public interface Chain<T>{
      * @param next
      * @return
      */
-    Chain<T> next(Chain<T> next);
+    void next(Chain<T> next);
+
+    /**
+     * 直接将下一个元素设为 参数 next
+     * @param next
+     */
+    void setNextDirectly(Chain<T> next);
 
     /**
      * 能否处理该任务
@@ -35,9 +43,20 @@ public interface Chain<T>{
     default void handle(T task){
         if(canHandle(task)){
             doHandle(task);
-            return;
         }else{
             next().handle(task);
+        }
+    }
+
+    /**
+     * 从 {@code this} 对象开始到尾部节点，进行批处理
+     * @param consumer
+     */
+    default void all(Consumer<Chain<T>> consumer){
+        Chain<T> obj = this;
+        while(obj != null){
+            consumer.accept(obj);
+            obj = obj.next();
         }
     }
 
@@ -52,7 +71,12 @@ public interface Chain<T>{
         }
 
         @Override
-        public Chain<Object> next(Chain<Object> next) {
+        public void next(Chain<Object> next) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setNextDirectly(Chain<Object> next) {
             throw new UnsupportedOperationException();
         }
 

@@ -14,7 +14,7 @@ public class SyncProviderTest2 {
         try {
             System.out.println("Provider opening...");
             //未添加服务
-            bootstrap.publishService(UserService.class, UserServiceImpl.class).start();
+            bootstrap.publish(UserService.class, UserServiceImpl.class).start();
             
         }finally{
             bootstrap.stop();

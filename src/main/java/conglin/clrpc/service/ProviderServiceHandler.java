@@ -34,7 +34,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param serviceName
      * @param serviceBean
      */
-    public void publishService(String serviceName, Object serviceBean){
+    public void publish(String serviceName, Object serviceBean){
         services.put(serviceName, serviceBean);
     }
 

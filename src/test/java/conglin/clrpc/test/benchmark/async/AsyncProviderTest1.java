@@ -12,7 +12,7 @@ public class AsyncProviderTest1 {
         try {
             System.out.println("Provider opening...");
             
-            bootstrap.publishService("UserService", UserServiceImpl.class).start();
+            bootstrap.publish("UserService", UserServiceImpl.class).start();
             
         }finally{
             bootstrap.stop();

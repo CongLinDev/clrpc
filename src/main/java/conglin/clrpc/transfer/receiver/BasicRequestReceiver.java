@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Chain;
 import conglin.clrpc.common.annotation.CacheableService;
 import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
@@ -24,11 +25,12 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     protected CacheManager<BasicRequest, BasicResponse> cacheManager;
 
+    protected Chain<BasicRequest> next;
+
     @Override
     public void init(ProviderServiceHandler serviceHandler) {
         this.serviceHandler = serviceHandler;
     }
-
 
     @Override
     public void bindCachePool(CacheManager<BasicRequest, BasicResponse> cacheManager) {
@@ -41,7 +43,8 @@ public class BasicRequestReceiver implements RequestReceiver {
         BasicResponse response = null;
 
         // fetch from cache
-        if((response = getCache(request)) != null) return response;
+        if ((response = getCache(request)) != null)
+            return response;
 
         response = new BasicResponse();
         response.setRequestId(request.getRequestId());
@@ -67,57 +70,64 @@ public class BasicRequestReceiver implements RequestReceiver {
     public ExecutorService getExecutorService() {
         return serviceHandler.getExecutorService();
     }
-    
+
     /**
      * 检查缓存中是否有需要的结果
+     * 
      * @param request
      * @return
      */
-    protected BasicResponse getCache(BasicRequest request){
-        if(cacheManager == null) return null;
+    protected BasicResponse getCache(BasicRequest request) {
+        if (cacheManager == null)
+            return null;
         log.debug("Fetching cached response. Request id = " + request.getRequestId());
         return cacheManager.get(request);
     }
 
     /**
      * 将可缓存的数据放入缓存
+     * 
      * @param request
      * @param response
      */
-    protected void putCache(BasicRequest request, BasicResponse response){
-        if(cacheManager == null || !response.canCacheForProvider()) return;
+    protected void putCache(BasicRequest request, BasicResponse response) {
+        if (cacheManager == null || !response.canCacheForProvider())
+            return;
         log.debug("Caching request and response. Request id = " + request.getRequestId());
         cacheManager.put(request, response);
     }
 
     /**
      * 处理客户端请求并生成结果
+     * 
      * @param request
      * @param response
      * @throws InvocationTargetException
      */
-    protected void doHandleRequest(BasicRequest request, BasicResponse response) throws UnsupportedServiceException, ServiceExecutionException{
+    protected void doHandleRequest(BasicRequest request, BasicResponse response)
+            throws UnsupportedServiceException, ServiceExecutionException {
 
         String serviceName = request.getServiceName();
-        //获取服务实现类
+        // 获取服务实现类
         Object serviceBean = serviceHandler.getService(serviceName);
-        //如果服务实现类没有注册，抛出异常
-        if(serviceBean == null){
+        // 如果服务实现类没有注册，抛出异常
+        if (serviceBean == null) {
             throw new UnsupportedServiceException(request);
         }
-        
+
         jdkReflectInvoke(serviceBean, request, response);
     }
 
     /**
      * 使用jdk反射来调用方法
+     * 
      * @param serviceBean
      * @param request
      * @param response
      * @throws ServiceExecutionException
      */
     protected void jdkReflectInvoke(Object serviceBean, BasicRequest request, BasicResponse response)
-            throws ServiceExecutionException{
+            throws ServiceExecutionException {
         Class<?> serviceBeanClass = serviceBean.getClass();
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
@@ -125,7 +135,7 @@ public class BasicRequestReceiver implements RequestReceiver {
 
         log.debug("Invoking class..." + serviceBeanClass.getName());
         log.debug("Invoking method..." + methodName);
-   
+
         try {
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
             handleAnnotation(method, response);
@@ -139,30 +149,31 @@ public class BasicRequestReceiver implements RequestReceiver {
 
     /**
      * 处理注解
+     * 
      * @param method
      * @param response
      * @throws NoSuchMethodException
      */
-    
-    protected void handleAnnotation(Method method, BasicResponse response) throws NoSuchMethodException{
-        // 处理 {@link IgnoreService} 
+
+    protected void handleAnnotation(Method method, BasicResponse response) throws NoSuchMethodException {
+        // 处理 {@link IgnoreService}
         IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
-        if(ignoreService != null && ignoreService.ignore())
+        if (ignoreService != null && ignoreService.ignore())
             throw new NoSuchMethodException(method.getName());
-        
+
         // 处理{@link CacheableService}
         CacheableService cacheableService = method.getAnnotation(CacheableService.class);
-        if(cacheableService == null) return;// 默认值为0，不必调用方法设置为0
-        if(cacheableService.consumer()){
+        if (cacheableService == null)
+            return;// 默认值为0，不必调用方法设置为0
+        if (cacheableService.consumer()) {
             response.canCacheForConsumer();
             response.setExpireTime(cacheableService.exprie());
         }
-        if(cacheableService.provider()){
+        if (cacheableService.provider()) {
             response.canCacheForProvider();
             response.setExpireTime(cacheableService.exprie());
         }
     }
-
 
 
     // remove cglib reflect
@@ -184,4 +195,38 @@ public class BasicRequestReceiver implements RequestReceiver {
     //         throw new ServiceExecutionException(request, e);
     //     }
     // }
+
+    
+    // implement Chain<T>
+
+    @Override
+    public Chain<BasicRequest> next() {
+        return next;
+    }
+
+    @Override
+    public void next(Chain<BasicRequest> next) {
+        Chain<BasicRequest> temp = this.next;
+        this.setNextDirectly(next);
+
+        while(next.next() != null){
+            next = next.next();
+        }
+        next.setNextDirectly(temp);
+    }
+
+    @Override
+    public void setNextDirectly(Chain<BasicRequest> next) {
+        this.next = next;        
+    }
+
+    @Override
+    public boolean canHandle(BasicRequest task) {
+        return task.getClass() == BasicRequest.class;
+    }
+
+    @Override
+    public void doHandle(BasicRequest task) {
+        handleRequest(task);
+    }
 }
