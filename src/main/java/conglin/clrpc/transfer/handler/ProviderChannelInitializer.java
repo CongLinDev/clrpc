@@ -23,7 +23,9 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
         ch.pipeline()
             .addLast("Common Decoder", new CommonDecoder())
             .addLast("BasicResponse Encoder", new BasicResponseEncoder())
-            .addLast("Provider ChannelHandler", new BasicRequestChannelHandler(sender, receiver));
+            .addLast("Provider BasicRequest-ChannelHandler", new BasicRequestChannelHandler(sender, receiver))
+            .addLast("Provider TransactionRequest-ChannelHandler", new TransactionRequestChannelHandler(sender, (RequestReceiver)receiver.next()));
+            // .addLast(null)
         // you can add more handlers
     }
 }

@@ -80,6 +80,9 @@ public class ProviderTransfer{
         if(bossGroup != null) bossGroup.shutdownGracefully();
         if(workerGroup != null) workerGroup.shutdownGracefully();
         sender.destory();
-        receiver.destory();
+        do{
+            receiver.destory();
+            receiver = (RequestReceiver)receiver.next();
+        }while(receiver.next() != null);
     }
 }

@@ -2,6 +2,7 @@ package conglin.clrpc.bootstrap;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.zookeeper.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,7 @@ import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.transfer.ProviderTransfer;
 import conglin.clrpc.transfer.receiver.BasicRequestReceiver;
 import conglin.clrpc.transfer.receiver.RequestReceiver;
+import conglin.clrpc.transfer.receiver.TransactionRequestReceiver;
 import conglin.clrpc.transfer.sender.BasicResponseSender;
 import conglin.clrpc.transfer.sender.ResponseSender;
 import io.netty.bootstrap.ServerBootstrap;
@@ -201,9 +203,16 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
         //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.receiver.BasicRequestReceiver}
         //     if(receiver == null) receiver = new BasicRequestReceiver();
         // }
-        RequestReceiver receiver = new BasicRequestReceiver();
-        receiver.init(serviceHandler);
-        receiver.bindCachePool(cacheManager);
-        return receiver;
+        BasicRequestReceiver basicRequestReceiver = new BasicRequestReceiver();
+        TransactionRequestReceiver transactionRequestReceiver = new TransactionRequestReceiver();
+        basicRequestReceiver.next(transactionRequestReceiver);
+
+        basicRequestReceiver.init(serviceHandler);
+        basicRequestReceiver.bindCachePool(cacheManager);
+        
+        transactionRequestReceiver.init(serviceHandler);
+        transactionRequestReceiver.bindCachePool(cacheManager);
+        
+        return basicRequestReceiver;
     }
 }

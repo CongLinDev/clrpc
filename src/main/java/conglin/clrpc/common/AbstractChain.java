@@ -1,6 +1,6 @@
 package conglin.clrpc.common;
 
-abstract public class AbstractChain<T> implements Chain<T>{
+abstract public class AbstractChain<T> implements Chain<T> {
 
     private Chain<T> next;
 

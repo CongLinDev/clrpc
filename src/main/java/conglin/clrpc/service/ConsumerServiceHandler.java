@@ -9,7 +9,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import org.apache.zookeeper.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

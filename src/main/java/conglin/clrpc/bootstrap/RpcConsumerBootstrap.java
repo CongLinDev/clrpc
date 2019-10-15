@@ -7,7 +7,6 @@ import conglin.clrpc.common.util.ConfigParser;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
-import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 import conglin.clrpc.transfer.ConsumerTransfer;
 import conglin.clrpc.transfer.receiver.BasicResponseReceiver;
 import conglin.clrpc.transfer.receiver.ResponseReceiver;
@@ -28,7 +27,7 @@ import conglin.clrpc.transfer.sender.RequestSender;
  * 
  *     // 订阅异步服务
  *     ObjectProxy proxy = bootstrap.subscribeAsync("service3");
- *     
+ *
  * </pre></blockquote>
  * 
  * 注意：结束后不要忘记关闭客户端，释放资源。
