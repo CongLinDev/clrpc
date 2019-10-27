@@ -37,7 +37,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     // 基本的ID生成器
     private final IdentifierGenerator identifierGenerator = new BasicIdentifierGenerator();
 
-    public ConsumerServiceHandler(String localAddress){
+    public ConsumerServiceHandler(String localAddress) {
         super();
         this.LOCAL_ADDRESS = localAddress;
         rpcFutures = new ConcurrentHashMap<>();

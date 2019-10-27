@@ -15,7 +15,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     //服务映射
     //String保存服务名 Object保存服务实现类
-    private final Map<String, Object> services;
+    private final Map<String, Object> serviceObjects;
 
     private final String LOCAL_ADDRESS;
 
@@ -24,7 +24,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     public ProviderServiceHandler(String localAddress) {
         super();
         this.LOCAL_ADDRESS = localAddress;
-        services = new HashMap<>();
+        serviceObjects = new HashMap<>();
         serviceRegistry = new BasicServiceRegistry();
     }
 
@@ -34,8 +34,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param serviceName
      * @param serviceBean
      */
-    public void publish(String serviceName, Object serviceBean){
-        services.put(serviceName, serviceBean);
+    public void publish(String serviceName, Object serviceBean) {
+        serviceObjects.put(serviceName, serviceBean);
     }
 
     /**
@@ -43,8 +43,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param serviceName
      * @return
      */
-    public Object getService(String serviceName){
-        return services.get(serviceName);
+    public Object getService(String serviceName) {
+        return serviceObjects.get(serviceName);
     }
 
     /**
@@ -52,7 +52,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param serviceName 服务名
      */
     public void removeService(String serviceName){
-        services.remove(serviceName);
+        serviceObjects.remove(serviceName);
         log.debug("Remove service named " + serviceName);
     }
 
@@ -62,7 +62,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      */
     public void registerService(String data){
         //把服务名注册到zookeeper上
-        services.keySet().forEach(
+        serviceObjects.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, data)
         );
     }
@@ -71,7 +71,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * 将本机地址注册到zookeeper上
      */
     public void registerService(){
-        services.keySet().forEach(
+        serviceObjects.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, LOCAL_ADDRESS)
         ); 
     }

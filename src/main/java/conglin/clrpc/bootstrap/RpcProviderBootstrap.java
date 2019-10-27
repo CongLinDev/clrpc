@@ -2,7 +2,6 @@ package conglin.clrpc.bootstrap;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.zookeeper.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,7 +211,7 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
         
         transactionRequestReceiver.init(serviceHandler);
         transactionRequestReceiver.bindCachePool(cacheManager);
-        
+
         return basicRequestReceiver;
     }
 }
