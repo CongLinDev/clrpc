@@ -45,7 +45,7 @@ public class TransactionRequestReceiver extends BasicRequestReceiver {
 
             helper.reparepare(transactionRequest.getRequestId(), transactionRequest.getSerialNumber());
             return null;
-
+            
         }catch(TransactionException e){
             log.error(e.getMessage());
             return null;

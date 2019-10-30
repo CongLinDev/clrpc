@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.common.util.ConfigParser;
 
@@ -15,7 +14,7 @@ abstract public class AbstractFuture implements RpcFuture {
     protected static final long TIME_THRESHOLD = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
 
     protected final FutureSynchronizer synchronizer; // 同步器
-    protected Callback futureCallback; // 回调
+    protected FutureCallback futureCallback; // 回调
     protected long startTime; // 开始时间
     protected volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
@@ -88,7 +87,7 @@ abstract public class AbstractFuture implements RpcFuture {
      * 后添加的回调函数会覆盖前添加的回调函数
      * @param callback
      */
-    public void addCallback(Callback callback){
+    public void addCallback(FutureCallback callback){
         if(callback == null) return;
         this.futureCallback = callback;
         if(isDone()){

@@ -1,4 +1,4 @@
-package conglin.clrpc.common;
+package conglin.clrpc.service.future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import conglin.clrpc.service.proxy.ObjectProxy;
 /**
  * 回调接口
  */
-public interface Callback{
+public interface FutureCallback{
 
     /**
      * 成功
@@ -29,11 +29,11 @@ public interface Callback{
 
 
 
-    static final Logger log = LoggerFactory.getLogger(Callback.class);
+    static final Logger log = LoggerFactory.getLogger(FutureCallback.class);
     /**
      * 这是一个基础的 {@code Callback} 实例
      */
-    Callback BASIC_CALLBACK = new Callback(){
+    FutureCallback BASIC_CALLBACK = new FutureCallback(){
     
         @Override
         public void success(Object result) {
@@ -49,7 +49,7 @@ public interface Callback{
     /**
      * 这是一个空的 {@code Callback} 实例
      */
-    Callback EMPTY_CALLBACK = new Callback(){
+    FutureCallback EMPTY_CALLBACK = new FutureCallback(){
     
         @Override
         public void success(Object result) {

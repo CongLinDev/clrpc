@@ -2,8 +2,6 @@ package conglin.clrpc.service.future;
 
 import java.util.concurrent.Future;
 
-import conglin.clrpc.common.Callback;
-
 public interface RpcFuture extends Future<Object> {
 
     
@@ -11,7 +9,7 @@ public interface RpcFuture extends Future<Object> {
      * 添加回调函数
      * @param callback
      */
-    void addCallback(Callback callback);
+    void addCallback(FutureCallback callback);
 
     /**
      * 该 {@code RpcFuture} 的标识符

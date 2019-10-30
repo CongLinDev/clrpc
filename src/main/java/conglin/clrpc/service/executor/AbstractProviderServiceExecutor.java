@@ -1,15 +1,10 @@
 package conglin.clrpc.service.executor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.annotation.CacheableService;
-import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.service.cache.CacheManager;
@@ -27,20 +22,16 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
 
     private final ExecutorService executor;
 
-    protected final Function<String, Object> serviceObjectsHolder;
-
     private final CacheManager<BasicRequest, BasicResponse> cacheManager;
 
     private Channel channel;
 
-    public AbstractProviderServiceExecutor(Function<String, Object> serviceObjectsHolder, ExecutorService executor) {
-        this(serviceObjectsHolder, executor, null);
+    public AbstractProviderServiceExecutor(ExecutorService executor) {
+        this(executor, null);
     }
 
-    public AbstractProviderServiceExecutor(Function<String, Object> serviceObjectsHolder, 
-                    ExecutorService executor,
+    public AbstractProviderServiceExecutor(ExecutorService executor,
                     CacheManager<BasicRequest, BasicResponse> cacheManager){
-        this.serviceObjectsHolder = serviceObjectsHolder;
         this.executor = executor;
         this.cacheManager = cacheManager;
     }
@@ -54,13 +45,8 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
      * @throws UnsupportedServiceException
      * @throws ServiceExecutionException
      */
-    abstract boolean doExecute(BasicRequest request, BasicResponse response)
+    abstract protected boolean doExecute(BasicRequest request, BasicResponse response)
         throws UnsupportedServiceException, ServiceExecutionException;
-
-    @Override
-    public ExecutorService getExecutorService() {
-        return executor;
-    }
 
     @Override
     public void execute(BasicRequest t) {
@@ -77,18 +63,19 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
                     executeCompletely = doExecute(t, response);
 
                     // save result
-                    putCache(t, response);
+                    if(executeCompletely) putCache(t, response);
 
                 }catch(UnsupportedServiceException | ServiceExecutionException e){
                     log.error("Request failed: " + e.getMessage());
                     response.signError();
                     response.setResult(e);
+
+                    executeCompletely = true;
                 }
-            } else {
+            } else { // fetch from cache
                 executeCompletely = true;
             }
-            if(executeCompletely)
-                send(response);
+            if(executeCompletely) sendResponse(response);
         });
     }
 
@@ -130,66 +117,16 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
      * 发送回复
      * @param response
      */
-    protected void send(BasicResponse response) {
+    protected void sendResponse(BasicResponse response) {
         if(response == null) return;
         channel.writeAndFlush(response).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         log.debug("Sending response for request id=" + response.getRequestId());
     }
 
-    /**
-     * 使用jdk反射来调用方法
-     * 
-     * @param serviceBean
-     * @param request
-     * @param response
-     * @throws ServiceExecutionException
-     */
-    protected void jdkReflectInvoke(Object serviceBean, BasicRequest request, BasicResponse response)
-            throws ServiceExecutionException {
-        Class<?> serviceBeanClass = serviceBean.getClass();
-        String methodName = request.getMethodName();
-        Class<?>[] parameterTypes = request.getParameterTypes();
-        Object[] parameters = request.getParameters();
 
-        log.debug("Invoking class..." + serviceBeanClass.getName());
-        log.debug("Invoking method..." + methodName);
-
-        try {
-            Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
-            handleAnnotation(method, response);
-            method.setAccessible(true);
-            response.setResult(method.invoke(serviceBean, parameters));
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw new ServiceExecutionException(request, e);
-        }
-    }
-
-    /**
-     * 处理注解
-     * 
-     * @param method
-     * @param response
-     * @throws NoSuchMethodException
-     */
-    protected void handleAnnotation(Method method, BasicResponse response) throws NoSuchMethodException {
-        // 处理 {@link IgnoreService}
-        IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
-        if (ignoreService != null && ignoreService.ignore())
-            throw new NoSuchMethodException(method.getName());
-
-        // 处理{@link CacheableService}
-        CacheableService cacheableService = method.getAnnotation(CacheableService.class);
-        if (cacheableService == null)
-            return;// 默认值为0，不必调用方法设置为0
-        if (cacheableService.consumer()) {
-            response.canCacheForConsumer();
-            response.setExpireTime(cacheableService.exprie());
-        }
-        if (cacheableService.provider()) {
-            response.canCacheForProvider();
-            response.setExpireTime(cacheableService.exprie());
-        }
+    @Override
+    public ExecutorService getExecutorService() {
+        return executor;
     }
 }
 

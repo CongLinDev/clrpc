@@ -105,6 +105,10 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
         return false;
     }
 
+    public void watchAsync(String subPath){
+        
+    }
+
     @Override
     public void rollback(Long requestId) throws TransactionException {
         rollback(requestId.toString());

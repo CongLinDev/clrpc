@@ -4,18 +4,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.FutureCancelledException;
 import conglin.clrpc.common.exception.RequestException;
 
 public class TransactionFuture extends AbstractCompositeFuture {
 
-    protected final Callback subFutureCallback;
+    protected final FutureCallback subFutureCallback;
 
     public TransactionFuture() {
         super();
 
-        subFutureCallback = new Callback() {
+        subFutureCallback = new FutureCallback() {
             @Override
             public void success(Object result) {
                 try {
