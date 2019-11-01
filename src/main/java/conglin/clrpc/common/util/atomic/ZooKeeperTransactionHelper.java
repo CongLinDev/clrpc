@@ -2,10 +2,14 @@ package conglin.clrpc.common.util.atomic;
 
 import java.util.concurrent.CountDownLatch;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event;
 
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
@@ -16,8 +20,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void begin(Long requestId) throws TransactionException {
-        begin(requestId.toString());
+    public void begin(Long transactionId) throws TransactionException {
+        begin(transactionId.toString());
     }
 
     @Override
@@ -28,8 +32,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void clear(Long requestId) throws TransactionException {
-        clear(requestId.toString());
+    public void clear(Long transactionId) throws TransactionException {
+        clear(transactionId.toString());
     }
 
     @Override
@@ -39,8 +43,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void prepare(Long requestId, Integer serialNumber) throws TransactionException {
-        prepare(requestId.toString(), serialNumber.toString());
+    public void prepare(Long transactionId, Integer serialNumber) throws TransactionException {
+        prepare(transactionId.toString(), serialNumber.toString());
     }
 
     @Override
@@ -53,8 +57,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public boolean sign(Long requestId, Integer serialNumber) {
-        return sign(requestId.toString(), serialNumber.toString());
+    public boolean sign(Long transactionId, Integer serialNumber) {
+        return sign(transactionId.toString(), serialNumber.toString());
     }
 
     @Override
@@ -63,8 +67,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void reparepare(Long requestId, Integer serialNumber) throws TransactionException {
-        reprepare(requestId.toString(), serialNumber.toString());
+    public void reparepare(Long transactionId, Integer serialNumber) throws TransactionException {
+        reprepare(transactionId.toString(), serialNumber.toString());
     }
 
     @Override
@@ -77,41 +81,72 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public boolean watch(Long requestId) throws TransactionException {
-        return watch(requestId.toString());
+    public boolean watch(Long transactionId) throws TransactionException {
+        return watch(transactionId.toString());
     }
 
     @Override
     public boolean watch(String subPath) throws TransactionException {
         CountDownLatch latch = new CountDownLatch(1);
         try {
-            while(latch.getCount() != 0){
+            while (latch.getCount() != 0) {
                 String curState = ZooKeeperUtils.watchNode(keeper, rootPath + "/" + subPath, event -> {
-                    if(Event.EventType.NodeDataChanged == event.getType())
+                    if (Event.EventType.NodeDataChanged == event.getType())
                         latch.countDown();
                 });
 
-                if(curState.equals(DONE)){
+                if (curState.equals(DONE)) {
                     return true;
-                }else if(curState.equals(ROLLBACK)){
+                } else if (curState.equals(ROLLBACK)) {
                     return false;
-                }else{ // Prepapre
+                } else { // Prepapre
                     latch.await();
                 }
             }
         } catch (KeeperException | InterruptedException e) {
-            throw new TransactionException("Watch failed. (sub_path = " + subPath + ") "+ e.getMessage());
+            throw new TransactionException("Watch failed. (sub_path = " + subPath + ") " + e.getMessage());
         }
         return false;
     }
 
-    public void watchAsync(String subPath){
-        
+    public void watchAsync(Long transactionId, Callback<Object> callback) throws TransactionException {
+        watchAsync(transactionId.toString(), callback);
+    }
+
+    public void watchAsync(String subPath, Callback<Object> callback) throws TransactionException {
+
+        Watcher watcher = event -> {
+            String newState;
+            try {
+                newState = ZooKeeperUtils.watchNode(keeper, subPath, null);
+            } catch (KeeperException | InterruptedException e) {
+                throw new TransactionException("Watch failed. (sub_path = " + subPath + ") " + e.getMessage());
+            }
+
+            if(Event.EventType.NodeDataChanged == event.getType()){
+                if(newState.equals(DONE)){
+                    callback.success(null);
+                } else if(newState.equals(ROLLBACK)) {
+                    callback.fail(null);
+                }
+            }
+        };
+
+        try{
+            String curState = ZooKeeperUtils.watchNode(keeper, rootPath + "/" + subPath, watcher);
+            if(curState.equals(DONE)){
+                callback.success(null);
+            } else if(curState.equals(ROLLBACK)) {
+                callback.fail(null);
+            }
+        } catch (KeeperException | InterruptedException e) {
+            throw new TransactionException("Watch failed. (sub_path = " + subPath + ") "+ e.getMessage());
+        }
     }
 
     @Override
-    public void rollback(Long requestId) throws TransactionException {
-        rollback(requestId.toString());
+    public void rollback(Long transactionId) throws TransactionException {
+        rollback(transactionId.toString());
     }
 
     @Override
@@ -124,8 +159,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void commit(Long requestId) throws TransactionException {
-        commit(requestId.toString());
+    public void commit(Long transactionId) throws TransactionException {
+        commit(transactionId.toString());
     }
 
     @Override
@@ -160,7 +195,12 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void destroy() {
+    public void destroy() throws DestroyFailedException {
         super.destroy();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return super.isDestroyed();
     }
 }

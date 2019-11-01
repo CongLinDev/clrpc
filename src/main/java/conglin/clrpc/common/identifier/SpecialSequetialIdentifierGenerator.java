@@ -1,5 +1,7 @@
 package conglin.clrpc.common.identifier;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,13 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
     }
 
     @Override
-    public void destroy() {
+    public void destroy() throws DestroyFailedException {
         super.destroy();
     }
+
+    @Override
+    public boolean isDestroyed() {
+        return super.isDestroyed();
+    }
+    
 }

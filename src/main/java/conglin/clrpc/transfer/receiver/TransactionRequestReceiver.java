@@ -1,5 +1,7 @@
 package conglin.clrpc.transfer.receiver;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +29,12 @@ public class TransactionRequestReceiver extends BasicRequestReceiver {
     public BasicResponse handleRequest(BasicRequest request) {
         TransactionRequest transactionRequest = (TransactionRequest) request;
 
-        if(!helper.sign(transactionRequest.getRequestId(), transactionRequest.getSerialNumber()))
+        if (!helper.sign(transactionRequest.getRequestId(), transactionRequest.getSerialNumber()))
             return null;
 
-        try{
-            if(!helper.watch(transactionRequest.getRequestId())){
-                log.debug("Request (id="+ transactionRequest.getRequestId() +") cancelled");
+        try {
+            if (!helper.watch(transactionRequest.getRequestId())) {
+                log.debug("Request (id=" + transactionRequest.getRequestId() + ") cancelled");
                 BasicResponse response = new BasicResponse();
                 response.setRequestId(transactionRequest.getRequestId());
                 response.signError();
@@ -41,22 +43,26 @@ public class TransactionRequestReceiver extends BasicRequestReceiver {
             }
 
             BasicResponse response = super.handleRequest(transactionRequest);
-            if(!response.isError()) return response;
+            if (!response.isError())
+                return response;
 
             helper.reparepare(transactionRequest.getRequestId(), transactionRequest.getSerialNumber());
             return null;
-            
-        }catch(TransactionException e){
+
+        } catch (TransactionException e) {
             log.error(e.getMessage());
             return null;
         }
     }
 
-
     @Override
     public void destory() {
         super.destory();
-        helper.destroy();
+        try {
+            helper.destroy();
+        } catch (DestroyFailedException e) {
+            // log.error(e);
+        }
     }
 
     @Override

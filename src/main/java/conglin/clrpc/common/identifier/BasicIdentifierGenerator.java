@@ -2,6 +2,8 @@ package conglin.clrpc.common.identifier;
 
 import java.util.UUID;
 
+import javax.security.auth.DestroyFailedException;
+
 public class BasicIdentifierGenerator implements IdentifierGenerator {
 
     @Override
@@ -15,7 +17,7 @@ public class BasicIdentifierGenerator implements IdentifierGenerator {
     }
 
     @Override
-    public void destroy() {
+    public void destroy() throws DestroyFailedException {
         // do nothing
     }
 }

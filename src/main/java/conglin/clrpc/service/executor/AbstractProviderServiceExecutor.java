@@ -2,6 +2,8 @@ package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,6 +129,16 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
     @Override
     public ExecutorService getExecutorService() {
         return executor;
+    }
+
+    @Override
+    public void destroy() throws DestroyFailedException {
+        // do nothing
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return false;
     }
 }
 

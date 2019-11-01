@@ -3,9 +3,12 @@ package conglin.clrpc.service.executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
@@ -41,20 +44,48 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
             return false;
         
         try{
-            // if(!helper.watch(transactionRequest.getRequestId())){
-            //     log.debug("Request (id="+ transactionRequest.getRequestId() +") cancelled");
+            helper.watchAsync(transactionRequest.getRequestId(), new Callback<Object>(){
+                @Override
+                public void success(Object result) {
+                    
+                    try{
+                        ZooKeeperProviderServiceExecutor.super.doExecute(request, response);
+                    }catch(UnsupportedServiceException | ServiceExecutionException e){
+                        log.error("Request failed: " + e.getMessage());
 
-            //     BasicResponse response = new BasicResponse();
-            //     response.setRequestId(transactionRequest.getRequestId());
-            //     response.signError();
-            //     response.setResult("Request cancelled.");
-            //     return response;
-            // }
+                        // 重新标记，由服务消费者在下次定时轮询时重新请求
+                        helper.reparepare(transactionRequest.getRequestId(), transactionRequest.getSerialNumber());
+                        // send nothing
+                        return;
+                    }
+
+                    sendResponse(response);
+
+                    log.info("Transaction id=" + transactionRequest.getRequestId() +
+                    " serialNumber=" + transactionRequest.getSerialNumber() + " has executed.");
+                }
+
+                @Override
+                public void fail(Exception exception) {
+                    // do nothing
+                    log.info("Transaction id=" + transactionRequest.getRequestId() +
+                        " serialNumber=" + transactionRequest.getSerialNumber() + " has cancelled.");
+                }
+            });
         } catch (TransactionException e){
             log.error(e.getMessage());
         }
-
         return false;
     }
     
+
+    @Override
+    public void destroy() throws DestroyFailedException {
+        helper.destroy();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return helper.isDestroyed();
+    }
 }

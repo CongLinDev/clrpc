@@ -2,6 +2,9 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
+import javax.security.auth.DestroyFailedException;
+import javax.security.auth.Destroyable;
+
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.atomic.TransactionHelper;
@@ -15,7 +18,7 @@ import conglin.clrpc.transfer.sender.RequestSender;
  * 使用 ZooKeeper 控制分布式事务
  * 注意，该类是线程不安全的
  */
-public class ZooKeeperTransactionProxy extends AbstractProxy implements TransactionProxy {
+public class ZooKeeperTransactionProxy extends AbstractProxy implements TransactionProxy, Destroyable {
 
     protected long currentTransactionId;
 
@@ -87,11 +90,14 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
         }
     }
 
-    /**
-     * 销毁
-     */
-    public void destroy(){
+    @Override
+    public void destroy() throws DestroyFailedException {
         helper.destroy();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return helper.isDestroyed();
     }
 
 }

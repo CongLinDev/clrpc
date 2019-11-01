@@ -1,6 +1,8 @@
 package conglin.clrpc.common.identifier;
 
-public interface IdentifierGenerator{
+import javax.security.auth.Destroyable;
+
+public interface IdentifierGenerator extends Destroyable {
 
     /**
      * 生成一个标识符
@@ -14,9 +16,4 @@ public interface IdentifierGenerator{
      * @return
      */
     long generate(String key);
-
-    /**
-     * 关闭生成器
-     */
-    void destroy();
 }

@@ -2,8 +2,10 @@ package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
 
+import javax.security.auth.Destroyable;
 
-public interface ServiceExecutor<T> {
+
+public interface ServiceExecutor<T> extends Destroyable {
     /**
      * 获取一个异步执行器
      * @return

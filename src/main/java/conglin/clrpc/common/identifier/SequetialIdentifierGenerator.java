@@ -1,5 +1,7 @@
 package conglin.clrpc.common.identifier;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 import conglin.clrpc.common.util.atomic.ZooKeeperAtomicService;
 
-public class SequetialIdentifierGenerator extends ZooKeeperAtomicService implements IdentifierGenerator{
+public class SequetialIdentifierGenerator extends ZooKeeperAtomicService implements IdentifierGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(SequetialIdentifierGenerator.class);
 
@@ -35,8 +37,12 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
     }
 
     @Override
-    public void destroy() {
+    public void destroy() throws DestroyFailedException {
         super.destroy();
     }
 
+    @Override
+    public boolean isDestroyed() {
+        return super.isDestroyed();
+    }
 }
