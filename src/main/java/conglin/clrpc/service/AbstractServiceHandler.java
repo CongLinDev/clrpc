@@ -1,48 +1,41 @@
 package conglin.clrpc.service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
-import conglin.clrpc.common.util.threadpool.CustomizedThreadPool;
-import conglin.clrpc.common.util.threadpool.ThreadPool;
+import conglin.clrpc.common.config.PropertyConfigurer;
 
-abstract public class AbstractServiceHandler implements ThreadPool {
+abstract public class AbstractServiceHandler {
     private static final Logger log = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
     private final ExecutorService businessTheardExecutorService;
 
-    /**
-     * 你可以创建一个实现了 {@link ThreadPool} 或是继承了 {@link CustomizedThreadPool}
-     * 的线程池创建器来创建一个你想要的业务线程池
-     * 需要注意的是，你创建的线程池必须有一个无参的构造函数
-     */
-    public AbstractServiceHandler(){
-        String threadpoolName = ConfigParser.getOrDefault("service.thread.pool.class",
-            "conglin.clrpc.common.util.threadpool.CustomizedThreadPool");
+    public AbstractServiceHandler(PropertyConfigurer configurer){
+        businessTheardExecutorService = threadPool(configurer);
+    }
 
-        ExecutorService executorService = null;
-        try {
-            ThreadPool threadPool = (ThreadPool) Class.forName(threadpoolName)
-                    .getConstructor().newInstance();
-            executorService = threadPool.getExecutorService();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException
-                | ClassNotFoundException e) {
-            log.warn(e.getMessage() + ". Loading 'conglin.clrpc.common.util.threadpool.CustomizedThreadPool' rather than "
-                    + threadpoolName);
-        }finally{
-            // 如果类名错误，则默认加载 {@link conglin.clrpc.common.util.threadpool.CustomizedThreadPool}
-            businessTheardExecutorService = 
-                (executorService == null) 
-                    ? (new CustomizedThreadPool()).getExecutorService()
-                    : executorService;
-        }
+    public ExecutorService threadPool(PropertyConfigurer configurer) {
+        return threadPool(configurer.getOrDefault("service.thread.pool.core-size", 5),
+            configurer.getOrDefault("service.thread.pool.max-size", 10),
+            configurer.getOrDefault("service.thread.pool.keep-alive", 1000),
+            configurer.getOrDefault("service.thread.pool.queues", 10));
+    }
+    
+    public ExecutorService threadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queues) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS,
+            queues == 0 ? new SynchronousQueue<Runnable>() :
+                (queues < 0 ? new LinkedBlockingQueue<Runnable>() :
+                    new LinkedBlockingQueue<Runnable>(queues)),
+                new ThreadPoolExecutor.CallerRunsPolicy()
+            );
     }
     
     /**
@@ -85,7 +78,7 @@ abstract public class AbstractServiceHandler implements ThreadPool {
         log.info("Theard Executor shuts down.");
     }
 
-    @Override
+
     public ExecutorService getExecutorService() {
         return businessTheardExecutorService;
     }

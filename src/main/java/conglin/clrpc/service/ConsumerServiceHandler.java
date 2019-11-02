@@ -12,8 +12,10 @@ import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.identifier.BasicIdentifierGenerator;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
 import conglin.clrpc.service.future.RpcFuture;
@@ -32,16 +34,15 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private final ServiceDiscovery serviceDiscovery;
 
-    private final String LOCAL_ADDRESS;
+    private String LOCAL_ADDRESS;
 
     // 基本的ID生成器
     private final IdentifierGenerator identifierGenerator = new BasicIdentifierGenerator();
 
-    public ConsumerServiceHandler(String localAddress) {
-        super();
-        this.LOCAL_ADDRESS = localAddress;
+    public ConsumerServiceHandler(PropertyConfigurer configurer) {
+        super(configurer);
         rpcFutures = new ConcurrentHashMap<>();
-        serviceDiscovery = new BasicServiceDiscovery();
+        serviceDiscovery = new BasicServiceDiscovery(configurer);
     }
 
     /**
@@ -85,7 +86,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 重发请求
      * @param sender
      */
-    public void start(){
+    public void start(ConsumerContext context) {
+        LOCAL_ADDRESS = context.getLocalAddress();
         checkFuture();
     }
 
@@ -123,9 +125,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         findService(interfaceClass.getSimpleName(), updateMethod);
     }
 
-
-
-    
 
 
     /**

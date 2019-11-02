@@ -33,7 +33,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
     }
 
     public AbstractProviderServiceExecutor(ExecutorService executor,
-                    CacheManager<BasicRequest, BasicResponse> cacheManager){
+            CacheManager<BasicRequest, BasicResponse> cacheManager){
         this.executor = executor;
         this.cacheManager = cacheManager;
     }

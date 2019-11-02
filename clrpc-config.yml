@@ -16,8 +16,6 @@ zookeeper:
 
 provider:
   address: localhost:5100
-  cache:
-    enable: false
   thread:
     boss: 1
     worker: 4
@@ -34,12 +32,11 @@ consumer:
 service:
   thread:
     pool:
-      class: conglin.clrpc.common.util.threadpool.CustomizedThreadPool
       core-size: 5
       max-size: 10
       keep-alive: 1000 #ms
       queue: 10
-  session:
-    time-threshold: 5000 #ms
   codec:
     serialization-handler: conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler
+  cache:
+    enable: false

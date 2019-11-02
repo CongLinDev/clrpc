@@ -6,6 +6,7 @@ import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 import conglin.clrpc.common.util.atomic.ZooKeeperAtomicService;
 
@@ -15,8 +16,8 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
 
     protected BasicIdentifierGenerator downgradeGenerator;
 
-    public SequetialIdentifierGenerator(){
-        super("/request/id");
+    public SequetialIdentifierGenerator(PropertyConfigurer configurer){
+        super(configurer, "/request/id");
         downgradeGenerator = new BasicIdentifierGenerator();
     }
 

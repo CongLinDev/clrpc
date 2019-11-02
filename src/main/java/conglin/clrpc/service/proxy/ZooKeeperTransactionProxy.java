@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import javax.security.auth.DestroyFailedException;
 import javax.security.auth.Destroyable;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.atomic.TransactionHelper;
@@ -26,9 +27,9 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     protected TransactionFuture future;
 
-    public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator){
+    public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator, PropertyConfigurer configurer){
         super(null, sender, identifierGenerator);
-        helper = new ZooKeeperTransactionHelper();
+        helper = new ZooKeeperTransactionHelper(configurer);
     }
 
     @Override

@@ -10,13 +10,14 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implements TransactionHelper {
 
-    public ZooKeeperTransactionHelper() {
-        super("/transaction");
+    public ZooKeeperTransactionHelper(PropertyConfigurer configurer) {
+        super(configurer, "/transaction");
     }
 
     @Override

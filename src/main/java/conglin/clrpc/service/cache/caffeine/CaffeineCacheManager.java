@@ -9,6 +9,7 @@ import com.github.benmanes.caffeine.cache.Expiry;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.cache.AbstractCacheManager;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
@@ -17,8 +18,8 @@ public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, Bas
 
     protected final Cache<BasicRequest, BasicResponse> cache;
 
-    public CaffeineCacheManager(){
-        super();
+    public CaffeineCacheManager(PropertyConfigurer configurer){
+        super(configurer);
         cache = Caffeine.newBuilder()
             .initialCapacity(INITIAL_CAPACITY)
             .maximumSize(MAX_SIZE)

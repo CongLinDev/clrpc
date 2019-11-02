@@ -5,14 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.service.ProviderServiceHandler;
+import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transfer.ProviderTransfer;
-import conglin.clrpc.transfer.receiver.BasicRequestReceiver;
-import conglin.clrpc.transfer.receiver.RequestReceiver;
-import conglin.clrpc.transfer.receiver.TransactionRequestReceiver;
-import conglin.clrpc.transfer.sender.BasicResponseSender;
-import conglin.clrpc.transfer.sender.ResponseSender;
 import io.netty.bootstrap.ServerBootstrap;
 
 /**
@@ -31,7 +28,7 @@ import io.netty.bootstrap.ServerBootstrap;
  * 注意：若服务接口相同，先添加的服务会被覆盖。 结束后不要忘记关闭服务端，释放资源。
  */
 
-public class RpcProviderBootstrap extends CacheableBootstrap {
+public class RpcProviderBootstrap extends Bootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(RpcProviderBootstrap.class);
 
@@ -41,19 +38,14 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
     // 管理服务
     private ProviderServiceHandler serviceHandler;
 
-    public final String LOCAL_ADDRESS;
-
     public RpcProviderBootstrap() {
-        this(ConfigParser.getOrDefault("provider.address", "localhost:5100"));
+        this(new YamlPropertyConfigurer());
     }
 
-    public RpcProviderBootstrap(String localAddress) {
-        // cache
-        super(ConfigParser.getOrDefault("provider.cache.enable", false));
-
-        this.LOCAL_ADDRESS = localAddress;
-        serviceHandler = new ProviderServiceHandler(LOCAL_ADDRESS);
-        providerTransfer = new ProviderTransfer(LOCAL_ADDRESS);
+    public RpcProviderBootstrap(PropertyConfigurer configurer) {
+        super(configurer);
+        serviceHandler = new ProviderServiceHandler(configurer);
+        providerTransfer = new ProviderTransfer();
     }
 
     /**
@@ -74,7 +66,7 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
 
     /**
      * 保存即将发布的服务
-     * @param serviceBeanClass 类名必须满足 'xxxServiceImpl' 条件
+     * @param serviceBeanClass 类名必须满足 'xxxServiceImpl' 格式
      * @return
      */
     public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
@@ -115,7 +107,7 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
      * @param serviceBean
      * @return
      */
-    public RpcProviderBootstrap publish(String serviceName, Object serviceBean){
+    public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {
         log.info("Publish service named " + serviceName);
         serviceHandler.publish(serviceName, serviceBean);
         return this;
@@ -139,15 +131,25 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
         serviceHandler.removeService(serviceName);
         return this;
     }
-
+    
     /**
      * 启动
      * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
      * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
      */
-    public void start() {
-        serviceHandler.start();
-        providerTransfer.start(initSender(), initReceiver(), serviceHandler::registerService);
+    public void start(){
+        // TODO:
+        ProviderContext context = null;
+
+        // 设置本地地址
+        context.setLocalAddress(configurer.getOrDefault("provider.address", "localhost:5100"));
+        // 设置属性配置器
+        context.setPropertyConfigurer(configurer);
+        // 设置cache管理器
+        context.setCacheManager(cacheManager);
+
+        serviceHandler.start(context);
+        providerTransfer.start(context);
     }
 
     /**
@@ -158,60 +160,4 @@ public class RpcProviderBootstrap extends CacheableBootstrap {
         providerTransfer.stop();
     }
 
-    /**
-     * 获取一个 {@link ResponseSender} 
-     * @return
-     */
-    protected ResponseSender initSender(){
-        // String senderClassName = ConfigParser.getOrDefault("consumer.response-sender", "conglin.clrpc.transfer.sender.BasicResponseSender");
-        // ResponseSender sender = null;
-        // try {
-        //     sender = (ResponseSender) Class.forName(senderClassName)
-        //             .getConstructor().newInstance();
-        // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-        //         | InvocationTargetException | NoSuchMethodException | SecurityException
-        //         | ClassNotFoundException e) {
-        //     log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.sender.BasicResponseSender' rather than "
-        //             + senderClassName);
-        // }finally{
-        //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.sender.BasicResponseSender}
-        //     if(sender == null)
-        //         sender = new BasicResponseSender();
-        // }
-        ResponseSender sender = new BasicResponseSender();
-        return sender;
-    }
-
-    /**
-     * 获取一个 {@link RequestReceiver} 
-     * 并调用 {@link RequestReceiver#init(ProviderServiceHandler)} 进行初始化
-     * @return
-     */
-    protected RequestReceiver initReceiver(){
-        // String receiverClassName = ConfigParser.getOrDefault("provider.request-receiver", "conglin.clrpc.transfer.receiver.BasicRequestReceiver");
-        // RequestReceiver receiver = null;
-        // try {
-        //     receiver = (RequestReceiver) Class.forName(receiverClassName)
-        //             .getConstructor().newInstance();
-        // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-        //         | InvocationTargetException | NoSuchMethodException | SecurityException
-        //         | ClassNotFoundException e) {
-        //     log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.receiver.BasicRequestReceiver' rather than "
-        //             + receiverClassName);
-        // }finally{
-        //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.receiver.BasicRequestReceiver}
-        //     if(receiver == null) receiver = new BasicRequestReceiver();
-        // }
-        BasicRequestReceiver basicRequestReceiver = new BasicRequestReceiver();
-        TransactionRequestReceiver transactionRequestReceiver = new TransactionRequestReceiver();
-        basicRequestReceiver.next(transactionRequestReceiver);
-
-        basicRequestReceiver.init(serviceHandler);
-        basicRequestReceiver.bindCachePool(cacheManager);
-        
-        transactionRequestReceiver.init(serviceHandler);
-        transactionRequestReceiver.bindCachePool(cacheManager);
-
-        return basicRequestReceiver;
-    }
 }

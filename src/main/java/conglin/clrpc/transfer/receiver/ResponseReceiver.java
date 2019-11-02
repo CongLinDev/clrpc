@@ -1,10 +1,9 @@
 package conglin.clrpc.transfer.receiver;
 
-import conglin.clrpc.common.util.threadpool.ThreadPool;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.transfer.message.BasicResponse;
 
-public interface ResponseReceiver extends ThreadPool {
+public interface ResponseReceiver {
 
     /**
      * 初始化

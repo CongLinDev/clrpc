@@ -13,6 +13,7 @@ import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.service.cache.CacheManager;
+import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 
@@ -32,6 +33,11 @@ public class BasicProviderServiceExecutor extends AbstractProviderServiceExecuto
             ExecutorService executor){
         super(executor);
         this.serviceObjectsHolder = serviceObjectsHolder;
+    }
+
+    public BasicProviderServiceExecutor(ProviderContext context) {
+        this(context.getObjectsHolder(), context.getExecutorService(), 
+            context.getCacheManager());
     }
 
     @Override

@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.atomic.TransactionHelper;
 import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
 import conglin.clrpc.service.cache.CacheManager;
+import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 import conglin.clrpc.transfer.message.TransactionRequest;
@@ -26,9 +28,15 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
     protected TransactionHelper helper;
     
     public ZooKeeperProviderServiceExecutor(Function<String, Object> serviceObjectsHolder,
-            ExecutorService executor, CacheManager<BasicRequest, BasicResponse> cacheManager){
+            ExecutorService executor, CacheManager<BasicRequest, BasicResponse> cacheManager,
+            PropertyConfigurer configurer){
         super(serviceObjectsHolder, executor, cacheManager);
-        helper = new ZooKeeperTransactionHelper();
+        helper = new ZooKeeperTransactionHelper(configurer);
+    }
+
+    public ZooKeeperProviderServiceExecutor(ProviderContext context) {
+        this(context.getObjectsHolder(), context.getExecutorService(), 
+            context.getCacheManager(), context.getPropertyConfigurer());
     }
 
     @Override
@@ -36,7 +44,8 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
             throws UnsupportedServiceException, ServiceExecutionException {
 
         // 该类被设计为异步实现，一定返回 false
-        
+        if(!(request instanceof TransactionRequest))
+            return super.doExecute(request, response);
         TransactionRequest transactionRequest = (TransactionRequest) request;
         
         // 标记事务的本条请求被当前服务提供者所占有

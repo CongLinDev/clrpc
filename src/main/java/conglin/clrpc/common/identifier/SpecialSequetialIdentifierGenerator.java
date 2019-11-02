@@ -6,11 +6,16 @@ import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(SpecialSequetialIdentifierGenerator.class);
+
+    public SpecialSequetialIdentifierGenerator(PropertyConfigurer configurer){
+        super(configurer);
+    }
 
     @Override
     public long generate() {

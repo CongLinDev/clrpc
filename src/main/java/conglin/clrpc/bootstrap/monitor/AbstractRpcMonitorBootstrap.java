@@ -8,11 +8,13 @@ import org.apache.zookeeper.Watcher.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.bootstrap.Bootstrap;
 import conglin.clrpc.bootstrap.monitor.RpcMonitorBootstrap;
-import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
-abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap {
+abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements RpcMonitorBootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
 
@@ -21,17 +23,18 @@ abstract public class AbstractRpcMonitorBootstrap implements RpcMonitorBootstrap
     private final int sessionTimeout;
 
     public AbstractRpcMonitorBootstrap() {
-        this.sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
+        this(new YamlPropertyConfigurer());
     }
 
-    public AbstractRpcMonitorBootstrap(int sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
+    public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
+        super(configurer, false);
+        this.sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
     }
 
     @Override
     public RpcMonitorBootstrap monitor(){
-        String monitorAddress = ConfigParser.getOrDefault("zookeeper.monitor.address", "localhost:2181");
-        String path = ConfigParser.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
+        String monitorAddress = configurer.getOrDefault("zookeeper.monitor.address", "localhost:2181");
+        String path = configurer.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         return monitor(monitorAddress, path);
     }
 

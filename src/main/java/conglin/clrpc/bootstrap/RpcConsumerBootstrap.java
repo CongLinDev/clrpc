@@ -3,8 +3,10 @@ package conglin.clrpc.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.service.ConsumerServiceHandler;
+import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transfer.ConsumerTransfer;
@@ -33,26 +35,21 @@ import conglin.clrpc.transfer.sender.RequestSender;
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 
-public class RpcConsumerBootstrap extends CacheableBootstrap{
+public class RpcConsumerBootstrap extends Bootstrap{
 
     private static final Logger log = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
-
-    public final String LOCAL_ADDRESS;
 
     private ConsumerTransfer consumerTransfer;
     private ConsumerServiceHandler serviceHandler;
 
-    public RpcConsumerBootstrap(){
-        this(ConfigParser.getOrDefault("consumer.address", "localhost:5200"));
+    public RpcConsumerBootstrap() {
+        this(new YamlPropertyConfigurer());
     }
 
-    public RpcConsumerBootstrap(String localAddress){
-        // cache
-        super(ConfigParser.getOrDefault("consumer.cache.enable", false));
-
-        this.LOCAL_ADDRESS = localAddress;
-        serviceHandler = new ConsumerServiceHandler(LOCAL_ADDRESS);
-        consumerTransfer = new ConsumerTransfer(LOCAL_ADDRESS);
+    public RpcConsumerBootstrap(PropertyConfigurer configurer){
+        super(configurer);
+        serviceHandler = new ConsumerServiceHandler(configurer);
+        consumerTransfer = new ConsumerTransfer();
     }
 
     /**
@@ -110,7 +107,15 @@ public class RpcConsumerBootstrap extends CacheableBootstrap{
      * 启动
      */
     public void start(){
-        serviceHandler.start();
+        ConsumerContext context = ...;
+
+        context.setLocalAddress(configurer.getOrDefault("consumer.address", "localhost:5200"));
+        // 设置属性配置器
+        context.setPropertyConfigurer(configurer);
+        // 设置cache管理器
+        context.setCacheManager(cacheManager);
+
+        serviceHandler.start(context);
         consumerTransfer.start(initSender(), initReceiver());
     }
 

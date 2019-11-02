@@ -5,7 +5,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 /**
@@ -25,14 +25,14 @@ public class BasicServiceRegistry implements ServiceRegistry {
     private final String rootPath; //zookeeper根地址
     private final ZooKeeper zooKeeper;
 
-    public BasicServiceRegistry() {
+    public BasicServiceRegistry(PropertyConfigurer configurer) {
 
-        String path = ConfigParser.getOrDefault("zookeeper.registry.root-path", "/clrpc");
+        String path = configurer.getOrDefault("zookeeper.registry.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         // 服务注册地址
-        String registryAddress = ConfigParser.getOrDefault("zookeeper.registry.address", "localhost:2181");
-        int sessionTimeout = ConfigParser.getOrDefault("zookeeper.session.timeout", 5000);
+        String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "localhost:2181");
+        int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
         zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 

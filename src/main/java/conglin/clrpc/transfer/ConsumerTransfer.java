@@ -9,8 +9,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.IPAddressUtils;
+import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;
@@ -26,8 +27,6 @@ public class ConsumerTransfer {
 
     private static final Logger log = LoggerFactory.getLogger(ConsumerTransfer.class);
 
-    private final String LOCAL_ADDRESS;
-
     private EventLoopGroup workerGroup;
 
     private final ReentrantLock lock;
@@ -36,29 +35,34 @@ public class ConsumerTransfer {
     private RequestSender sender;
     private ResponseReceiver receiver;
 
+    private String LOCAL_ADDRESS;
 
     private LoadBalancer<String, String, Channel> loadBalancer;
+    private long timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
-    public ConsumerTransfer(String localAddress){
+    public ConsumerTransfer(){
         loadBalancer = new ConsistentHashLoadBalancer<>(
             (addr, ch)->((InetSocketAddress)ch.remoteAddress()).toString().compareTo(addr) == 0);
         
         lock = new ReentrantLock();
         connected = lock.newCondition();
-        this.LOCAL_ADDRESS = localAddress;
     }
 
     /**
      * 开启传输服务
-     * @param sender
-     * @param serviceHandler
      */
-    public void start(RequestSender sender, ResponseReceiver receiver) {
-        this.sender = sender;
-        this.receiver = receiver;
+    public void start(ConsumerContext context) {
+        // TODO: remove ...
+        this.sender = null;
+        this.receiver = null;
+
+        PropertyConfigurer configurer = context.getPropertyConfigurer();
+
+        LOCAL_ADDRESS = context.getLocalAddress();
+        timeoutForWait = configurer.getOrDefault("consumer.session.wait-time", 5000L);
 
         if (workerGroup == null) {
-            int workerThread = ConfigParser.getOrDefault("consumer.thread.worker", 4);
+            int workerThread = configurer.getOrDefault("consumer.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
     }
@@ -167,10 +171,9 @@ public class ConsumerTransfer {
      */
     private boolean waitingForChannelHandler() throws InterruptedException{
         lock.lock();
-        long timeout = ConfigParser.getOrDefault("consumer.session.wait-time", 5000);
         try{
-            log.info("Waiting for Channel Handler " + timeout + " mm...");
-            return connected.await(timeout,TimeUnit.MILLISECONDS);
+            log.info("Waiting for Channel Handler " + timeoutForWait + " mm...");
+            return connected.await(timeoutForWait,TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();
         }

@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.service.registry.BasicServiceRegistry;
 import conglin.clrpc.service.registry.ServiceRegistry;
 
@@ -20,12 +22,12 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     private final String LOCAL_ADDRESS;
 
     private final ServiceRegistry serviceRegistry;
-
-    public ProviderServiceHandler(String localAddress) {
-        super();
-        this.LOCAL_ADDRESS = localAddress;
+    
+    public ProviderServiceHandler(PropertyConfigurer configurer){
+        super(configurer);
+        this.LOCAL_ADDRESS = configurer.getOrDefault("provider.address", "localhost:5100");
         serviceObjects = new HashMap<>();
-        serviceRegistry = new BasicServiceRegistry();
+        serviceRegistry = new BasicServiceRegistry(configurer);
     }
 
     /**
@@ -60,7 +62,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * 注册到zookeeper
      * @param data
      */
-    public void registerService(String data){
+    protected void registerService(String data){
         //把服务名注册到zookeeper上
         serviceObjects.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, data)
@@ -70,14 +72,19 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     /**
      * 将本机地址注册到zookeeper上
      */
-    public void registerService(){
+    protected void registerService(){
         serviceObjects.keySet().forEach(
             serviceName -> serviceRegistry.registerProvider(serviceName, LOCAL_ADDRESS)
         ); 
     }
 
-    public void start(){
-        // do nothing
+    public void start(ProviderContext context){
+        // 设置服务注册器
+        context.setServiceRegister(this::registerService);
+        // 设置服务对象持有器
+        context.setObjectsHolder(this::getService);
+        // 设置线程池
+        context.setExecutorService(getExecutorService());
     }
     
     public void stop() {

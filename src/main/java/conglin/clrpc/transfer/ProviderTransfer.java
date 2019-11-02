@@ -2,16 +2,14 @@ package conglin.clrpc.transfer;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.util.ConfigParser;
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.IPAddressUtils;
+import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transfer.handler.ProviderChannelInitializer;
-import conglin.clrpc.transfer.receiver.RequestReceiver;
-import conglin.clrpc.transfer.sender.ResponseSender;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -25,26 +23,14 @@ public class ProviderTransfer{
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    private final String LOCAL_ADDRESS;
-
-    private ResponseSender sender;
-    private RequestReceiver receiver;
-
-    public ProviderTransfer(String localAddress){
-        this.LOCAL_ADDRESS = localAddress;
-    }
-    
     /**
      * 启动Netty
-     * @param sender
-     * @param receiver 
-     * @param preparation 准备工作，其中包含将服务其注册到zookeeper中
+     * @param context
      */
-    public void start(ResponseSender sender, RequestReceiver receiver, Consumer<String> preparation){
-        this.sender = sender;
-        this.receiver = receiver;
-        int bossThread = ConfigParser.getOrDefault("provider.thread.boss", 1);
-        int workerThread = ConfigParser.getOrDefault("provider.thread.worker", 4);
+    public void start(ProviderContext context){
+        PropertyConfigurer configurer = context.getPropertyConfigurer();
+        int bossThread = configurer.getOrDefault("provider.thread.boss", 1);
+        int workerThread = configurer.getOrDefault("provider.thread.worker", 4);
         bossGroup = new NioEventLoopGroup(bossThread);
         workerGroup = new NioEventLoopGroup(workerThread);
 
@@ -52,18 +38,18 @@ public class ProviderTransfer{
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             //.handler(new LoggingHandler(LogLevel.INFO))
-            .childHandler(new ProviderChannelInitializer(sender, receiver))
+            .childHandler(new ProviderChannelInitializer(context))
             .option(ChannelOption.SO_BACKLOG, 128)
             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         try{
-            InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(LOCAL_ADDRESS);
+            InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(context.getLocalAddress());
             ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
             log.info("Provider started on {}", address);
             
             //进行准备工作
-            preparation.accept(LOCAL_ADDRESS);
+            context.getServiceRegister().accept(context.getLocalAddress());
 
             channelFuture.channel().closeFuture().sync();
         }catch(UnknownHostException | InterruptedException e){
@@ -79,10 +65,5 @@ public class ProviderTransfer{
     public void stop(){
         if(bossGroup != null) bossGroup.shutdownGracefully();
         if(workerGroup != null) workerGroup.shutdownGracefully();
-        sender.destory();
-        do{
-            receiver.destory();
-            receiver = (RequestReceiver)receiver.next();
-        }while(receiver.next() != null);
     }
 }

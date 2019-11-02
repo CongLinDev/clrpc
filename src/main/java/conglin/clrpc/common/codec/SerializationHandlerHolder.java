@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler;
-import conglin.clrpc.common.util.ConfigParser;
 
 public class SerializationHandlerHolder {
     private static final Logger log = LoggerFactory.getLogger(SerializationHandlerHolder.class);

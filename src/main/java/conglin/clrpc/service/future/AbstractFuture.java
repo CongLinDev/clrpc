@@ -7,11 +7,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.exception.RequestException;
-import conglin.clrpc.common.util.ConfigParser;
 
 abstract public class AbstractFuture implements RpcFuture {
     protected static ExecutorService executorService;
-    protected static final long TIME_THRESHOLD = ConfigParser.getOrDefault("service.session.time-threshold", 5000);
+    protected static long TIME_THRESHOLD = 5000;
+
+    public static void setTimeThreshold(long timeThreshold){
+        TIME_THRESHOLD = timeThreshold;
+    }
 
     protected final FutureSynchronizer synchronizer; // 同步器
     protected FutureCallback futureCallback; // 回调
@@ -22,6 +25,8 @@ abstract public class AbstractFuture implements RpcFuture {
         this.synchronizer = new FutureSynchronizer();
         startTime = System.currentTimeMillis();
     }
+
+
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning){
