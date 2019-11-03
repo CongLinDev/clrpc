@@ -1,11 +1,11 @@
 package conglin.clrpc.common;
 
-public interface Callback<R> {
+public interface Callback {
     /**
      * 成功
      * @param result
      */
-    void success(R result);
+    void success(Object result);
 
     /**
      * 失败

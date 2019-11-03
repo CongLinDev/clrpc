@@ -5,9 +5,12 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.codec.ProtostuffSerializationHandler;
+import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.service.ProviderServiceHandler;
+import conglin.clrpc.service.context.BasicProviderContext;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transfer.ProviderTransfer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -131,22 +134,33 @@ public class RpcProviderBootstrap extends Bootstrap {
         serviceHandler.removeService(serviceName);
         return this;
     }
+
+    /**
+     * 启动
+     * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
+     * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
+     * 序列化处理器默认使用 {@link ProtostuffSerializationHandler}
+     */
+    public void start() {
+        start(new ProtostuffSerializationHandler());
+    }
     
     /**
      * 启动
      * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
      * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
+     * @param serializationHandler 序列化处理器
      */
-    public void start(){
-        // TODO:
-        ProviderContext context = null;
-
+    public void start(SerializationHandler serializationHandler){
+        ProviderContext context = new BasicProviderContext();
         // 设置本地地址
         context.setLocalAddress(configurer.getOrDefault("provider.address", "localhost:5100"));
         // 设置属性配置器
         context.setPropertyConfigurer(configurer);
         // 设置cache管理器
         context.setCacheManager(cacheManager);
+        // 设置序列化处理器
+        context.setSerializationHandler(serializationHandler);
 
         serviceHandler.start(context);
         providerTransfer.start(context);

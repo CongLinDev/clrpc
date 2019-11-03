@@ -22,8 +22,8 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline()
-            .addLast("Common Decoder", new CommonDecoder())
-            .addLast("BasicResponse Encoder", new BasicResponseEncoder())
+            .addLast("Common Decoder", new CommonDecoder(context.getSerializationHandler()))
+            .addLast("BasicResponse Encoder", new BasicResponseEncoder(context.getSerializationHandler()))
             .addLast("Provider BasicRequest-ChannelHandler", 
                 new ProviderRequestChannelHandler<BasicRequest>(
                     new BasicProviderServiceExecutor(context)))

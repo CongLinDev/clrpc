@@ -18,15 +18,15 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
+import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
-import conglin.clrpc.transfer.sender.RequestSender;
 
 
-public class ConsumerServiceHandler extends AbstractServiceHandler {
+public class ConsumerServiceHandler extends AbstractServiceHandler implements FuturesHolder<Long> {
 
     private static final Logger log = LoggerFactory.getLogger(ConsumerServiceHandler.class);
 
@@ -35,6 +35,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     private final ServiceDiscovery serviceDiscovery;
 
     private String LOCAL_ADDRESS;
+
+    private ConsumerContext context;
 
     // 基本的ID生成器
     private final IdentifierGenerator identifierGenerator = new BasicIdentifierGenerator();
@@ -50,44 +52,45 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @param <T>
      * @param interfaceClass
      * @param serviceName
-     * @param sender
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getPrxoy(Class<T> interfaceClass, String serviceName, RequestSender sender){
+    public <T> T getPrxoy(Class<T> interfaceClass, String serviceName){
         return (T) Proxy.newProxyInstance(
             interfaceClass.getClassLoader(),
             new Class<?>[]{interfaceClass},
-            new BasicObjectProxy(serviceName, sender, identifierGenerator));
+            new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator));
     }
 
     /**
      * 获取异步服务代理
      * @param serviceName
-     * @param sender
      * @return
      */
-    public ObjectProxy getPrxoy(String serviceName, RequestSender sender){
-        return new BasicObjectProxy(serviceName, sender, identifierGenerator);
+    public ObjectProxy getPrxoy(String serviceName){
+        return new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator);
     }
 
     /**
      * 获取事务服务代理
-     * @param sender
      * @return
      */
-    public TransactionProxy getTransactionProxy(RequestSender sender){
-        return new ZooKeeperTransactionProxy(sender, identifierGenerator);
+    public TransactionProxy getTransactionProxy(){
+        return new ZooKeeperTransactionProxy(context.getRequestSender(),
+            identifierGenerator, context.getPropertyConfigurer());
     }
 
     /**
      * 启动
      * 获得请求发送器，用于检查超时Future
      * 重发请求
-     * @param sender
+     * @param context
      */
     public void start(ConsumerContext context) {
+        this.context = context;
         LOCAL_ADDRESS = context.getLocalAddress();
+        context.setExecutorService(getExecutorService());
+        context.setFuturesHolder(this);
         checkFuture();
     }
 
@@ -134,29 +137,17 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 以下代码用于 RpcFuture 的管理和维护
      */
 
-    /**
-     * 加入 Future
-     * @param key
-     * @param rpcFuture
-     */
+    @Override
     public void putFuture(Long key, RpcFuture rpcFuture){
         rpcFutures.put(key, rpcFuture);
     }
 
-    /***
-     * 获取 Future
-     * @param key
-     * @return
-     */
+    @Override
     public RpcFuture getFuture(Long key){
         return rpcFutures.get(key);
     }
 
-    /**
-     * 移除 Future
-     * @param key
-     * @return
-     */
+    @Override
     public RpcFuture removeFuture(Long key){
         return rpcFutures.remove(key);
     }

@@ -2,6 +2,7 @@ package conglin.clrpc.service.context;
 
 import java.util.concurrent.ExecutorService;
 
+import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.transfer.message.BasicRequest;
@@ -28,7 +29,7 @@ public interface CommonContext {
     ExecutorService getExecutorService();
 
     /**
-     * 设计线程池
+     * 设置线程池
      * @param executorService
      */
     void setExecutorService (ExecutorService executorService);
@@ -40,7 +41,7 @@ public interface CommonContext {
     PropertyConfigurer getPropertyConfigurer();
 
     /**
-     * 设计配置信息
+     * 设置配置信息
      * @param propertyConfigurer
      */
     void setPropertyConfigurer(PropertyConfigurer propertyConfigurer);
@@ -55,4 +56,16 @@ public interface CommonContext {
      * 设置本地地址
      */
     void setLocalAddress(String localAddress);
+
+    /**
+     * 获取序列化处理器
+     * @return
+     */
+    SerializationHandler getSerializationHandler();
+
+    /**
+     * 设置序列化处理器
+     * @param serializationHandler
+     */
+    void setSerializationHandler(SerializationHandler serializationHandler);
 }

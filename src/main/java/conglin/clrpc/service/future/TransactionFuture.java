@@ -4,17 +4,23 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.FutureCancelledException;
 import conglin.clrpc.common.exception.RequestException;
 
 public class TransactionFuture extends AbstractCompositeFuture {
+    
+    private static final Logger log = LoggerFactory.getLogger(TransactionFuture.class);
 
-    protected final FutureCallback subFutureCallback;
+    protected final Callback subFutureCallback;
 
     public TransactionFuture() {
         super();
 
-        subFutureCallback = new FutureCallback() {
+        subFutureCallback = new Callback() {
             @Override
             public void success(Object result) {
                 try {
@@ -29,7 +35,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
             }
 
             @Override
-            public void fail(String remoteAddress, RequestException e) {
+            public void fail(Exception e) {
                 setError();
                 log.error(e.getMessage());
                 // rollback...
@@ -84,7 +90,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
         if(!isError()){
             this.futureCallback.success(null);
         }else{
-            this.futureCallback.fail(null, null);
+            this.futureCallback.fail(null);
         }
     }
 

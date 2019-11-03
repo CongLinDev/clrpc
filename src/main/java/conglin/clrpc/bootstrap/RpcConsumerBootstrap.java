@@ -3,17 +3,16 @@ package conglin.clrpc.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.codec.ProtostuffSerializationHandler;
+import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.service.ConsumerServiceHandler;
+import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transfer.ConsumerTransfer;
-import conglin.clrpc.transfer.receiver.BasicResponseReceiver;
-import conglin.clrpc.transfer.receiver.ResponseReceiver;
-import conglin.clrpc.transfer.sender.BasicRequestSender;
-import conglin.clrpc.transfer.sender.RequestSender;
 
 /**
  * RPC consumer端启动类
@@ -35,7 +34,7 @@ import conglin.clrpc.transfer.sender.RequestSender;
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 
-public class RpcConsumerBootstrap extends Bootstrap{
+public class RpcConsumerBootstrap extends Bootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
 
@@ -72,7 +71,7 @@ public class RpcConsumerBootstrap extends Bootstrap{
     public <T> T subscribe(Class<T> interfaceClass, String serviceName){
         log.info("Subscribe synchronous service named " + serviceName);
         serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
-        return serviceHandler.getPrxoy(interfaceClass, serviceName, consumerTransfer.getSender());
+        return serviceHandler.getPrxoy(interfaceClass, serviceName);
     }
 
     /**
@@ -92,7 +91,7 @@ public class RpcConsumerBootstrap extends Bootstrap{
     public ObjectProxy subscribeAsync(String serviceName){
         log.info("Subscribe asynchronous service named " + serviceName);
         serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
-        return serviceHandler.getPrxoy(serviceName, consumerTransfer.getSender());
+        return serviceHandler.getPrxoy(serviceName);
     }
 
     /**
@@ -100,23 +99,34 @@ public class RpcConsumerBootstrap extends Bootstrap{
      * @return
      */
     public TransactionProxy subscribeAsync(){
-        return serviceHandler.getTransactionProxy(consumerTransfer.getSender());
+        return serviceHandler.getTransactionProxy();
     }
 
     /**
      * 启动
+     * 序列化处理器默认使用 {@link ProtostuffSerializationHandler}
      */
-    public void start(){
-        ConsumerContext context = ...;
+    public void start() {
+        start(new ProtostuffSerializationHandler());
+    }
+
+    /**
+     * 启动
+     * @param serializationHandler 序列化处理器
+     */
+    public void start(SerializationHandler serializationHandler){
+        ConsumerContext context = new BasicConsumerContext();
 
         context.setLocalAddress(configurer.getOrDefault("consumer.address", "localhost:5200"));
         // 设置属性配置器
         context.setPropertyConfigurer(configurer);
         // 设置cache管理器
         context.setCacheManager(cacheManager);
+        // 设置序列化处理器
+        context.setSerializationHandler(serializationHandler);
 
         serviceHandler.start(context);
-        consumerTransfer.start(initSender(), initReceiver());
+        consumerTransfer.start(context);
     }
 
     /**
@@ -127,51 +137,4 @@ public class RpcConsumerBootstrap extends Bootstrap{
         consumerTransfer.stop();
     }
 
-    /**
-     * 获取一个 {@link RequestSender} 
-     * 并调用 {@link RequestSender#init(ConsumerServiceHandler, ConsumerTransfer)} 进行初始化
-     * @return
-     */
-    protected RequestSender initSender(){
-        // String senderClassName = ConfigParser.getOrDefault("consumer.request-sender", "conglin.clrpc.transfer.sender.BasicRequestSender");
-        // RequestSender sender = null;
-        // try {
-        //     sender = (RequestSender) Class.forName(senderClassName)
-        //             .getConstructor().newInstance();
-        // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-        //         | InvocationTargetException | NoSuchMethodException | SecurityException
-        //         | ClassNotFoundException e) {
-        //     log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.sender.BasicRequestSender' rather than "
-        //             + senderClassName);
-        // }finally{
-        //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.sender.BasicRequestSender}
-        //     if(sender == null) sender = new BasicRequestSender();
-        // }
-        RequestSender sender = new BasicRequestSender();
-        sender.init(serviceHandler, consumerTransfer::chooseChannel);
-        sender.bindCachePool(cacheManager);
-        //serviceHandler.submit(sender);
-        return sender;
-    }
-
-    protected ResponseReceiver initReceiver(){
-        // String receiverClassName = ConfigParser.getOrDefault("consumer.response-receiver", "conglin.clrpc.transfer.receiver.BasicResponseReceiver");
-        // ResponseReceiver receiver = null;
-
-        // try {
-        //     receiver = (ResponseReceiver) Class.forName(receiverClassName)
-        //             .getConstructor().newInstance();
-        // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-        //         | InvocationTargetException | NoSuchMethodException | SecurityException
-        //         | ClassNotFoundException e) {
-        //     log.warn(e.getMessage() + ". Loading 'conglin.clrpc.transfer.receiver.BasicResponseReceiver' rather than "
-        //             + receiverClassName);
-        // }finally{
-        //     // 如果类名错误，则默认加载 {@link conglin.clrpc.transfer.receiver.BasicResponseReceiver}
-        //     if(receiver == null) receiver = new BasicResponseReceiver();
-        // }
-        ResponseReceiver receiver = new BasicResponseReceiver();
-        receiver.init(serviceHandler);
-        return receiver;
-    }
 }

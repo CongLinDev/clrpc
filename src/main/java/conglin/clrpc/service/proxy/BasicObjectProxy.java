@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.sender.RequestSender;
 
 public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);

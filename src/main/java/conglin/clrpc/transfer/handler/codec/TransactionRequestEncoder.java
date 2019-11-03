@@ -1,7 +1,6 @@
 package conglin.clrpc.transfer.handler.codec;
 
 import conglin.clrpc.common.codec.SerializationHandler;
-import conglin.clrpc.common.codec.SerializationHandlerHolder;
 import conglin.clrpc.transfer.message.TransactionRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,9 +11,9 @@ public class TransactionRequestEncoder extends MessageToByteEncoder<TransactionR
     
     private final SerializationHandler serializationHandler;
 
-    public TransactionRequestEncoder(){
+    public TransactionRequestEncoder(SerializationHandler serializationHandler){
         super();
-        serializationHandler = SerializationHandlerHolder.getHandler();
+        this.serializationHandler = serializationHandler;
     }
 
     @Override

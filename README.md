@@ -114,7 +114,6 @@
 | service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
-| service.codec.serialization-handler | conglin.clrpc<br>.common.codec<br>.SerializationHandler | YES | conglin.clrpc.<br>common.codec.<br>protostuff.<br>ProtostuffSerializationHandler | 序列化处理器，默认使用 Protostuff |
 | service.cache.enable | Boolean | YES | false | 是否开启缓存 |
 
 ## Test

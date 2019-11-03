@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.codec.SerializationHandler;
-import conglin.clrpc.common.codec.SerializationHandlerHolder;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 import conglin.clrpc.transfer.message.Message;
@@ -29,9 +28,9 @@ public class CommonDecoder extends ByteToMessageDecoder {
     // 配置编码器
     private final SerializationHandler serializationHandler;
 
-    public CommonDecoder() {
+    public CommonDecoder(SerializationHandler serializationHandler) {
         super();
-        serializationHandler = SerializationHandlerHolder.getHandler();
+        this.serializationHandler = serializationHandler;
     }
 
     /**

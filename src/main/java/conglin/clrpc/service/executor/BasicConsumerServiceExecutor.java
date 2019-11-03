@@ -1,57 +1,68 @@
 package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
+import java.util.function.BiFunction;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.service.cache.CacheManager;
-import conglin.clrpc.service.future.BasicFuture;
+import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 
 public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecutor {
 
-    protected final Function<Long, RpcFuture> futuresRemover;
+    private static final Logger log = LoggerFactory.getLogger(BasicConsumerServiceExecutor.class);
 
-    public BasicConsumerServiceExecutor(Function<Long, RpcFuture> futuresRemover,
+    protected final FuturesHolder<Long> futuresHolder;
+
+    protected final BiFunction<String, Object, Channel> providerChooser;
+
+    public BasicConsumerServiceExecutor(ConsumerContext context){
+        this(context.getFuturesHolder(), context.getProviderChooser(),
+            context.getExecutorService(), context.getCacheManager());
+    }
+
+    public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder,
+        BiFunction<String, Object, Channel> providerChooser,
         ExecutorService executor, CacheManager<BasicRequest, BasicResponse> cacheManager) {
         super(executor, cacheManager);
-        this.futuresRemover = futuresRemover;
+        this.futuresHolder = futuresHolder;
+        this.providerChooser = providerChooser;
     }
 
-    public BasicConsumerServiceExecutor(Function<Long, RpcFuture> futuresRemover,
+    public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder,
+        BiFunction<String, Object, Channel> providerChooser,
         ExecutorService executor) {
-        super(executor);
-        this.futuresRemover = futuresRemover;
+        this(futuresHolder, providerChooser, executor, null);
     }
 
     @Override
-    public void execute(BasicRequest t) {
-        // TODO Auto-generated method stub
-
-    }
-
-    // public RpcFuture sendRequest(BasicRequest request) {
-    //     BasicFuture future = new BasicFuture(this, request);
-    //     if(!putFuture(request, future)) return future;
-
-    //     String addr = doSendRequest(request);
-    //     future.setRemoteAddress(addr);
-    //     return future;
-    // }
-
-    @Override
-    public void receiveResponse(BasicResponse response) {
-        Long requestId = response.getRequestId();
-        //直接移除
-        RpcFuture future = futuresRemover.apply(requestId);
+    public void execute(BasicResponse t) {
+        Long requestId = t.getRequestId();
+        RpcFuture future = futuresHolder.removeFuture(requestId);
 
         if(future != null){
-            future.done(response);
+            future.done(t);
         }
+    }    
 
+    @Override
+    protected void doSendRequest(BasicRequest request, Object object) {
+        String serviceName = request.getServiceName();
+        Channel channel = providerChooser.apply(serviceName, object);
+
+        channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        log.debug("Send request Id = " + request.getRequestId());
     }
 
-    
-
+    @Override
+    protected void doPutFuture(Long key, RpcFuture future) {
+        futuresHolder.putFuture(key, future);
+    }
 }

@@ -53,7 +53,7 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
             return false;
         
         try{
-            helper.watchAsync(transactionRequest.getRequestId(), new Callback<Object>(){
+            helper.watchAsync(transactionRequest.getRequestId(), new Callback(){
                 @Override
                 public void success(Object result) {
                     

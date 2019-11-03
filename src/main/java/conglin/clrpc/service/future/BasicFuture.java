@@ -5,21 +5,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
-import conglin.clrpc.transfer.sender.RequestSender;
 
 public class BasicFuture extends AbstractFuture {
 
     protected final BasicRequest request;
     protected BasicResponse response;
-    protected String remoteAddress;
 
-    protected RequestSender sender;
+    protected final RequestSender sender;
 
     public BasicFuture(RequestSender sender, BasicRequest request){
         super();
         this.request = request;
+        this.sender = sender;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class BasicFuture extends AbstractFuture {
     public void retry() {
         synchronizer.retry();
         resetTime();
-        sender.resendRequest(remoteAddress, request);
+        sender.resendRequest(request);
     }
 
     @Override
@@ -85,24 +85,6 @@ public class BasicFuture extends AbstractFuture {
     }
 
     /**
-     * 获取该 RpcFuture 相关的远端地址
-     * 即 请求发送的目的地地址
-     * @return
-     */
-    public String getRemoteAddress(){
-        return this.remoteAddress;
-    }
-
-    /**
-     * 设置该 RpcFuture 相关的远端地址
-     * 即 请求发送的目的地地址
-     * @param addr
-     */
-    public void setRemoteAddress(String addr){
-        this.remoteAddress = addr;
-    }
-
-    /**
      * 运行回调函数
      * @param callback
      */
@@ -111,7 +93,7 @@ public class BasicFuture extends AbstractFuture {
         if(!isError()){
             this.futureCallback.success(response.getResult());
         }else{
-            this.futureCallback.fail(remoteAddress, (RequestException)response.getResult());
+            this.futureCallback.fail((RequestException)response.getResult());
         }
     }
 }

@@ -110,11 +110,11 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
         return false;
     }
 
-    public void watchAsync(Long transactionId, Callback<Object> callback) throws TransactionException {
+    public void watchAsync(Long transactionId, Callback callback) throws TransactionException {
         watchAsync(transactionId.toString(), callback);
     }
 
-    public void watchAsync(String subPath, Callback<Object> callback) throws TransactionException {
+    public void watchAsync(String subPath, Callback callback) throws TransactionException {
 
         Watcher watcher = event -> {
             String newState;

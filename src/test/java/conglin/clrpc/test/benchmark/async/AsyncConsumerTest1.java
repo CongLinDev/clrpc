@@ -3,8 +3,7 @@ package conglin.clrpc.test.benchmark.async;
 import java.util.Random;
 
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
-import conglin.clrpc.common.exception.RequestException;
-import conglin.clrpc.service.future.FutureCallback;
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.test.pojo.User;
 
@@ -24,7 +23,7 @@ public class AsyncConsumerTest1 {
             new Thread(() -> {
                 final long id = random.nextLong();
                 System.out.println(id);
-                objectProxy.call("getUser", id, "小明").addCallback(new FutureCallback() {
+                objectProxy.call("getUser", id, "小明").addCallback(new Callback() {
 
                     @Override
                     public void success(Object result) {
@@ -32,8 +31,8 @@ public class AsyncConsumerTest1 {
                     }
 
                     @Override
-                    public void fail(String remoteAddress, RequestException e) {
-                        System.out.println(remoteAddress + ": " + e.getMessage());
+                    public void fail(Exception e) {
+                        System.out.println(e.getMessage());
                     }
 
                 });

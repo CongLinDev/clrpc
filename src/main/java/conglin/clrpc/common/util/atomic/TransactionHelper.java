@@ -120,23 +120,23 @@ public interface TransactionHelper extends Destroyable {
      * 监视提交（非阻塞方法）
      * 监视原子服务的 事务ID 的临时节点上的值
      * 若改变为 {@link TransactionHelper#DONE} 则执行 {@link Callback#success(Object)} 方法
-     * 若改变为 {@link TransactionHelper#ROLLBACK} 则执行 {@link Callback#fail(Object)} 方法
+     * 若改变为 {@link TransactionHelper#ROLLBACK} 则执行 {@link Callback#fail(Exception)} 方法
      * @param transactionId
      * @param callback 回调函数
      * @throws TransactionException
      */
-    void watchAsync(Long transactionId, Callback<Object> callback) throws TransactionException;
+    void watchAsync(Long transactionId, Callback callback) throws TransactionException;
 
     /**
      * 监视提交（非阻塞方法）
      * 监视原子服务的 {@code subPath} 的临时节点上的值
      * 若改变为 {@link TransactionHelper#DONE} 则执行 {@link Callback#success(Object)} 方法
-     * 若改变为 {@link TransactionHelper#ROLLBACK} 则执行 {@link Callback#fail(Object)} 方法
+     * 若改变为 {@link TransactionHelper#ROLLBACK} 则执行 {@link Callback#fail(Exception)} 方法
      * @param subPath
      * @param callback 回调函数
      * @throws TransactionException
      */
-    void watchAsync(String subPath, Callback<Object> callback) throws TransactionException;
+    void watchAsync(String subPath, Callback callback) throws TransactionException;
 
     /**
      * 回滚

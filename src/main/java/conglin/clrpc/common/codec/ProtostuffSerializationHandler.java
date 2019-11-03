@@ -1,4 +1,4 @@
-package conglin.clrpc.common.codec.protostuff;
+package conglin.clrpc.common.codec;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

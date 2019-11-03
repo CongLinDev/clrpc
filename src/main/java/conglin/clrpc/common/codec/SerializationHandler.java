@@ -3,7 +3,7 @@ package conglin.clrpc.common.codec;
 /**
  * 序列化处理器接口
  */
-public interface SerializationHandler{
+public interface SerializationHandler {
     /**
      * 序列化
      * @param <T>

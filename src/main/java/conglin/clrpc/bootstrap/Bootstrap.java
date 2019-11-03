@@ -7,6 +7,7 @@ import conglin.clrpc.transfer.message.BasicRequest;
 import conglin.clrpc.transfer.message.BasicResponse;
 
 abstract public class Bootstrap{
+    
     protected final boolean ENABLE_CACHE;
     protected final CacheManager<BasicRequest, BasicResponse> cacheManager;
 

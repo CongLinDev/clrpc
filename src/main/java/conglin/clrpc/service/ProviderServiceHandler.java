@@ -78,6 +78,10 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         ); 
     }
 
+    /**
+     * 开启
+     * @param context
+     */
     public void start(ProviderContext context){
         // 设置服务注册器
         context.setServiceRegister(this::registerService);
@@ -87,6 +91,9 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         context.setExecutorService(getExecutorService());
     }
     
+    /**
+     * 关闭
+     */
     public void stop() {
         super.destory();
         serviceRegistry.destory();

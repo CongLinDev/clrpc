@@ -12,11 +12,10 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.executor.BasicConsumerServiceExecutor;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;
-import conglin.clrpc.transfer.receiver.ResponseReceiver;
-import conglin.clrpc.transfer.sender.RequestSender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -32,8 +31,7 @@ public class ConsumerTransfer {
     private final ReentrantLock lock;
     private final Condition connected;
 
-    private RequestSender sender;
-    private ResponseReceiver receiver;
+    private ConsumerContext context;
 
     private String LOCAL_ADDRESS;
 
@@ -52,10 +50,10 @@ public class ConsumerTransfer {
      * 开启传输服务
      */
     public void start(ConsumerContext context) {
-        // TODO: remove ...
-        this.sender = null;
-        this.receiver = null;
-
+        this.context = context;
+        context.setProviderChooser(this::chooseChannel);
+        context.setConsumerServiceExecutor(new BasicConsumerServiceExecutor(context));
+        
         PropertyConfigurer configurer = context.getPropertyConfigurer();
 
         LOCAL_ADDRESS = context.getLocalAddress();
@@ -76,18 +74,6 @@ public class ConsumerTransfer {
 
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
-
-        sender.destory();
-        receiver.destory();
-    }
-
-
-    /**
-     * 获取请求发送器
-     * @return the sender
-     */
-    public RequestSender getSender() {
-        return sender;
     }
 
     /**
@@ -117,7 +103,7 @@ public class ConsumerTransfer {
      */
     private Channel connectProviderNode(String serviceName, String remoteAddress) {    
         Bootstrap bootstrap = new Bootstrap();
-        ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(receiver);
+        ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(context);
         bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS))
                 .group(workerGroup)
                 .channel(NioSocketChannel.class)

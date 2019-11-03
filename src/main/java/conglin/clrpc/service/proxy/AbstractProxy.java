@@ -1,7 +1,7 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.transfer.sender.RequestSender;
+import conglin.clrpc.service.executor.RequestSender;
 
 abstract public class AbstractProxy {
     protected final String serviceName;

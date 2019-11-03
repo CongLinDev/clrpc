@@ -36,7 +36,5 @@ service:
       max-size: 10
       keep-alive: 1000 #ms
       queue: 10
-  codec:
-    serialization-handler: conglin.clrpc.common.codec.protostuff.ProtostuffSerializationHandler
   cache:
     enable: false
