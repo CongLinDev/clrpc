@@ -1,5 +1,6 @@
 package conglin.clrpc.common.util;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
@@ -12,6 +13,36 @@ import org.slf4j.LoggerFactory;
 public class IPAddressUtils{
 
     private static final Logger log = LoggerFactory.getLogger(IPAddressUtils.class);
+
+    private static final String HOST_ADDRESS;
+
+    static {
+        String hostAddress = null;
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            hostAddress = address.getHostAddress();
+        } catch (UnknownHostException e) {
+            log.error(e.getMessage());   
+        } 
+        HOST_ADDRESS = hostAddress == null ? "127.0.0.1" : hostAddress;
+    }
+
+    /**
+     * 返回本地地址
+     * @return
+     */
+    public static String getHostAddress() {
+        return HOST_ADDRESS;
+    }
+
+    /**
+     * 返回本地地址和给定端口号拼接的字符串
+     * @param port
+     * @return
+     */
+    public static String getHostnameAndPort(int port) {
+        return HOST_ADDRESS + ":" + port;
+    }
 
     public static InetSocketAddress splitHostnameAndPortResolved(String data) throws UnknownHostException{
         String[] hostnameAndPort = data.trim().split(":");

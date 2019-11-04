@@ -3,6 +3,8 @@ package conglin.clrpc.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,24 +17,24 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ProviderServiceHandler.class);
 
-    //服务映射
-    //String保存服务名 Object保存服务实现类
+    // 服务映射
+    // String保存服务名 Object保存服务实现类
     private final Map<String, Object> serviceObjects;
 
     private final String LOCAL_ADDRESS;
 
     private final ServiceRegistry serviceRegistry;
-    
-    public ProviderServiceHandler(PropertyConfigurer configurer){
+
+    public ProviderServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
-        this.LOCAL_ADDRESS = configurer.getOrDefault("provider.address", "localhost:5100");
+        this.LOCAL_ADDRESS = configurer.getOrDefault("provider.address", "127.0.0.1:5100");
         serviceObjects = new HashMap<>();
         serviceRegistry = new BasicServiceRegistry(configurer);
     }
 
     /**
-     * 手动添加服务 此时服务并未注册
-     * 且若服务名相同，后添加的服务会覆盖前添加的服务
+     * 手动添加服务 此时服务并未注册 且若服务名相同，后添加的服务会覆盖前添加的服务
+     * 
      * @param serviceName
      * @param serviceBean
      */
@@ -42,6 +44,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     /**
      * 查找 提供服务的Bean
+     * 
      * @param serviceName
      * @return
      */
@@ -51,38 +54,37 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     /**
      * 移除服务
+     * 
      * @param serviceName 服务名
      */
-    public void removeService(String serviceName){
+    public void removeService(String serviceName) {
         serviceObjects.remove(serviceName);
         log.debug("Remove service named " + serviceName);
     }
 
     /**
      * 注册到zookeeper
+     * 
      * @param data
      */
-    protected void registerService(String data){
-        //把服务名注册到zookeeper上
-        serviceObjects.keySet().forEach(
-            serviceName -> serviceRegistry.registerProvider(serviceName, data)
-        );
+    protected void registerService(String data) {
+        // 把服务名注册到zookeeper上
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.registerProvider(serviceName, data));
     }
 
     /**
      * 将本机地址注册到zookeeper上
      */
-    protected void registerService(){
-        serviceObjects.keySet().forEach(
-            serviceName -> serviceRegistry.registerProvider(serviceName, LOCAL_ADDRESS)
-        ); 
+    protected void registerService() {
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.registerProvider(serviceName, LOCAL_ADDRESS));
     }
 
     /**
      * 开启
+     * 
      * @param context
      */
-    public void start(ProviderContext context){
+    public void start(ProviderContext context) {
         // 设置服务注册器
         context.setServiceRegister(this::registerService);
         // 设置服务对象持有器
@@ -90,12 +92,25 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         // 设置线程池
         context.setExecutorService(getExecutorService());
     }
-    
+
     /**
      * 关闭
      */
     public void stop() {
-        super.destory();
-        serviceRegistry.destory();
+        if(!super.isDestroyed()){
+            try{
+                super.destroy();
+            }catch(DestroyFailedException e){
+                log.error(e.getMessage());
+            }
+        }
+
+        if (!serviceRegistry.isDestroyed()) {
+            try {
+                serviceRegistry.destroy();
+            } catch (DestroyFailedException e) {
+                log.error(e.getMessage());
+            }
+        }
     }
 }

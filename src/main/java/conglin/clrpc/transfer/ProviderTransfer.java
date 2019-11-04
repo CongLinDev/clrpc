@@ -25,7 +25,7 @@ public class ProviderTransfer{
 
     /**
      * 启动Netty
-     * @param context
+     * @param context 上下文
      */
     public void start(ProviderContext context){
         PropertyConfigurer configurer = context.getPropertyConfigurer();

@@ -2,6 +2,7 @@ package conglin.clrpc.service.context;
 
 import java.util.function.BiFunction;
 
+import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.executor.AbstractConsumerServiceExecutor;
 import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.executor.ServiceExecutor;
@@ -53,4 +54,17 @@ public interface ConsumerContext extends CommonContext {
      * @param providerChooser
      */
     void setProviderChooser(BiFunction<String, Object, Channel> providerChooser);
+
+
+    /**
+     * 获取ID生成器
+     * @return
+     */
+    IdentifierGenerator getIdentifierGenerator();
+
+    /**
+     * 设置ID生成器
+     * @param identifierGenerator
+     */
+    void setIdentifierGenerator(IdentifierGenerator identifierGenerator);
 }

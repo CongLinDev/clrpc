@@ -79,41 +79,41 @@
 
 ## Architecture
 
-![architecture.png](https://i.loli.net/2019/09/01/YbK3NuPi7UcQW9o.png)
+![architecture.png](https://i.loli.net/2019/11/04/UCpbuqOM2zYgTh7.png)
 
 ## Config
 
-配置文件名为 `clrpc-config.yml`，位置默认在项目根目录下。
+配置文件名为 `clrpc-config`，默认后缀名为 `.yml`，位置默认在项目根目录下。
 
-[配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml)。
+[默认配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml)。
 
 ### Config File
 
-配置文件位置默认在项目根目录下，使用 `.yml` 文件进行配置。
+配置文件位置默认在项目根目录下，默认文件为 `clrpc-config.yml`。
 
 ### Config Items
 
 | Field | Type | Null | Default | Remark |
 | :------: | :------: | :------: | :------: | :------: |
-| zookeeper.registry.address | String | YES | localhost:2181 | 服务注册地址 |
+| zookeeper.registry.address | String | YES | 127.0.0.1:2181 | 服务注册地址 |
 | zookeeper.registry.root-path | String | YES | /clrpc | 服务注册根节点 |
-| zookeeper.discovery.address | String | YES | localhost:2181 | 服务搜索地址 |
+| zookeeper.discovery.address | String | YES | 127.0.0.1:2181 | 服务搜索地址 |
 | zookeeper.discovery.root-path | String | YES | /clrpc | 服务搜索根节点 |
-| zookeeper.monitor.address | String | YES | localhost:2181 | 服务监视地址 |
+| zookeeper.monitor.address | String | YES | 127.0.0.1:2181 | 服务监视地址 |
 | zookeeper.monitor.root-path | String | YES | /clrpc | 服务监视根节点 |
-| zookeeper.atomicity.address | String | YES | localhost:2181 | 原子性服务地址 |
+| zookeeper.atomicity.address | String | YES | 127.0.0.1:2181 | 原子性服务地址 |
 | zookeeper.atomicity.root-path | String | YES | /clrpc | 原子性服务根节点 |
 | zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
-| provider.address | String | YES | localhost:5100 | 服务提供者地址 |
+| provider.port | Integer | YES | 5100 | 服务提供者端口号 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
-| consumer.address | String | YES | localhost:5200 | 服务使用者地址 |
-| consumer.session.wait-time | Integer | YES | 5000 | 无服务提供者时等待重试时间，单位为毫秒 |
+| consumer.port | Integer | YES | 5200 | 服务使用者端口号 |
+| consumer.wait-time | Integer | YES | 5000 | 无服务提供者时等待重试时间，单位为毫秒 |
 | consumer.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
-| service.thread.pool.core-size | Integer | YES | 5 | 业务线程池核心线程数 |
-| service.thread.pool.max-size | Integer | YES | 10 | 业务线程池最大线程数 |
-| service.thread.pool.keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
-| service.thread.pool.queue | Integer | YES | 10 | 业务线程池队列数 |
+| service.thread-pool.<br>core-size | Integer | YES | 5 | 业务线程池核心线程数 |
+| service.thread-pool.<br>max-size | Integer | YES | 10 | 业务线程池最大线程数 |
+| service.thread-pool.<br>keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
+| service.thread-pool.<br>queue | Integer | YES | 10 | 业务线程池队列数 |
 | service.cache.enable | Boolean | YES | false | 是否开启缓存 |
 
 ## Test

@@ -3,6 +3,8 @@ package conglin.clrpc.service.discovery;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -29,7 +31,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         //服务注册地址
-        registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "localhost:2181");
+        registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
         log.debug("Discovering zookeeper service address = " + registryAddress);
         //session timeout in milliseconds
         int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
@@ -47,13 +49,18 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void destory(){
+    public void destroy() throws DestroyFailedException {
         try{
             ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
             log.debug("Service discovery shuted down.");
         }catch(InterruptedException e){
-            log.error(e.getMessage());
+            throw new DestroyFailedException(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return !zooKeeper.getState().isAlive();
     }
 
     @Override

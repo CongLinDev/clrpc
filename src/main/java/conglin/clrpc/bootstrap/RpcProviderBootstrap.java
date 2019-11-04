@@ -5,10 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.codec.ProtostuffSerializationHandler;
-import conglin.clrpc.common.codec.SerializationHandler;
+import conglin.clrpc.bootstrap.option.RpcProviderOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.config.YamlPropertyConfigurer;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.service.context.BasicProviderContext;
 import conglin.clrpc.service.context.ProviderContext;
@@ -36,13 +35,21 @@ public class RpcProviderBootstrap extends Bootstrap {
     private static final Logger log = LoggerFactory.getLogger(RpcProviderBootstrap.class);
 
     // 管理传输
-    private ProviderTransfer providerTransfer;
+    private final ProviderTransfer providerTransfer;
 
     // 管理服务
-    private ProviderServiceHandler serviceHandler;
+    private final ProviderServiceHandler serviceHandler;
 
     public RpcProviderBootstrap() {
-        this(new YamlPropertyConfigurer());
+        super();
+        serviceHandler = new ProviderServiceHandler(configurer);
+        providerTransfer = new ProviderTransfer(); 
+    }
+
+    public RpcProviderBootstrap(String configFilename) {
+        super(configFilename);
+        serviceHandler = new ProviderServiceHandler(configurer);
+        providerTransfer = new ProviderTransfer(); 
     }
 
     public RpcProviderBootstrap(PropertyConfigurer configurer) {
@@ -139,28 +146,27 @@ public class RpcProviderBootstrap extends Bootstrap {
      * 启动
      * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
      * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
-     * 序列化处理器默认使用 {@link ProtostuffSerializationHandler}
      */
     public void start() {
-        start(new ProtostuffSerializationHandler());
+        start(new RpcProviderOption());
     }
     
     /**
      * 启动
      * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
      * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
-     * @param serializationHandler 序列化处理器
+     * @param option 启动选项
      */
-    public void start(SerializationHandler serializationHandler){
+    public void start(RpcProviderOption option){
         ProviderContext context = new BasicProviderContext();
         // 设置本地地址
-        context.setLocalAddress(configurer.getOrDefault("provider.address", "localhost:5100"));
+        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(configurer.getOrDefault("provider.port", 5100)));
         // 设置属性配置器
         context.setPropertyConfigurer(configurer);
         // 设置cache管理器
         context.setCacheManager(cacheManager);
         // 设置序列化处理器
-        context.setSerializationHandler(serializationHandler);
+        context.setSerializationHandler(option.getSerializationHandler());
 
         serviceHandler.start(context);
         providerTransfer.start(context);

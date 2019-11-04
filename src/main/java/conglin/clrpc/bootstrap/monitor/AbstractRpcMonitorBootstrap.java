@@ -33,7 +33,7 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
 
     @Override
     public RpcMonitorBootstrap monitor(){
-        String monitorAddress = configurer.getOrDefault("zookeeper.monitor.address", "localhost:2181");
+        String monitorAddress = configurer.getOrDefault("zookeeper.monitor.address", "127.0.0.1:2181");
         String path = configurer.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         return monitor(monitorAddress, path);
     }

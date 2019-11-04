@@ -14,6 +14,11 @@ abstract public class AbstractProxy {
         this.identifierGenerator = identifierGenerator;
     }
 
+    /**
+     * 按顺序返回对象数组所对应的类对象
+     * @param objs
+     * @return 类对象数组
+     */
     protected Class<?>[] getClassType(Object[] objs){
         Class<?>[] types = new Class[objs.length];
         for (int i = 0; i < objs.length; i++) {

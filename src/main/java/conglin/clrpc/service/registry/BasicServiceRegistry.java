@@ -1,5 +1,7 @@
 package conglin.clrpc.service.registry;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -31,7 +33,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         // 服务注册地址
-        String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "localhost:2181");
+        String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "127.0.0.1:2181");
         int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
         zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
@@ -57,12 +59,18 @@ public class BasicServiceRegistry implements ServiceRegistry {
     }
 
     @Override
-    public void destory() {
+    public void destroy() throws DestroyFailedException {
         try{
             ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
             log.debug("Service registry shuted down.");
         }catch(InterruptedException e){
             log.error(e.getMessage());
+            throw new DestroyFailedException(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return !zooKeeper.getState().isAlive();
     }
 }

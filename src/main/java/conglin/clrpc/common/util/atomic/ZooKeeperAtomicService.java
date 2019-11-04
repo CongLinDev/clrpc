@@ -22,7 +22,7 @@ abstract public class ZooKeeperAtomicService implements Destroyable {
 
     
     public ZooKeeperAtomicService(PropertyConfigurer configurer, String subPath){
-        this(configurer.getOrDefault("zookeeper.atomicity.address", "localhost:2181"),
+        this(configurer.getOrDefault("zookeeper.atomicity.address", "127.0.0.1:2181"),
             configurer.getOrDefault("zookeeper.session.timeout", 5000),
             configurer.getOrDefault("zookeeper.atomicity.root-path", "/clrpc"),
             subPath);
@@ -39,8 +39,7 @@ abstract public class ZooKeeperAtomicService implements Destroyable {
             ZooKeeperUtils.disconnectZooKeeper(keeper);
             log.debug("ZooKeeper AtomicService shuted down.");
         }catch(InterruptedException e){
-            log.error(e.getMessage());
-            Destroyable.super.destroy();
+            throw new DestroyFailedException(e.getMessage());
         }
     }
 

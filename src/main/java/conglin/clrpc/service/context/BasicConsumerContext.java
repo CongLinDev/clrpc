@@ -5,6 +5,7 @@ import java.util.function.BiFunction;
 
 import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.executor.AbstractConsumerServiceExecutor;
 import conglin.clrpc.service.executor.RequestSender;
@@ -124,4 +125,16 @@ public class BasicConsumerContext implements ConsumerContext {
         this.providerChooser = providerChooser;
     }
 
+
+    protected IdentifierGenerator identifierGenerator;
+
+    @Override
+    public IdentifierGenerator getIdentifierGenerator() {
+        return identifierGenerator;
+    }
+
+    @Override
+    public void setIdentifierGenerator(IdentifierGenerator identifierGenerator) {
+        this.identifierGenerator = identifierGenerator;
+    }
 }

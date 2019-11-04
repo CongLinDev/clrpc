@@ -3,10 +3,9 @@ package conglin.clrpc.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.codec.ProtostuffSerializationHandler;
-import conglin.clrpc.common.codec.SerializationHandler;
+import conglin.clrpc.bootstrap.option.RpcConsumerOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.config.YamlPropertyConfigurer;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
@@ -38,11 +37,19 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
 
-    private ConsumerTransfer consumerTransfer;
-    private ConsumerServiceHandler serviceHandler;
+    private final ConsumerTransfer consumerTransfer;
+    private final ConsumerServiceHandler serviceHandler;
 
     public RpcConsumerBootstrap() {
-        this(new YamlPropertyConfigurer());
+        super();
+        serviceHandler = new ConsumerServiceHandler(configurer);
+        consumerTransfer = new ConsumerTransfer();
+    }
+
+    public RpcConsumerBootstrap(String configFilename) {
+        super(configFilename);
+        serviceHandler = new ConsumerServiceHandler(configurer);
+        consumerTransfer = new ConsumerTransfer();
     }
 
     public RpcConsumerBootstrap(PropertyConfigurer configurer){
@@ -104,26 +111,28 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     /**
      * 启动
-     * 序列化处理器默认使用 {@link ProtostuffSerializationHandler}
      */
     public void start() {
-        start(new ProtostuffSerializationHandler());
+        start(new RpcConsumerOption());
     }
 
     /**
      * 启动
-     * @param serializationHandler 序列化处理器
+     * @param option 启动选项
      */
-    public void start(SerializationHandler serializationHandler){
+    public void start(RpcConsumerOption option){
         ConsumerContext context = new BasicConsumerContext();
 
-        context.setLocalAddress(configurer.getOrDefault("consumer.address", "localhost:5200"));
+        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(configurer.getOrDefault("consumer.port", 5200)));
         // 设置属性配置器
         context.setPropertyConfigurer(configurer);
         // 设置cache管理器
         context.setCacheManager(cacheManager);
+
         // 设置序列化处理器
-        context.setSerializationHandler(serializationHandler);
+        context.setSerializationHandler(option.getSerializationHandler());
+        // 设置ID生成器
+        context.setIdentifierGenerator(option.getIdentifierGenerator());
 
         serviceHandler.start(context);
         consumerTransfer.start(context);

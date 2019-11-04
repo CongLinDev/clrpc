@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 public interface PropertyConfigurer {
 
-    String DEFAULT_CONFIG_FILENAME = "clrpc-config.yml";
+    String DEFAULT_CONFIG_FILENAME = "clrpc-config";
 
     /**
      * 获取属性值

@@ -9,11 +9,12 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import javax.security.auth.DestroyFailedException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.identifier.BasicIdentifierGenerator;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
@@ -24,7 +25,6 @@ import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
-
 
 public class ConsumerServiceHandler extends AbstractServiceHandler implements FuturesHolder<Long> {
 
@@ -38,8 +38,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
 
     private ConsumerContext context;
 
-    // 基本的ID生成器
-    private final IdentifierGenerator identifierGenerator = new BasicIdentifierGenerator();
+    // ID生成器
+    private IdentifierGenerator identifierGenerator;
 
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
@@ -49,41 +49,41 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
 
     /**
      * 获取同步服务代理
+     * 
      * @param <T>
      * @param interfaceClass
      * @param serviceName
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getPrxoy(Class<T> interfaceClass, String serviceName){
-        return (T) Proxy.newProxyInstance(
-            interfaceClass.getClassLoader(),
-            new Class<?>[]{interfaceClass},
-            new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator));
+    public <T> T getPrxoy(Class<T> interfaceClass, String serviceName) {
+        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass },
+                new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator));
     }
 
     /**
      * 获取异步服务代理
+     * 
      * @param serviceName
      * @return
      */
-    public ObjectProxy getPrxoy(String serviceName){
+    public ObjectProxy getPrxoy(String serviceName) {
         return new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator);
     }
 
     /**
      * 获取事务服务代理
+     * 
      * @return
      */
-    public TransactionProxy getTransactionProxy(){
-        return new ZooKeeperTransactionProxy(context.getRequestSender(),
-            identifierGenerator, context.getPropertyConfigurer());
+    public TransactionProxy getTransactionProxy() {
+        return new ZooKeeperTransactionProxy(context.getRequestSender(), identifierGenerator,
+                context.getPropertyConfigurer());
     }
 
     /**
-     * 启动
-     * 获得请求发送器，用于检查超时Future
-     * 重发请求
+     * 启动 获得请求发送器，用于检查超时Future 重发请求
+     * 
      * @param context
      */
     public void start(ConsumerContext context) {
@@ -91,16 +91,40 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
         LOCAL_ADDRESS = context.getLocalAddress();
         context.setExecutorService(getExecutorService());
         context.setFuturesHolder(this);
+
+        identifierGenerator = context.getIdentifierGenerator();
         checkFuture();
     }
 
     /**
      * 停止
      */
-    public void stop(){
+    public void stop() {
         waitForUncompleteFuture();
-        super.destory();
-        serviceDiscovery.destory();
+        
+        if(!super.isDestroyed()){
+            try{
+                super.destroy();
+            }catch(DestroyFailedException e){
+                log.error(e.getMessage());
+            }
+        }
+
+        if(!serviceDiscovery.isDestroyed()){
+            try {
+                serviceDiscovery.destroy();
+            } catch (DestroyFailedException e) {
+                log.error(e.getMessage());
+            }
+        }
+
+        if(!identifierGenerator.isDestroyed()){
+            try {
+                identifierGenerator.destroy();
+            } catch (DestroyFailedException e) {
+                log.error(e.getMessage());
+            }
+        }
     }
 
 

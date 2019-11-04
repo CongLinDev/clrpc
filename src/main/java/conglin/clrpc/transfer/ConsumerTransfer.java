@@ -48,6 +48,7 @@ public class ConsumerTransfer {
 
     /**
      * 开启传输服务
+     * @param context 上下文
      */
     public void start(ConsumerContext context) {
         this.context = context;
@@ -57,7 +58,7 @@ public class ConsumerTransfer {
         PropertyConfigurer configurer = context.getPropertyConfigurer();
 
         LOCAL_ADDRESS = context.getLocalAddress();
-        timeoutForWait = configurer.getOrDefault("consumer.session.wait-time", 5000L);
+        timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000L);
 
         if (workerGroup == null) {
             int workerThread = configurer.getOrDefault("consumer.thread.worker", 4);

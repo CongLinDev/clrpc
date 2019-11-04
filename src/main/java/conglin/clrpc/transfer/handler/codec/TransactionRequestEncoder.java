@@ -8,7 +8,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 
 public class TransactionRequestEncoder extends MessageToByteEncoder<TransactionRequest> {
 
-    
     private final SerializationHandler serializationHandler;
 
     public TransactionRequestEncoder(SerializationHandler serializationHandler){

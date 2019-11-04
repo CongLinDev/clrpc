@@ -31,6 +31,10 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
         // you can add more handlers
     }
 
+    /**
+     * 返回当前绑定的 {@link io.netty.channel.Channel}
+     * @return
+     */
     public Channel channel(){
         return channelPipeline.channel();
     }

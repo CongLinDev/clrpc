@@ -1,6 +1,7 @@
 package conglin.clrpc.bootstrap;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.cache.caffeine.CaffeineCacheManager;
 import conglin.clrpc.transfer.message.BasicRequest;
@@ -12,6 +13,14 @@ abstract public class Bootstrap{
     protected final CacheManager<BasicRequest, BasicResponse> cacheManager;
 
     protected final PropertyConfigurer configurer;
+
+    public Bootstrap() {
+        this(new YamlPropertyConfigurer());
+    }
+
+    public Bootstrap(String configFileName) {
+        this(new YamlPropertyConfigurer(configFileName));
+    }
 
     public Bootstrap(PropertyConfigurer configurer){
         this(configurer, configurer.getOrDefault("service.cache.enable", false));

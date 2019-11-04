@@ -67,8 +67,8 @@ public class BasicFuture extends AbstractFuture {
     @Override
     public void retry() {
         synchronizer.retry();
-        resetTime();
         sender.resendRequest(request);
+        resetTime();
     }
 
     @Override

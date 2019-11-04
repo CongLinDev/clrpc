@@ -277,14 +277,27 @@ class Node<V>{
         this.value = value;
     }
 
+    /**
+     * 获得当前节点的代
+     * @return
+     */
     public int getEpoch(){
         return epoch.get();
     }
 
+    /**
+     * 设置当前节点的代
+     * @param epoch
+     * @return
+     */
     public boolean setEpoch(int epoch){
         return this.epoch.compareAndSet(epoch - 1, epoch);
     }
 
+    /**
+     * 获取当前节点存储的值
+     * @return
+     */
     public V getValue(){
         return value;
     }

@@ -18,7 +18,7 @@ public class YamlPropertyConfigurer implements PropertyConfigurer {
     protected final Map<String, Object> configs;
 
     public YamlPropertyConfigurer() {
-        this(DEFAULT_CONFIG_FILENAME);
+        this(DEFAULT_CONFIG_FILENAME + ".yml");
     }
 
     public YamlPropertyConfigurer(String filename) {
