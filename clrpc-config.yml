@@ -1,15 +1,15 @@
 zookeeper:
   registry:
-    address: 127.0.0.1:2181
+    address: 127.0.0.1:2181 # use ',' to split
     root-path: /clrpc
   discovery:
-    address: 127.0.0.1:2181
+    address: 127.0.0.1:2181 # use ',' to split
     root-path: /clrpc
   monitor:
-    address: 127.0.0.1:2181
+    address: 127.0.0.1:2181 # use ',' to split
     root-path: /clrpc
   atomicity:
-    address: 127.0.0.1:2181
+    address: 127.0.0.1:2181 # use ',' to split
     root-path: /clrpc
   session:
     timeout: 5000 #ms
@@ -21,7 +21,7 @@ provider:
     worker: 4
     
 consumer:
-  prot: 5200
+  port: 5210
   wait-time: 5000 #ms
   thread: # for netty
     worker: 4

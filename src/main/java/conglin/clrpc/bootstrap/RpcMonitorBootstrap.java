@@ -1,4 +1,4 @@
-package conglin.clrpc.bootstrap.monitor;
+package conglin.clrpc.bootstrap;
 
 /**
  * RPC monitor端启动类

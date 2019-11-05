@@ -9,7 +9,7 @@ import conglin.clrpc.transfer.message.BasicRequest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class ProviderRequestChannelHandler<T extends BasicRequest> extends SimpleChannelInboundHandler<T> {
+public class ProviderRequestChannelHandler extends SimpleChannelInboundHandler<BasicRequest> {
     private static final Logger log = LoggerFactory.getLogger(ProviderRequestChannelHandler.class);
 
     protected final AbstractProviderServiceExecutor serviceExecutor;
@@ -32,7 +32,7 @@ public class ProviderRequestChannelHandler<T extends BasicRequest> extends Simpl
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, BasicRequest msg) throws Exception {
         serviceExecutor.execute(msg);
     }
     

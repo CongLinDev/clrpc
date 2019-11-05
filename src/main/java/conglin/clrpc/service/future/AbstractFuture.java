@@ -1,7 +1,6 @@
 package conglin.clrpc.service.future;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
@@ -10,7 +9,6 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RequestException;
 
 abstract public class AbstractFuture implements RpcFuture {
-    protected static ExecutorService executorService;
     protected static long TIME_THRESHOLD = 5000;
 
     public static void setTimeThreshold(long timeThreshold){
@@ -28,8 +26,6 @@ abstract public class AbstractFuture implements RpcFuture {
         this.synchronizer = new FutureSynchronizer();
         startTime = System.currentTimeMillis();
     }
-
-
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning){
@@ -63,7 +59,6 @@ abstract public class AbstractFuture implements RpcFuture {
     public boolean isPending(){
         return synchronizer.isPending();
     }
-
 
     /**
      * 该{@link RpcFuture} 是否出错
@@ -109,13 +104,8 @@ abstract public class AbstractFuture implements RpcFuture {
      * @param callback
      */
     protected void runCallback(){
-        if(isCancelled()) return;
-        
-        if(executorService != null){
-            executorService.submit(this::doRunCallback);
-        }else{
+        if(!isCancelled())
             doRunCallback();
-        }
     }
 
     /**
@@ -128,14 +118,6 @@ abstract public class AbstractFuture implements RpcFuture {
      */
     protected void resetTime(){
         this.startTime = System.currentTimeMillis();
-    }
-
-    /**
-     * 注册一个线程池
-     * @param executorService
-     */
-    public static void registerThreadPool(ExecutorService executorService){
-        AbstractFuture.executorService = executorService;
     }
 
     /**

@@ -43,14 +43,13 @@ public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecuto
     }
 
     @Override
-    public void execute(BasicResponse t) {
-        Long requestId = t.getRequestId();
-        RpcFuture future = futuresHolder.removeFuture(requestId);
+    protected void doExecute(BasicResponse response) {
+        RpcFuture future = futuresHolder.removeFuture(response.getRequestId());
 
         if(future != null){
-            future.done(t);
+            future.done(response);
         }
-    }    
+    }
 
     @Override
     protected void doSendRequest(BasicRequest request, Object object) {

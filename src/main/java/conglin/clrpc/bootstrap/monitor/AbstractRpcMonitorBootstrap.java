@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.Bootstrap;
-import conglin.clrpc.bootstrap.monitor.RpcMonitorBootstrap;
+import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;

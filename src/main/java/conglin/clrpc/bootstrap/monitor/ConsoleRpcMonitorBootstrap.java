@@ -5,7 +5,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
+class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(ConsoleRpcMonitorBootstrap.class);
 

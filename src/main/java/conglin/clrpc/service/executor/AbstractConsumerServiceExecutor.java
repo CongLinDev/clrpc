@@ -33,9 +33,24 @@ abstract public class AbstractConsumerServiceExecutor
     }
 
     @Override
+    public void execute(BasicResponse t) {
+        Long requestId = t.getRequestId();
+        log.debug("Receive response responseId=" + requestId);
+        executor.submit(()->{
+            doExecute(t);
+        });
+    }
+
+    abstract protected void doExecute(BasicResponse response);
+
+    @Override
     public RpcFuture sendRequest(BasicRequest request) {
         RpcFuture future = putFuture(request);
         if(future.isDone()) return future;
+
+        // executor.submit(()->{
+        //     doSendRequest(request, request.getRequestId());
+        // });
         doSendRequest(request, request.getRequestId());
         return future;
     }
@@ -44,17 +59,27 @@ abstract public class AbstractConsumerServiceExecutor
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) {
         RpcFuture future = putFuture(request);
         if(future.isDone()) return future;
+
+        // executor.submit(()->{
+        //     doSendRequest(request, remoteAddress);
+        // });
         doSendRequest(request, remoteAddress);
         return future;
     } 
 
     @Override
     public void resendRequest(BasicRequest request) {
+        // executor.submit(()->{
+        //     doSendRequest(request, request.getRequestId());
+        // });
         doSendRequest(request, request.getRequestId());
     }
 
     @Override
     public void resendRequest(String remoteAddress, BasicRequest request) {
+        // executor.submit(()->{
+        //     doSendRequest(request, remoteAddress);
+        // });
         doSendRequest(request, remoteAddress);
     }
 

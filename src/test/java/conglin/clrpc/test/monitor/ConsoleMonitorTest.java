@@ -1,6 +1,6 @@
 package conglin.clrpc.test.monitor;
 
-import conglin.clrpc.bootstrap.monitor.RpcMonitorBootstrap;
+import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.bootstrap.monitor.RpcMonitorBootstrapFactory;
 import conglin.clrpc.bootstrap.monitor.RpcMonitorBootstrapFactory.MonitorType;
 
