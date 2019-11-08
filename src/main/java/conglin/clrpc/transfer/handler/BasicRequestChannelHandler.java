@@ -9,12 +9,12 @@ import conglin.clrpc.transfer.message.BasicRequest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class ProviderRequestChannelHandler extends SimpleChannelInboundHandler<BasicRequest> {
-    private static final Logger log = LoggerFactory.getLogger(ProviderRequestChannelHandler.class);
+public class BasicRequestChannelHandler extends SimpleChannelInboundHandler<BasicRequest> {
+    private static final Logger log = LoggerFactory.getLogger(BasicRequestChannelHandler.class);
 
     protected final AbstractProviderServiceExecutor serviceExecutor;
 
-    public ProviderRequestChannelHandler(AbstractProviderServiceExecutor serviceExecutor){
+    public BasicRequestChannelHandler(AbstractProviderServiceExecutor serviceExecutor){
         this.serviceExecutor = serviceExecutor;
     }
 

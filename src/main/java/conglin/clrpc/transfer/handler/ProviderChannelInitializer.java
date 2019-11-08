@@ -6,6 +6,7 @@ import conglin.clrpc.service.executor.ZooKeeperProviderServiceExecutor;
 import conglin.clrpc.transfer.handler.codec.BasicResponseEncoder;
 import conglin.clrpc.transfer.handler.codec.CommonDecoder;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
 public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel>{
@@ -19,14 +20,19 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-        ch.pipeline()
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline
             .addLast("Common Decoder", new CommonDecoder(context.getSerializationHandler()))
             .addLast("BasicResponse Encoder", new BasicResponseEncoder(context.getSerializationHandler()))
-            .addLast("Provider BasicRequest-ChannelHandler", 
-                new ProviderRequestChannelHandler(new BasicProviderServiceExecutor(context)))
-            .addLast("Provider TransactionRequest-ChannelHandler", 
-                new ProviderRequestChannelHandler(new ZooKeeperProviderServiceExecutor(context)));
-            
+            .addLast("BasicRequest ChannelHandler", 
+                new BasicRequestChannelHandler(new BasicProviderServiceExecutor(context)));
+        
+        // 事务
+        if(context.getPropertyConfigurer().getOrDefault("service.transaction.enable", false)){
+            pipeline.addLast("TransactionRequest ChannelHandler", 
+                new TransactionRequestChannelHandler(new ZooKeeperProviderServiceExecutor(context)));
+        }
+
         // you can add more handlers
     }
 

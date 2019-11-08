@@ -8,14 +8,14 @@ import conglin.clrpc.transfer.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class ComsumerResponseChannelHandler
+public class BasicResponseChannelHandler
         extends SimpleChannelInboundHandler<BasicResponse>{
 
-    private static final Logger log = LoggerFactory.getLogger(ComsumerResponseChannelHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(BasicResponseChannelHandler.class);
 
     private final ServiceExecutor<BasicResponse> serviceExecutor;
 
-    public ComsumerResponseChannelHandler(ServiceExecutor<BasicResponse> serviceExecutor){
+    public BasicResponseChannelHandler(ServiceExecutor<BasicResponse> serviceExecutor){
         this.serviceExecutor = serviceExecutor;
     }
 

@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated(since = "0.7.7")
 public class DefaultPropertyConfigurer implements PropertyConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultPropertyConfigurer.class);
@@ -31,7 +32,7 @@ public class DefaultPropertyConfigurer implements PropertyConfigurer {
     }
 
     @Override
-    public Object get(String key) {
+    public String get(String key) {
         return properties.getProperty(key);
     }
 }

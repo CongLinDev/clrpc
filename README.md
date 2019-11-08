@@ -115,6 +115,7 @@
 | service.thread-pool.<br>keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread-pool.<br>queue | Integer | YES | 10 | 业务线程池队列数 |
 | service.cache.enable | Boolean | YES | false | 是否开启缓存 |
+| service.transaction.enable | Boolean | YES | false | 是否开启事务 |
 
 ## Test
 

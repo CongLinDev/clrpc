@@ -26,8 +26,8 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
                 .addLast("BasicRequest Encoder", new BasicRequestEncoder(context.getSerializationHandler()))
                 .addLast("TransactionRequest Encoder", new TransactionRequestEncoder(context.getSerializationHandler()))
                 .addLast("Common Decoder", new CommonDecoder(context.getSerializationHandler()))
-                .addLast("Consumer ChannelHandler", 
-                    new ComsumerResponseChannelHandler(context.getServiceExecutor()));
+                .addLast("BasicResponse ChannelHandler", 
+                    new BasicResponseChannelHandler(context.getServiceExecutor()));
         // you can add more handlers
     }
 

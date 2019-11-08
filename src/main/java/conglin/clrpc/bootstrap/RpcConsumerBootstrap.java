@@ -106,7 +106,11 @@ public class RpcConsumerBootstrap extends Bootstrap {
      * @return
      */
     public TransactionProxy subscribeAsync(){
-        return serviceHandler.getTransactionProxy();
+        if(configurer.getOrDefault("service.transaction.enable", false)){
+            return serviceHandler.getTransactionProxy();
+        }else{
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**

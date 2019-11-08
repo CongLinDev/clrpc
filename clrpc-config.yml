@@ -21,7 +21,7 @@ provider:
     worker: 4
     
 consumer:
-  port: 5210
+  port: 5200
   wait-time: 5000 #ms
   thread: # for netty
     worker: 4
@@ -33,4 +33,6 @@ service:
     keep-alive: 1000 #ms
     queue: 10
   cache:
+    enable: false
+  transaction:
     enable: false
