@@ -11,7 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class TransactionRequestChannelHandler extends SimpleChannelInboundHandler<TransactionRequest> {
 
-    private static final Logger log = LoggerFactory.getLogger(TransactionRequestChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionRequestChannelHandler.class);
 
     protected final AbstractProviderServiceExecutor serviceExecutor;
 
@@ -39,7 +39,7 @@ public class TransactionRequestChannelHandler extends SimpleChannelInboundHandle
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error(cause.getMessage());
+        LOGGER.error(cause.getMessage());
         ctx.close();
         if(!serviceExecutor.isDestroyed())
             serviceExecutor.destroy();

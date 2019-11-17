@@ -16,7 +16,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class CommonDecoder extends ByteToMessageDecoder {
 
-    private static final Logger log = LoggerFactory.getLogger(CommonDecoder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonDecoder.class);
 
     // ---------------------------------------------------------
     // 字节数 | 4 | 4 | n |
@@ -60,7 +60,7 @@ public class CommonDecoder extends ByteToMessageDecoder {
                 result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
                 break;
             default:
-                log.error("Can not decode message type=" + messageType);
+                LOGGER.error("Can not decode message type=" + messageType);
         }
         return result;
     }
@@ -74,7 +74,7 @@ public class CommonDecoder extends ByteToMessageDecoder {
         int dataLengh = in.readInt();
 
         if (dataLengh <= 0){
-            log.error("Error format message whose length is negative.");
+            LOGGER.error("Error format message whose length is negative.");
             return;
         }
         

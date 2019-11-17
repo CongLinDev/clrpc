@@ -2,10 +2,9 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
-import javax.security.auth.DestroyFailedException;
-import javax.security.auth.Destroyable;
-
+import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.atomic.TransactionHelper;

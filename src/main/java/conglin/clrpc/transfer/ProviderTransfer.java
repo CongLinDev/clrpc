@@ -18,7 +18,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class ProviderTransfer{
-    private static final Logger log = LoggerFactory.getLogger(ProviderTransfer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransfer.class);
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
@@ -46,14 +46,14 @@ public class ProviderTransfer{
             InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(context.getLocalAddress());
             ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
-            log.info("Provider started on {}", address);
+            LOGGER.info("Provider started on {}", address);
             
             //进行准备工作
             context.getServiceRegister().accept(context.getLocalAddress());
 
             channelFuture.channel().closeFuture().sync();
         }catch(UnknownHostException | InterruptedException e){
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }finally{
             stop();
         }

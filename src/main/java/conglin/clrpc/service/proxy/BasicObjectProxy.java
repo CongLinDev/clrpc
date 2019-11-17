@@ -13,7 +13,7 @@ import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transfer.message.BasicRequest;
 
 public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
-    private static final Logger log = LoggerFactory.getLogger(BasicObjectProxy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicObjectProxy.class);
 
     public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator){
         super(serviceName, sender, identifierGenerator);
@@ -50,7 +50,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
         request.setRequestId(identifierGenerator.generate(methodName));
 
-        log.debug(request.toString());
+        LOGGER.debug(request.toString());
         return sender.sendRequest(request);
     }
 
@@ -64,7 +64,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
         request.setRequestId(identifierGenerator.generate(methodName));
         
-        log.debug(request.toString());
+        LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }
 
@@ -78,7 +78,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
         request.setRequestId(identifierGenerator.generate(method.getName()));
 
-        log.debug(request.toString());
+        LOGGER.debug(request.toString());
         return sender.sendRequest(request);
     }
 
@@ -92,7 +92,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
         request.setRequestId(identifierGenerator.generate(method.getName()));
         
-        log.debug(request.toString());
+        LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }
 }

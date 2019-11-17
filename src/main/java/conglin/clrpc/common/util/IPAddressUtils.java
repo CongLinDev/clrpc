@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class IPAddressUtils{
 
-    private static final Logger log = LoggerFactory.getLogger(IPAddressUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IPAddressUtils.class);
 
     private static final String HOST_ADDRESS;
 
@@ -22,7 +22,7 @@ public class IPAddressUtils{
             InetAddress address = InetAddress.getLocalHost();
             hostAddress = address.getHostAddress();
         } catch (UnknownHostException e) {
-            log.error(e.getMessage());   
+            LOGGER.error(e.getMessage());   
         } 
         HOST_ADDRESS = hostAddress == null ? "127.0.0.1" : hostAddress;
     }
@@ -74,7 +74,7 @@ public class IPAddressUtils{
                 InetSocketAddress address = splitHostnameAndPort(s);
                 set.add(address);
             }catch(UnknownHostException e){
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }          
         }
         return set;
@@ -90,7 +90,7 @@ public class IPAddressUtils{
         try{
             return splitHostnameAndPort(data);
         }catch(UnknownHostException e){
-            log.error("Error address = " + data + " And it can not be converted");
+            LOGGER.error("Error address = " + data + " And it can not be converted");
             return null;
         }
     }

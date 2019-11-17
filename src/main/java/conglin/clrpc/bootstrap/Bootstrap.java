@@ -10,9 +10,9 @@ import conglin.clrpc.transfer.message.BasicResponse;
 abstract public class Bootstrap{
     
     protected final boolean ENABLE_CACHE;
-    protected final CacheManager<BasicRequest, BasicResponse> cacheManager;
+    protected final CacheManager<BasicRequest, BasicResponse> CACHE_MANAGER;
 
-    protected final PropertyConfigurer configurer;
+    protected final PropertyConfigurer CONFIGURER;
 
     public Bootstrap() {
         this(new YamlPropertyConfigurer());
@@ -27,12 +27,12 @@ abstract public class Bootstrap{
     }
 
     public Bootstrap(PropertyConfigurer configurer, boolean enableCache) {
-        this.configurer = configurer;
+        this.CONFIGURER = configurer;
         this.ENABLE_CACHE = enableCache;
         if(ENABLE_CACHE){
-            cacheManager = new CaffeineCacheManager(configurer);
+            CACHE_MANAGER = new CaffeineCacheManager(configurer);
         }else{
-            cacheManager = null;
+            CACHE_MANAGER = null;
         }
     }
 }

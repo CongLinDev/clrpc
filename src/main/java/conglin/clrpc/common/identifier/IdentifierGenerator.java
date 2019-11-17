@@ -1,6 +1,6 @@
 package conglin.clrpc.common.identifier;
 
-import javax.security.auth.Destroyable;
+import conglin.clrpc.common.Destroyable;
 
 public interface IdentifierGenerator extends Destroyable {
 

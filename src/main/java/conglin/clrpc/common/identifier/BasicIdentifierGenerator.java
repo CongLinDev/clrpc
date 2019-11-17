@@ -2,7 +2,7 @@ package conglin.clrpc.common.identifier;
 
 import java.util.UUID;
 
-import javax.security.auth.DestroyFailedException;
+import conglin.clrpc.common.exception.DestroyFailedException;
 
 public class BasicIdentifierGenerator implements IdentifierGenerator {
 

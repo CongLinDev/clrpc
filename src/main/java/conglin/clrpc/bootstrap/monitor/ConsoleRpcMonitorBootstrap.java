@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsoleRpcMonitorBootstrap.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleRpcMonitorBootstrap.class);
 
     protected ConsoleRpcMonitorBootstrap(){
         super();
@@ -15,14 +15,14 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     @Override
     public void start() throws InterruptedException {
-        log.info("Console monitor started.");
+        LOGGER.info("Console monitor started.");
         Thread.sleep(Integer.MAX_VALUE);
     }
 
     @Override
     public void stop() throws InterruptedException {
         super.stop();
-        log.info("Console monitor stoped.");
+        LOGGER.info("Console monitor stoped.");
     }
 
     @Override

@@ -24,7 +24,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class ConsumerTransfer {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumerTransfer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerTransfer.class);
 
     private EventLoopGroup workerGroup;
 
@@ -109,16 +109,16 @@ public class ConsumerTransfer {
                 .group(workerGroup)
                 .channel(NioSocketChannel.class)
                 .handler(channelInitializer);
-        log.info("Consumer started on {}", LOCAL_ADDRESS);
+        LOGGER.info("Consumer started on {}", LOCAL_ADDRESS);
 
         InetSocketAddress socketRemoteAddress = IPAddressUtils.splitHostnameAndPortSilently(remoteAddress);
         try {
             bootstrap.connect(socketRemoteAddress).sync();
         } catch (InterruptedException e) {
-            log.error("Cannot connect to remote provider. Remote Address : " + remoteAddress, e);
+            LOGGER.error("Cannot connect to remote provider. Remote Address : " + remoteAddress, e);
             return null;
         }
-        log.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
+        LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
         return channelInitializer.channel();
     }
 
@@ -133,7 +133,7 @@ public class ConsumerTransfer {
             try{
                 waitingForChannelHandler();
             }catch(InterruptedException e){
-                log.error("Waiting for available node is interrupted!", e);
+                LOGGER.error("Waiting for available node is interrupted!", e);
             }
         }
         return loadBalancer.get(serviceName, random);
@@ -159,7 +159,7 @@ public class ConsumerTransfer {
     private boolean waitingForChannelHandler() throws InterruptedException{
         lock.lock();
         try{
-            log.info("Waiting for Channel Handler " + timeoutForWait + " mm...");
+            LOGGER.info("Waiting for Channel Handler " + timeoutForWait + " mm...");
             return connected.await(timeoutForWait,TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();

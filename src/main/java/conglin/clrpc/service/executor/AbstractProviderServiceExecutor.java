@@ -2,11 +2,10 @@ package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.service.cache.CacheManager;
@@ -20,7 +19,7 @@ import io.netty.channel.ChannelFutureListener;
  */
 abstract public class AbstractProviderServiceExecutor implements ServiceExecutor<BasicRequest> {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractProviderServiceExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProviderServiceExecutor.class);
 
     private final ExecutorService executor;
 
@@ -52,7 +51,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
 
     @Override
     public void execute(BasicRequest t) {
-        log.debug("Receive request " + t.getRequestId());
+        LOGGER.debug("Receive request " + t.getRequestId());
         
         executor.submit(()->{
             BasicResponse response = null;
@@ -68,7 +67,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
                     if(executeCompletely) putCache(t, response);
 
                 }catch(UnsupportedServiceException | ServiceExecutionException e){
-                    log.error("Request failed: " + e.getMessage());
+                    LOGGER.error("Request failed: " + e.getMessage());
                     response.signError();
                     response.setResult(e);
 
@@ -98,7 +97,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
     protected BasicResponse getCache(BasicRequest request) {
         if (cacheManager == null)
             return null;
-        log.debug("Fetching cached response. Request id = " + request.getRequestId());
+        LOGGER.debug("Fetching cached response. Request id = " + request.getRequestId());
         return cacheManager.get(request);
     }
     
@@ -111,7 +110,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
     protected void putCache(BasicRequest request, BasicResponse response) {
         if (cacheManager == null || !response.canCacheForProvider())
             return;
-        log.debug("Caching request and response. Request id = " + request.getRequestId());
+        LOGGER.debug("Caching request and response. Request id = " + request.getRequestId());
         cacheManager.put(request, response);
     }
 
@@ -122,7 +121,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
     protected void sendResponse(BasicResponse response) {
         if(response == null) return;
         channel.writeAndFlush(response).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-        log.debug("Sending response for request id=" + response.getRequestId());
+        LOGGER.debug("Sending response for request id=" + response.getRequestId());
     }
 
 

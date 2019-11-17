@@ -2,11 +2,10 @@ package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.RpcFuture;
@@ -16,7 +15,7 @@ import conglin.clrpc.transfer.message.BasicResponse;
 abstract public class AbstractConsumerServiceExecutor
     implements ServiceExecutor<BasicResponse>, RequestSender {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractConsumerServiceExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractConsumerServiceExecutor.class);
 
     private final ExecutorService executor;
 
@@ -35,7 +34,7 @@ abstract public class AbstractConsumerServiceExecutor
     @Override
     public void execute(BasicResponse t) {
         Long requestId = t.getRequestId();
-        log.debug("Receive response responseId=" + requestId);
+        LOGGER.debug("Receive response responseId=" + requestId);
         executor.submit(()->{
             doExecute(t);
         });
@@ -105,7 +104,7 @@ abstract public class AbstractConsumerServiceExecutor
         BasicResponse cachedResponse = null;
         if(cacheManager != null &&
             (cachedResponse = cacheManager.get(request)) != null ){
-            log.debug("Fetching cached response. Request id = " + request.getRequestId());
+            LOGGER.debug("Fetching cached response. Request id = " + request.getRequestId());
             future.done(cachedResponse);
             return future;
         }

@@ -6,16 +6,15 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.DestroyFailedException;
-import javax.security.auth.Destroyable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 
 abstract public class AbstractServiceHandler implements Destroyable {
-    private static final Logger log = LoggerFactory.getLogger(AbstractServiceHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
     private final ExecutorService businessTheardExecutorService;
 
@@ -55,7 +54,7 @@ abstract public class AbstractServiceHandler implements Destroyable {
     @Override
     public void destroy() throws DestroyFailedException {
         businessTheardExecutorService.shutdown();
-        log.debug("Theard Executor shuts down.");
+        LOGGER.debug("Theard Executor shuts down.");
     }
 
     @Override

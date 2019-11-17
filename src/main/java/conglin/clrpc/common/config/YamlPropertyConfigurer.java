@@ -13,9 +13,9 @@ import org.yaml.snakeyaml.Yaml;
 
 public class YamlPropertyConfigurer implements PropertyConfigurer {
 
-    private static final Logger log = LoggerFactory.getLogger(YamlPropertyConfigurer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(YamlPropertyConfigurer.class);
 
-    protected final Map<String, Object> configs;
+    protected final Map<String, Object> CONFIGS;
 
     public YamlPropertyConfigurer() {
         this(DEFAULT_CONFIG_FILENAME + ".yml");
@@ -27,13 +27,13 @@ public class YamlPropertyConfigurer implements PropertyConfigurer {
             Yaml yaml = new Yaml();
             tempConfig = (Map<String, Object>)Map.class.cast(yaml.load(inputStream));
         }catch(FileNotFoundException e){
-            log.error("You had better add config file named 'clrpc-config.yml' in your project.");
+            LOGGER.error("You had better add config file named 'clrpc-config.yml' in your project.");
             tempConfig = new HashMap<>();
         }catch(IOException | ClassCastException e){
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
             tempConfig = new HashMap<>();
         }finally{
-            configs = tempConfig;
+            CONFIGS = tempConfig;
         }
     }
 
@@ -41,7 +41,7 @@ public class YamlPropertyConfigurer implements PropertyConfigurer {
     @SuppressWarnings("unchecked")
     public Object get(String key) {
         String [] paths = key.split("\\.");
-        Object obj = configs;
+        Object obj = CONFIGS;
 
         try{
             for(String path : paths){

@@ -2,8 +2,7 @@ package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.security.auth.Destroyable;
-
+import conglin.clrpc.common.Destroyable;
 
 public interface ServiceExecutor<T> extends Destroyable {
     /**

@@ -1,18 +1,17 @@
 package conglin.clrpc.common.identifier;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 import conglin.clrpc.common.util.atomic.ZooKeeperAtomicService;
 
 public class SequetialIdentifierGenerator extends ZooKeeperAtomicService implements IdentifierGenerator {
 
-    private static final Logger log = LoggerFactory.getLogger(SequetialIdentifierGenerator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SequetialIdentifierGenerator.class);
 
     protected BasicIdentifierGenerator downgradeGenerator;
 
@@ -33,7 +32,7 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
             String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
             return Long.parseLong(id);
         }
-        log.warn("'SequetialIdentifierGenerator' generated Indentifier failed. Starting use 'BasicIdentifierGenerator'.");
+        LOGGER.warn("'SequetialIdentifierGenerator' generated Indentifier failed. Starting use 'BasicIdentifierGenerator'.");
         return downgradeGenerator.generate(key);
     }
 

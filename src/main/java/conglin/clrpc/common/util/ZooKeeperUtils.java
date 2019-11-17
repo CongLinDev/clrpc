@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public class ZooKeeperUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(ZooKeeperUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperUtils.class);
 
     /**
      * 同步连接 ZooKeeper
@@ -37,13 +37,13 @@ public class ZooKeeperUtils {
             keeper = new ZooKeeper(address, sessionTimeout, event -> {
                 if (event.getState() == Event.KeeperState.SyncConnected) {
                     countDownLatch.countDown();
-                    log.debug("ZooKeeper address=" + address + " is connected.");
+                    LOGGER.debug("ZooKeeper address=" + address + " is connected.");
                 }
             });
-            log.debug("ZooKeeper address=" + address + " is connecting...");
+            LOGGER.debug("ZooKeeper address=" + address + " is connecting...");
             countDownLatch.await();
         } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return keeper;
     }
@@ -102,11 +102,11 @@ public class ZooKeeperUtils {
             Stat stat = keeper.exists(path, false);
             if (stat == null) {
                 String subPath = keeper.create(path, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, mode);
-                log.debug("create zookeeper node : " + subPath);
+                LOGGER.debug("create zookeeper node : " + subPath);
                 return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -128,11 +128,11 @@ public class ZooKeeperUtils {
                 String higherLevelPath = path.substring(0, index);
                 createNode(keeper, higherLevelPath);
                 String subPath = keeper.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-                log.debug("create zookeeper node :" + subPath);
+                LOGGER.debug("create zookeeper node :" + subPath);
                 return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -152,7 +152,7 @@ public class ZooKeeperUtils {
             keeper.delete(path, -1);
             return path;
         } catch (InterruptedException | KeeperException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -203,7 +203,7 @@ public class ZooKeeperUtils {
             return data;
 
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -240,7 +240,7 @@ public class ZooKeeperUtils {
                 consumer.accept(nodeAndData);
             return nodeAndData;
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -302,7 +302,7 @@ public class ZooKeeperUtils {
         try {
             return keeper.getChildren(path, watcher);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -356,7 +356,7 @@ public class ZooKeeperUtils {
                 (currentNodeVersion + 1) ==
                     keeper.setData(path, newData.getBytes(), currentNodeVersion).getVersion();
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
             return false;
         }
     }

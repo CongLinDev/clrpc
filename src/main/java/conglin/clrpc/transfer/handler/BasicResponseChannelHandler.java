@@ -11,7 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class BasicResponseChannelHandler
         extends SimpleChannelInboundHandler<BasicResponse>{
 
-    private static final Logger log = LoggerFactory.getLogger(BasicResponseChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicResponseChannelHandler.class);
 
     private final ServiceExecutor<BasicResponse> serviceExecutor;
 
@@ -26,7 +26,7 @@ public class BasicResponseChannelHandler
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error(cause.getMessage());
+        LOGGER.error(cause.getMessage());
         ctx.close();
         if(!serviceExecutor.isDestroyed())
             serviceExecutor.destroy();

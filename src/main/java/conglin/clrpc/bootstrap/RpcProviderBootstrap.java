@@ -32,30 +32,30 @@ import io.netty.bootstrap.ServerBootstrap;
 
 public class RpcProviderBootstrap extends Bootstrap {
 
-    private static final Logger log = LoggerFactory.getLogger(RpcProviderBootstrap.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RpcProviderBootstrap.class);
 
     // 管理传输
-    private final ProviderTransfer providerTransfer;
+    private final ProviderTransfer PROVIDER_TRANSFER;
 
     // 管理服务
-    private final ProviderServiceHandler serviceHandler;
+    private final ProviderServiceHandler SERVICE_HANDLER;
 
     public RpcProviderBootstrap() {
         super();
-        serviceHandler = new ProviderServiceHandler(configurer);
-        providerTransfer = new ProviderTransfer(); 
+        SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
+        PROVIDER_TRANSFER = new ProviderTransfer(); 
     }
 
     public RpcProviderBootstrap(String configFilename) {
         super(configFilename);
-        serviceHandler = new ProviderServiceHandler(configurer);
-        providerTransfer = new ProviderTransfer(); 
+        SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
+        PROVIDER_TRANSFER = new ProviderTransfer(); 
     }
 
     public RpcProviderBootstrap(PropertyConfigurer configurer) {
         super(configurer);
-        serviceHandler = new ProviderServiceHandler(configurer);
-        providerTransfer = new ProviderTransfer();
+        SERVICE_HANDLER = new ProviderServiceHandler(configurer);
+        PROVIDER_TRANSFER = new ProviderTransfer();
     }
 
     /**
@@ -66,7 +66,7 @@ public class RpcProviderBootstrap extends Bootstrap {
      */
     public RpcProviderBootstrap publish(Class<?> interfaceClass, Class<?> serviceBeanClass) {
         if (!interfaceClass.isAssignableFrom(serviceBeanClass)) {
-            log.error("Service is not permitted. Because "
+            LOGGER.error("Service is not permitted. Because "
                  + interfaceClass.getName() + "is not assignableFrom " + serviceBeanClass.getName());
             return this;
         } else {
@@ -82,7 +82,7 @@ public class RpcProviderBootstrap extends Bootstrap {
     public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
         String serviceBeanClassName = serviceBeanClass.getSimpleName();
         if (!serviceBeanClassName.endsWith("ServiceImpl")) {
-            log.error(serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
+            LOGGER.error(serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
             return this;
         } else {
             return publish(serviceBeanClassName.substring(0, serviceBeanClassName.length() - 4),
@@ -98,14 +98,14 @@ public class RpcProviderBootstrap extends Bootstrap {
      */
     public RpcProviderBootstrap publish(String serviceName, Class<?> serviceBeanClass) {
         if (serviceBeanClass.isInterface()) {
-            log.error(serviceBeanClass.getName() + " is not a service class. And it will not be published");
+            LOGGER.error(serviceBeanClass.getName() + " is not a service class. And it will not be published");
         } else {
             try {
                 Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
                 return publish(serviceName, serviceBean);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                log.error("Can not publish service. " + e.getMessage());
+                LOGGER.error("Can not publish service. " + e.getMessage());
             }
         }
         return this;
@@ -118,8 +118,8 @@ public class RpcProviderBootstrap extends Bootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {
-        log.info("Publish service named " + serviceName);
-        serviceHandler.publish(serviceName, serviceBean);
+        LOGGER.info("Publish service named " + serviceName);
+        SERVICE_HANDLER.publish(serviceName, serviceBean);
         return this;
     }
 
@@ -138,7 +138,7 @@ public class RpcProviderBootstrap extends Bootstrap {
      * @return
      */
     public RpcProviderBootstrap removeService(String serviceName) {
-        serviceHandler.removeService(serviceName);
+        SERVICE_HANDLER.removeService(serviceName);
         return this;
     }
 
@@ -160,24 +160,24 @@ public class RpcProviderBootstrap extends Bootstrap {
     public void start(RpcProviderOption option){
         ProviderContext context = new BasicProviderContext();
         // 设置本地地址
-        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(configurer.getOrDefault("provider.port", 5100)));
+        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));
         // 设置属性配置器
-        context.setPropertyConfigurer(configurer);
+        context.setPropertyConfigurer(CONFIGURER);
         // 设置cache管理器
-        context.setCacheManager(cacheManager);
+        context.setCacheManager(CACHE_MANAGER);
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());
 
-        serviceHandler.start(context);
-        providerTransfer.start(context);
+        SERVICE_HANDLER.start(context);
+        PROVIDER_TRANSFER.start(context);
     }
 
     /**
      * 关闭
      */
     public void stop() {
-        serviceHandler.stop();
-        providerTransfer.stop();
+        SERVICE_HANDLER.stop();
+        PROVIDER_TRANSFER.stop();
     }
 
 }

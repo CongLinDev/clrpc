@@ -11,10 +11,10 @@ import io.protostuff.runtime.RuntimeSchema;
 
 public class ProtostuffSerializationHandler implements SerializationHandler{
 
-    private final Map<Class<?>, Schema<?>> cachedSchema;
+    private final Map<Class<?>, Schema<?>> CACHED_SCHEMA;
     
     public ProtostuffSerializationHandler(){
-        cachedSchema = new ConcurrentHashMap<>();
+        CACHED_SCHEMA = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ProtostuffSerializationHandler implements SerializationHandler{
 
     @SuppressWarnings("unchecked")
     private <T> Schema<T> getSchema(Class<T> clazz){
-        return (Schema<T>)cachedSchema.computeIfAbsent(clazz, RuntimeSchema::createFrom);
+        return (Schema<T>)CACHED_SCHEMA.computeIfAbsent(clazz, RuntimeSchema::createFrom);
     }
 
     @Override

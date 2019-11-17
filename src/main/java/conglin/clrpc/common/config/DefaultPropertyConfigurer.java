@@ -12,27 +12,27 @@ import org.slf4j.LoggerFactory;
 @Deprecated(since = "0.7.7")
 public class DefaultPropertyConfigurer implements PropertyConfigurer {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultPropertyConfigurer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPropertyConfigurer.class);
 
-    private final Properties properties;
+    private final Properties PROPERTIES;
 
     public DefaultPropertyConfigurer() {
         this(DEFAULT_CONFIG_FILENAME + ".properties");
     }
 
     public DefaultPropertyConfigurer(String filename) {
-        properties = new Properties();
+        PROPERTIES = new Properties();
         try(InputStream inputStream = new FileInputStream(filename)){
-            properties.load(inputStream);
+            PROPERTIES.load(inputStream);
         }catch(FileNotFoundException e){
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }catch(IOException e){
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
     @Override
     public String get(String key) {
-        return properties.getProperty(key);
+        return PROPERTIES.getProperty(key);
     }
 }

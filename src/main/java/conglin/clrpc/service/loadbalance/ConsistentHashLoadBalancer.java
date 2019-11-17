@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V> {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsistentHashLoadBalancer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsistentHashLoadBalancer.class);
 
     private final int _16_BIT_MASK = 0xFFFF;
     private final int _32_16_BIT_MASK = 0xFFFF0000;
@@ -55,12 +55,12 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         int epoch = 0;
         if((code = descriptions.get(type)) == null){
             code = firstUpdate(type);
-            log.debug("First update region head number = " + code);
+            LOGGER.debug("First update region head number = " + code);
         }else{
             // 非第一次更新的话 更新epoch
             code.incrementAndGet();
             epoch = code.get() & _16_BIT_MASK;
-            log.debug("Update region head number = " + (code.get() & _32_16_BIT_MASK) + " Epoch = " + epoch);
+            LOGGER.debug("Update region head number = " + (code.get() & _32_16_BIT_MASK) + " Epoch = " + epoch);
         }
         // 区域头节点的Hash值
         int head = code.get() & _32_16_BIT_MASK;
@@ -212,13 +212,13 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
                         V v = start.apply(k);
                         if(v != null){
                             circle.put(next, new Node<V>(epoch, v));
-                            log.debug("Add new node = " + k);
+                            LOGGER.debug("Add new node = " + k);
                         }
                     }
                     break;
                 }else if(equalPredicate.test(k, node.getValue())){ // 更新epoch
                     if(epoch > node.getEpoch() && !node.setEpoch(epoch)) continue;
-                    log.debug("Update old node = " + k);
+                    LOGGER.debug("Update old node = " + k);
                     break;
                 }else{ // 发生冲撞
                     next++; // 将 v 更新到该节点的后面
@@ -245,7 +245,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
                 &&  (next = entry.getKey()) <= tail){ // 且下一个节点确保在范围内
             if(entry.getValue().getEpoch() + 1 == currentEpoch){ // 只移除上一代未更新的节点
                 circle.remove(entry.getKey());
-                log.debug("Remove valid node.");
+                LOGGER.debug("Remove valid node.");
                 if(stop != null){
                     stop.accept(entry.getValue().getValue());
                 } 

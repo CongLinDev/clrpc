@@ -1,17 +1,16 @@
 package conglin.clrpc.common.util.atomic;
 
-import javax.security.auth.DestroyFailedException;
-import javax.security.auth.Destroyable;
-
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 abstract public class ZooKeeperAtomicService implements Destroyable {
-    private static final Logger log = LoggerFactory.getLogger(ZooKeeperAtomicService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperAtomicService.class);
 
     protected final ZooKeeper keeper;
     protected final String rootPath;
@@ -37,7 +36,7 @@ abstract public class ZooKeeperAtomicService implements Destroyable {
     public void destroy() throws DestroyFailedException {
         try{
             ZooKeeperUtils.disconnectZooKeeper(keeper);
-            log.debug("ZooKeeper AtomicService shuted down.");
+            LOGGER.debug("ZooKeeper AtomicService shuted down.");
         }catch(InterruptedException e){
             throw new DestroyFailedException(e.getMessage());
         }

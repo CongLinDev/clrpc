@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 public class BasicRequestChannelHandler extends SimpleChannelInboundHandler<BasicRequest> {
-    private static final Logger log = LoggerFactory.getLogger(BasicRequestChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicRequestChannelHandler.class);
 
     protected final AbstractProviderServiceExecutor serviceExecutor;
 
@@ -38,7 +38,7 @@ public class BasicRequestChannelHandler extends SimpleChannelInboundHandler<Basi
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error(cause.getMessage());
+        LOGGER.error(cause.getMessage());
         ctx.close();
         if(!serviceExecutor.isDestroyed())
             serviceExecutor.destroy();

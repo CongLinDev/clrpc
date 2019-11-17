@@ -13,7 +13,7 @@ import conglin.clrpc.common.exception.RequestException;
 
 public class TransactionFuture extends AbstractCompositeFuture {
     
-    private static final Logger log = LoggerFactory.getLogger(TransactionFuture.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionFuture.class);
 
     protected final Callback subFutureCallback;
 
@@ -28,7 +28,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
                         done(null);
                 } catch (FutureCancelledException e) {
                     cancel(true);
-                    log.error(e.getMessage());
+                    LOGGER.error(e.getMessage());
                     // rollback...
                     
                 }
@@ -37,7 +37,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
             @Override
             public void fail(Exception e) {
                 setError();
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
                 // rollback...
 
             }

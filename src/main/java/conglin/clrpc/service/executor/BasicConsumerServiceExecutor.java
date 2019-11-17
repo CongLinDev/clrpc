@@ -17,7 +17,7 @@ import io.netty.channel.ChannelFutureListener;
 
 public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecutor {
 
-    private static final Logger log = LoggerFactory.getLogger(BasicConsumerServiceExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicConsumerServiceExecutor.class);
 
     protected final FuturesHolder<Long> futuresHolder;
 
@@ -57,7 +57,7 @@ public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecuto
         Channel channel = providerChooser.apply(serviceName, object);
 
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-        log.debug("Send request Id = " + request.getRequestId());
+        LOGGER.debug("Send request Id = " + request.getRequestId());
     }
 
     @Override

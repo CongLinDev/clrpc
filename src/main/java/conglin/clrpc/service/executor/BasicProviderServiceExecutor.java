@@ -19,7 +19,7 @@ import conglin.clrpc.transfer.message.BasicResponse;
 
 public class BasicProviderServiceExecutor extends AbstractProviderServiceExecutor {
 
-    private static final Logger log = LoggerFactory.getLogger(BasicProviderServiceExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicProviderServiceExecutor.class);
     
     protected final Function<String, Object> serviceObjectsHolder;
 
@@ -73,8 +73,8 @@ public class BasicProviderServiceExecutor extends AbstractProviderServiceExecuto
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
 
-        log.debug("Invoking class..." + serviceBeanClass.getName());
-        log.debug("Invoking method..." + methodName);
+        LOGGER.debug("Invoking class..." + serviceBeanClass.getName());
+        LOGGER.debug("Invoking method..." + methodName);
 
         try {
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);

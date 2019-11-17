@@ -1,13 +1,12 @@
 package conglin.clrpc.service.registry;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 /**
@@ -22,7 +21,7 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
  */
 public class BasicServiceRegistry implements ServiceRegistry {
 
-    private static final Logger log = LoggerFactory.getLogger(BasicServiceRegistry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicServiceRegistry.class);
 
     private final String rootPath; //zookeeper根地址
     private final ZooKeeper zooKeeper;
@@ -38,13 +37,8 @@ public class BasicServiceRegistry implements ServiceRegistry {
         zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 
-    /**
-     * 注册服务提供者
-     * @param serviceName
-     * @param data
-     */
     @Override
-    public void registerProvider(String serviceName, String data){
+    public void register(String serviceName, String data){
         if (zooKeeper != null) {
             //创建服务节点
             String serviceNode = rootPath + "/" + serviceName;
@@ -54,7 +48,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
             String providerNode = rootPath + "/" + serviceName + "/providers/provider";
             ZooKeeperUtils.createNode(zooKeeper, providerNode, data, CreateMode.EPHEMERAL_SEQUENTIAL);
 
-            log.debug("Create a service provider which provides " + serviceName);
+            LOGGER.debug("Create a service provider which provides " + serviceName);
         }
     }
 
@@ -62,9 +56,9 @@ public class BasicServiceRegistry implements ServiceRegistry {
     public void destroy() throws DestroyFailedException {
         try{
             ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
-            log.debug("Service registry shuted down.");
+            LOGGER.debug("Service registry shuted down.");
         }catch(InterruptedException e){
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
             throw new DestroyFailedException(e.getMessage());
         }
     }

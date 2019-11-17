@@ -1,13 +1,8 @@
 package conglin.clrpc.service.registry;
 
-import javax.security.auth.Destroyable;
+import conglin.clrpc.common.Destroyable;
+import conglin.clrpc.common.Registerable;
 
-public interface ServiceRegistry extends Destroyable {
+public interface ServiceRegistry extends Registerable, Destroyable {
 
-    /**
-     * 注册服务提供者
-     * @param serviceName
-     * @param data
-     */
-    void registerProvider(String serviceName, String data);
 }

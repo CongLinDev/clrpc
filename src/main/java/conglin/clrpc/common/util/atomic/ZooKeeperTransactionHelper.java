@@ -2,8 +2,6 @@ package conglin.clrpc.common.util.atomic;
 
 import java.util.concurrent.CountDownLatch;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
@@ -11,6 +9,7 @@ import org.apache.zookeeper.Watcher.Event;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 

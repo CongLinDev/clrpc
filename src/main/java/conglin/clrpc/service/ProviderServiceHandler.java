@@ -3,19 +3,18 @@ package conglin.clrpc.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.service.registry.BasicServiceRegistry;
 import conglin.clrpc.service.registry.ServiceRegistry;
 
 public class ProviderServiceHandler extends AbstractServiceHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ProviderServiceHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderServiceHandler.class);
 
     // 服务映射
     // String保存服务名 Object保存服务实现类
@@ -59,7 +58,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      */
     public void removeService(String serviceName) {
         serviceObjects.remove(serviceName);
-        log.debug("Remove service named " + serviceName);
+        LOGGER.debug("Remove service named " + serviceName);
     }
 
     /**
@@ -69,14 +68,14 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      */
     protected void registerService(String data) {
         // 把服务名注册到zookeeper上
-        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.registerProvider(serviceName, data));
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, data));
     }
 
     /**
      * 将本机地址注册到zookeeper上
      */
     protected void registerService() {
-        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.registerProvider(serviceName, LOCAL_ADDRESS));
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, LOCAL_ADDRESS));
     }
 
     /**
@@ -101,7 +100,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
             try{
                 super.destroy();
             }catch(DestroyFailedException e){
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
 
@@ -109,7 +108,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
             try {
                 serviceRegistry.destroy();
             } catch (DestroyFailedException e) {
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
     }

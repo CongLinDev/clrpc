@@ -1,8 +1,7 @@
 package conglin.clrpc.common.util.atomic;
 
-import javax.security.auth.Destroyable;
-
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.exception.TransactionException;
 
 public interface TransactionHelper extends Destroyable {

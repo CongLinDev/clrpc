@@ -35,27 +35,27 @@ import conglin.clrpc.transfer.ConsumerTransfer;
 
 public class RpcConsumerBootstrap extends Bootstrap {
 
-    private static final Logger log = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
 
-    private final ConsumerTransfer consumerTransfer;
-    private final ConsumerServiceHandler serviceHandler;
+    private final ConsumerTransfer CONSUMER_TRANSFER;
+    private final ConsumerServiceHandler SERVICE_HANDLER;
 
     public RpcConsumerBootstrap() {
         super();
-        serviceHandler = new ConsumerServiceHandler(configurer);
-        consumerTransfer = new ConsumerTransfer();
+        SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
+        CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
     public RpcConsumerBootstrap(String configFilename) {
         super(configFilename);
-        serviceHandler = new ConsumerServiceHandler(configurer);
-        consumerTransfer = new ConsumerTransfer();
+        SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
+        CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
     public RpcConsumerBootstrap(PropertyConfigurer configurer){
         super(configurer);
-        serviceHandler = new ConsumerServiceHandler(configurer);
-        consumerTransfer = new ConsumerTransfer();
+        SERVICE_HANDLER = new ConsumerServiceHandler(configurer);
+        CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
     /**
@@ -76,9 +76,9 @@ public class RpcConsumerBootstrap extends Bootstrap {
      * @return 返回代理服务类
      */
     public <T> T subscribe(Class<T> interfaceClass, String serviceName){
-        log.info("Subscribe synchronous service named " + serviceName);
-        serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
-        return serviceHandler.getPrxoy(interfaceClass, serviceName);
+        LOGGER.info("Subscribe synchronous service named " + serviceName);
+        SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
+        return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
     }
 
     /**
@@ -96,9 +96,9 @@ public class RpcConsumerBootstrap extends Bootstrap {
      * @return 返回代理服务类
      */
     public ObjectProxy subscribeAsync(String serviceName){
-        log.info("Subscribe asynchronous service named " + serviceName);
-        serviceHandler.findService(serviceName, consumerTransfer::updateConnectedProvider);
-        return serviceHandler.getPrxoy(serviceName);
+        LOGGER.info("Subscribe asynchronous service named " + serviceName);
+        SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
+        return SERVICE_HANDLER.getPrxoy(serviceName);
     }
 
     /**
@@ -106,8 +106,8 @@ public class RpcConsumerBootstrap extends Bootstrap {
      * @return
      */
     public TransactionProxy subscribeAsync(){
-        if(configurer.getOrDefault("service.transaction.enable", false)){
-            return serviceHandler.getTransactionProxy();
+        if(CONFIGURER.getOrDefault("service.transaction.enable", false)){
+            return SERVICE_HANDLER.getTransactionProxy();
         }else{
             throw new UnsupportedOperationException();
         }
@@ -127,27 +127,27 @@ public class RpcConsumerBootstrap extends Bootstrap {
     public void start(RpcConsumerOption option){
         ConsumerContext context = new BasicConsumerContext();
 
-        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(configurer.getOrDefault("consumer.port", 5200)));
+        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
         // 设置属性配置器
-        context.setPropertyConfigurer(configurer);
+        context.setPropertyConfigurer(CONFIGURER);
         // 设置cache管理器
-        context.setCacheManager(cacheManager);
+        context.setCacheManager(CACHE_MANAGER);
 
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());
         // 设置ID生成器
         context.setIdentifierGenerator(option.getIdentifierGenerator());
 
-        serviceHandler.start(context);
-        consumerTransfer.start(context);
+        SERVICE_HANDLER.start(context);
+        CONSUMER_TRANSFER.start(context);
     }
 
     /**
      * 停止
      */
     public void stop() throws InterruptedException{
-        serviceHandler.stop();
-        consumerTransfer.stop();
+        SERVICE_HANDLER.stop();
+        CONSUMER_TRANSFER.stop();
     }
 
 }

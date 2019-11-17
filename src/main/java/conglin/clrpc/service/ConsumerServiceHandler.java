@@ -9,12 +9,11 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.discovery.BasicServiceDiscovery;
@@ -28,7 +27,7 @@ import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 
 public class ConsumerServiceHandler extends AbstractServiceHandler implements FuturesHolder<Long> {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumerServiceHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerServiceHandler.class);
 
     private final Map<Long, RpcFuture> rpcFutures;
 
@@ -106,7 +105,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
             try{
                 super.destroy();
             }catch(DestroyFailedException e){
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
 
@@ -114,7 +113,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
             try {
                 serviceDiscovery.destroy();
             } catch (DestroyFailedException e) {
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
 
@@ -122,7 +121,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
             try {
                 identifierGenerator.destroy();
             } catch (DestroyFailedException e) {
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
     }
@@ -136,7 +135,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param updateMethod
      */
     public void findService(String serviceName, BiConsumer<String, List<String>> updateMethod){
-        serviceDiscovery.registerConsumer(serviceName, LOCAL_ADDRESS);
+        serviceDiscovery.register(serviceName, LOCAL_ADDRESS);
         serviceDiscovery.discover(serviceName, updateMethod);
     }
     
@@ -192,7 +191,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
                     RpcFuture f = iterator.next();
                     if(f.isPending() && f.timeout()){
                         f.retry();
-                        log.warn("Service response(requestId=" + f.identifier() + ") is too slow. Retry...");
+                        LOGGER.warn("Service response(requestId=" + f.identifier() + ") is too slow. Retry...");
                     }
                 }
             }
@@ -206,10 +205,10 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     private void waitForUncompleteFuture(){
         while(rpcFutures.size() != 0){
             try {
-                log.info("Waiting uncomplete futures for 500 ms.");
+                LOGGER.info("Waiting uncomplete futures for 500 ms.");
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
     }

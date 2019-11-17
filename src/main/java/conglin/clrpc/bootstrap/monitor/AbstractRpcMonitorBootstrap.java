@@ -16,11 +16,11 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
 
 abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements RpcMonitorBootstrap {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
 
     protected ZooKeeper zooKeeper;
     protected String rootPath;
-    private final int sessionTimeout;
+    private final int SESSION_TIMEOUT;
 
     public AbstractRpcMonitorBootstrap() {
         this(new YamlPropertyConfigurer());
@@ -28,13 +28,13 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
 
     public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
         super(configurer, false);
-        this.sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
+        this.SESSION_TIMEOUT = configurer.getOrDefault("zookeeper.session.timeout", 5000);
     }
 
     @Override
     public RpcMonitorBootstrap monitor(){
-        String monitorAddress = configurer.getOrDefault("zookeeper.monitor.address", "127.0.0.1:2181");
-        String path = configurer.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
+        String monitorAddress = CONFIGURER.getOrDefault("zookeeper.monitor.address", "127.0.0.1:2181");
+        String path = CONFIGURER.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         return monitor(monitorAddress, path);
     }
 
@@ -42,8 +42,8 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
     public RpcMonitorBootstrap monitor(String zooKeeperAddress, String path) {
         // 连接ZooKeeper
         this.rootPath = path.endsWith("/") ? path + "service" : path + "/service";
-        zooKeeper = ZooKeeperUtils.connectZooKeeper(zooKeeperAddress, sessionTimeout);
-        log.info("Starting to monitor zookeeper whose address="+ zooKeeperAddress + "  root-path=" + path);
+        zooKeeper = ZooKeeperUtils.connectZooKeeper(zooKeeperAddress, SESSION_TIMEOUT);
+        LOGGER.info("Starting to monitor zookeeper whose address="+ zooKeeperAddress + "  root-path=" + path);
         return this;
     }
     
@@ -64,7 +64,7 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
         String providerPath = concretePath + "/providers";
         String consumerPath = concretePath + "/consumers";
         
-        log.info("Monitor service named " + serviceName);
+        LOGGER.info("Monitor service named " + serviceName);
         ZooKeeperUtils.watchChildrenNodeAndData(zooKeeper, providerPath, this::handleNodeInfo);
         ZooKeeperUtils.watchChildrenNodeAndData(zooKeeper, consumerPath, this::handleNodeInfo);
         return this;

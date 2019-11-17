@@ -3,14 +3,13 @@ package conglin.clrpc.service.discovery;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import javax.security.auth.DestroyFailedException;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 /**
@@ -20,7 +19,7 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
 
 public class BasicServiceDiscovery implements ServiceDiscovery {
 
-    private static final Logger log = LoggerFactory.getLogger(BasicServiceDiscovery.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicServiceDiscovery.class);
     private final String registryAddress; //服务注册地址
     private ZooKeeper zooKeeper;
     private final String rootPath;
@@ -32,7 +31,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
 
         //服务注册地址
         registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
-        log.debug("Discovering zookeeper service address = " + registryAddress);
+        LOGGER.debug("Discovering zookeeper service address = " + registryAddress);
         //session timeout in milliseconds
         int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
 
@@ -52,7 +51,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
     public void destroy() throws DestroyFailedException {
         try{
             ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
-            log.debug("Service discovery shuted down.");
+            LOGGER.debug("Service discovery shuted down.");
         }catch(InterruptedException e){
             throw new DestroyFailedException(e.getMessage());
         }
@@ -64,7 +63,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void registerConsumer(String serviceName, String data) {
+    public void register(String serviceName, String data) {
         //创建服务节点
         String serviceNode = rootPath + "/" + serviceName;
         ZooKeeperUtils.createNode(zooKeeper,serviceNode, serviceName);
