@@ -43,8 +43,8 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
      * @param request
      * @param response
      * @return 请求处理是否完成
-     * @throws UnsupportedServiceException
-     * @throws ServiceExecutionException
+     * @throws UnsupportedServiceException 此Provider不支持该服务时抛出
+     * @throws ServiceExecutionException 执行服务出错时抛出
      */
     abstract protected boolean doExecute(BasicRequest request, BasicResponse response)
         throws UnsupportedServiceException, ServiceExecutionException;

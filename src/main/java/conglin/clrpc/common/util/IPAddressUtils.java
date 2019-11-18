@@ -14,7 +14,7 @@ public class IPAddressUtils{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPAddressUtils.class);
 
-    private static final String HOST_ADDRESS;
+    private static final String LOCAL_HOST_ADDRESS;
 
     static {
         String hostAddress = null;
@@ -24,7 +24,7 @@ public class IPAddressUtils{
         } catch (UnknownHostException e) {
             LOGGER.error(e.getMessage());   
         } 
-        HOST_ADDRESS = hostAddress == null ? "127.0.0.1" : hostAddress;
+        LOCAL_HOST_ADDRESS = (hostAddress == null) ? "127.0.0.1" : hostAddress;
     }
 
     /**
@@ -32,7 +32,7 @@ public class IPAddressUtils{
      * @return
      */
     public static String getHostAddress() {
-        return HOST_ADDRESS;
+        return LOCAL_HOST_ADDRESS;
     }
 
     /**
@@ -41,7 +41,7 @@ public class IPAddressUtils{
      * @return
      */
     public static String getHostnameAndPort(int port) {
-        return HOST_ADDRESS + ":" + port;
+        return LOCAL_HOST_ADDRESS + ":" + port;
     }
 
     public static InetSocketAddress splitHostnameAndPortResolved(String data) throws UnknownHostException{

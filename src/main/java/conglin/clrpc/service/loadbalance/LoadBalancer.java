@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 
 /**
  * 该接口用作负载均衡
- * 适合一个 type 对应多个 key-value 的负载均衡
+ * 适合 {一个 type 对应多个 key-value 对} 组的负载均衡
  * @param <T> type
  * @param <K> key
  * @param <V> value
@@ -34,10 +34,10 @@ public interface LoadBalancer<T, K, V> {
     /**
      * 根据条件返回指定对象
      * @param type
-     * @param k
+     * @param key
      * @return
      */
-    V get(T type, K k);
+    V get(T type, K key);
 
     /**
      * 根据条件返回指定对象
@@ -59,6 +59,13 @@ public interface LoadBalancer<T, K, V> {
      * @param consumer
      */
     void forEach(Consumer<V> consumer);
+
+    /**
+     * 对某个类型的所有节点做出某个操作
+     * @param type
+     * @param consumer
+     */
+    void forEach(T type, Consumer<V> consumer);
 
     /**
      * 清空容器内所有数据

@@ -2,7 +2,7 @@ package conglin.clrpc.common.exception;
 
 import conglin.clrpc.transfer.message.BasicRequest;
 
-public class RequestException extends RuntimeException {
+public class RequestException extends Exception {
 
     private static final long serialVersionUID = 1829465701565961733L;
 

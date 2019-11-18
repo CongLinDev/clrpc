@@ -1,12 +1,8 @@
 package conglin.clrpc.service.future;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RequestException;
 
 abstract public class AbstractFuture implements RpcFuture {
     protected static long TIME_THRESHOLD = 5000;
@@ -15,7 +11,7 @@ abstract public class AbstractFuture implements RpcFuture {
         TIME_THRESHOLD = timeThreshold;
     }
 
-    protected final FutureSynchronizer synchronizer; // 同步器
+    protected final FutureSynchronizer SYNCHRONIZER; // 同步器
     
     protected Callback futureCallback; // 回调
 
@@ -23,49 +19,33 @@ abstract public class AbstractFuture implements RpcFuture {
     protected volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
     public AbstractFuture(){
-        this.synchronizer = new FutureSynchronizer();
+        this.SYNCHRONIZER = new FutureSynchronizer();
         startTime = System.currentTimeMillis();
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning){
-        boolean canCancel = !synchronizer.isDone();
-        synchronizer.cancel();
+        boolean canCancel = !SYNCHRONIZER.isDone();
+        SYNCHRONIZER.cancel();
         return canCancel;
     }
 
     @Override
-    abstract public Object get() 
-        throws InterruptedException, ExecutionException, RequestException;
-
-    @Override
-    abstract public Object get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException, RequestException;
-
-    @Override
     public boolean isCancelled() {
-        return synchronizer.isCancelled();
+        return SYNCHRONIZER.isCancelled();
     }
 
     @Override
     public boolean isDone() {
-        return synchronizer.isDone();
+        return SYNCHRONIZER.isDone();
     }
 
-    /**
-     * 是否正在等待中
-     * @return
-     */
+    @Override
     public boolean isPending(){
-        return synchronizer.isPending();
+        return SYNCHRONIZER.isPending();
     }
 
-    /**
-     * 该{@link RpcFuture} 是否出错
-     * 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下
-     * 该方法的返回值才可信
-     * @return
-     */
+    @Override
     public boolean isError(){
         return error;
     }
@@ -77,31 +57,21 @@ abstract public class AbstractFuture implements RpcFuture {
         this.error = true;
     }
 
-    /**
-     * 返回该future是否超时
-     * @return
-     */
+    @Override
     public boolean timeout(){
         return TIME_THRESHOLD + startTime > System.currentTimeMillis();
     }
 
-    /**
-     * 添加回调函数
-     * 后添加的回调函数会覆盖前添加的回调函数
-     * @param callback
-     */
+    @Override
     public void addCallback(Callback callback){
         if(callback == null) return;
         this.futureCallback = callback;
-        if(isDone()){
+        if(isDone())
             runCallback();
-        }
     }
 
     /**
-     * 若存在有注册的 {@link ServiceHandler} ，则使用此线程池
-     * 反之使用当前线程顺序执行
-     * @param callback
+     * 执行回调函数
      */
     protected void runCallback(){
         if(!isCancelled())

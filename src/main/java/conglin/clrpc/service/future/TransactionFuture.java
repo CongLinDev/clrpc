@@ -47,10 +47,10 @@ public class TransactionFuture extends AbstractCompositeFuture {
     @Override
     public Object get() throws InterruptedException, ExecutionException, RequestException {
         try{
-            synchronizer.acquire(0);
+            SYNCHRONIZER.acquire(0);
             return null;
         }finally{
-            synchronizer.release(0);
+            SYNCHRONIZER.release(0);
         }
     }
 
@@ -58,19 +58,19 @@ public class TransactionFuture extends AbstractCompositeFuture {
     public Object get(long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException, RequestException {
         try{
-            if(synchronizer.tryAcquireNanos(0, unit.toNanos(timeout))){
+            if(SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))){
                 return null;
             }else{
                 throw new TimeoutException("TransactionFuture Timeout! " + identifier());
             }
         }finally{
-            synchronizer.release(0);
+            SYNCHRONIZER.release(0);
         }
     }
 
     @Override
     public void done(Object result) {
-        synchronizer.release(0);
+        SYNCHRONIZER.release(0);
         runCallback();
     }
 

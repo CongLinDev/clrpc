@@ -92,19 +92,19 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     @Override
-    public V get(T type, K k) {
+    public V get(T type, K key) {
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if(regionAndEpoch == null) return null;
         int code = regionAndEpoch.get();
 
-        int randomHash = hash(k);
+        int randomHash = hash(key);
         int head = code & _32_16_BIT_MASK;
         int next = head | (randomHash & _16_BIT_MASK);
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         Node<V> node;
         while((node = circle.get(next)) != null){
-            if(equalPredicate.test(k, node.getValue()))
+            if(equalPredicate.test(key, node.getValue()))
                 return node.getValue();
 
             if(++next > tail)
@@ -136,11 +136,30 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
     @Override
     public void forEach(Consumer<V> consumer) {
-        circle.values().forEach( node -> {
-            V v = node.getValue();
-            if(v != null)
-                consumer.accept(v);
-        });
+        if(consumer == null) return;
+        circle.values().forEach( node ->
+            consumer.accept(node.getValue())
+        );
+    }
+
+    @Override
+    public void forEach(T type, Consumer<V> consumer){
+        if(consumer == null) return;
+
+        AtomicInteger regionAndEpoch = descriptions.get(type);
+        if(regionAndEpoch == null) return;
+        int code = regionAndEpoch.get();
+
+        int head = code & _32_16_BIT_MASK;
+        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
+
+        int next = head;
+        while(next <= tail){
+            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(next);
+            V v = entry.getValue().getValue();
+            consumer.accept(v);
+            next = entry.getKey() + 1;
+        }
     }
 
     @Override
@@ -201,24 +220,24 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         int head = headAndEpoch.get() & _32_16_BIT_MASK;
         int tail = headAndEpoch.get() | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        for(K k : data){
-            int next = hash(k);//获取区域编号
+        for(K key : data){
+            int next = hash(key);//获取区域编号
             next = (next & _16_BIT_MASK) | head;
 
             do{
                 Node<V> node;
                 if((node = circle.get(next)) == null){ // 插入新值
                     if(start != null && epoch == (headAndEpoch.get() & _16_BIT_MASK)){
-                        V v = start.apply(k);
+                        V v = start.apply(key);
                         if(v != null){
                             circle.put(next, new Node<V>(epoch, v));
-                            LOGGER.debug("Add new node = " + k);
+                            LOGGER.debug("Add new node = " + key);
                         }
                     }
                     break;
-                }else if(equalPredicate.test(k, node.getValue())){ // 更新epoch
+                }else if(equalPredicate.test(key, node.getValue())){ // 更新epoch
                     if(epoch > node.getEpoch() && !node.setEpoch(epoch)) continue;
-                    LOGGER.debug("Update old node = " + k);
+                    LOGGER.debug("Update old node = " + key);
                     break;
                 }else{ // 发生冲撞
                     next++; // 将 v 更新到该节点的后面
@@ -254,10 +273,14 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         }
     }
 
-    private int hash(Object obj){
+    /**
+     * hash函数
+     * @param obj
+     * @return
+     */
+    protected int hash(Object obj){
         return System.identityHashCode(obj);
     }
-
 }
 
 class Node<V>{

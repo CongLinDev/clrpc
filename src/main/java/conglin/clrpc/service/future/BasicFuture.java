@@ -26,7 +26,7 @@ public class BasicFuture extends AbstractFuture {
     public Object get()
         throws InterruptedException, ExecutionException, RequestException {
         try{
-            synchronizer.acquire(0);
+            SYNCHRONIZER.acquire(0);
             if(response == null) return null;
             if(response.isError()){
                 setError();
@@ -34,7 +34,7 @@ public class BasicFuture extends AbstractFuture {
             }
             return response.getResult();
         }finally{
-            synchronizer.release(0);
+            SYNCHRONIZER.release(0);
         }
     }
 
@@ -42,7 +42,7 @@ public class BasicFuture extends AbstractFuture {
     public Object get(long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException, RequestException {
         try{
-            if(synchronizer.tryAcquireNanos(0, unit.toNanos(timeout))){
+            if(SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))){
                 if(response == null) return null;
                 if(response.isError()){
                     setError();
@@ -53,20 +53,20 @@ public class BasicFuture extends AbstractFuture {
                 throw new TimeoutException("Timeout: " + request.toString());
             }
         }finally{
-            synchronizer.release(0);
+            SYNCHRONIZER.release(0);
         }
     }
 
     @Override
     public void done(Object result) {
         this.response = (BasicResponse)result;
-        synchronizer.release(0);
+        SYNCHRONIZER.release(0);
         runCallback();
     }
 
     @Override
     public void retry() {
-        synchronizer.retry();
+        SYNCHRONIZER.retry();
         sender.resendRequest(request);
         resetTime();
     }
