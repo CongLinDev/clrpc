@@ -17,32 +17,32 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
  * 使用 Zookeeper 作为服务注册
  */
 
-public class BasicServiceDiscovery implements ServiceDiscovery {
+public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicServiceDiscovery.class);
-    private final String registryAddress; //服务注册地址
-    private ZooKeeper zooKeeper;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceDiscovery.class);
+    
+    private final ZooKeeper keeper;
     private final String rootPath;
 
-    public BasicServiceDiscovery(PropertyConfigurer configurer){
+    public ZooKeeperServiceDiscovery(PropertyConfigurer configurer){
 
         String path = configurer.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         //服务注册地址
-        registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
+        String registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
         LOGGER.debug("Discovering zookeeper service address = " + registryAddress);
         //session timeout in milliseconds
         int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
 
-        zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
+        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 
     @Override
     public void discover(String serviceName, BiConsumer<String, List<String>> updateMethod) {
-        if(zooKeeper != null){
+        if(keeper != null){
             String absPath = rootPath + "/" + serviceName + "/providers";
-            ZooKeeperUtils.watchChildrenData(zooKeeper, absPath, 
+            ZooKeeperUtils.watchChildrenData(keeper, absPath, 
                 list -> updateMethod.accept(serviceName, list));
         }
     }
@@ -50,7 +50,7 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
     @Override
     public void destroy() throws DestroyFailedException {
         try{
-            ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
+            ZooKeeperUtils.disconnectZooKeeper(keeper);
             LOGGER.debug("Service discovery shuted down.");
         }catch(InterruptedException e){
             throw new DestroyFailedException(e.getMessage());
@@ -59,17 +59,17 @@ public class BasicServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public boolean isDestroyed() {
-        return !zooKeeper.getState().isAlive();
+        return !keeper.getState().isAlive();
     }
 
     @Override
     public void register(String serviceName, String data) {
         //创建服务节点
         String serviceNode = rootPath + "/" + serviceName;
-        ZooKeeperUtils.createNode(zooKeeper,serviceNode, serviceName);
+        ZooKeeperUtils.createNode(keeper,serviceNode, serviceName);
         //创建消费者节点
         String absPath = rootPath + "/" + serviceName + "/consumers/consumer";
-        ZooKeeperUtils.createNode(zooKeeper, absPath, data, CreateMode.EPHEMERAL_SEQUENTIAL);
+        ZooKeeperUtils.createNode(keeper, absPath, data, CreateMode.EPHEMERAL_SEQUENTIAL);
     }
     
 }

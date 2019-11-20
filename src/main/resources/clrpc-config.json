@@ -1,0 +1,26 @@
+{
+    "zookeeper.registry.address" : "127.0.0.1:2181",
+    "zookeeper.registry.root-path" : "/clrpc",
+    "zookeeper.discovery.address" : "127.0.0.1:2181",
+    "zookeeper.discovery.root-path" : "/clrpc",
+    "zookeeper.monitor.address" : "127.0.0.1:2181",
+    "zookeeper.monitor.root-path" : "/clrpc",
+    "zookeeper.atomicity.address" : "127.0.0.1:2181",
+    "zookeeper.atomicity.root-path" : "/clrpc",
+    "zookeeper.session.timeout" : 5000,
+
+    "provider.port" : 5100,
+    "provider.thread.boss" : 1,
+    "provider.thread.worker" : 4,
+
+    "consumer.port" : 5200,
+    "consumer.wait-time" : 5000,
+    "consumer.thread.worker" : 4,
+
+    "service.thread-pool.core-size" : 5,
+    "service.thread-pool.max-size" : 10,
+    "service.thread-pool.keep-alive" : 1000,
+    "service.thread-pool.queue" : 10,
+    "service.cache.enable" : false,
+    "service.transaction.enable" : false
+}

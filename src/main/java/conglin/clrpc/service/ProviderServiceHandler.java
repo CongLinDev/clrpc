@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.service.context.ProviderContext;
-import conglin.clrpc.service.registry.BasicServiceRegistry;
 import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ZooKeeperServiceRegistry;
 
 public class ProviderServiceHandler extends AbstractServiceHandler {
 
@@ -28,7 +28,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         super(configurer);
         this.LOCAL_ADDRESS = configurer.getOrDefault("provider.address", "127.0.0.1:5100");
         serviceObjects = new HashMap<>();
-        serviceRegistry = new BasicServiceRegistry(configurer);
+        serviceRegistry = new ZooKeeperServiceRegistry(configurer);
     }
 
     /**

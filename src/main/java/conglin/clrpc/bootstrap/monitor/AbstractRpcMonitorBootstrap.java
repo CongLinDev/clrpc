@@ -10,20 +10,20 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.Bootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
+import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements RpcMonitorBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
 
-    protected ZooKeeper zooKeeper;
+    protected ZooKeeper keeper;
     protected String rootPath;
     private final int SESSION_TIMEOUT;
 
     public AbstractRpcMonitorBootstrap() {
-        this(new YamlPropertyConfigurer());
+        this(new JsonPropertyConfigurer());
     }
 
     public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
@@ -42,14 +42,14 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
     public RpcMonitorBootstrap monitor(String zooKeeperAddress, String path) {
         // 连接ZooKeeper
         this.rootPath = path.endsWith("/") ? path + "service" : path + "/service";
-        zooKeeper = ZooKeeperUtils.connectZooKeeper(zooKeeperAddress, SESSION_TIMEOUT);
+        keeper = ZooKeeperUtils.connectZooKeeper(zooKeeperAddress, SESSION_TIMEOUT);
         LOGGER.info("Starting to monitor zookeeper whose address="+ zooKeeperAddress + "  root-path=" + path);
         return this;
     }
     
     @Override
     public RpcMonitorBootstrap monitorService() {
-        List<String> services = ZooKeeperUtils.getChildrenNode(zooKeeper, rootPath, event -> {
+        List<String> services = ZooKeeperUtils.getChildrenNode(keeper, rootPath, event -> {
             if (event.getType() == Event.EventType.NodeChildrenChanged) {
                 monitorService();
             }
@@ -65,14 +65,14 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
         String consumerPath = concretePath + "/consumers";
         
         LOGGER.info("Monitor service named " + serviceName);
-        ZooKeeperUtils.watchChildrenNodeAndData(zooKeeper, providerPath, this::handleNodeInfo);
-        ZooKeeperUtils.watchChildrenNodeAndData(zooKeeper, consumerPath, this::handleNodeInfo);
+        ZooKeeperUtils.watchChildrenNodeAndData(keeper, providerPath, this::handleNodeInfo);
+        ZooKeeperUtils.watchChildrenNodeAndData(keeper, consumerPath, this::handleNodeInfo);
         return this;
     }
 
     @Override
     public void stop() throws InterruptedException {
-        ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
+        ZooKeeperUtils.disconnectZooKeeper(keeper);
     }
 
     /**

@@ -137,9 +137,11 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     @Override
     public void forEach(Consumer<V> consumer) {
         if(consumer == null) return;
-        circle.values().forEach( node ->
-            consumer.accept(node.getValue())
-        );
+        circle.values().forEach( node -> {
+            V v = node.getValue();
+            if(v != null)
+                consumer.accept(v);
+        });
     }
 
     @Override

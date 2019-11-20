@@ -1,6 +1,6 @@
 # clrpc
 
-这是一个基于 `Java` 、 由 **Netty** 负责传输 、**Protostuff** 负责编解码的简单的RPC(远程过程调用)工具。
+这是一个基于 `Java` 、 由 **Netty** 负责传输 、默认使用 **Protostuff** 负责编解码的简单的RPC(远程过程调用)工具。
 
 服务提供者将服务发布注册到 **ZooKeeper** 上后，服务消费者请求 **ZooKeeper** 查找订阅服务后与服务提供者通信调用服务( 支持 *同步服务* 和 *异步服务* )。
 
@@ -83,13 +83,13 @@
 
 ## Config
 
-配置文件名为 `clrpc-config`，默认后缀名为 `.yml`，位置默认在项目根目录下。
+默认配置文件名为 `clrpc-config`。
 
-[默认配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml)。
+[默认配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/src/main/resources/clrpc-config.json)。
 
 ### Config File
 
-配置文件位置默认在项目根目录下，默认文件为 `clrpc-config.yml`。
+配置文件位置默认在项目 **resources** 目录下，默认格式为 **json** ，默认文件为 `clrpc-config.json`。
 
 ### Config Items
 
@@ -119,7 +119,7 @@
 
 ## Test
 
-使用 [默认配置](https://github.com/CongLinDev/clrpc/blob/master/clrpc-config.yml) 进行本机模拟RPC测试。
+使用 [默认配置文件](https://github.com/CongLinDev/clrpc/blob/master/src/main/resources/clrpc-config.json) 进行本机模拟RPC测试。
 
 1. 操作系统：Windows 10 (18362.239) 企业版
 2. 处理器：Inter(R) Core(TM) i5-6300HQ CPU @ 2.30GHz

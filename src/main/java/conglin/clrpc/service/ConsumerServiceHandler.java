@@ -16,8 +16,8 @@ import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.discovery.BasicServiceDiscovery;
 import conglin.clrpc.service.discovery.ServiceDiscovery;
+import conglin.clrpc.service.discovery.ZooKeeperServiceDiscovery;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
@@ -43,7 +43,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         rpcFutures = new ConcurrentHashMap<>();
-        serviceDiscovery = new BasicServiceDiscovery(configurer);
+        serviceDiscovery = new ZooKeeperServiceDiscovery(configurer);
     }
 
     /**

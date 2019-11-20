@@ -19,14 +19,14 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
  * 在该路径下有两个结点 /providers 和 /consumers
  * 其子节点分别记录服务提供者的IP和服务消费者的IP
  */
-public class BasicServiceRegistry implements ServiceRegistry {
+public class ZooKeeperServiceRegistry implements ServiceRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicServiceRegistry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceRegistry.class);
 
     private final String rootPath; //zookeeper根地址
-    private final ZooKeeper zooKeeper;
+    private final ZooKeeper keeper;
 
-    public BasicServiceRegistry(PropertyConfigurer configurer) {
+    public ZooKeeperServiceRegistry(PropertyConfigurer configurer) {
 
         String path = configurer.getOrDefault("zookeeper.registry.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
@@ -34,19 +34,19 @@ public class BasicServiceRegistry implements ServiceRegistry {
         // 服务注册地址
         String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "127.0.0.1:2181");
         int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
-        zooKeeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
+        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 
     @Override
     public void register(String serviceName, String data){
-        if (zooKeeper != null) {
+        if (keeper != null) {
             //创建服务节点
             String serviceNode = rootPath + "/" + serviceName;
-            ZooKeeperUtils.createNode(zooKeeper,serviceNode, serviceName);
+            ZooKeeperUtils.createNode(keeper,serviceNode, serviceName);
 
             //创建服务提供者节点
             String providerNode = rootPath + "/" + serviceName + "/providers/provider";
-            ZooKeeperUtils.createNode(zooKeeper, providerNode, data, CreateMode.EPHEMERAL_SEQUENTIAL);
+            ZooKeeperUtils.createNode(keeper, providerNode, data, CreateMode.EPHEMERAL_SEQUENTIAL);
 
             LOGGER.debug("Create a service provider which provides " + serviceName);
         }
@@ -55,7 +55,7 @@ public class BasicServiceRegistry implements ServiceRegistry {
     @Override
     public void destroy() throws DestroyFailedException {
         try{
-            ZooKeeperUtils.disconnectZooKeeper(zooKeeper);
+            ZooKeeperUtils.disconnectZooKeeper(keeper);
             LOGGER.debug("Service registry shuted down.");
         }catch(InterruptedException e){
             LOGGER.error(e.getMessage());
@@ -65,6 +65,6 @@ public class BasicServiceRegistry implements ServiceRegistry {
 
     @Override
     public boolean isDestroyed() {
-        return !zooKeeper.getState().isAlive();
+        return !keeper.getState().isAlive();
     }
 }

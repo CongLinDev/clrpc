@@ -4,7 +4,7 @@
 
   <groupId>conglin</groupId>
   <artifactId>clrpc</artifactId>
-  <version>0.7.9-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>clrpc</name>
@@ -30,11 +30,11 @@
       <version>3.5.5</version>
     </dependency>
 
-    <!-- yaml -->
+    <!-- fastjson -->
     <dependency>
-      <groupId>org.yaml</groupId>
-      <artifactId>snakeyaml</artifactId>
-      <version>1.24</version>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.62</version>
     </dependency>
 
     <!-- protostuff -->

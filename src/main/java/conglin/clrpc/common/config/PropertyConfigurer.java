@@ -16,6 +16,18 @@ public interface PropertyConfigurer {
 
     /**
      * 获取属性值
+     * 若不存在返回null
+     * @param <T>
+     * @param key
+     * @param clazz
+     * @return
+     */
+    default <T> T get(String key, Class<T> clazz) {
+        return (T) clazz.cast(get(key));
+    }
+
+    /**
+     * 获取属性值
      * 若不存在返回默认值
      * @param <T> 
      * @param key 键值

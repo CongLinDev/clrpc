@@ -1,7 +1,7 @@
 package conglin.clrpc.bootstrap;
 
+import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.config.YamlPropertyConfigurer;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.cache.caffeine.CaffeineCacheManager;
 import conglin.clrpc.transfer.message.BasicRequest;
@@ -15,11 +15,11 @@ abstract public class Bootstrap{
     protected final PropertyConfigurer CONFIGURER;
 
     public Bootstrap() {
-        this(new YamlPropertyConfigurer());
+        this(new JsonPropertyConfigurer());
     }
 
     public Bootstrap(String configFileName) {
-        this(new YamlPropertyConfigurer(configFileName));
+        this(new JsonPropertyConfigurer(configFileName));
     }
 
     public Bootstrap(PropertyConfigurer configurer){
