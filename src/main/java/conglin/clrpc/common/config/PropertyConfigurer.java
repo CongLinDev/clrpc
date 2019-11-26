@@ -66,4 +66,27 @@ public interface PropertyConfigurer {
             return t;
         }
     }
+
+    /**
+     * 添加配置项
+     * @param key
+     * @param value
+     * @return 若配置项已经存在则覆盖并返回原来的值
+     */
+    Object put(String key, Object value);
+
+    /**
+     * 添加配置项
+     * @param key
+     * @param value
+     * @return 若配置项已经存在则不覆盖并返回原来的值
+     */
+    default Object putIfAbsent(String key, Object value) {
+        Object v = get(key);
+        if (v == null) {
+            v = put(key, value);
+        }
+
+        return v;
+    }
 }
