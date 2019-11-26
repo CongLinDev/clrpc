@@ -60,18 +60,13 @@ public class RpcProviderBootstrap extends Bootstrap {
 
     /**
      * 保存即将发布的服务
-     * @param interfaceClass   接口类
-     * @param serviceBeanClass 实现类
+     * @param <T>
+     * @param interfaceClass    服务接口类
+     * @param serviceBeanClass  服务实现类，该类必须提供一个无参构造函数
      * @return
      */
-    public RpcProviderBootstrap publish(Class<?> interfaceClass, Class<?> serviceBeanClass) {
-        if (!interfaceClass.isAssignableFrom(serviceBeanClass)) {
-            LOGGER.error("Service is not permitted. Because "
-                 + interfaceClass.getName() + "is not assignableFrom " + serviceBeanClass.getName());
-            return this;
-        } else {
-            return publish(interfaceClass.getSimpleName(), serviceBeanClass);
-        }
+    public <T> RpcProviderBootstrap publish(Class<T> interfaceClass, Class<? extends T> serviceBeanClass) {
+        return publish(interfaceClass.getSimpleName(), serviceBeanClass);
     }
 
     /**
@@ -92,8 +87,8 @@ public class RpcProviderBootstrap extends Bootstrap {
 
     /**
      * 保存即将发布的服务
-     * @param serviceName
-     * @param serviceBeanClass
+     * @param serviceName 服务名
+     * @param serviceBeanClass 服务实现类，该类必须提供一个无参构造函数
      * @return
      */
     public RpcProviderBootstrap publish(String serviceName, Class<?> serviceBeanClass) {
@@ -113,8 +108,8 @@ public class RpcProviderBootstrap extends Bootstrap {
 
     /**
      * 保存即将发布的服务
-     * @param serviceName
-     * @param serviceBean
+     * @param serviceName 服务名
+     * @param serviceBean 服务实现对象
      * @return
      */
     public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {

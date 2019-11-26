@@ -14,8 +14,7 @@ public class SyncConsumerTest1{
 
         HelloService helloService = bootstrap.subscribe(HelloService.class);
         String s = helloService.hello();
-        String x = helloService.hello();
-        System.out.println(s + x);
+        System.out.println(s);
         try{
             bootstrap.stop();
         }catch(InterruptedException e){
