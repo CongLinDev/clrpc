@@ -4,11 +4,25 @@
 
   <groupId>conglin</groupId>
   <artifactId>clrpc</artifactId>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.8.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>clrpc</name>
   <url>https://github.com/CongLinDev/clrpc</url>
+
+  <developers>
+    <developer>
+      <name>conglin</name>
+      <email>conglindev@live.com</email>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+        <name>The Apache License</name>
+        <url>http://www.apache.org/licenses/</url>
+    </license>
+  </licenses>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

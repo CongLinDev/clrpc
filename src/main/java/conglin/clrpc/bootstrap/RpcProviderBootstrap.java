@@ -155,7 +155,7 @@ public class RpcProviderBootstrap extends Bootstrap {
     public void start(RpcProviderOption option){
         ProviderContext context = new BasicProviderContext();
         // 设置本地地址
-        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));
+        context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
         // 设置cache管理器

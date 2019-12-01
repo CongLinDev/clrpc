@@ -43,7 +43,7 @@ public class ProviderTransfer{
             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         try{
-            InetSocketAddress address = IPAddressUtils.splitHostnameAndPortResolved(context.getLocalAddress());
+            InetSocketAddress address = IPAddressUtils.splitHostAddressAndPortResolved(context.getLocalAddress());
             ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
             LOGGER.info("Provider started on {}", address);

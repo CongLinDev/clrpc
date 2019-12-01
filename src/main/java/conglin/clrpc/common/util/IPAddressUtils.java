@@ -40,11 +40,11 @@ public class IPAddressUtils{
      * @param port
      * @return
      */
-    public static String getHostnameAndPort(int port) {
+    public static String getHostAddressAndPort(int port) {
         return LOCAL_HOST_ADDRESS + ":" + port;
     }
 
-    public static InetSocketAddress splitHostnameAndPortResolved(String data) throws UnknownHostException{
+    public static InetSocketAddress splitHostAddressAndPortResolved(String data) throws UnknownHostException{
         String[] hostnameAndPort = data.trim().split(":");
         if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
         return new InetSocketAddress(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
@@ -56,7 +56,7 @@ public class IPAddressUtils{
      * @return
      * @throws UnknownHostException
      */
-    public static InetSocketAddress splitHostnameAndPort(String data) throws UnknownHostException {
+    public static InetSocketAddress splitHostAddressAndPort(String data) throws UnknownHostException {
         String[] hostnameAndPort = data.trim().split(":");
         if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
         return InetSocketAddress.createUnresolved(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
@@ -71,7 +71,7 @@ public class IPAddressUtils{
         Set<InetSocketAddress> set = new HashSet<>(data.size());
         for(String s : data){
             try{
-                InetSocketAddress address = splitHostnameAndPort(s);
+                InetSocketAddress address = splitHostAddressAndPort(s);
                 set.add(address);
             }catch(UnknownHostException e){
                 LOGGER.error(e.getMessage());
@@ -88,7 +88,7 @@ public class IPAddressUtils{
      */
     public static InetSocketAddress splitHostnameAndPortSilently(String data){
         try{
-            return splitHostnameAndPort(data);
+            return splitHostAddressAndPort(data);
         }catch(UnknownHostException e){
             LOGGER.error("Error address = " + data + " And it can not be converted");
             return null;

@@ -19,18 +19,19 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     }
 
     public JsonPropertyConfigurer(String filename) {
-        this(PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename));
+        this(resolveFile(filename));
     }
 
-    public JsonPropertyConfigurer(InputStream inputStream){
-        String configString = "";
-        try {
-            configString = new String(inputStream.readAllBytes());
-            inputStream.close(); // 关闭流
+    public JsonPropertyConfigurer(byte[] configContent) {
+        CONFIG_HOLDER = JSONObject.parseObject(new String(configContent));
+    }
+
+    private static byte[] resolveFile(String filename) {
+        try(InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
+            return inputStream.readAllBytes();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-        } finally {
-            CONFIG_HOLDER = JSONObject.parseObject(configString);
+            LOGGER.error("Resolve File [" + filename + "] failed. "  + e.getMessage());
+            return new byte[0];
         }
     }
 

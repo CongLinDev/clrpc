@@ -127,7 +127,7 @@ public class RpcConsumerBootstrap extends Bootstrap {
     public void start(RpcConsumerOption option){
         ConsumerContext context = new BasicConsumerContext();
 
-        context.setLocalAddress(IPAddressUtils.getHostnameAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
+        context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
         // 设置cache管理器
