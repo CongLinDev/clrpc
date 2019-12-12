@@ -52,7 +52,7 @@ public interface Chain<T> {
      * 从 {@code this} 对象开始到尾部节点，进行批处理
      * @param consumer
      */
-    default void all(Consumer<Chain<T>> consumer){
+    default void forEach(Consumer<Chain<T>> consumer){
         Chain<T> obj = this;
         while(obj != null){
             consumer.accept(obj);

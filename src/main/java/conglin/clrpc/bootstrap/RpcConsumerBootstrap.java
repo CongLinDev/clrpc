@@ -54,7 +54,7 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     public RpcConsumerBootstrap(PropertyConfigurer configurer){
         super(configurer);
-        SERVICE_HANDLER = new ConsumerServiceHandler(configurer);
+        SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
         CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
@@ -106,11 +106,7 @@ public class RpcConsumerBootstrap extends Bootstrap {
      * @return
      */
     public TransactionProxy subscribeAsync(){
-        if(CONFIGURER.getOrDefault("service.transaction.enable", false)){
-            return SERVICE_HANDLER.getTransactionProxy();
-        }else{
-            throw new UnsupportedOperationException();
-        }
+        return SERVICE_HANDLER.getTransactionProxy();
     }
 
     /**

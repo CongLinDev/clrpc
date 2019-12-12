@@ -113,7 +113,7 @@ public class BasicConsumerContext implements ConsumerContext {
     }
 
 
-    BiFunction<String, Object, Channel> providerChooser;
+    protected BiFunction<String, Object, Channel> providerChooser;
 
     @Override
     public BiFunction<String, Object, Channel> getProviderChooser() {

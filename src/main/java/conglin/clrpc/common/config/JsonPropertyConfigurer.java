@@ -44,4 +44,9 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     public Object put(String key, Object value){
         return CONFIG_HOLDER.put(key, value);
     }
+
+    @Override
+    public String toString() {
+        return CONFIG_HOLDER.toJSONString();
+    }
 }

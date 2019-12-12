@@ -40,6 +40,10 @@ abstract public class AbstractConsumerServiceExecutor
         });
     }
 
+    /**
+     * 执行具体方法
+     * @param response
+     */
     abstract protected void doExecute(BasicResponse response);
 
     @Override
@@ -97,6 +101,11 @@ abstract public class AbstractConsumerServiceExecutor
      */
     abstract protected void doPutFuture(Long key, RpcFuture future);
 
+    /**
+     * 保存Future对象
+     * @param request
+     * @return
+     */
     protected RpcFuture putFuture(BasicRequest request){
         
         RpcFuture future = new BasicFuture(this, request);

@@ -12,7 +12,7 @@
     "provider.port" : 5100,
     "provider.thread.boss" : 1,
     "provider.thread.worker" : 4,
-
+    
     "consumer.port" : 5200,
     "consumer.wait-time" : 5000,
     "consumer.thread.worker" : 4,
@@ -21,6 +21,5 @@
     "service.thread-pool.max-size" : 10,
     "service.thread-pool.keep-alive" : 1000,
     "service.thread-pool.queue" : 10,
-    "service.cache.enable" : false,
-    "service.transaction.enable" : false
+    "service.cache.enable" : false
 }

@@ -25,14 +25,10 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
             .addLast("Common Decoder", new CommonDecoder(context.getSerializationHandler()))
             .addLast("BasicResponse Encoder", new BasicResponseEncoder(context.getSerializationHandler()))
             .addLast("BasicRequest ChannelHandler", 
-                new BasicRequestChannelHandler(new BasicProviderServiceExecutor(context)));
-        
-        // 事务
-        if(context.getPropertyConfigurer().getOrDefault("service.transaction.enable", false)){
-            pipeline.addLast("TransactionRequest ChannelHandler", 
+                new BasicRequestChannelHandler(new BasicProviderServiceExecutor(context)))
+            .addLast("TransactionRequest ChannelHandler", 
                 new TransactionRequestChannelHandler(new ZooKeeperProviderServiceExecutor(context)));
-        }
-
+        
         // you can add more handlers
     }
 
