@@ -103,7 +103,7 @@
 | zookeeper.monitor.root-path | String | YES | /clrpc | 服务监视根节点 |
 | zookeeper.atomicity.address | String | YES | 127.0.0.1:2181 | 原子性服务地址 |
 | zookeeper.atomicity.root-path | String | YES | /clrpc | 原子性服务根节点 |
-| zookeeper.session.timeout | Long | YES | 5000 | 超时时间，单位为毫秒 |
+| zookeeper.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | provider.port | Integer | YES | 5100 | 服务提供者端口号 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |

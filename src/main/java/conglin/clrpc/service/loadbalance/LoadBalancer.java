@@ -15,13 +15,33 @@ import java.util.function.Predicate;
 public interface LoadBalancer<T, K, V> {
 
     /**
-     * 使用列表更新数据
+     * 使用集合更新数据
      * @param type
      * @param data
      * @param start 添加V的工作
      * @param stop 移除的V的收尾工作
      */
     void update(T type, Collection<K> data, Function<K, V> start, Consumer<V> stop);
+
+    /**
+     * 使用集合更新数据
+     * @param type
+     * @param data
+     * @param start 添加V的工作
+     */
+    default void update(T type, Collection<K> data, Function<K, V> start){
+        update(type, data, start, null);
+    }
+
+    /**
+     * 使用集合更新数据
+     * @param type
+     * @param data
+     * @param stop 移除的V的收尾工作
+     */
+    default void update(T type, Collection<K> data, Consumer<V> stop){
+        update(type, data, null, stop);
+    }
 
     /**
      * 根据指定算法返回对象

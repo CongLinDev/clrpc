@@ -34,7 +34,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         // 服务注册地址
         String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "127.0.0.1:2181");
         int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
-        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
+        keeper = ZooKeeperUtils.connectNewZooKeeper(registryAddress, sessionTimeout);
     }
 
     @Override
@@ -54,13 +54,8 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
 
     @Override
     public void destroy() throws DestroyFailedException {
-        try{
-            ZooKeeperUtils.disconnectZooKeeper(keeper);
-            LOGGER.debug("Service registry shuted down.");
-        }catch(InterruptedException e){
-            LOGGER.error(e.getMessage());
-            throw new DestroyFailedException(e.getMessage());
-        }
+        ZooKeeperUtils.disconnectZooKeeper(keeper);
+        LOGGER.debug("Service registry shuted down.");
     }
 
     @Override

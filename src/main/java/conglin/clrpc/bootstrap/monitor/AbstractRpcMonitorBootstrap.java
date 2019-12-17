@@ -42,7 +42,7 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
     public RpcMonitorBootstrap monitor(String zooKeeperAddress, String path) {
         // 连接ZooKeeper
         this.rootPath = path.endsWith("/") ? path + "service" : path + "/service";
-        keeper = ZooKeeperUtils.connectZooKeeper(zooKeeperAddress, SESSION_TIMEOUT);
+        keeper = ZooKeeperUtils.connectNewZooKeeper(zooKeeperAddress, SESSION_TIMEOUT);
         LOGGER.info("Starting to monitor zookeeper whose address="+ zooKeeperAddress + "  root-path=" + path);
         return this;
     }

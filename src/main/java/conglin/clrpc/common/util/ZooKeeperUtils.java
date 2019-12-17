@@ -12,6 +12,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event;
+import org.apache.zookeeper.Watcher.WatcherType;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -22,6 +23,37 @@ public class ZooKeeperUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperUtils.class);
 
+    private static final Map<String, ZooKeeper> ZOOKEEPER_CONNECTION_POOL = new HashMap<>();
+
+    private static final int DEFAULT_SESSION_TIMEOUT = 5000; // ms
+
+    /**
+     * 复用ZooKeeper连接
+     * 
+     * @param address
+     * @return
+     */
+    public static ZooKeeper connectZooKeeper(String address) {
+        return connectZooKeeper(address, DEFAULT_SESSION_TIMEOUT);
+    }
+
+    /**
+     * 复用ZooKeeper连接
+     * 
+     * @param address
+     * @param sessionTimeout
+     * @return
+     */
+    public static ZooKeeper connectZooKeeper(String address, int sessionTimeout) {
+        ZooKeeper keeper = null;
+        String key = address + " " + sessionTimeout;
+        if ((keeper = ZOOKEEPER_CONNECTION_POOL.get(key)) == null) {
+            keeper = connectNewZooKeeper(address, sessionTimeout);
+            ZOOKEEPER_CONNECTION_POOL.put(address, keeper);
+        }
+        return keeper;
+    }
+
     /**
      * 同步连接 ZooKeeper
      * 
@@ -29,7 +61,7 @@ public class ZooKeeperUtils {
      * @param sessionTimeout 超时时间
      * @return
      */
-    public static ZooKeeper connectZooKeeper(String address, int sessionTimeout) {
+    public static ZooKeeper connectNewZooKeeper(String address, int sessionTimeout) {
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
         ZooKeeper keeper = null;
@@ -52,12 +84,23 @@ public class ZooKeeperUtils {
      * 关闭与ZooKeeper的连接
      * 
      * @param keeper
-     * @throws InterruptedException
      */
-    public static void disconnectZooKeeper(ZooKeeper keeper) throws InterruptedException {
+    public static void disconnectZooKeeper(final ZooKeeper keeper) {
         if (keeper != null) {
-            keeper.close();
+            try {
+                keeper.close();
+                LOGGER.debug("ZooKeeper session close success.");
+            } catch (InterruptedException e) {
+                LOGGER.error("ZooKeeper session close failed.", e);
+            }
         }
+    }
+
+    /**
+     * 关闭 ZooKeeper 连接池
+     */
+    public static void disconnectAllZooKeeper() {
+        ZOOKEEPER_CONNECTION_POOL.values().forEach(ZooKeeperUtils::disconnectZooKeeper);
     }
 
     /**
@@ -159,16 +202,19 @@ public class ZooKeeperUtils {
 
     /**
      * 监视节点
+     * 
      * @param keeper
      * @param path
      * @param watcher
      * @return
-     * @throws KeeperException
-     * @throws InterruptedException
      */
-    public static String watchNode(final ZooKeeper keeper, String path, Watcher watcher) 
-        throws KeeperException, InterruptedException {
-            return new String(keeper.getData(path, watcher, null));        
+    public static String watchNode(final ZooKeeper keeper, String path, Watcher watcher) {
+        try {
+            return new String(keeper.getData(path, watcher, null));
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.debug("ZooKeeper watch node failed.", e);
+        }
+        return null;
     }
 
     /**
@@ -191,21 +237,15 @@ public class ZooKeeperUtils {
      * @return
      */
     public static List<String> watchChildrenData(final ZooKeeper keeper, String path, Consumer<List<String>> consumer) {
-        try {
-            List<String> nodeList = getChildrenNode(keeper, path, event -> {
-                if (event.getType() == Event.EventType.NodeChildrenChanged) {
-                    watchChildrenData(keeper, path, consumer);
-                }
-            });
-            List<String> data = getChildrenData(keeper, path, nodeList);
-            if (consumer != null)
-                consumer.accept(data);
-            return data;
-
-        } catch (KeeperException | InterruptedException e) {
-            LOGGER.error(e.getMessage());
-        }
-        return null;
+        List<String> nodeList = getChildrenNode(keeper, path, event -> {
+            if (event.getType() == Event.EventType.NodeChildrenChanged) {
+                watchChildrenData(keeper, path, consumer);
+            }
+        });
+        List<String> data = getChildrenData(keeper, path, nodeList);
+        if (consumer != null)
+            consumer.accept(data);
+        return data;
     }
 
     /**
@@ -229,20 +269,58 @@ public class ZooKeeperUtils {
      */
     public static Map<String, String> watchChildrenNodeAndData(final ZooKeeper keeper, String path,
             Consumer<Map<String, String>> consumer) {
+        List<String> nodeList = getChildrenNode(keeper, path, event -> {
+            if (event.getType() == Event.EventType.NodeChildrenChanged) {
+                watchChildrenNodeAndData(keeper, path, consumer);
+            }
+        });
+        Map<String, String> nodeAndData = getChildrenNodeAndData(keeper, path, nodeList);
+        if (consumer != null)
+            consumer.accept(nodeAndData);
+        return nodeAndData;
+    }
+
+    /**
+     * 移除给定路径下的给定类型的指定Watcher
+     * 
+     * @param keeper
+     * @param path
+     * @param watcher     移除的watcher
+     * @param watcherType 移除的watcher类型
+     */
+    public static void removeWatcher(final ZooKeeper keeper, String path, Watcher watcher, WatcherType watcherType) {
         try {
-            List<String> nodeList = getChildrenNode(keeper, path, event -> {
-                if (event.getType() == Event.EventType.NodeChildrenChanged) {
-                    watchChildrenNodeAndData(keeper, path, consumer);
-                }
-            });
-            Map<String, String> nodeAndData = getChildrenNodeAndData(keeper, path, nodeList);
-            if (consumer != null)
-                consumer.accept(nodeAndData);
-            return nodeAndData;
+            keeper.removeWatches(path, watcher, watcherType, true);
+            LOGGER.debug("ZooKeeper remove watcher of path=" + path);
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("ZooKeeper remove watcher of path=" + path + " failed.", e);
         }
-        return null;
+    }
+
+    /**
+     * 移除给定路径下的所有类型的Watcher
+     * 
+     * @param keeper
+     * @param path
+     */
+    public static void removeAllWatchers(final ZooKeeper keeper, String path) {
+        removeAllWatchers(keeper, path, WatcherType.Any);
+    }
+
+    /**
+     * 移除给定路径下的指定类型的Watcher
+     * 
+     * @param keeper
+     * @param path
+     * @param watcherType 移除的watcher类型
+     */
+    public static void removeAllWatchers(final ZooKeeper keeper, String path, WatcherType watcherType) {
+        try {
+            keeper.removeAllWatches(path, watcherType, true);
+            LOGGER.debug("ZooKeeper remove all watchers of path=" + path);
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.error("ZooKeeper remove all watchers of path=" + path + " failed.", e);
+        }
     }
 
     /**
@@ -252,17 +330,19 @@ public class ZooKeeperUtils {
      * @param path
      * @param nodeList
      * @return
-     * @throws KeeperException
-     * @throws InterruptedException
      */
     public static Map<String, String> getChildrenNodeAndData(final ZooKeeper keeper, String path,
-            List<String> nodeList) throws KeeperException, InterruptedException {
+            List<String> nodeList) {
         Map<String, String> dataMap = new HashMap<>(nodeList.size());
 
         for (String node : nodeList) {
             String nodePath = path + "/" + node;
-            String nodeData = new String(keeper.getData(nodePath, false, null));
-            dataMap.put(nodePath, nodeData);
+            try {
+                String nodeData = new String(keeper.getData(nodePath, false, null));
+                dataMap.put(nodePath, nodeData);
+            } catch (KeeperException | InterruptedException e) {
+                LOGGER.debug("ZooKeeper get node Data path=" + nodePath + " failed.", e);
+            }
         }
         return dataMap;
     }
@@ -274,17 +354,18 @@ public class ZooKeeperUtils {
      * @param path
      * @param nodeList
      * @return
-     * @throws KeeperException
-     * @throws InterruptedException
      */
-    public static List<String> getChildrenData(final ZooKeeper keeper, String path, List<String> nodeList)
-            throws KeeperException, InterruptedException {
+    public static List<String> getChildrenData(final ZooKeeper keeper, String path, List<String> nodeList) {
         List<String> dataList = new ArrayList<>(nodeList.size());
 
         for (String node : nodeList) {
             String nodePath = path + "/" + node;
-            String nodeData = new String(keeper.getData(nodePath, false, null));
-            dataList.add(nodeData);
+            try {
+                String nodeData = new String(keeper.getData(nodePath, false, null));
+                dataList.add(nodeData);
+            } catch (KeeperException | InterruptedException e) {
+                LOGGER.debug("ZooKeeper get node data path=" + nodePath + " failed.", e);
+            }
         }
         return dataList;
     }
@@ -298,13 +379,12 @@ public class ZooKeeperUtils {
      * @return
      */
     public static List<String> getChildrenNode(final ZooKeeper keeper, String path, Watcher watcher) {
-
         try {
             return keeper.getChildren(path, watcher);
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.error(e.getMessage());
-            return new ArrayList<>();
+            LOGGER.error("ZooKeeper get children node data path=" + path + " failed.", e);
         }
+        return new ArrayList<>();
     }
 
     /**
@@ -312,13 +392,10 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path
-     * @param newData  新的值
+     * @param newData 新的值
      * @return
-     * @throws KeeperException
-     * @throws InterruptedException
      */
-    public static String setNodeData(final ZooKeeper keeper, String path, String newData)
-            throws KeeperException, InterruptedException {
+    public static String setNodeData(final ZooKeeper keeper, String path, String newData) {
         return setNodeData(keeper, path, newData, -1);
     }
 
@@ -327,20 +404,23 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path
-     * @param newData  新的值
-     * @param version  版本号
+     * @param newData 新的值
+     * @param version 版本号
      * @return
-     * @throws KeeperException
-     * @throws InterruptedException
      */
-    public static String setNodeData(final ZooKeeper keeper, String path, String newData, int version)
-            throws KeeperException, InterruptedException {
-        keeper.setData(path, newData.getBytes(), version);
-        return newData;
+    public static String setNodeData(final ZooKeeper keeper, String path, String newData, int version) {
+        try {
+            keeper.setData(path, newData.getBytes(), version);
+            return newData;
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.error("ZooKeeper set node data path=" + path + " failed.", e);
+        }
+        return null;
     }
 
     /**
      * CAS替换节点的值
+     * 
      * @param keeper
      * @param path
      * @param oldData
@@ -352,9 +432,8 @@ public class ZooKeeperUtils {
             Stat currentNodeStat = new Stat();
             String currentData = new String(keeper.getData(path, false, currentNodeStat));
             int currentNodeVersion = currentNodeStat.getVersion();
-            return currentData.equals(oldData) &&
-                (currentNodeVersion + 1) ==
-                    keeper.setData(path, newData.getBytes(), currentNodeVersion).getVersion();
+            return currentData.equals(oldData) && (currentNodeVersion + 1) == keeper
+                    .setData(path, newData.getBytes(), currentNodeVersion).getVersion();
         } catch (KeeperException | InterruptedException e) {
             LOGGER.error(e.getMessage());
             return false;

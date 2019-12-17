@@ -42,8 +42,8 @@ public interface TransactionProxy{
     RpcFuture commit() throws TransactionException;
 
     /**
-     * 回滚事务
+     * 中止事务
      * @throws TransactionException
      */
-    void rollback() throws TransactionException;
+    void abort() throws TransactionException;
 }

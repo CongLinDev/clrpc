@@ -35,7 +35,6 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     public TransactionProxy begin() throws TransactionException {
         future = new TransactionFuture();
         
-        helper.clear(currentTransactionId); // 清除上个事务的记录
         currentTransactionId = identifierGenerator.generate(); // 生成一个新的ID
         helper.begin(currentTransactionId); // 开启事务
         return this;
@@ -74,8 +73,8 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     }
 
 	@Override
-	public void rollback() throws TransactionException {
-		helper.rollback(currentTransactionId);
+	public void abort() throws TransactionException {
+		helper.abort(currentTransactionId);
     }
     
     /**
