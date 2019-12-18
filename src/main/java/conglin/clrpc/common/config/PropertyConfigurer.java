@@ -7,16 +7,16 @@ public interface PropertyConfigurer {
     String DEFAULT_CONFIG_FILENAME = "clrpc-config";
 
     /**
-     * 获取属性值
-     * 若不存在返回null
+     * 获取属性值 若不存在返回null
+     * 
      * @param key 键值
      * @return
      */
     Object get(String key);
 
     /**
-     * 获取属性值
-     * 若不存在返回null
+     * 获取属性值 若不存在返回null
+     * 
      * @param <T>
      * @param key
      * @param clazz
@@ -27,48 +27,50 @@ public interface PropertyConfigurer {
     }
 
     /**
-     * 获取属性值
-     * 若不存在返回默认值
-     * @param <T> 
+     * 获取属性值 若不存在返回默认值
+     * 
+     * @param <T>
      * @param key 键值
-     * @param t 默认值
+     * @param t   默认值
      * @return
      */
     @SuppressWarnings("unchecked")
     default <T> T getOrDefault(String key, T t) {
         Object obj = get(key);
-        if(obj == null) return t;
+        if (obj == null)
+            return t;
 
-        try{
+        try {
             return (T) t.getClass().cast(obj);
-        }catch(ClassCastException exception){
+        } catch (ClassCastException exception) {
             return t;
         }
     }
 
     /**
-     * 获取某个键值的值
-     * 若满足一定条件,返回搜索值(有可能为默认值)
-     * 否则返回默认值
+     * 获取某个键值的值 若满足一定条件,返回搜索值(有可能为默认值) 否则返回默认值
+     * 
      * @param <T>
      * @param key
      * @param t
      * @param predicate
      * @return
      */
-    default <T> T getOrDefault(String key, T t, Predicate<T> predicate){
+    default <T> T getOrDefault(String key, T t, Predicate<T> predicate) {
         T value = getOrDefault(key, t);
-        if(predicate == null) return value;
-        
-        if(predicate.test(value)){
+        if (predicate == null)
             return value;
-        }else{
+
+        if (predicate.test(value)) {
+            return value;
+        } else {
             return t;
         }
     }
 
     /**
      * 添加配置项
+     * 
      * @param key
      * @param value
      * @return 若配置项已经存在则覆盖并返回原来的值
@@ -77,6 +79,7 @@ public interface PropertyConfigurer {
 
     /**
      * 添加配置项
+     * 
      * @param key
      * @param value
      * @return 若配置项已经存在则不覆盖并返回原来的值

@@ -1,8 +1,9 @@
 package conglin.clrpc.common.identifier;
 
-import conglin.clrpc.common.Destroyable;
-
-public interface IdentifierGenerator extends Destroyable {
+/**
+ * ID 生成器
+ */
+public interface IdentifierGenerator {
 
     /**
      * 生成一个标识符

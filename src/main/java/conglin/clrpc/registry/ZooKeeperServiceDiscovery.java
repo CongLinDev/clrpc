@@ -1,4 +1,4 @@
-package conglin.clrpc.service.discovery;
+package conglin.clrpc.registry;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 /**
@@ -32,9 +31,9 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         String registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
         LOGGER.debug("Discovering zookeeper service address = " + registryAddress);
         // session timeout in milliseconds
-        int sessionTimeout = configurer.getOrDefault("zookeeper.session.timeout", 5000);
+        int sessionTimeout = configurer.getOrDefault("zookeeper.discovery.session-timeout", 5000);
 
-        keeper = ZooKeeperUtils.connectNewZooKeeper(registryAddress, sessionTimeout);
+        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
     }
 
     @Override
@@ -43,18 +42,6 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
             String absPath = rootPath + "/" + serviceName + "/providers";
             ZooKeeperUtils.watchChildrenData(keeper, absPath, list -> updateMethod.accept(serviceName, list));
         }
-    }
-
-    @Override
-    public void destroy() throws DestroyFailedException {
-        ZooKeeperUtils.disconnectZooKeeper(keeper);
-        LOGGER.debug("Service discovery shuted down.");
-
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return !keeper.getState().isAlive();
     }
 
     @Override

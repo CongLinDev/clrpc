@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.service.cache.CacheManager;
@@ -32,41 +31,42 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
     }
 
     public AbstractProviderServiceExecutor(ExecutorService executor,
-            CacheManager<BasicRequest, BasicResponse> cacheManager){
+            CacheManager<BasicRequest, BasicResponse> cacheManager) {
         this.executor = executor;
         this.cacheManager = cacheManager;
     }
 
-
     /**
      * 处理请求
+     * 
      * @param request
      * @param response
      * @return 请求处理是否完成
      * @throws UnsupportedServiceException 此Provider不支持该服务时抛出
-     * @throws ServiceExecutionException 执行服务出错时抛出
+     * @throws ServiceExecutionException   执行服务出错时抛出
      */
     abstract protected boolean doExecute(BasicRequest request, BasicResponse response)
-        throws UnsupportedServiceException, ServiceExecutionException;
+            throws UnsupportedServiceException, ServiceExecutionException;
 
     @Override
     public void execute(BasicRequest t) {
         LOGGER.debug("Receive request " + t.getRequestId());
-        
-        executor.submit(()->{
+
+        executor.submit(() -> {
             BasicResponse response = null;
             boolean executeCompletely = false;
-            if ((response = getCache(t)) == null){
+            if ((response = getCache(t)) == null) {
                 response = new BasicResponse();
                 response.setRequestId(t.getRequestId());
 
-                try{
+                try {
                     executeCompletely = doExecute(t, response);
 
                     // save result
-                    if(executeCompletely) putCache(t, response);
+                    if (executeCompletely)
+                        putCache(t, response);
 
-                }catch(UnsupportedServiceException | ServiceExecutionException e){
+                } catch (UnsupportedServiceException | ServiceExecutionException e) {
                     LOGGER.error("Request failed: " + e.getMessage());
                     response.signError();
                     response.setResult(e);
@@ -76,15 +76,17 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
             } else { // fetch from cache
                 executeCompletely = true;
             }
-            if(executeCompletely) sendResponse(response);
+            if (executeCompletely)
+                sendResponse(response);
         });
     }
 
     /**
      * 绑定通道
+     * 
      * @param channel
      */
-    public void bindChannel(Channel channel){
+    public void bindChannel(Channel channel) {
         this.channel = channel;
     }
 
@@ -100,7 +102,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
         LOGGER.debug("Fetching cached response. Request id = " + request.getRequestId());
         return cacheManager.get(request);
     }
-    
+
     /**
      * 将可缓存的数据放入缓存
      * 
@@ -116,28 +118,18 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
 
     /**
      * 发送回复
+     * 
      * @param response
      */
     protected void sendResponse(BasicResponse response) {
-        if(response == null) return;
+        if (response == null)
+            return;
         channel.writeAndFlush(response).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         LOGGER.debug("Sending response for request id=" + response.getRequestId());
     }
-
 
     @Override
     public ExecutorService getExecutorService() {
         return executor;
     }
-
-    @Override
-    public void destroy() throws DestroyFailedException {
-        // do nothing
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return false;
-    }
 }
-

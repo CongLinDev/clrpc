@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.registry.ServiceDiscovery;
+import conglin.clrpc.registry.ZooKeeperServiceDiscovery;
 import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.discovery.ServiceDiscovery;
-import conglin.clrpc.service.discovery.ZooKeeperServiceDiscovery;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
@@ -100,96 +100,73 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     public void stop() {
         waitForUncompleteFuture();
-        
-        if(!super.isDestroyed()){
-            try{
+
+        if (!super.isDestroyed()) {
+            try {
                 super.destroy();
-            }catch(DestroyFailedException e){
-                LOGGER.error(e.getMessage());
-            }
-        }
-
-        if(!serviceDiscovery.isDestroyed()){
-            try {
-                serviceDiscovery.destroy();
-            } catch (DestroyFailedException e) {
-                LOGGER.error(e.getMessage());
-            }
-        }
-
-        if(!identifierGenerator.isDestroyed()){
-            try {
-                identifierGenerator.destroy();
             } catch (DestroyFailedException e) {
                 LOGGER.error(e.getMessage());
             }
         }
     }
 
-
     /**
-     * 发现服务
-     * 共两步 1. 注册消费者
-     *       2. 发现服务并进行连接服务提供者
+     * 发现服务 共两步 1. 注册消费者 2. 发现服务并进行连接服务提供者
+     * 
      * @param serviceName
      * @param updateMethod
      */
-    public void findService(String serviceName, BiConsumer<String, List<String>> updateMethod){
+    public void findService(String serviceName, BiConsumer<String, List<String>> updateMethod) {
         serviceDiscovery.register(serviceName, LOCAL_ADDRESS);
         serviceDiscovery.discover(serviceName, updateMethod);
     }
-    
 
     /**
-     * 发现服务
-     * 共两步 1. 注册消费者
-     *       2. 发现服务并进行连接服务提供者
+     * 发现服务 共两步 1. 注册消费者 2. 发现服务并进行连接服务提供者
+     * 
      * @param interfaceClass
      * @param updateMethod
      */
-    public void findService(Class<?> interfaceClass, BiConsumer<String, List<String>> updateMethod){
+    public void findService(Class<?> interfaceClass, BiConsumer<String, List<String>> updateMethod) {
         findService(interfaceClass.getSimpleName(), updateMethod);
     }
 
-
-
     /**
-     * 对于每个 BasicRequest 请求，都会有一个 RpcFuture 等待一个 BasicResponse 响应
-     * 这些未到达客户端的 BasicResponse 响应 换言之即为 RpcFuture
-     * 被保存在 ConsumerServiceHandler 中的一个 list 中
+     * 对于每个 BasicRequest 请求，都会有一个 RpcFuture 等待一个 BasicResponse 响应 这些未到达客户端的
+     * BasicResponse 响应 换言之即为 RpcFuture 被保存在 ConsumerServiceHandler 中的一个 list 中
      * 以下代码用于 RpcFuture 的管理和维护
      */
 
     @Override
-    public void putFuture(Long key, RpcFuture rpcFuture){
+    public void putFuture(Long key, RpcFuture rpcFuture) {
         rpcFutures.put(key, rpcFuture);
     }
 
     @Override
-    public RpcFuture getFuture(Long key){
+    public RpcFuture getFuture(Long key) {
         return rpcFutures.get(key);
     }
 
     @Override
-    public RpcFuture removeFuture(Long key){
+    public RpcFuture removeFuture(Long key) {
         return rpcFutures.remove(key);
     }
 
     /**
-     * 轮询线程，检查超时 RpcFuture
-     * 超时重试
+     * 轮询线程，检查超时 RpcFuture 超时重试
+     * 
      * @param sender
      */
-    private void checkFuture(){
-        final long MAX_DELARY = 3000; //最大延迟为3000 ms
-        new Timer("check-uncomplete-future", true).schedule(new TimerTask(){
-        
+    private void checkFuture() {
+        final long MAX_DELARY = 3000; // 最大延迟为3000 ms
+        new Timer("check-uncomplete-future", true).schedule(new TimerTask() {
+
             @Override
             public void run() {
                 Iterator<RpcFuture> iterator = rpcFutures.values().iterator();
-                while(iterator.hasNext()){
+                while (iterator.hasNext()) {
                     RpcFuture f = iterator.next();
-                    if(f.isPending() && f.timeout()){
+                    if (f.isPending() && f.timeout()) {
                         f.retry();
                         LOGGER.warn("Service response(requestId=" + f.identifier() + ") is too slow. Retry...");
                     }
@@ -199,11 +176,11 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     }
 
     /**
-     * 等待所有未完成的 {@link conglin.clrpc.service.future.RpcFuture}
-     * 用于优雅的关闭 {@link conglin.clrpc.service.ConsumerServiceHandler}
+     * 等待所有未完成的 {@link conglin.clrpc.service.future.RpcFuture} 用于优雅的关闭
+     * {@link conglin.clrpc.service.ConsumerServiceHandler}
      */
-    private void waitForUncompleteFuture(){
-        while(rpcFutures.size() != 0){
+    private void waitForUncompleteFuture() {
+        while (rpcFutures.size() != 0) {
             try {
                 LOGGER.info("Waiting uncomplete futures for 500 ms.");
                 Thread.sleep(500);

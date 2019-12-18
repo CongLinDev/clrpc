@@ -86,7 +86,7 @@ public class ZooKeeperUtils {
      * @param keeper
      */
     public static void disconnectZooKeeper(final ZooKeeper keeper) {
-        if (keeper != null) {
+        if (keeper != null && keeper.getState().isAlive()) {
             try {
                 keeper.close();
                 LOGGER.debug("ZooKeeper session close success.");

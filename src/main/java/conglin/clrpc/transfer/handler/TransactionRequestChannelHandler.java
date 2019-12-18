@@ -26,13 +26,6 @@ public class TransactionRequestChannelHandler extends SimpleChannelInboundHandle
     }
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelUnregistered(ctx);
-        if(!serviceExecutor.isDestroyed())
-            serviceExecutor.destroy();
-    }
-
-    @Override
     protected void channelRead0(ChannelHandlerContext ctx, TransactionRequest msg) throws Exception {
         serviceExecutor.execute(msg);
     }
@@ -41,7 +34,5 @@ public class TransactionRequestChannelHandler extends SimpleChannelInboundHandle
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOGGER.error(cause.getMessage());
         ctx.close();
-        if(!serviceExecutor.isDestroyed())
-            serviceExecutor.destroy();
     }
 }

@@ -5,10 +5,11 @@ import java.lang.reflect.Method;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.service.future.RpcFuture;
 
-public interface TransactionProxy{
+public interface TransactionProxy {
 
     /**
      * 开始一个事务
+     * 
      * @return this object
      * @throws TransactionException
      */
@@ -16,9 +17,10 @@ public interface TransactionProxy{
 
     /**
      * 发送事务内部的一条原子性请求
+     * 
      * @param serviceName 服务名
-     * @param method 服务方法
-     * @param args 服务参数
+     * @param method      服务方法
+     * @param args        服务参数
      * @return this object
      * @throws TransactionException
      */
@@ -26,9 +28,10 @@ public interface TransactionProxy{
 
     /**
      * 发送事务内部的一条原子性请求
+     * 
      * @param serviceName 服务名
-     * @param method 服务方法
-     * @param args 服务参数
+     * @param method      服务方法
+     * @param args        服务参数
      * @return this object
      * @throws TransactionException
      */
@@ -36,6 +39,7 @@ public interface TransactionProxy{
 
     /**
      * 提交服务
+     * 
      * @return Future
      * @throws TransactionException
      */
@@ -43,6 +47,7 @@ public interface TransactionProxy{
 
     /**
      * 中止事务
+     * 
      * @throws TransactionException
      */
     void abort() throws TransactionException;

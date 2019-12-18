@@ -1,13 +1,16 @@
 {
     "zookeeper.registry.address" : "127.0.0.1:2181",
     "zookeeper.registry.root-path" : "/clrpc",
+    "zookeeper.registry.session-timeout" : 5000,
     "zookeeper.discovery.address" : "127.0.0.1:2181",
     "zookeeper.discovery.root-path" : "/clrpc",
+    "zookeeper.discovery.session-timeout" : 5000,
     "zookeeper.monitor.address" : "127.0.0.1:2181",
     "zookeeper.monitor.root-path" : "/clrpc",
+    "zookeeper.monitor.session-timeout" : 5000,
     "zookeeper.atomicity.address" : "127.0.0.1:2181",
     "zookeeper.atomicity.root-path" : "/clrpc",
-    "zookeeper.session.timeout" : 5000,
+    "zookeeper.atomicity.session-timeout" : 5000,
 
     "provider.port" : 5100,
     "provider.thread.boss" : 1,

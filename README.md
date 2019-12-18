@@ -2,13 +2,11 @@
 
 这是一个基于 `Java` 、 由 **Netty** 负责传输 、默认使用 **Protostuff** 负责编解码的简单的RPC(远程过程调用)工具。
 
-服务提供者将服务发布注册到 **ZooKeeper** 上后，服务消费者请求 **ZooKeeper** 查找订阅服务后与服务提供者通信调用服务( 支持 *同步服务* 和 *异步服务* )。
+服务提供者将服务发布注册到 注册中心 **ZooKeeper** 上后，服务消费者请求 注册中心 **ZooKeeper** 查找订阅服务后与服务提供者通信调用服务( 支持 *同步服务* 和 *异步服务* )。
 
 ## Setup
 
 **开发阶段** 均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
-
-目前只有 `0.X.0-SNAPSHOT` 版本的源码能够 **较为稳定** 地运行。
 
 你可以使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地进行使用。
 
@@ -77,6 +75,16 @@
     }
 ```
 
+### Notice
+
+需要注意的是，同一个JVM中可能运行着多种角色（Provider Consumer Monitor）。
+
+`clrpc` 为了 **性能** 选择复用部分资源。但是这些资源在对象使用完后无法知晓是否后续会被在用，所以使用全局资源管理器在JVM关闭前关闭该资源。
+
+你应该在JVM关闭前或是在某一安全点（后续不再使用 `clrpc`） 调用 `conglin.clrpc.global.GlobalResourceManager` 的 `destroy` 方法释放资源。
+
+目前的复用资源主要为 **ZooKeeper** 的 复用连接池。
+
 ## Architecture
 
 ![architecture.png](https://i.loli.net/2019/11/04/UCpbuqOM2zYgTh7.png)
@@ -97,13 +105,16 @@
 | :------: | :------: | :------: | :------: | :------: |
 | zookeeper.registry.address | String | YES | 127.0.0.1:2181 | 服务注册地址 |
 | zookeeper.registry.root-path | String | YES | /clrpc | 服务注册根节点 |
+| zookeeper.registry.<br>session-timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | zookeeper.discovery.address | String | YES | 127.0.0.1:2181 | 服务搜索地址 |
 | zookeeper.discovery.root-path | String | YES | /clrpc | 服务搜索根节点 |
+| zookeeper.discovery.<br>session-timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | zookeeper.monitor.address | String | YES | 127.0.0.1:2181 | 服务监视地址 |
 | zookeeper.monitor.root-path | String | YES | /clrpc | 服务监视根节点 |
+| zookeeper.monitor.<br>session-timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | zookeeper.atomicity.address | String | YES | 127.0.0.1:2181 | 原子性服务地址 |
 | zookeeper.atomicity.root-path | String | YES | /clrpc | 原子性服务根节点 |
-| zookeeper.session.timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
+| zookeeper.atomicity.<br>session-timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | provider.port | Integer | YES | 5100 | 服务提供者端口号 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |

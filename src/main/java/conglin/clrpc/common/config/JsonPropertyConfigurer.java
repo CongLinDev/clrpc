@@ -27,10 +27,10 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     }
 
     private static byte[] resolveFile(String filename) {
-        try(InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
+        try (InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
             return inputStream.readAllBytes();
         } catch (IOException e) {
-            LOGGER.error("Resolve File [" + filename + "] failed. "  + e.getMessage());
+            LOGGER.error("Resolve File [" + filename + "] failed. " + e.getMessage());
             return new byte[0];
         }
     }
@@ -41,7 +41,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     }
 
     @Override
-    public Object put(String key, Object value){
+    public Object put(String key, Object value) {
         return CONFIG_HOLDER.put(key, value);
     }
 

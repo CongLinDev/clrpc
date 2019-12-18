@@ -2,8 +2,9 @@ package conglin.clrpc.common.identifier;
 
 import java.util.UUID;
 
-import conglin.clrpc.common.exception.DestroyFailedException;
-
+/**
+ * 使用UUID生成随机的ID
+ */
 public class BasicIdentifierGenerator implements IdentifierGenerator {
 
     @Override
@@ -12,12 +13,8 @@ public class BasicIdentifierGenerator implements IdentifierGenerator {
     }
 
     @Override
-    public long generate(String key) {    
+    public long generate(String key) {
         return UUID.randomUUID().getLeastSignificantBits();
     }
 
-    @Override
-    public void destroy() throws DestroyFailedException {
-        // do nothing
-    }
 }

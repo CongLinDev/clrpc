@@ -28,20 +28,5 @@ public class BasicResponseChannelHandler
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOGGER.error(cause.getMessage());
         ctx.close();
-        if(!serviceExecutor.isDestroyed())
-            serviceExecutor.destroy();
-    }
-
-    
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-    }
-
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelUnregistered(ctx);
-        if(!serviceExecutor.isDestroyed())
-            serviceExecutor.destroy();
     }
 }

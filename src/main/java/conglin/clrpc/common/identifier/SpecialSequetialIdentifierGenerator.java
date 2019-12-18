@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGenerator {
@@ -31,16 +30,6 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
         }
         LOGGER.warn("'SpecialSequetialIdentifierGenerator' generated Indentifier failed. Starting use 'SequetialIdentifierGenerator'.");
         return super.generate(key);
-    }
-
-    @Override
-    public void destroy() throws DestroyFailedException {
-        super.destroy();
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return super.isDestroyed();
     }
     
 }

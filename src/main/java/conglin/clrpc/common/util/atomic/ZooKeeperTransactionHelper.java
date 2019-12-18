@@ -7,7 +7,6 @@ import org.apache.zookeeper.Watcher.WatcherType;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
@@ -143,15 +142,4 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     protected boolean casUpateSate(String subPath, String oldState, String newState) {
         return ZooKeeperUtils.compareAndSetNodeData(keeper, rootPath + "/" + subPath, oldState, newState);
     }
-
-    @Override
-    public void destroy() throws DestroyFailedException {
-        super.destroy();
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return super.isDestroyed();
-    }
-
 }
