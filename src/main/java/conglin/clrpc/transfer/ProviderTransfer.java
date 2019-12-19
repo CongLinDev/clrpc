@@ -17,7 +17,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class ProviderTransfer{
+public class ProviderTransfer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransfer.class);
 
     private EventLoopGroup bossGroup;
@@ -25,9 +25,10 @@ public class ProviderTransfer{
 
     /**
      * 启动Netty
+     * 
      * @param context 上下文
      */
-    public void start(ProviderContext context){
+    public void start(ProviderContext context) {
         PropertyConfigurer configurer = context.getPropertyConfigurer();
         int bossThread = configurer.getOrDefault("provider.thread.boss", 1);
         int workerThread = configurer.getOrDefault("provider.thread.worker", 4);
@@ -35,26 +36,24 @@ public class ProviderTransfer{
         workerGroup = new NioEventLoopGroup(workerThread);
 
         ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(bossGroup, workerGroup)
-            .channel(NioServerSocketChannel.class)
-            //.handler(new LoggingHandler(LogLevel.INFO))
-            .childHandler(new ProviderChannelInitializer(context))
-            .option(ChannelOption.SO_BACKLOG, 128)
-            .childOption(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+                // .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new ProviderChannelInitializer(context)).option(ChannelOption.SO_BACKLOG, 128)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-        try{
+        try {
             InetSocketAddress address = IPAddressUtils.splitHostAddressAndPortResolved(context.getLocalAddress());
             ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
             LOGGER.info("Provider started on {}", address);
-            
-            //进行准备工作
-            context.getServiceRegister().accept(context.getLocalAddress());
+
+            // 进行准备工作
+            context.getServiceRegister().accept("");
 
             channelFuture.channel().closeFuture().sync();
-        }catch(UnknownHostException | InterruptedException e){
+        } catch (UnknownHostException | InterruptedException e) {
             LOGGER.error(e.getMessage());
-        }finally{
+        } finally {
             stop();
         }
     }
@@ -62,8 +61,10 @@ public class ProviderTransfer{
     /**
      * 关闭Netty
      */
-    public void stop(){
-        if(bossGroup != null) bossGroup.shutdownGracefully();
-        if(workerGroup != null) workerGroup.shutdownGracefully();
+    public void stop() {
+        if (bossGroup != null)
+            bossGroup.shutdownGracefully();
+        if (workerGroup != null)
+            workerGroup.shutdownGracefully();
     }
 }

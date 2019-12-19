@@ -43,13 +43,13 @@ public class RpcProviderBootstrap extends Bootstrap {
     public RpcProviderBootstrap() {
         super();
         SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
-        PROVIDER_TRANSFER = new ProviderTransfer(); 
+        PROVIDER_TRANSFER = new ProviderTransfer();
     }
 
     public RpcProviderBootstrap(String configFilename) {
         super(configFilename);
         SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
-        PROVIDER_TRANSFER = new ProviderTransfer(); 
+        PROVIDER_TRANSFER = new ProviderTransfer();
     }
 
     public RpcProviderBootstrap(PropertyConfigurer configurer) {
@@ -60,9 +60,10 @@ public class RpcProviderBootstrap extends Bootstrap {
 
     /**
      * 保存即将发布的服务
+     * 
      * @param <T>
-     * @param interfaceClass    服务接口类
-     * @param serviceBeanClass  服务实现类，该类必须提供一个无参构造函数
+     * @param interfaceClass   服务接口类
+     * @param serviceBeanClass 服务实现类，该类必须提供一个无参构造函数
      * @return
      */
     public <T> RpcProviderBootstrap publish(Class<T> interfaceClass, Class<? extends T> serviceBeanClass) {
@@ -71,23 +72,25 @@ public class RpcProviderBootstrap extends Bootstrap {
 
     /**
      * 保存即将发布的服务
+     * 
      * @param serviceBeanClass 类名必须满足 'xxxServiceImpl' 格式
      * @return
      */
     public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
         String serviceBeanClassName = serviceBeanClass.getSimpleName();
         if (!serviceBeanClassName.endsWith("ServiceImpl")) {
-            LOGGER.error(serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
+            LOGGER.error(
+                    serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
             return this;
         } else {
-            return publish(serviceBeanClassName.substring(0, serviceBeanClassName.length() - 4),
-                    serviceBeanClass);
+            return publish(serviceBeanClassName.substring(0, serviceBeanClassName.length() - 4), serviceBeanClass);
         }
     }
 
     /**
      * 保存即将发布的服务
-     * @param serviceName 服务名
+     * 
+     * @param serviceName      服务名
      * @param serviceBeanClass 服务实现类，该类必须提供一个无参构造函数
      * @return
      */
@@ -108,51 +111,51 @@ public class RpcProviderBootstrap extends Bootstrap {
 
     /**
      * 保存即将发布的服务
+     * 
      * @param serviceName 服务名
      * @param serviceBean 服务实现对象
      * @return
      */
     public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {
-        LOGGER.info("Publish service named " + serviceName);
         SERVICE_HANDLER.publish(serviceName, serviceBean);
+        LOGGER.info("Publish service named " + serviceName);
         return this;
     }
 
     /**
-     * 移除已经发布的服务
+     * 取消已经发布的服务
+     * 
      * @param interfaceClass
      * @return
      */
-    public RpcProviderBootstrap removeService(Class<?> interfaceClass) {
-        return removeService(interfaceClass.getSimpleName());
+    public RpcProviderBootstrap unpublish(Class<?> interfaceClass) {
+        return unpublish(interfaceClass.getSimpleName());
     }
 
     /**
-     * 移除已经发布的服务
+     * 取消已经发布的服务
+     * 
      * @param serviceName
      * @return
      */
-    public RpcProviderBootstrap removeService(String serviceName) {
-        SERVICE_HANDLER.removeService(serviceName);
+    public RpcProviderBootstrap unpublish(String serviceName) {
+        SERVICE_HANDLER.unregisterService(serviceName);
         return this;
     }
 
     /**
-     * 启动
-     * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
-     * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
+     * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
      */
     public void start() {
         start(new RpcProviderOption());
     }
-    
+
     /**
-     * 启动
-     * 该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭
-     * 若调用该方法后还有其他逻辑，建议使用多线程进行编程
+     * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
+     * 
      * @param option 启动选项
      */
-    public void start(RpcProviderOption option){
+    public void start(RpcProviderOption option) {
         ProviderContext context = new BasicProviderContext();
         // 设置本地地址
         context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));

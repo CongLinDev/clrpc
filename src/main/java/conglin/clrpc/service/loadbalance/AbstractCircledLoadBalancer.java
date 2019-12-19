@@ -1,6 +1,5 @@
 package conglin.clrpc.service.loadbalance;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,7 +122,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     }
 
     @Override
-    public void update(T type, Collection<K> data, Function<K, V> start, Consumer<V> stop) {
+    public void update(T type, Map<K, String> data, Function<K, V> start, Consumer<V> stop) {
         AtomicInteger code = null;
         int currentEpoch = 0;
 
@@ -175,7 +174,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
      * @param data         数据
      * @param start        添加V后需要的工作
      */
-    abstract protected void createOrUpdateNode(AtomicInteger headAndEpoch, int currentEpoch, Collection<K> data,
+    abstract protected void createOrUpdateNode(AtomicInteger headAndEpoch, int currentEpoch, Map<K, String> data,
             Function<K, V> start);
 
     /**
@@ -206,6 +205,9 @@ class Node<V> {
 
     protected V value;
 
+    // 元信息
+    protected String metaInfo;
+
     public Node() {
         this(0, null);
     }
@@ -215,8 +217,13 @@ class Node<V> {
     }
 
     public Node(int epoch, V value) {
+        this(epoch, value, "");
+    }
+
+    public Node(int epoch, V value, String metaInfo) {
         this.epoch = new AtomicInteger(epoch);
         this.value = value;
+        this.metaInfo = metaInfo;
     }
 
     /**
@@ -245,5 +252,23 @@ class Node<V> {
      */
     public V getValue() {
         return value;
+    }
+
+    /**
+     * 获得Node的元信息
+     * 
+     * @return
+     */
+    public String getMetaInfo() {
+        return metaInfo;
+    }
+
+    /**
+     * 设置Node的元信息
+     * 
+     * @param metaInfo
+     */
+    public void setMetaInfo(String metaInfo) {
+        this.metaInfo = metaInfo;
     }
 }

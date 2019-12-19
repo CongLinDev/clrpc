@@ -2,7 +2,6 @@ package conglin.clrpc.service;
 
 import java.lang.reflect.Proxy;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,9 +30,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
 
     private final Map<Long, RpcFuture> rpcFutures;
 
-    private final ServiceDiscovery serviceDiscovery;
-
-    private String LOCAL_ADDRESS;
+    private ServiceDiscovery serviceDiscovery;
 
     private ConsumerContext context;
 
@@ -43,7 +40,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         rpcFutures = new ConcurrentHashMap<>();
-        serviceDiscovery = new ZooKeeperServiceDiscovery(configurer);
     }
 
     /**
@@ -87,7 +83,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     public void start(ConsumerContext context) {
         this.context = context;
-        LOCAL_ADDRESS = context.getLocalAddress();
+        serviceDiscovery = new ZooKeeperServiceDiscovery(context.getLocalAddress(), context.getPropertyConfigurer());
         context.setExecutorService(getExecutorService());
         context.setFuturesHolder(this);
 
@@ -116,8 +112,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param serviceName
      * @param updateMethod
      */
-    public void findService(String serviceName, BiConsumer<String, List<String>> updateMethod) {
-        serviceDiscovery.register(serviceName, LOCAL_ADDRESS);
+    public void findService(String serviceName, BiConsumer<String, Map<String, String>> updateMethod) {
+        serviceDiscovery.register(serviceName, "");
         serviceDiscovery.discover(serviceName, updateMethod);
     }
 
@@ -127,7 +123,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param interfaceClass
      * @param updateMethod
      */
-    public void findService(Class<?> interfaceClass, BiConsumer<String, List<String>> updateMethod) {
+    public void findService(Class<?> interfaceClass, BiConsumer<String, Map<String, String>> updateMethod) {
         findService(interfaceClass.getSimpleName(), updateMethod);
     }
 

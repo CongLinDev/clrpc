@@ -1,7 +1,7 @@
 package conglin.clrpc.transfer;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -83,7 +83,7 @@ public class ConsumerTransfer {
      * @param serviceName   服务名
      * @param providerAddress 服务器地址
      */
-    public void updateConnectedProvider(String serviceName, List<String> providerAddress) {
+    public void updateConnectedProvider(String serviceName, Map<String, String> providerAddress) {
         loadBalancer.update(serviceName, providerAddress, 
             addr -> connectProviderNode(serviceName, addr),
             Channel::close);

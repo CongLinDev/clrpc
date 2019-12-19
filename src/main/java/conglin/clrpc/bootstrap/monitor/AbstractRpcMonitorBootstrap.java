@@ -65,15 +65,22 @@ abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements R
         String consumerPath = concretePath + "/consumers";
 
         LOGGER.info("Monitor service named " + serviceName);
-        ZooKeeperUtils.watchChildrenNodeAndData(keeper, providerPath, this::handleNodeInfo);
-        ZooKeeperUtils.watchChildrenNodeAndData(keeper, consumerPath, this::handleNodeInfo);
+        ZooKeeperUtils.watchChildrenNodeAndData(keeper, providerPath, this::handleProvider);
+        ZooKeeperUtils.watchChildrenNodeAndData(keeper, consumerPath, this::handleConusmer);
         return this;
     }
 
     /**
-     * 处理节点和数据 该方法由子类实现
+     * 处理服务消费者节点和数据
      * 
      * @param nodeAndData
      */
-    abstract protected void handleNodeInfo(Map<String, String> nodeAndData);
+    abstract protected void handleConusmer(Map<String, String> nodeAndData);
+
+    /**
+     * 处理服务提供者节点和数据
+     * 
+     * @param nodeAndData
+     */
+    abstract protected void handleProvider(Map<String, String> nodeAndData);
 }

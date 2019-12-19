@@ -20,15 +20,11 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     // String保存服务名 Object保存服务实现类
     private final Map<String, Object> serviceObjects;
 
-    private final String LOCAL_ADDRESS;
-
-    private final ServiceRegistry serviceRegistry;
+    private ServiceRegistry serviceRegistry;
 
     public ProviderServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
-        this.LOCAL_ADDRESS = configurer.getOrDefault("provider.address", "127.0.0.1:5100");
         serviceObjects = new HashMap<>();
-        serviceRegistry = new ZooKeeperServiceRegistry(configurer);
     }
 
     /**
@@ -56,26 +52,19 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * 
      * @param serviceName 服务名
      */
-    public void removeService(String serviceName) {
+    public void unregisterService(String serviceName) {
+        serviceRegistry.unregister(serviceName);
         serviceObjects.remove(serviceName);
         LOGGER.debug("Remove service named " + serviceName);
     }
 
     /**
-     * 注册到zookeeper
+     * 将数据注册到注册中心
      * 
      * @param data
      */
     protected void registerService(String data) {
-        // 把服务名注册到zookeeper上
         serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, data));
-    }
-
-    /**
-     * 将本机地址注册到zookeeper上
-     */
-    protected void registerService() {
-        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, LOCAL_ADDRESS));
     }
 
     /**
@@ -84,6 +73,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param context
      */
     public void start(ProviderContext context) {
+        serviceRegistry = new ZooKeeperServiceRegistry(context.getLocalAddress(), context.getPropertyConfigurer());
         // 设置服务注册器
         context.setServiceRegister(this::registerService);
         // 设置服务对象持有器

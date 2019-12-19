@@ -12,4 +12,11 @@ public interface Registerable {
      * @param data
      */
     void register(String key, String data);
+
+    /**
+     * 取消注册
+     * 
+     * @param key
+     */
+    void unregister(String key);
 }

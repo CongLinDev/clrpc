@@ -1,6 +1,6 @@
 package conglin.clrpc.service.loadbalance;
 
-import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -17,11 +17,11 @@ public interface LoadBalancer<T, K, V> {
     /**
      * 使用集合更新数据
      * @param type
-     * @param data
+     * @param data 其中key为连接的ip地址，value为 服务器的元信息
      * @param start 添加V的工作
      * @param stop 移除的V的收尾工作
      */
-    void update(T type, Collection<K> data, Function<K, V> start, Consumer<V> stop);
+    void update(T type, Map<K, String> data, Function<K, V> start, Consumer<V> stop);
 
     /**
      * 使用集合更新数据
@@ -29,7 +29,7 @@ public interface LoadBalancer<T, K, V> {
      * @param data
      * @param start 添加V的工作
      */
-    default void update(T type, Collection<K> data, Function<K, V> start){
+    default void update(T type, Map<K, String> data, Function<K, V> start){
         update(type, data, start, null);
     }
 
@@ -39,7 +39,7 @@ public interface LoadBalancer<T, K, V> {
      * @param data
      * @param stop 移除的V的收尾工作
      */
-    default void update(T type, Collection<K> data, Consumer<V> stop){
+    default void update(T type, Map<K, String> data, Consumer<V> stop){
         update(type, data, null, stop);
     }
 

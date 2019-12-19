@@ -1,6 +1,5 @@
 package conglin.clrpc.service.loadbalance;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
@@ -75,12 +74,15 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected void createOrUpdateNode(AtomicInteger headAndEpoch, int currentEpoch, Collection<K> data,
+    protected void createOrUpdateNode(AtomicInteger headAndEpoch, int currentEpoch, Map<K, String> data,
             Function<K, V> start) {
         int head = headAndEpoch.get() & _32_16_BIT_MASK;
         int tail = headAndEpoch.get() | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        for (K key : data) {
+        for (Map.Entry<K, String> entry : data.entrySet()) {
+            K key = entry.getKey();
+            String metaInfo = entry.getValue();
+
             int next = hash(key);// 获取区域编号
             next = (next & _16_BIT_MASK) | head;
 
@@ -90,7 +92,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
                     if (start != null && currentEpoch == (headAndEpoch.get() & _16_BIT_MASK)) {
                         V v = start.apply(key);
                         if (v != null) {
-                            circle.put(next, new Node<V>(currentEpoch, v));
+                            circle.put(next, new Node<V>(currentEpoch, v, metaInfo));
                             LOGGER.debug("Add new node = " + key);
                         }
                     }
@@ -98,6 +100,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
                 } else if (equalPredicate.test(key, node.getValue())) { // 更新epoch
                     if (currentEpoch > node.getEpoch() && !node.setEpoch(currentEpoch))
                         continue;
+                    node.setMetaInfo(metaInfo);
                     LOGGER.debug("Update old node = " + key);
                     break;
                 } else { // 发生冲撞

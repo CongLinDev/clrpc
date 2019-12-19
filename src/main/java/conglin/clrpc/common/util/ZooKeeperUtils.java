@@ -339,7 +339,7 @@ public class ZooKeeperUtils {
             String nodePath = path + "/" + node;
             try {
                 String nodeData = new String(keeper.getData(nodePath, false, null));
-                dataMap.put(nodePath, nodeData);
+                dataMap.put(node, nodeData);
             } catch (KeeperException | InterruptedException e) {
                 LOGGER.debug("ZooKeeper get node Data path=" + nodePath + " failed.", e);
             }
