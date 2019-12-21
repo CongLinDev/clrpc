@@ -59,20 +59,16 @@
     // 由监视器工厂创建监视器
     RpcMonitorBootstrap bootstrap = RpcMonitorBootstrapFactory.getRpcMonitorBootstrap(MonitorType.CONSOLE);
 
-    try {
-        // 设置监视器的配置以及你需要监视的服务
-        // 并开启监视器
-        bootstrap.monitor().monitorService().start();
+    // 设置监视器的配置以及你需要监视的服务
+    // 并开启监视器
+    bootstrap.monitor().monitorService().start();
 
-        // 下面是你的业务逻辑代码
-        // ......
+    // 下面是你的业务逻辑代码
+    // ......
 
-        // 关闭监视器
-        bootstrap.stop();
-    } catch (InterruptedException e) {
-        // 处理中断异常
-        e.printStackTrace();
-    }
+    // 关闭监视器
+    bootstrap.stop();
+
 ```
 
 ### Notice
@@ -125,7 +121,7 @@
 | service.thread-pool.<br>max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread-pool.<br>keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread-pool.<br>queue | Integer | YES | 10 | 业务线程池队列数 |
-| service.cache.enable | Boolean | YES | false | 是否开启缓存 |
+| cache.enable | Boolean | YES | false | 是否开启缓存 |
 
 ## Test
 

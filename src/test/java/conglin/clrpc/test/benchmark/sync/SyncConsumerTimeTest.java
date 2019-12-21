@@ -12,17 +12,13 @@ public class SyncConsumerTimeTest {
         HelloService helloService = bootstrap.subscribe(HelloService.class);
 
         long start = System.currentTimeMillis();
-        for(int i = 0; i < 10000; i++){
+        for (int i = 0; i < 10000; i++) {
             helloService.hello();
         }
         long end = System.currentTimeMillis();
         System.out.println("Waste time: " + (end - start) + " ms");
 
-        try{
-            bootstrap.stop();
-        }catch(InterruptedException e){
-            e.printStackTrace();
-        }
+        bootstrap.stop();
 
         System.out.println("Consumer closing...");
     }

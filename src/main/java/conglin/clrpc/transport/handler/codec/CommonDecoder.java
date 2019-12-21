@@ -1,4 +1,4 @@
-package conglin.clrpc.transfer.handler.codec;
+package conglin.clrpc.transport.handler.codec;
 
 import java.util.List;
 
@@ -6,10 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.codec.SerializationHandler;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
-import conglin.clrpc.transfer.message.Message;
-import conglin.clrpc.transfer.message.TransactionRequest;
+import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.TransactionRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -50,34 +50,35 @@ public class CommonDecoder extends ByteToMessageDecoder {
          */
         int messageType = messageHeader & Message.MESSAGE_TYPE_MASK;
         switch (messageType) {
-            case BasicRequest.MESSAGE_TYPE:
-                result = serializationHandler.deserialize(messageBody, BasicRequest.class);
-                break;
-            case BasicResponse.MESSAGE_TYPE:
-                result = serializationHandler.deserialize(messageBody, BasicResponse.class);
-                break;
-            case TransactionRequest.MESSAGE_TYPE:
-                result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
-                break;
-            default:
-                LOGGER.error("Can not decode message type=" + messageType);
+        case BasicRequest.MESSAGE_TYPE:
+            result = serializationHandler.deserialize(messageBody, BasicRequest.class);
+            break;
+        case BasicResponse.MESSAGE_TYPE:
+            result = serializationHandler.deserialize(messageBody, BasicResponse.class);
+            break;
+        case TransactionRequest.MESSAGE_TYPE:
+            result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
+            break;
+        default:
+            LOGGER.error("Can not decode message type=" + messageType);
         }
         return result;
     }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if (in.readableBytes() <= 8) return;
+        if (in.readableBytes() <= 8)
+            return;
         in.markReaderIndex();
-        
+
         int messageHeader = in.readInt();
         int dataLengh = in.readInt();
 
-        if (dataLengh <= 0){
+        if (dataLengh <= 0) {
             LOGGER.error("Error format message whose length is negative.");
             return;
         }
-        
+
         if (in.readableBytes() < dataLengh) {
             in.resetReaderIndex();
             return;

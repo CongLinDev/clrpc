@@ -23,8 +23,6 @@ public class SyncConsumerFileTest {
             bootstrap.stop();
         }catch(IOException e){
             e.printStackTrace();
-        }catch(InterruptedException e){
-            e.printStackTrace();
         }
 
         System.out.println("Consumer closing...");

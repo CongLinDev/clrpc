@@ -52,15 +52,11 @@ public interface RpcMonitorBootstrap {
 
     /**
      * 启动监视器 启动前要调用 <strong>monitor</strong> 方法
-     * 
-     * @throws InterruptedException
      */
-    void start() throws InterruptedException;
+    void start();
 
     /**
      * 关闭监视器
-     * 
-     * @throws InterruptedException
      */
-    void stop() throws InterruptedException;
+    void stop();
 }

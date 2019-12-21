@@ -24,5 +24,6 @@
     "service.thread-pool.max-size" : 10,
     "service.thread-pool.keep-alive" : 1000,
     "service.thread-pool.queue" : 10,
-    "service.cache.enable" : false
+
+    "cache.enable" : false
 }

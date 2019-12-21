@@ -10,32 +10,31 @@ import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicRequest;
 
 public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicObjectProxy.class);
 
-    public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator){
+    public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
         super(serviceName, sender, identifierGenerator);
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if(Object.class == method.getDeclaringClass()){
-            switch (method.getName()){
-                case "equals":
-                    return proxy == args[0];
-                case "hashCode":
-                    return System.identityHashCode(proxy);
-                case "toString":
-                    return proxy.getClass().getName() + "@" +
-                        Integer.toHexString(System.identityHashCode(proxy)) +
-                        ", with InvocationHandler " + this;
-                default:
-                    throw new IllegalStateException(String.valueOf(method));
+        if (Object.class == method.getDeclaringClass()) {
+            switch (method.getName()) {
+            case "equals":
+                return proxy == args[0];
+            case "hashCode":
+                return System.identityHashCode(proxy);
+            case "toString":
+                return proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
+                        + ", with InvocationHandler " + this;
+            default:
+                throw new IllegalStateException(String.valueOf(method));
             }
         }
-        
+
         RpcFuture future = call(method, args);
         return future.get();
     }
@@ -63,7 +62,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         request.setParameterTypes(getClassType(args));
 
         request.setRequestId(identifierGenerator.generate(methodName));
-        
+
         LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }
@@ -91,9 +90,8 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         request.setParameterTypes(method.getParameterTypes());
 
         request.setRequestId(identifierGenerator.generate(method.getName()));
-        
+
         LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
     }
 }
-

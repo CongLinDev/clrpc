@@ -33,9 +33,10 @@ abstract public class AbstractProxy {
 
     /**
      * 返回关联的服务名
+     * 
      * @return
      */
-    public String getServiceName(){
+    public String getServiceName() {
         return serviceName;
     }
 }

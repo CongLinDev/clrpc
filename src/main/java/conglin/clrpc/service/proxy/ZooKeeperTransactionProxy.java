@@ -11,7 +11,7 @@ import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
 import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.future.TransactionFuture;
-import conglin.clrpc.transfer.message.TransactionRequest;
+import conglin.clrpc.transport.message.TransactionRequest;
 
 /**
  * 使用 ZooKeeper 控制分布式事务 注意，该类是线程不安全的
@@ -23,7 +23,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     protected long currentTransactionId;
 
     protected final TransactionHelper helper;
-    
+
     protected TransactionFuture future;
 
     public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator,
@@ -77,7 +77,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public void abort() throws TransactionException {
-        if(future.isDone())
+        if (future.isDone())
             throw new TransactionException("Transaction request has commited. Can not abort.");
         helper.abort(currentTransactionId);
         future = null;

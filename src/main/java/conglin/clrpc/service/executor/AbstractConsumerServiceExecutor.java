@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 
 abstract public class AbstractConsumerServiceExecutor implements ServiceExecutor<BasicResponse>, RequestSender {
 

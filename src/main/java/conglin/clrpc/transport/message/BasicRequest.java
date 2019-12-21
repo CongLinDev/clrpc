@@ -1,4 +1,4 @@
-package conglin.clrpc.transfer.message;
+package conglin.clrpc.transport.message;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -9,7 +9,7 @@ public class BasicRequest extends Message implements Serializable {
     private static final long serialVersionUID = 8095197377322231798L;
 
     transient public static final int MESSAGE_TYPE = 2;
-    
+
     protected String serviceName;
     protected String methodName;
     protected Class<?>[] parameterTypes;
@@ -49,28 +49,27 @@ public class BasicRequest extends Message implements Serializable {
 
     @Override
     public String toString() {
-        return "BasicRequest [requestId=" + requestId + ", serviceName=" + serviceName
-                + ", methodName=" + methodName + ", parameters=" + Arrays.toString(parameters) + ", parameterTypes="
-                + Arrays.toString(parameterTypes) + "]";
+        return "BasicRequest [requestId=" + requestId + ", serviceName=" + serviceName + ", methodName=" + methodName
+                + ", parameters=" + Arrays.toString(parameters) + ", parameterTypes=" + Arrays.toString(parameterTypes)
+                + "]";
     }
 
     @Override
     public int hashCode() {
-        return serviceName.hashCode() ^
-                methodName.hashCode() ^
-                Objects.hash((Object [])parameterTypes) ^
-                Objects.hash(parameters);
+        return serviceName.hashCode() ^ methodName.hashCode() ^ Objects.hash((Object[]) parameterTypes)
+                ^ Objects.hash(parameters);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == this) return true;
-        if(! (obj instanceof BasicRequest)) return false;
-        BasicRequest r = (BasicRequest)obj;
-        return this.serviceName.equals(r.getServiceName()) &&
-                this.methodName.equals(r.getMethodName()) && 
-                Objects.deepEquals(parameterTypes, r.getParameterTypes()) &&
-                Objects.deepEquals(parameters, r.getParameters());
+        if (obj == this)
+            return true;
+        if (!(obj instanceof BasicRequest))
+            return false;
+        BasicRequest r = (BasicRequest) obj;
+        return this.serviceName.equals(r.getServiceName()) && this.methodName.equals(r.getMethodName())
+                && Objects.deepEquals(parameterTypes, r.getParameterTypes())
+                && Objects.deepEquals(parameters, r.getParameters());
     }
 
 }

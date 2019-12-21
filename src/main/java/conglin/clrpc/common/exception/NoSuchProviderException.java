@@ -1,6 +1,6 @@
 package conglin.clrpc.common.exception;
 
-import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicRequest;
 
 /**
  * 找不到特定的Provider的时候抛出该异常

@@ -1,6 +1,6 @@
 package conglin.clrpc.common.exception;
 
-import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicRequest;
 
 public class RequestException extends Exception {
 

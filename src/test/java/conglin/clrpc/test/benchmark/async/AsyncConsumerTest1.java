@@ -15,11 +15,11 @@ public class AsyncConsumerTest1 {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
         System.out.println("Consumer opening...");
         bootstrap.start();
-        
+
         ObjectProxy objectProxy = bootstrap.subscribeAsync("UserService");
 
         Random random = new Random();
-        for(int i = 0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             new Thread(() -> {
                 final long id = random.nextLong();
                 System.out.println(id);
@@ -27,7 +27,7 @@ public class AsyncConsumerTest1 {
 
                     @Override
                     public void success(Object result) {
-                        System.out.println(((User)result).toString());
+                        System.out.println(((User) result).toString());
                     }
 
                     @Override
@@ -38,13 +38,8 @@ public class AsyncConsumerTest1 {
                 });
             }).start();
         }
-        
-        try{
-            bootstrap.stop();
-        }catch(InterruptedException e){
-            e.printStackTrace();
-        }
 
+        bootstrap.stop();
         System.out.println("Consumer closing...");
     }
 }

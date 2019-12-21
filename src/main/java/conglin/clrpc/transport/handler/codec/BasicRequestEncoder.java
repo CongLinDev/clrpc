@@ -1,7 +1,7 @@
-package conglin.clrpc.transfer.handler.codec;
+package conglin.clrpc.transport.handler.codec;
 
 import conglin.clrpc.common.codec.SerializationHandler;
-import conglin.clrpc.transfer.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -10,7 +10,7 @@ public class BasicRequestEncoder extends MessageToByteEncoder<BasicRequest> {
 
     private final SerializationHandler serializationHandler;
 
-    public BasicRequestEncoder(SerializationHandler serializationHandler){
+    public BasicRequestEncoder(SerializationHandler serializationHandler) {
         super();
         this.serializationHandler = serializationHandler;
     }
@@ -18,7 +18,7 @@ public class BasicRequestEncoder extends MessageToByteEncoder<BasicRequest> {
     @Override
     protected void encode(ChannelHandlerContext ctx, BasicRequest msg, ByteBuf out) throws Exception {
         byte[] data = serializationHandler.serialize(msg);
-        
+
         int messageHeader = BasicRequest.MESSAGE_TYPE;
 
         out.writeInt(messageHeader);

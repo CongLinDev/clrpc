@@ -5,8 +5,8 @@ import java.util.concurrent.ExecutorService;
 import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.cache.CacheManager;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 
 public interface CommonContext {
 

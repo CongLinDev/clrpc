@@ -1,25 +1,25 @@
-package conglin.clrpc.transfer.handler.codec;
+package conglin.clrpc.transport.handler.codec;
 
 import conglin.clrpc.common.codec.SerializationHandler;
-import conglin.clrpc.transfer.message.TransactionRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
-public class TransactionRequestEncoder extends MessageToByteEncoder<TransactionRequest> {
+public class BasicResponseEncoder extends MessageToByteEncoder<BasicResponse> {
 
     private final SerializationHandler serializationHandler;
 
-    public TransactionRequestEncoder(SerializationHandler serializationHandler){
+    public BasicResponseEncoder(SerializationHandler serializationHandler) {
         super();
         this.serializationHandler = serializationHandler;
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, TransactionRequest msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, BasicResponse msg, ByteBuf out) throws Exception {
         byte[] data = serializationHandler.serialize(msg);
-        
-        int messageHeader = TransactionRequest.MESSAGE_TYPE;
+
+        int messageHeader = BasicResponse.MESSAGE_TYPE;
 
         out.writeInt(messageHeader);
         out.writeInt(data.length);

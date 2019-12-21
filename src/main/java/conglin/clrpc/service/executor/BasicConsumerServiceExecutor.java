@@ -10,8 +10,8 @@ import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 
@@ -23,22 +23,21 @@ public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecuto
 
     protected final BiFunction<String, Object, Channel> providerChooser;
 
-    public BasicConsumerServiceExecutor(ConsumerContext context){
-        this(context.getFuturesHolder(), context.getProviderChooser(),
-            context.getExecutorService(), context.getCacheManager());
+    public BasicConsumerServiceExecutor(ConsumerContext context) {
+        this(context.getFuturesHolder(), context.getProviderChooser(), context.getExecutorService(),
+                context.getCacheManager());
     }
 
     public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder,
-        BiFunction<String, Object, Channel> providerChooser,
-        ExecutorService executor, CacheManager<BasicRequest, BasicResponse> cacheManager) {
+            BiFunction<String, Object, Channel> providerChooser, ExecutorService executor,
+            CacheManager<BasicRequest, BasicResponse> cacheManager) {
         super(executor, cacheManager);
         this.futuresHolder = futuresHolder;
         this.providerChooser = providerChooser;
     }
 
     public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder,
-        BiFunction<String, Object, Channel> providerChooser,
-        ExecutorService executor) {
+            BiFunction<String, Object, Channel> providerChooser, ExecutorService executor) {
         this(futuresHolder, providerChooser, executor, null);
     }
 
@@ -46,7 +45,7 @@ public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecuto
     protected void doExecute(BasicResponse response) {
         RpcFuture future = futuresHolder.removeFuture(response.getRequestId());
 
-        if(future != null){
+        if (future != null) {
             future.done(response);
         }
     }

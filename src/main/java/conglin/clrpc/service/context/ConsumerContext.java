@@ -7,7 +7,7 @@ import conglin.clrpc.service.executor.AbstractConsumerServiceExecutor;
 import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.executor.ServiceExecutor;
 import conglin.clrpc.service.future.FuturesHolder;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.Channel;
 
 public interface ConsumerContext extends CommonContext {

@@ -1,6 +1,6 @@
-package conglin.clrpc.transfer.message;
+package conglin.clrpc.transport.message;
 
-public class TransactionRequest extends BasicRequest{
+public class TransactionRequest extends BasicRequest {
 
     transient public static final int MESSAGE_TYPE = 4;
 

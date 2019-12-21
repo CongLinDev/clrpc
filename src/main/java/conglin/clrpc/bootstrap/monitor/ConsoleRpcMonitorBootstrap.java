@@ -14,13 +14,17 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     }
 
     @Override
-    public void start() throws InterruptedException {
+    public void start() {
         LOGGER.info("Console monitor started.");
-        Thread.sleep(Integer.MAX_VALUE);
+        try {
+            Thread.sleep(Integer.MAX_VALUE);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+        }
     }
 
     @Override
-    public void stop() throws InterruptedException {
+    public void stop() {
         LOGGER.info("Console monitor stoped.");
     }
 

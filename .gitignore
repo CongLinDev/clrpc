@@ -1,10 +1,10 @@
 src/main/resources/log4j.properties
-target/*
-architecture/*
-temp/*
-logs/*
-.idea/*
-.vscode/*
+target/
+architecture/
+temp/
+logs/
+.idea/
+.vscode/
 .factorypath
 .classpath
 .settings

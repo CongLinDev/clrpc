@@ -11,7 +11,7 @@ import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.service.context.BasicProviderContext;
 import conglin.clrpc.service.context.ProviderContext;
-import conglin.clrpc.transfer.ProviderTransfer;
+import conglin.clrpc.transport.ProviderTransfer;
 import io.netty.bootstrap.ServerBootstrap;
 
 /**

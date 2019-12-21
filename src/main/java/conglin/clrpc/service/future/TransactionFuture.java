@@ -25,12 +25,12 @@ public class TransactionFuture extends AbstractCompositeFuture {
             public void success(Object result) {
                 // 进入该方法的时候，说明事务已经提交，不会被取消或中止
                 try {
-                    if (checkCompleteFuture()){
+                    if (checkCompleteFuture()) {
                         LOGGER.info("Transaction request id=" + identifier() + " commit successfully.");
                         done(null); // 全部的子Future完成后调用组合Future完成
                     }
-                        
-                } catch (FutureCancelledException e) { 
+
+                } catch (FutureCancelledException e) {
                     // 因为事务已经提交
                     // 某一个子操作取消后，中止不会成功
                     // cancel(true);

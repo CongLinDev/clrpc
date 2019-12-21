@@ -1,4 +1,4 @@
-package conglin.clrpc.transfer;
+package conglin.clrpc.transport;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -15,7 +15,7 @@ import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.executor.BasicConsumerServiceExecutor;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
-import conglin.clrpc.transfer.handler.ConsumerChannelInitializer;
+import conglin.clrpc.transport.handler.ConsumerChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -38,23 +38,24 @@ public class ConsumerTransfer {
     private LoadBalancer<String, String, Channel> loadBalancer;
     private long timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
-    public ConsumerTransfer(){
+    public ConsumerTransfer() {
         loadBalancer = new ConsistentHashLoadBalancer<>(
-            (addr, ch)->((InetSocketAddress)ch.remoteAddress()).toString().compareTo(addr) == 0);
-        
+                (addr, ch) -> ((InetSocketAddress) ch.remoteAddress()).toString().compareTo(addr) == 0);
+
         lock = new ReentrantLock();
         connected = lock.newCondition();
     }
 
     /**
      * 开启传输服务
+     * 
      * @param context 上下文
      */
     public void start(ConsumerContext context) {
         this.context = context;
         context.setProviderChooser(this::chooseChannel);
         context.setConsumerServiceExecutor(new BasicConsumerServiceExecutor(context));
-        
+
         PropertyConfigurer configurer = context.getPropertyConfigurer();
 
         LOCAL_ADDRESS = context.getLocalAddress();
@@ -80,13 +81,12 @@ public class ConsumerTransfer {
     /**
      * 更新连接的服务器
      * 
-     * @param serviceName   服务名
+     * @param serviceName     服务名
      * @param providerAddress 服务器地址
      */
     public void updateConnectedProvider(String serviceName, Map<String, String> providerAddress) {
-        loadBalancer.update(serviceName, providerAddress, 
-            addr -> connectProviderNode(serviceName, addr),
-            Channel::close);
+        loadBalancer.update(serviceName, providerAddress, addr -> connectProviderNode(serviceName, addr),
+                Channel::close);
         signalAvailableChannelHandler();
     }
 
@@ -99,15 +99,14 @@ public class ConsumerTransfer {
 
     /**
      * 连接某个特定的服务提供者
+     * 
      * @param serviceName
      * @param remoteAddress
      */
-    private Channel connectProviderNode(String serviceName, String remoteAddress) {    
+    private Channel connectProviderNode(String serviceName, String remoteAddress) {
         Bootstrap bootstrap = new Bootstrap();
         ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(context);
-        bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS))
-                .group(workerGroup)
-                .channel(NioSocketChannel.class)
+        bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS)).group(workerGroup).channel(NioSocketChannel.class)
                 .handler(channelInitializer);
         LOGGER.info("Consumer started on {}", LOCAL_ADDRESS);
 
@@ -124,15 +123,16 @@ public class ConsumerTransfer {
 
     /**
      * 挑选服务发布者
+     * 
      * @param serviceName 服务名
-     * @param random 随机因子
+     * @param random      随机因子
      * @return
      */
-    private Channel chooseChannel(String serviceName, int random){
-        while(!loadBalancer.hasNext(serviceName)){
-            try{
+    private Channel chooseChannel(String serviceName, int random) {
+        while (!loadBalancer.hasNext(serviceName)) {
+            try {
                 waitingForChannelHandler();
-            }catch(InterruptedException e){
+            } catch (InterruptedException e) {
                 LOGGER.error("Waiting for available node is interrupted!", e);
             }
         }
@@ -141,40 +141,41 @@ public class ConsumerTransfer {
 
     /**
      * 挑选 Channel 进行发送
+     * 
      * @param serviceName
      * @param object
      * @return
      */
-    public Channel chooseChannel(String serviceName, Object object){
-        if(!(object instanceof String)) 
+    public Channel chooseChannel(String serviceName, Object object) {
+        if (!(object instanceof String))
             return chooseChannel(serviceName, object.hashCode());
-        return loadBalancer.get(serviceName, (String)object);
+        return loadBalancer.get(serviceName, (String) object);
     }
 
     /**
      * 等待可用的服务提供者
+     * 
      * @return
      * @throws InterruptedException
      */
-    private boolean waitingForChannelHandler() throws InterruptedException{
+    private boolean waitingForChannelHandler() throws InterruptedException {
         lock.lock();
-        try{
+        try {
             LOGGER.info("Waiting for Channel Handler " + timeoutForWait + " mm...");
-            return connected.await(timeoutForWait,TimeUnit.MILLISECONDS);
+            return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();
         }
     }
 
     /**
-     * 有可用的ChannelHandler存在
-     * 唤醒等待的线程
+     * 有可用的ChannelHandler存在 唤醒等待的线程
      */
-    private void signalAvailableChannelHandler(){
+    private void signalAvailableChannelHandler() {
         lock.lock();
-        try{
+        try {
             connected.signalAll();
-        }finally{
+        } finally {
             lock.unlock();
         }
     }

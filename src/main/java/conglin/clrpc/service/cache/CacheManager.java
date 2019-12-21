@@ -1,8 +1,9 @@
 package conglin.clrpc.service.cache;
 
-public interface CacheManager<K, V>{
+public interface CacheManager<K, V> {
     /**
      * 获取缓存
+     * 
      * @param key
      * @return
      */
@@ -10,6 +11,7 @@ public interface CacheManager<K, V>{
 
     /**
      * 加入缓存
+     * 
      * @param key
      * @param value
      */

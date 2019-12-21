@@ -4,8 +4,8 @@ import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.cache.caffeine.CaffeineCacheManager;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 
 abstract public class Bootstrap{
     
@@ -23,7 +23,7 @@ abstract public class Bootstrap{
     }
 
     public Bootstrap(PropertyConfigurer configurer){
-        this(configurer, configurer.getOrDefault("service.cache.enable", false));
+        this(configurer, configurer.getOrDefault("cache.enable", false));
     }
 
     public Bootstrap(PropertyConfigurer configurer, boolean enableCache) {

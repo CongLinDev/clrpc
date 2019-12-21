@@ -11,8 +11,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.cache.AbstractCacheManager;
-import conglin.clrpc.transfer.message.BasicRequest;
-import conglin.clrpc.transfer.message.BasicResponse;
+import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 
 public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, BasicResponse>{
 

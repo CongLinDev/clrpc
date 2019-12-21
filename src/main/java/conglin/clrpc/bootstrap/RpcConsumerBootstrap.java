@@ -11,24 +11,27 @@ import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
-import conglin.clrpc.transfer.ConsumerTransfer;
+import conglin.clrpc.transport.ConsumerTransfer;
 
 /**
  * RPC consumer端启动类
  * 
- * 使用如下代码启动
- * <blockquote><pre>
- *     RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
- *     bootstrap.start();
+ * 使用如下代码启动 <blockquote>
  * 
- *     // 订阅同步服务
- *     Interface1 i1 = bootstrap.subscribe("service1");
- *     Interface2 i2 = bootstrap.subscribe(Interface2.class);
+ * <pre>
+ * RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
+ * bootstrap.start();
  * 
- *     // 订阅异步服务
- *     ObjectProxy proxy = bootstrap.subscribeAsync("service3");
+ * // 订阅同步服务
+ * Interface1 i1 = bootstrap.subscribe("service1");
+ * Interface2 i2 = bootstrap.subscribe(Interface2.class);
+ * 
+ * // 订阅异步服务
+ * ObjectProxy proxy = bootstrap.subscribeAsync("service3");
  *
- * </pre></blockquote>
+ * </pre>
+ * 
+ * </blockquote>
  * 
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
@@ -52,7 +55,7 @@ public class RpcConsumerBootstrap extends Bootstrap {
         CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
-    public RpcConsumerBootstrap(PropertyConfigurer configurer){
+    public RpcConsumerBootstrap(PropertyConfigurer configurer) {
         super(configurer);
         SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
         CONSUMER_TRANSFER = new ConsumerTransfer();
@@ -60,22 +63,24 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     /**
      * 订阅同步服务，获取同步服务代理
+     * 
      * @param <T>
      * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
-    public <T> T subscribe(Class<T> interfaceClass){
+    public <T> T subscribe(Class<T> interfaceClass) {
         return subscribe(interfaceClass, interfaceClass.getSimpleName());
     }
 
     /**
      * 订阅同步服务，获取同步服务代理
+     * 
      * @param <T>
      * @param interfaceClass 接口类
-     * @param serviceName 服务名
+     * @param serviceName    服务名
      * @return 返回代理服务类
      */
-    public <T> T subscribe(Class<T> interfaceClass, String serviceName){
+    public <T> T subscribe(Class<T> interfaceClass, String serviceName) {
         LOGGER.info("Subscribe synchronous service named " + serviceName);
         SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
         return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
@@ -83,19 +88,21 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     /**
      * 订阅异步服务，获取异步服务代理
+     * 
      * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeAsync(Class<?> interfaceClass){
+    public ObjectProxy subscribeAsync(Class<?> interfaceClass) {
         return subscribeAsync(interfaceClass.getSimpleName());
     }
 
     /**
      * 订阅异步服务，获取异步服务代理
+     * 
      * @param serviceName 返回代理服务类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeAsync(String serviceName){
+    public ObjectProxy subscribeAsync(String serviceName) {
         LOGGER.info("Subscribe asynchronous service named " + serviceName);
         SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
         return SERVICE_HANDLER.getPrxoy(serviceName);
@@ -103,9 +110,10 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     /**
      * 订阅事务服务
+     * 
      * @return
      */
-    public TransactionProxy subscribeAsync(){
+    public TransactionProxy subscribeAsync() {
         return SERVICE_HANDLER.getTransactionProxy();
     }
 
@@ -118,9 +126,10 @@ public class RpcConsumerBootstrap extends Bootstrap {
 
     /**
      * 启动
+     * 
      * @param option 启动选项
      */
-    public void start(RpcConsumerOption option){
+    public void start(RpcConsumerOption option) {
         ConsumerContext context = new BasicConsumerContext();
 
         context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
@@ -141,7 +150,7 @@ public class RpcConsumerBootstrap extends Bootstrap {
     /**
      * 停止
      */
-    public void stop() throws InterruptedException{
+    public void stop() {
         SERVICE_HANDLER.stop();
         CONSUMER_TRANSFER.stop();
     }

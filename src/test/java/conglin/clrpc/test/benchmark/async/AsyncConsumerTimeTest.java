@@ -11,17 +11,13 @@ public class AsyncConsumerTimeTest {
         ObjectProxy objectProxy = bootstrap.subscribeAsync("HelloService");
 
         long start = System.currentTimeMillis();
-        for(int i = 0; i < 1000; i++){
+        for (int i = 0; i < 1000; i++) {
             objectProxy.call("hello");
         }
-                
-        try{
-            bootstrap.stop();
-            long end = System.currentTimeMillis();
-            System.out.println("Waste time: " + (end - start) + " ms");
-        }catch(InterruptedException e){
-            e.printStackTrace();
-        }
+
+        bootstrap.stop();
+        long end = System.currentTimeMillis();
+        System.out.println("Waste time: " + (end - start) + " ms");
 
         System.out.println("Consumer closing...");
     }

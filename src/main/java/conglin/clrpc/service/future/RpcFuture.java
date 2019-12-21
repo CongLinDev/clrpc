@@ -10,6 +10,7 @@ import conglin.clrpc.common.exception.RequestException;
 public interface RpcFuture {
     /**
      * 获取结果
+     * 
      * @return
      * @throws InterruptedException
      * @throws ExecutionException
@@ -19,6 +20,7 @@ public interface RpcFuture {
 
     /**
      * 在指定时间内获取结果
+     * 
      * @param timeout
      * @param unit
      * @return
@@ -27,16 +29,19 @@ public interface RpcFuture {
      * @throws TimeoutException
      * @throws RequestException
      */
-    Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException, RequestException;
-    
+    Object get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException, RequestException;
+
     /**
      * 添加回调函数
+     * 
      * @param callback
      */
     void addCallback(Callback callback);
 
     /**
      * 该 {@code RpcFuture} 的标识符
+     * 
      * @return
      */
     long identifier();
@@ -48,17 +53,18 @@ public interface RpcFuture {
 
     /**
      * 确认该 {@code RpcFuture} 完成
+     * 
      * @param result
      */
     void done(Object result);
 
     /**
      * 取消
+     * 
      * @param mayInterruptIfRunning
      * @return
      */
     boolean cancel(boolean mayInterruptIfRunning);
-
 
     /**
      * 以下为状态相关方法
@@ -66,32 +72,36 @@ public interface RpcFuture {
 
     /**
      * 是否完成
+     * 
      * @return
      */
     boolean isDone();
 
     /**
      * 是否取消
+     * 
      * @return
      */
     boolean isCancelled();
 
     /**
      * 是否等待中
+     * 
      * @return
      */
     boolean isPending();
 
     /**
-     * 该 {@link RpcFuture} 是否出错
-     * 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下
+     * 该 {@link RpcFuture} 是否出错 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下
      * 该方法的返回值才可信
+     * 
      * @return
      */
     boolean isError();
 
     /**
      * 是否超时
+     * 
      * @return
      */
     boolean timeout();
