@@ -1,5 +1,6 @@
 package conglin.clrpc.transport.handler;
 
+import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.transport.handler.codec.BasicRequestEncoder;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;
@@ -22,10 +23,12 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         this.channelPipeline = ch.pipeline();
-        this.channelPipeline.addLast("BasicRequest Encoder", new BasicRequestEncoder(context.getSerializationHandler()))
-                .addLast("TransactionRequest Encoder", new TransactionRequestEncoder(context.getSerializationHandler()))
-                .addLast("Common Decoder", new CommonDecoder(context.getSerializationHandler()))
-                .addLast("BasicResponse ChannelHandler", new BasicResponseChannelHandler(context.getServiceExecutor()));
+        SerializationHandler serializationHandler = context.getSerializationHandler();
+        this.channelPipeline.addLast("BasicRequest Encoder", new BasicRequestEncoder(serializationHandler))
+                .addLast("TransactionRequest Encoder", new TransactionRequestEncoder(serializationHandler))
+                .addLast("Common Decoder", new CommonDecoder(serializationHandler))
+                .addLast("ConsumerChannelInboundHandler",
+                        new ConsumerChannelInboundHandler(context.getServiceExecutor()));
         // you can add more handlers
     }
 

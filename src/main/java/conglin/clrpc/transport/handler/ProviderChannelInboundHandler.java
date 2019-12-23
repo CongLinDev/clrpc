@@ -4,18 +4,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.service.executor.AbstractProviderServiceExecutor;
-import conglin.clrpc.transport.message.TransactionRequest;
-
+import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class TransactionRequestChannelHandler extends SimpleChannelInboundHandler<TransactionRequest> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionRequestChannelHandler.class);
+public class ProviderChannelInboundHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderChannelInboundHandler.class);
 
     protected final AbstractProviderServiceExecutor serviceExecutor;
 
-    public TransactionRequestChannelHandler(AbstractProviderServiceExecutor serviceExecutor) {
+    public ProviderChannelInboundHandler(AbstractProviderServiceExecutor serviceExecutor) {
         this.serviceExecutor = serviceExecutor;
     }
 
@@ -26,8 +24,8 @@ public class TransactionRequestChannelHandler extends SimpleChannelInboundHandle
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, TransactionRequest msg) throws Exception {
-        serviceExecutor.execute(msg);
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        serviceExecutor.execute((BasicRequest) msg);
     }
 
     @Override

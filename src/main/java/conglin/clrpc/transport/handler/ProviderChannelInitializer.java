@@ -1,7 +1,7 @@
 package conglin.clrpc.transport.handler;
 
+import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.service.context.ProviderContext;
-import conglin.clrpc.service.executor.BasicProviderServiceExecutor;
 import conglin.clrpc.service.executor.ZooKeeperProviderServiceExecutor;
 import conglin.clrpc.transport.handler.codec.BasicResponseEncoder;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;
@@ -21,12 +21,11 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast("Common Decoder", new CommonDecoder(context.getSerializationHandler()))
-                .addLast("BasicResponse Encoder", new BasicResponseEncoder(context.getSerializationHandler()))
-                .addLast("BasicRequest ChannelHandler",
-                        new BasicRequestChannelHandler(new BasicProviderServiceExecutor(context)))
-                .addLast("TransactionRequest ChannelHandler",
-                        new TransactionRequestChannelHandler(new ZooKeeperProviderServiceExecutor(context)));
+        SerializationHandler serializationHandler = context.getSerializationHandler();
+        pipeline.addLast("Common Decoder", new CommonDecoder(serializationHandler))
+                .addLast("BasicResponse Encoder", new BasicResponseEncoder(serializationHandler))
+                .addLast("ProviderChannelInboundHandler",
+                        new ProviderChannelInboundHandler(new ZooKeeperProviderServiceExecutor(context)));
 
         // you can add more handlers
     }

@@ -107,6 +107,7 @@ public class ConsumerTransfer {
         Bootstrap bootstrap = new Bootstrap();
         ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(context);
         bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS)).group(workerGroup).channel(NioSocketChannel.class)
+                // .handler(new LoggingHandler(LogLevel.INFO))
                 .handler(channelInitializer);
         LOGGER.info("Consumer started on {}", LOCAL_ADDRESS);
 

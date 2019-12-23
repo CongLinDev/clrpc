@@ -6,21 +6,21 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.service.executor.ServiceExecutor;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class BasicResponseChannelHandler extends SimpleChannelInboundHandler<BasicResponse> {
+public class ConsumerChannelInboundHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicResponseChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerChannelInboundHandler.class);
 
     private final ServiceExecutor<BasicResponse> serviceExecutor;
 
-    public BasicResponseChannelHandler(ServiceExecutor<BasicResponse> serviceExecutor) {
+    public ConsumerChannelInboundHandler(ServiceExecutor<BasicResponse> serviceExecutor) {
         this.serviceExecutor = serviceExecutor;
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, BasicResponse msg) throws Exception {
-        serviceExecutor.execute(msg);
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        serviceExecutor.execute((BasicResponse) msg);
     }
 
     @Override
