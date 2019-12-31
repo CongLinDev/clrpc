@@ -43,9 +43,8 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest();
+        TransactionRequest request = new TransactionRequest(currentTransactionId);
 
-        request.setRequestId(currentTransactionId);
         request.setServiceName(serviceName);
         request.setMethodName(method);
         request.setParameters(args);
@@ -57,7 +56,8 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest();
+        TransactionRequest request = new TransactionRequest(currentTransactionId);
+
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
         request.setParameters(args);

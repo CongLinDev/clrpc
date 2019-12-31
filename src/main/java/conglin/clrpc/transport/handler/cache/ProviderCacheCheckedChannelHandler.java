@@ -21,8 +21,10 @@ public class ProviderCacheCheckedChannelHandler extends AbstractCacheCheckedChan
     }
 
     @Override
-    protected void cache(ChannelHandlerContext ctx, Long requestId, BasicResponse response) {
-        response.setRequestId(requestId);
+    protected void cache(ChannelHandlerContext ctx, Long requestId, BasicResponse cachedResponse) {
+        // response.setRequestId(requestId);
+        BasicResponse response = new BasicResponse(requestId);
+        response.setResult(cachedResponse.getResult());
         send(ctx, response);
     }
 

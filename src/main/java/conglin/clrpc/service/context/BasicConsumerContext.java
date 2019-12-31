@@ -1,7 +1,6 @@
 package conglin.clrpc.service.context;
 
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 
 import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -11,9 +10,10 @@ import conglin.clrpc.service.executor.AbstractConsumerServiceExecutor;
 import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.executor.ServiceExecutor;
 import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.transport.chooser.ProviderChooser;
+import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
-import io.netty.channel.Channel;
 
 public class BasicConsumerContext implements ConsumerContext {
     protected CacheManager<BasicRequest, BasicResponse> cacheManager;
@@ -28,8 +28,6 @@ public class BasicConsumerContext implements ConsumerContext {
         this.cacheManager = cacheManager;
     }
 
-
-
     protected ExecutorService executorService;
 
     @Override
@@ -42,10 +40,8 @@ public class BasicConsumerContext implements ConsumerContext {
         this.executorService = executorService;
     }
 
-
-
     protected PropertyConfigurer propertyConfigurer;
-    
+
     @Override
     public PropertyConfigurer getPropertyConfigurer() {
         return propertyConfigurer;
@@ -77,9 +73,8 @@ public class BasicConsumerContext implements ConsumerContext {
 
     @Override
     public void setSerializationHandler(SerializationHandler serializationHandler) {
-        this.serializationHandler = serializationHandler;        
+        this.serializationHandler = serializationHandler;
     }
-
 
     protected AbstractConsumerServiceExecutor consumerServiceExecutor;
 
@@ -98,8 +93,6 @@ public class BasicConsumerContext implements ConsumerContext {
         return consumerServiceExecutor;
     }
 
-
-
     protected FuturesHolder<Long> futuresHolder;
 
     @Override
@@ -112,19 +105,29 @@ public class BasicConsumerContext implements ConsumerContext {
         this.futuresHolder = futuresHolder;
     }
 
-
-    protected BiFunction<String, Object, Channel> providerChooser;
+    protected ProviderChooser providerChooser;
 
     @Override
-    public BiFunction<String, Object, Channel> getProviderChooser() {
+    public ProviderChooser getProviderChooser() {
         return providerChooser;
     }
 
     @Override
-    public void setProviderChooser(BiFunction<String, Object, Channel> providerChooser) {
+    public void setProviderChooser(ProviderChooser providerChooser) {
         this.providerChooser = providerChooser;
     }
 
+    protected ProviderChooserAdapter providerChooserAdapter;
+
+    @Override
+    public ProviderChooserAdapter getProviderChooserAdapter() {
+        return providerChooserAdapter;
+    }
+
+    @Override
+    public void setProviderChooserAdapter(ProviderChooserAdapter providerChooserAdapter) {
+        this.providerChooserAdapter = providerChooserAdapter;
+    }
 
     protected IdentifierGenerator identifierGenerator;
 

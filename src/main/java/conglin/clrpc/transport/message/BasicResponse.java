@@ -8,13 +8,27 @@ public class BasicResponse extends Message implements Serializable {
 
     transient public static final int MESSAGE_TYPE = 1;
 
-    protected Object result;
-    protected int flag;
+    private Object result;
+    private int flag;
 
+    public BasicResponse(Long requestId) {
+        super(requestId);
+    }
+
+    /**
+     * 获得结果
+     * 
+     * @return the result
+     */
     public Object getResult() {
         return result;
     }
 
+    /**
+     * 设置结果
+     * 
+     * @param result the result to set
+     */
     public void setResult(Object result) {
         this.result = result;
     }
@@ -22,9 +36,9 @@ public class BasicResponse extends Message implements Serializable {
     @Override
     public String toString() {
         if (isError()) {
-            return "BasicResponse [requestId=" + requestId + ", error=" + result + "]";
+            return "BasicResponse [requestId=" + getRequestId() + ", error=" + result + "]";
         } else {
-            return "BasicResponse [requestId=" + requestId + ", result=" + result + "]";
+            return "BasicResponse [requestId=" + getRequestId() + ", result=" + result + "]";
         }
     }
 

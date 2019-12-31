@@ -39,10 +39,8 @@ public class BasicProviderServiceExecutor extends AbstractProviderServiceExecuto
     }
 
     @Override
-    protected boolean doExecute(BasicRequest request, BasicResponse response)
+    protected BasicResponse doExecute(BasicRequest request)
             throws UnsupportedServiceException, ServiceExecutionException {
-        // 该类实现下，只要不抛出异常，一定返回 true
-
         String serviceName = request.getServiceName();
         // 获取服务实现类
         Object serviceBean = serviceObjectsHolder.apply(serviceName);
@@ -51,9 +49,7 @@ public class BasicProviderServiceExecutor extends AbstractProviderServiceExecuto
             throw new UnsupportedServiceException(request);
         }
 
-        jdkReflectInvoke(serviceBean, request, response);
-
-        return true;
+        return jdkReflectInvoke(serviceBean, request);
     }
 
     /**
@@ -61,18 +57,19 @@ public class BasicProviderServiceExecutor extends AbstractProviderServiceExecuto
      * 
      * @param serviceBean
      * @param request
-     * @param response
+     * @return
      * @throws ServiceExecutionException
      */
-    protected void jdkReflectInvoke(Object serviceBean, BasicRequest request, BasicResponse response)
+    protected BasicResponse jdkReflectInvoke(Object serviceBean, BasicRequest request)
             throws ServiceExecutionException {
+        BasicResponse response = new BasicResponse(request.getRequestId());
+
         Class<?> serviceBeanClass = serviceBean.getClass();
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
 
-        LOGGER.debug("Invoking class..." + serviceBeanClass.getName());
-        LOGGER.debug("Invoking method..." + methodName);
+        LOGGER.debug("Invoking class=" + serviceBeanClass.getName() + " And invoking method=" + methodName);
 
         try {
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
@@ -83,6 +80,7 @@ public class BasicProviderServiceExecutor extends AbstractProviderServiceExecuto
                 | InvocationTargetException e) {
             throw new ServiceExecutionException(request, e);
         }
+        return response;
     }
 
     /**

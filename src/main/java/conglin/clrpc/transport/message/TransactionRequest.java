@@ -8,6 +8,10 @@ public class TransactionRequest extends BasicRequest {
 
     protected Integer serialNumber;
 
+    public TransactionRequest(Long requestId) {
+        super(requestId);
+    }
+
     /**
      * @return the serialNumber of Transaction
      */

@@ -30,7 +30,7 @@ import io.netty.bootstrap.ServerBootstrap;
  * 注意：若服务接口相同，先添加的服务会被覆盖。 结束后不要忘记关闭服务端，释放资源。
  */
 
-public class RpcProviderBootstrap extends Bootstrap {
+public class RpcProviderBootstrap extends RpcBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcProviderBootstrap.class);
 
@@ -156,15 +156,7 @@ public class RpcProviderBootstrap extends Bootstrap {
      * @param option 启动选项
      */
     public void start(RpcProviderOption option) {
-        ProviderContext context = new BasicProviderContext();
-        // 设置本地地址
-        context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));
-        // 设置属性配置器
-        context.setPropertyConfigurer(CONFIGURER);
-        // 设置cache管理器
-        context.setCacheManager(CACHE_MANAGER);
-        // 设置序列化处理器
-        context.setSerializationHandler(option.getSerializationHandler());
+        ProviderContext context = initContext(option);
 
         SERVICE_HANDLER.start(context);
         PROVIDER_TRANSFER.start(context);
@@ -176,6 +168,27 @@ public class RpcProviderBootstrap extends Bootstrap {
     public void stop() {
         SERVICE_HANDLER.stop();
         PROVIDER_TRANSFER.stop();
+    }
+
+    /**
+     * 初始化上下文
+     * 
+     * @param option
+     * @return
+     */
+    private ProviderContext initContext(RpcProviderOption option) {
+        ProviderContext context = new BasicProviderContext();
+
+        // 设置本地地址
+        context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));
+        // 设置属性配置器
+        context.setPropertyConfigurer(CONFIGURER);
+        // 设置cache管理器
+        context.setCacheManager(CACHE_MANAGER);
+        // 设置序列化处理器
+        context.setSerializationHandler(option.getSerializationHandler());
+
+        return context;
     }
 
 }

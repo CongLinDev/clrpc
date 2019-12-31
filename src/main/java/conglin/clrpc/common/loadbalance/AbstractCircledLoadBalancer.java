@@ -1,4 +1,4 @@
-package conglin.clrpc.service.loadbalance;
+package conglin.clrpc.common.loadbalance;
 
 import java.util.Map;
 import java.util.TreeMap;

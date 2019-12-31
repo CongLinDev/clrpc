@@ -41,13 +41,11 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        BasicRequest request = new BasicRequest();
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
         request.setServiceName(serviceName);
         request.setMethodName(methodName);
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
-
-        request.setRequestId(identifierGenerator.generate(methodName));
 
         LOGGER.debug(request.toString());
         return sender.sendRequest(request);
@@ -55,13 +53,11 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException {
-        BasicRequest request = new BasicRequest();
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
         request.setServiceName(serviceName);
         request.setMethodName(methodName);
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
-
-        request.setRequestId(identifierGenerator.generate(methodName));
 
         LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
@@ -69,13 +65,11 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public RpcFuture call(Method method, Object... args) {
-        BasicRequest request = new BasicRequest();
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(method.getName()));
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
-
-        request.setRequestId(identifierGenerator.generate(method.getName()));
 
         LOGGER.debug(request.toString());
         return sender.sendRequest(request);
@@ -83,13 +77,11 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException {
-        BasicRequest request = new BasicRequest();
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(method.getName()));
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
-
-        request.setRequestId(identifierGenerator.generate(method.getName()));
 
         LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);

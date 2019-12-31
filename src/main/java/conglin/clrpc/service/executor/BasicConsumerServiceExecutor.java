@@ -1,7 +1,6 @@
 package conglin.clrpc.service.executor;
 
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.transport.chooser.ProviderChooser;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.Channel;
@@ -21,23 +21,22 @@ public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecuto
 
     protected final FuturesHolder<Long> futuresHolder;
 
-    protected final BiFunction<String, Object, Channel> providerChooser;
+    protected final ProviderChooser providerChooser;
 
     public BasicConsumerServiceExecutor(ConsumerContext context) {
         this(context.getFuturesHolder(), context.getProviderChooser(), context.getExecutorService(),
                 context.getCacheManager());
     }
 
-    public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder,
-            BiFunction<String, Object, Channel> providerChooser, ExecutorService executor,
-            CacheManager<BasicRequest, BasicResponse> cacheManager) {
+    public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser,
+            ExecutorService executor, CacheManager<BasicRequest, BasicResponse> cacheManager) {
         super(executor, cacheManager);
         this.futuresHolder = futuresHolder;
         this.providerChooser = providerChooser;
     }
 
-    public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder,
-            BiFunction<String, Object, Channel> providerChooser, ExecutorService executor) {
+    public BasicConsumerServiceExecutor(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser,
+            ExecutorService executor) {
         this(futuresHolder, providerChooser, executor, null);
     }
 
@@ -51,10 +50,17 @@ public class BasicConsumerServiceExecutor extends AbstractConsumerServiceExecuto
     }
 
     @Override
-    protected void doSendRequest(BasicRequest request, Object object) {
+    protected void doSendRequest(BasicRequest request){
         String serviceName = request.getServiceName();
-        Channel channel = providerChooser.apply(serviceName, object);
+        Channel channel = providerChooser.choose(serviceName, request);
+        channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        LOGGER.debug("Send request Id = " + request.getRequestId());
+    }
 
+    @Override
+    protected void doSendRequest(BasicRequest request, String targetAddress){
+        String serviceName = request.getServiceName();
+        Channel channel = providerChooser.choose(serviceName, targetAddress);
         channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         LOGGER.debug("Send request Id = " + request.getRequestId());
     }

@@ -40,12 +40,11 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
      * 处理请求
      * 
      * @param request
-     * @param response
-     * @return 请求处理是否完成
+     * @return 返回回复消息
      * @throws UnsupportedServiceException 此Provider不支持该服务时抛出
      * @throws ServiceExecutionException   执行服务出错时抛出
      */
-    abstract protected boolean doExecute(BasicRequest request, BasicResponse response)
+    abstract protected BasicResponse doExecute(BasicRequest request)
             throws UnsupportedServiceException, ServiceExecutionException;
 
     @Override
@@ -53,31 +52,24 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
         LOGGER.debug("Receive request " + t.getRequestId());
 
         executor.submit(() -> {
+
             BasicResponse response = null;
-            boolean executeCompletely = false;
-            if ((response = getCache(t)) == null) {
-                response = new BasicResponse();
-                response.setRequestId(t.getRequestId());
 
-                try {
-                    executeCompletely = doExecute(t, response);
-
-                    // save result
-                    if (executeCompletely)
-                        putCache(t, response);
-
-                } catch (UnsupportedServiceException | ServiceExecutionException e) {
-                    LOGGER.error("Request failed: " + e.getMessage());
-                    response.signError();
-                    response.setResult(e);
-
-                    executeCompletely = true;
-                }
-            } else { // fetch from cache
-                executeCompletely = true;
-            }
-            if (executeCompletely)
+            if ((response = getCache(t)) != null) { // 获得缓存结果
                 sendResponse(response);
+                return;
+            }
+
+            try {
+                response = doExecute(t); // 未获得缓存结果，本地执行方法
+                putCache(t, response); // 执行结果放入缓存
+            } catch (UnsupportedServiceException | ServiceExecutionException e) {
+                LOGGER.error("Request failed: " + e.getMessage());
+                response = new BasicResponse(t.getRequestId());
+                response.signError();
+                response.setResult(e);
+            }
+            sendResponse(response);
         });
     }
 
@@ -110,7 +102,7 @@ abstract public class AbstractProviderServiceExecutor implements ServiceExecutor
      * @param response
      */
     protected void putCache(BasicRequest request, BasicResponse response) {
-        if (cacheManager == null || !response.canCacheForProvider())
+        if (cacheManager == null || response == null || !response.canCacheForProvider())
             return;
         LOGGER.debug("Caching request and response. Request id = " + request.getRequestId());
         cacheManager.put(request, response);

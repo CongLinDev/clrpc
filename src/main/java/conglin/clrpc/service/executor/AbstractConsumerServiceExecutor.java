@@ -54,7 +54,7 @@ abstract public class AbstractConsumerServiceExecutor implements ServiceExecutor
         // executor.submit(()->{
         // doSendRequest(request, request.getRequestId());
         // });
-        doSendRequest(request, request.getRequestId());
+        doSendRequest(request);
         return future;
     }
 
@@ -74,9 +74,9 @@ abstract public class AbstractConsumerServiceExecutor implements ServiceExecutor
     @Override
     public void resendRequest(BasicRequest request) {
         // executor.submit(()->{
-        // doSendRequest(request, request.getRequestId());
+        // doSendRequest(request);
         // });
-        doSendRequest(request, request.getRequestId());
+        doSendRequest(request);
     }
 
     @Override
@@ -91,9 +91,16 @@ abstract public class AbstractConsumerServiceExecutor implements ServiceExecutor
      * 发送请求方法 调用 {@link io.netty.channel.Channel#write(Object)}
      * 
      * @param request
-     * @param object  随机对象
      */
-    abstract protected void doSendRequest(BasicRequest request, Object object);
+    abstract protected void doSendRequest(BasicRequest request);
+
+    /**
+     * 发送请求方法 调用 {@link io.netty.channel.Channel#write(Object)}
+     * 
+     * @param request
+     * @param targetAddress 远端地址
+     */
+    abstract protected void doSendRequest(BasicRequest request, String targetAddress);
 
     /**
      * 暂存Future对象

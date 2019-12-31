@@ -37,17 +37,17 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
     }
 
     @Override
-    protected boolean doExecute(BasicRequest request, BasicResponse response)
+    protected BasicResponse doExecute(BasicRequest request)
             throws UnsupportedServiceException, ServiceExecutionException {
 
-        // 该类被设计为异步实现，一定返回 false
+        // 对于事务的处理，该方法被设计为异步实现，一定返回 null
         if (!(request instanceof TransactionRequest))
-            return super.doExecute(request, response);
+            return super.doExecute(request);
         TransactionRequest transactionRequest = (TransactionRequest) request;
 
         // 标记事务的本条请求被当前服务提供者所占有
         if (!helper.sign(transactionRequest.getRequestId(), transactionRequest.getSerialNumber()))
-            return false;
+            return null;
 
         try {
             helper.watch(transactionRequest.getRequestId(), new Callback() {
@@ -55,7 +55,10 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
                 public void success(Object result) {
 
                     try {
-                        ZooKeeperProviderServiceExecutor.super.doExecute(request, response);
+                        BasicResponse response = ZooKeeperProviderServiceExecutor.super.doExecute(request);
+                        sendResponse(response);
+                        LOGGER.info("Transaction id=" + transactionRequest.getRequestId() + " serialNumber="
+                                + transactionRequest.getSerialNumber() + " has executed.");
                     } catch (UnsupportedServiceException | ServiceExecutionException e) {
                         LOGGER.error("Request failed: " + e.getMessage());
 
@@ -65,10 +68,6 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
                         return;
                     }
 
-                    sendResponse(response);
-
-                    LOGGER.info("Transaction id=" + transactionRequest.getRequestId() + " serialNumber="
-                            + transactionRequest.getSerialNumber() + " has executed.");
                 }
 
                 @Override
@@ -81,6 +80,6 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
         } catch (TransactionException e) {
             LOGGER.error(e.getMessage());
         }
-        return false;
+        return null;
     }
 }

@@ -34,16 +34,16 @@ abstract public class AbstractCacheCheckedChannelHandler extends ChannelInboundH
         }
 
         BasicRequest request = (BasicRequest) msg;
-        BasicResponse response = CACHE_MANAGER.get(request);
+        BasicResponse cachedResponse = CACHE_MANAGER.get(request);
 
-        if (response == null) { // 未找到缓存
+        if (cachedResponse == null) { // 未找到缓存
             super.channelRead(ctx, msg);
             return;
         }
 
         LOGGER.debug("Find available cached response.");
         // 找到缓存后的处理
-        cache(ctx, request.getRequestId(), response);
+        cache(ctx, request.getRequestId(), cachedResponse);
     }
 
     /**
@@ -60,7 +60,7 @@ abstract public class AbstractCacheCheckedChannelHandler extends ChannelInboundH
      * 
      * @param ctx
      * @param requestId
-     * @param response
+     * @param cachedResponse
      */
-    abstract protected void cache(ChannelHandlerContext ctx, Long requestId, BasicResponse response);
+    abstract protected void cache(ChannelHandlerContext ctx, Long requestId, BasicResponse cachedResponse);
 }

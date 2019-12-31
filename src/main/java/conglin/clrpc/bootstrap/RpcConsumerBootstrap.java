@@ -36,7 +36,7 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 
-public class RpcConsumerBootstrap extends Bootstrap {
+public class RpcConsumerBootstrap extends RpcBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcConsumerBootstrap.class);
 
@@ -130,6 +130,27 @@ public class RpcConsumerBootstrap extends Bootstrap {
      * @param option 启动选项
      */
     public void start(RpcConsumerOption option) {
+        ConsumerContext context = initContext(option);
+
+        SERVICE_HANDLER.start(context);
+        CONSUMER_TRANSFER.start(context);
+    }
+
+    /**
+     * 停止
+     */
+    public void stop() {
+        SERVICE_HANDLER.stop();
+        CONSUMER_TRANSFER.stop();
+    }
+
+    /**
+     * 初始化上下文
+     * 
+     * @param option
+     * @return
+     */
+    private ConsumerContext initContext(RpcConsumerOption option) {
         ConsumerContext context = new BasicConsumerContext();
 
         context.setLocalAddress(IPAddressUtils.getHostAddressAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
@@ -142,17 +163,10 @@ public class RpcConsumerBootstrap extends Bootstrap {
         context.setSerializationHandler(option.getSerializationHandler());
         // 设置ID生成器
         context.setIdentifierGenerator(option.getIdentifierGenerator());
+        // 设置服务提供者挑选适配器
+        context.setProviderChooserAdapter(option.getProviderChooserAdapter());
 
-        SERVICE_HANDLER.start(context);
-        CONSUMER_TRANSFER.start(context);
-    }
-
-    /**
-     * 停止
-     */
-    public void stop() {
-        SERVICE_HANDLER.stop();
-        CONSUMER_TRANSFER.stop();
+        return context;
     }
 
 }

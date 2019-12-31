@@ -8,13 +8,13 @@ import org.apache.zookeeper.Watcher.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.bootstrap.Bootstrap;
+import conglin.clrpc.bootstrap.RpcBootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
-abstract public class AbstractRpcMonitorBootstrap extends Bootstrap implements RpcMonitorBootstrap {
+abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implements RpcMonitorBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
 

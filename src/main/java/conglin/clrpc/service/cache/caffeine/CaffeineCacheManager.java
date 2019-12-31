@@ -54,10 +54,7 @@ public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, Bas
 
     @Override
     public BasicResponse get(BasicRequest key) {
-        BasicResponse value = cache.getIfPresent(key);
-        if(value == null) return null;
-        value.setRequestId(key.getRequestId());
-        return value;
+        return cache.getIfPresent(key);
     }
 
     @Override
