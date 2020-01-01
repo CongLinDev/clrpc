@@ -25,7 +25,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class ConsumerTransfer implements ProviderChooser {
+public class ConsumerTransfer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerTransfer.class);
 
@@ -39,7 +39,6 @@ public class ConsumerTransfer implements ProviderChooser {
     private String LOCAL_ADDRESS;
 
     private LoadBalancer<String, String, Channel> loadBalancer;
-    private ProviderChooserAdapter providerChooserAdapter;
     private long timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
     public ConsumerTransfer() {
@@ -57,10 +56,7 @@ public class ConsumerTransfer implements ProviderChooser {
      */
     public void start(ConsumerContext context) {
         this.context = context;
-
-        providerChooserAdapter = context.getProviderChooserAdapter();
-        context.setProviderChooser(this);
-        context.setConsumerServiceExecutor(new BasicConsumerServiceExecutor(context));
+        initContext(context);
 
         PropertyConfigurer configurer = context.getPropertyConfigurer();
 
@@ -71,6 +67,16 @@ public class ConsumerTransfer implements ProviderChooser {
             int workerThread = configurer.getOrDefault("consumer.thread.worker", 4);
             workerGroup = new NioEventLoopGroup(workerThread);
         }
+    }
+
+    /**
+     * 初始化上下文
+     * 
+     * @param context
+     */
+    protected void initContext(ConsumerContext context) {
+        context.setProviderChooser(new DefaultProviderChooser(context.getProviderChooserAdapter()));
+        context.setConsumerServiceExecutor(new BasicConsumerServiceExecutor(context));
     }
 
     /**
@@ -127,34 +133,6 @@ public class ConsumerTransfer implements ProviderChooser {
         LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
         return channelInitializer.channel();
     }
-    
-    @Override
-    public Channel choose(String serviceName, BasicRequest request) {
-        while (!loadBalancer.hasNext(serviceName)) {
-            try {
-                waitingForChannelHandler();
-            } catch (InterruptedException e) {
-                LOGGER.error("Waiting for available node is interrupted!", e);
-            }
-        }
-        int random = providerChooserAdapter.apply(request);
-        return loadBalancer.get(serviceName, random);
-    }
-
-    @Override
-    public Channel choose(String serviceName, String addition) {
-        Channel channel = null;
-        int count = 0;
-        while ((channel = loadBalancer.get(serviceName, addition)) == null && count < 3) {
-            count++;
-            try {
-                waitingForChannelHandler();
-            } catch (InterruptedException e) {
-                LOGGER.error("Waiting for available node is interrupted!", e);
-            }
-        }
-        return channel;
-    }
 
     /**
      * 等待可用的服务提供者
@@ -181,6 +159,44 @@ public class ConsumerTransfer implements ProviderChooser {
             connected.signalAll();
         } finally {
             lock.unlock();
+        }
+    }
+
+    class DefaultProviderChooser implements ProviderChooser {
+
+        private final ProviderChooserAdapter adapter;
+
+        DefaultProviderChooser(ProviderChooserAdapter adapter) {
+            this.adapter = adapter;
+        }
+
+        @Override
+        public Channel choose(String serviceName, BasicRequest request) {
+            while (!loadBalancer.hasNext(serviceName)) {
+                try {
+                    waitingForChannelHandler();
+                } catch (InterruptedException e) {
+                    LOGGER.error("Waiting for available node is interrupted!", e);
+                }
+            }
+            int random = adapter.apply(request);
+            return loadBalancer.get(serviceName, random);
+        }
+
+        @Override
+        public Channel choose(String serviceName, String addition) {
+            Channel channel = null;
+            int count = 0;
+            // 尝试三次，若三次未成功，则放弃
+            while ((channel = loadBalancer.get(serviceName, addition)) == null && count < 3) {
+                count++;
+                try {
+                    waitingForChannelHandler();
+                } catch (InterruptedException e) {
+                    LOGGER.error("Waiting for available node is interrupted!", e);
+                }
+            }
+            return channel;
         }
     }
 }

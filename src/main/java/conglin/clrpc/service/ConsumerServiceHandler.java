@@ -84,11 +84,19 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     public void start(ConsumerContext context) {
         this.context = context;
         serviceDiscovery = new ZooKeeperServiceDiscovery(context.getLocalAddress(), context.getPropertyConfigurer());
+        identifierGenerator = context.getIdentifierGenerator();
+        initContext(context);
+        checkFuture();
+    }
+
+    /**
+     * 初始化上下文
+     * 
+     * @param context
+     */
+    protected void initContext(ConsumerContext context) {
         context.setExecutorService(getExecutorService());
         context.setFuturesHolder(this);
-
-        identifierGenerator = context.getIdentifierGenerator();
-        checkFuture();
     }
 
     /**

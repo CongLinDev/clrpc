@@ -9,6 +9,11 @@ import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 
+/**
+ * Protostuff 序列化器
+ * 
+ * 使用Protostuff库进行序列化与反序列化
+ */
 public class ProtostuffSerializationHandler implements SerializationHandler{
 
     private final Map<Class<?>, Schema<?>> CACHED_SCHEMA;
@@ -18,8 +23,8 @@ public class ProtostuffSerializationHandler implements SerializationHandler{
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> byte[] serialize(T t) {
+        @SuppressWarnings("unchecked")
         Class<T> tClass = (Class<T>)t.getClass();
         LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         Schema<T> schema = getSchema(tClass);

@@ -6,6 +6,7 @@ package conglin.clrpc.common.codec;
 public interface SerializationHandler {
     /**
      * 序列化
+     * 
      * @param <T>
      * @param t
      * @return
@@ -14,6 +15,7 @@ public interface SerializationHandler {
 
     /**
      * 反序列化
+     * 
      * @param <T>
      * @param data
      * @param clazz

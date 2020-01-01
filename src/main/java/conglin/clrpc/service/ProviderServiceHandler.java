@@ -74,6 +74,15 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      */
     public void start(ProviderContext context) {
         serviceRegistry = new ZooKeeperServiceRegistry(context.getLocalAddress(), context.getPropertyConfigurer());
+        initContext(context);
+    }
+
+    /**
+     * 初始化上下文
+     * 
+     * @param context
+     */
+    protected void initContext(ProviderContext context) {
         // 设置服务注册器
         context.setServiceRegister(this::registerService);
         // 设置服务对象持有器
