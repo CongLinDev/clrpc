@@ -156,6 +156,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @param option 启动选项
      */
     public void start(RpcProviderOption option) {
+        super.start();
         ProviderContext context = initContext(option);
 
         SERVICE_HANDLER.start(context);
@@ -168,6 +169,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     public void stop() {
         SERVICE_HANDLER.stop();
         PROVIDER_TRANSFER.stop();
+        super.stop();
     }
 
     /**

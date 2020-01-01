@@ -70,6 +70,16 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
         return this;
     }
 
+    @Override
+    public void start() {
+        super.start();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+    }
+
     /**
      * 处理服务消费者节点和数据
      * 

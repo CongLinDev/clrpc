@@ -130,6 +130,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @param option 启动选项
      */
     public void start(RpcConsumerOption option) {
+        super.start();
         ConsumerContext context = initContext(option);
 
         SERVICE_HANDLER.start(context);
@@ -142,6 +143,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     public void stop() {
         SERVICE_HANDLER.stop();
         CONSUMER_TRANSFER.stop();
+        super.stop();
     }
 
     /**

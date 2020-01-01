@@ -15,6 +15,8 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     @Override
     public void start() {
+        super.start();
+
         LOGGER.info("Console monitor started.");
         try {
             Thread.sleep(Integer.MAX_VALUE);
@@ -26,6 +28,7 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     @Override
     public void stop() {
         LOGGER.info("Console monitor stoped.");
+        super.stop();
     }
 
     @Override

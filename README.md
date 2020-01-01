@@ -71,16 +71,6 @@
 
 ```
 
-### Notice
-
-需要注意的是，同一个JVM中可能运行着多种角色（Provider Consumer Monitor）。
-
-`clrpc` 为了 **性能** 选择复用部分资源。但是这些资源在对象使用完后无法知晓是否后续会被在用，所以使用全局资源管理器在JVM关闭前关闭该资源。
-
-你应该在JVM关闭前或是在某一安全点（后续不再使用 `clrpc`） 调用 `conglin.clrpc.global.GlobalResourceManager` 的 `destroy` 方法释放资源。
-
-目前的复用资源主要为 **ZooKeeper** 的 复用连接池。
-
 ## Architecture
 
 ![architecture.png](https://i.loli.net/2019/11/04/UCpbuqOM2zYgTh7.png)
