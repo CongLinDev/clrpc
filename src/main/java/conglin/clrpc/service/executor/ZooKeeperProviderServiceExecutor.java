@@ -57,7 +57,7 @@ public class ZooKeeperProviderServiceExecutor extends BasicProviderServiceExecut
                     try {
                         BasicResponse response = ZooKeeperProviderServiceExecutor.super.doExecute(request);
                         sendResponse(response);
-                        LOGGER.info("Transaction id=" + transactionRequest.getRequestId() + " serialNumber="
+                        LOGGER.debug("Transaction id=" + transactionRequest.getRequestId() + " serialNumber="
                                 + transactionRequest.getSerialNumber() + " has executed.");
                     } catch (UnsupportedServiceException | ServiceExecutionException e) {
                         LOGGER.error("Request failed: " + e.getMessage());

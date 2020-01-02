@@ -33,11 +33,13 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     @Override
     protected void handleConusmer(Map<String, String> nodeAndData) {
+        System.out.println("Consumer node Changed. Time=" + System.currentTimeMillis());
         printNodeInfo(nodeAndData);
     }
 
     @Override
     protected void handleProvider(Map<String, String> nodeAndData) {
+        System.out.println("Provider node Changed. Time=" + System.currentTimeMillis());
         printNodeInfo(nodeAndData);
     }
 

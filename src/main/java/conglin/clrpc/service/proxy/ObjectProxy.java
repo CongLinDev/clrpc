@@ -51,4 +51,19 @@ public interface ObjectProxy {
      */
     RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException;
 
+    /**
+     * 将对象代理转为接口代理
+     * 
+     * 需要注意的是，调用者必须保证参数中的interfaceClass的服务名与对象代理的服务名相同。 如果不能保证这个条件，建议调用
+     * {@link conglin.clrpc.bootstrap.RpcConsumerBootstrap#subscribe(Class)} 或是
+     * {@link conglin.clrpc.bootstrap.RpcConsumerBootstrap#subscribe(Class, String)}
+     * 方法获取接口代理
+     * 
+     * 相比较来说，建议调用上方提及的方法而不是调用该方法。
+     * 
+     * @param <T>
+     * @param interfaceClass
+     * @return
+     */
+    <T> T convert(Class<T> interfaceClass);
 }

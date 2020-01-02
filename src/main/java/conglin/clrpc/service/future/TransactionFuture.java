@@ -26,7 +26,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
                 // 进入该方法的时候，说明事务已经提交，不会被取消或中止
                 try {
                     if (checkCompleteFuture()) {
-                        LOGGER.info("Transaction request id=" + identifier() + " commit successfully.");
+                        LOGGER.debug("Transaction request id=" + identifier() + " commit successfully.");
                         done(null); // 全部的子Future完成后调用组合Future完成
                     }
 

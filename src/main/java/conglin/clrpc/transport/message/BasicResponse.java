@@ -15,6 +15,12 @@ public class BasicResponse extends Message implements Serializable {
         super(requestId);
     }
 
+    public BasicResponse(BasicResponse response) {
+        super(response);
+        this.result = response.getResult();
+        this.flag = response.getFlag();
+    }
+
     /**
      * 获得结果
      * 
@@ -40,6 +46,11 @@ public class BasicResponse extends Message implements Serializable {
         } else {
             return "BasicResponse [requestId=" + getRequestId() + ", result=" + result + "]";
         }
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return new BasicResponse(this);
     }
 
     /**

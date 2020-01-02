@@ -1,6 +1,5 @@
 package conglin.clrpc.transport;
 
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
@@ -40,19 +39,19 @@ public class ProviderTransfer {
                 // .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new ProviderChannelInitializer(context)).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-
+        String localAddress = context.getLocalAddress();
         try {
-            InetSocketAddress address = IPAddressUtils.splitHostAddressAndPortResolved(context.getLocalAddress());
-            ChannelFuture channelFuture = bootstrap.bind(address).sync();
 
-            LOGGER.info("Provider started on {}", address);
+            ChannelFuture channelFuture = bootstrap.bind(IPAddressUtils.splitHostAndPortResolved(localAddress)).sync();
+
+            LOGGER.info("Provider starts on {}", localAddress);
 
             // 进行准备工作
             context.getServiceRegister().accept("");
 
             channelFuture.channel().closeFuture().sync();
         } catch (UnknownHostException | InterruptedException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Cannot bind local address. {}", localAddress);
         } finally {
             stop();
         }

@@ -2,6 +2,7 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,5 +86,11 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
         LOGGER.debug(request.toString());
         return sender.sendRequest(remoteAddress, request);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T convert(Class<T> interfaceClass) {
+        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass }, this);
     }
 }

@@ -1,6 +1,7 @@
 package conglin.clrpc.transport;
 
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -33,13 +34,11 @@ public class ConsumerTransfer {
 
     private final ReentrantLock lock;
     private final Condition connected;
+    private long timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
     private ConsumerContext context;
 
-    private String LOCAL_ADDRESS;
-
     private LoadBalancer<String, String, Channel> loadBalancer;
-    private long timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
     public ConsumerTransfer() {
         loadBalancer = new ConsistentHashLoadBalancer<>(
@@ -60,7 +59,6 @@ public class ConsumerTransfer {
 
         PropertyConfigurer configurer = context.getPropertyConfigurer();
 
-        LOCAL_ADDRESS = context.getLocalAddress();
         timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
 
         if (workerGroup == null) {
@@ -118,20 +116,21 @@ public class ConsumerTransfer {
     private Channel connectProviderNode(String serviceName, String remoteAddress) {
         Bootstrap bootstrap = new Bootstrap();
         ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(context);
-        bootstrap.localAddress(IPAddressUtils.getPort(LOCAL_ADDRESS)).group(workerGroup).channel(NioSocketChannel.class)
+        String localAddress = context.getLocalAddress();
+
+        bootstrap.localAddress(IPAddressUtils.getPort(localAddress)).group(workerGroup).channel(NioSocketChannel.class)
                 // .handler(new LoggingHandler(LogLevel.INFO))
                 .handler(channelInitializer);
-        LOGGER.info("Consumer started on {}", LOCAL_ADDRESS);
+        LOGGER.info("Consumer starts on {}", localAddress);
 
-        InetSocketAddress socketRemoteAddress = IPAddressUtils.splitHostnameAndPortSilently(remoteAddress);
         try {
-            bootstrap.connect(socketRemoteAddress).sync();
-        } catch (InterruptedException e) {
+            bootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
+            LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
+            return channelInitializer.channel();
+        } catch (UnknownHostException | InterruptedException e) {
             LOGGER.error("Cannot connect to remote provider. Remote Address : " + remoteAddress, e);
-            return null;
         }
-        LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
-        return channelInitializer.channel();
+        return null;
     }
 
     /**
@@ -143,7 +142,7 @@ public class ConsumerTransfer {
     private boolean waitingForChannelHandler() throws InterruptedException {
         lock.lock();
         try {
-            LOGGER.info("Waiting for Channel Handler " + timeoutForWait + " mm...");
+            LOGGER.debug("Wait for Channel Handler " + timeoutForWait + " mm...");
             return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();

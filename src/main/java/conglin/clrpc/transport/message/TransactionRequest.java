@@ -12,7 +12,14 @@ public class TransactionRequest extends BasicRequest {
         super(requestId);
     }
 
+    public TransactionRequest(TransactionRequest request) {
+        super(request);
+        this.serialNumber = request.getSerialNumber();
+    }
+
     /**
+     * 获取序列号
+     * 
      * @return the serialNumber of Transaction
      */
     public Integer getSerialNumber() {
@@ -20,6 +27,8 @@ public class TransactionRequest extends BasicRequest {
     }
 
     /**
+     * 设置序列号
+     * 
      * @param serialNumber the serialNumber of Transaction to set
      */
     public void setSerialNumber(Integer serialNumber) {

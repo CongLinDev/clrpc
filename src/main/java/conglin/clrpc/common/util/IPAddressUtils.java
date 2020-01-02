@@ -14,7 +14,7 @@ public class IPAddressUtils{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPAddressUtils.class);
 
-    private static final String LOCAL_HOST_ADDRESS;
+    private static final String LOCAL_HOST;
 
     static {
         String hostAddress = null;
@@ -24,15 +24,15 @@ public class IPAddressUtils{
         } catch (UnknownHostException e) {
             LOGGER.error(e.getMessage());   
         } 
-        LOCAL_HOST_ADDRESS = (hostAddress == null) ? "127.0.0.1" : hostAddress;
+        LOCAL_HOST = (hostAddress == null) ? "127.0.0.1" : hostAddress;
     }
 
     /**
      * 返回本地地址
      * @return
      */
-    public static String getHostAddress() {
-        return LOCAL_HOST_ADDRESS;
+    public static String getLocalhost() {
+        return LOCAL_HOST;
     }
 
     /**
@@ -40,11 +40,11 @@ public class IPAddressUtils{
      * @param port
      * @return
      */
-    public static String getHostAddressAndPort(int port) {
-        return LOCAL_HOST_ADDRESS + ":" + port;
+    public static String getHostAndPort(int port) {
+        return LOCAL_HOST + ":" + port;
     }
 
-    public static InetSocketAddress splitHostAddressAndPortResolved(String data) throws UnknownHostException{
+    public static InetSocketAddress splitHostAndPortResolved(String data) throws UnknownHostException{
         String[] hostnameAndPort = data.trim().split(":");
         if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
         return new InetSocketAddress(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
@@ -56,7 +56,7 @@ public class IPAddressUtils{
      * @return
      * @throws UnknownHostException
      */
-    public static InetSocketAddress splitHostAddressAndPort(String data) throws UnknownHostException {
+    public static InetSocketAddress splitHostAndPort(String data) throws UnknownHostException {
         String[] hostnameAndPort = data.trim().split(":");
         if(hostnameAndPort.length != 2) throw new UnknownHostException(data);
         return InetSocketAddress.createUnresolved(hostnameAndPort[0], Integer.parseInt(hostnameAndPort[1]));
@@ -67,11 +67,11 @@ public class IPAddressUtils{
      * @param data
      * @return
      */
-    public static Set<InetSocketAddress> splitHostnameAndPort(List<String> data) {
+    public static Set<InetSocketAddress> splitHostAndPort(List<String> data) {
         Set<InetSocketAddress> set = new HashSet<>(data.size());
         for(String s : data){
             try{
-                InetSocketAddress address = splitHostAddressAndPort(s);
+                InetSocketAddress address = splitHostAndPort(s);
                 set.add(address);
             }catch(UnknownHostException e){
                 LOGGER.error(e.getMessage());
@@ -86,9 +86,9 @@ public class IPAddressUtils{
      * @param data
      * @return
      */
-    public static InetSocketAddress splitHostnameAndPortSilently(String data){
+    public static InetSocketAddress splitHostAndPortSilently(String data){
         try{
-            return splitHostAddressAndPort(data);
+            return splitHostAndPort(data);
         }catch(UnknownHostException e){
             LOGGER.error("Error address = " + data + " And it can not be converted");
             return null;
@@ -110,7 +110,7 @@ public class IPAddressUtils{
      * @param data
      * @return
      */
-    public static String getHostname(String data){
+    public static String getHost(String data){
         String [] hostnameAndPort = data.trim().split(":");
         return hostnameAndPort[0];
     }

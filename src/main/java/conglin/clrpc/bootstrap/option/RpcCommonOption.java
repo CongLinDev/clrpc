@@ -11,9 +11,11 @@ public class RpcCommonOption {
     /**
      * 设置序列化处理器
      * @param serializationHandler the serializationHandler to set
+     * @return this
      */
-    protected void serializationHandler(SerializationHandler serializationHandler) {
+    protected RpcCommonOption serializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
+        return this;
     }
 
     /**

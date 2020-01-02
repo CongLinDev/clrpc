@@ -12,10 +12,14 @@ abstract public class Message {
     transient public static final int MESSAGE_TYPE = 0;
     transient public static final int MESSAGE_TYPE_MASK = 0x7;
 
-    private Long requestId;
+    private final Long requestId;
 
     public Message(Long requestId) {
         this.requestId = requestId;
+    }
+
+    public Message(Message message) {
+        this.requestId = message.getRequestId();
     }
 
     /**
