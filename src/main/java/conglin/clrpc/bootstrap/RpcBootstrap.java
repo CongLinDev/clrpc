@@ -16,15 +16,23 @@ abstract public class RpcBootstrap {
     protected final PropertyConfigurer CONFIGURER;
 
     public RpcBootstrap() {
-        this(new JsonPropertyConfigurer());
+        this(JsonPropertyConfigurer.fromFile());
+    }
+
+    public RpcBootstrap(boolean enableCache) {
+        this(JsonPropertyConfigurer.fromFile(), enableCache);
     }
 
     public RpcBootstrap(String configFileName) {
-        this(new JsonPropertyConfigurer(configFileName));
+        this(JsonPropertyConfigurer.fromFile(configFileName));
     }
 
     public RpcBootstrap(PropertyConfigurer configurer) {
         this(configurer, configurer.getOrDefault("cache.enable", false));
+    }
+
+    public RpcBootstrap(String configFileName, boolean enableCache) {
+        this(JsonPropertyConfigurer.fromFile(configFileName), false);
     }
 
     public RpcBootstrap(PropertyConfigurer configurer, boolean enableCache) {

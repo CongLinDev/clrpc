@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.RpcBootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
-import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
@@ -23,12 +22,18 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
     private final int SESSION_TIMEOUT;
 
     public AbstractRpcMonitorBootstrap() {
-        this(new JsonPropertyConfigurer());
+        super(false);
+        this.SESSION_TIMEOUT = CONFIGURER.getOrDefault("zookeeper.monitor.session-timeout", 5000);
+    }
+
+    public AbstractRpcMonitorBootstrap(String configFilename) {
+        super(configFilename, false);
+        this.SESSION_TIMEOUT = CONFIGURER.getOrDefault("zookeeper.monitor.session-timeout", 5000);
     }
 
     public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
         super(configurer, false);
-        this.SESSION_TIMEOUT = configurer.getOrDefault("zookeeper.monitor.session-timeout", 5000);
+        this.SESSION_TIMEOUT = CONFIGURER.getOrDefault("zookeeper.monitor.session-timeout", 5000);
     }
 
     @Override

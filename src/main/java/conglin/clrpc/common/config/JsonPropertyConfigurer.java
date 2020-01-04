@@ -14,24 +14,77 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
 
     private final JSONObject CONFIG_HOLDER;
 
+    /**
+     * 返回一个空的配置器
+     * 
+     * @return
+     */
+    public static JsonPropertyConfigurer empty() {
+        return new JsonPropertyConfigurer();
+    }
+
+    /**
+     * 将默认文件内容导入配置器
+     * 
+     * @return
+     */
+    public static JsonPropertyConfigurer fromFile() {
+        return fromFile(DEFAULT_CONFIG_FILENAME + ".json");
+    }
+
+    /**
+     * 将文件内容导入配置器
+     * 
+     * @param filename
+     * @return
+     */
+    public static JsonPropertyConfigurer fromFile(String filename) {
+        return new JsonPropertyConfigurer(true, filename);
+    }
+
+    /**
+     * 将字符串内容导入配置器
+     * 
+     * @param content 配置内容
+     * @return
+     */
+    public static JsonPropertyConfigurer fromContent(String content) {
+        return new JsonPropertyConfigurer(false, content);
+    }
+
+    /**
+     * 获取一个空的配置器
+     */
     public JsonPropertyConfigurer() {
-        this(DEFAULT_CONFIG_FILENAME + ".json");
+        this(false, "{}");
     }
 
-    public JsonPropertyConfigurer(String filename) {
-        this(resolveFile(filename));
+    /**
+     * 获取一个配置器
+     * 
+     * @param fromFile 是否是从文件读取。若是，则解析文件内容。若不是，直接解析内容。
+     * @param content
+     */
+    protected JsonPropertyConfigurer(boolean fromFile, String content) {
+        if (fromFile) {
+            CONFIG_HOLDER = JSONObject.parseObject(new String(resolveFile(content)));
+        } else {
+            CONFIG_HOLDER = JSONObject.parseObject(content);
+        }
     }
 
-    public JsonPropertyConfigurer(byte[] configContent) {
-        CONFIG_HOLDER = JSONObject.parseObject(new String(configContent));
-    }
-
-    private static byte[] resolveFile(String filename) {
+    /**
+     * 解析文件
+     * 
+     * @param filename 文件名
+     * @return 文件字节数组
+     */
+    protected static byte[] resolveFile(String filename) {
         try (InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
             return inputStream.readAllBytes();
         } catch (IOException e) {
             LOGGER.error("Resolve File [" + filename + "] failed. " + e.getMessage());
-            return new byte[0];
+            return "{}".getBytes();
         }
     }
 

@@ -40,7 +40,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         for (int count = 0; count < 2; count++) { // 检查两轮即可
-            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(next);
+            Map.Entry<Integer, Node> entry = circle.higherEntry(next);
 
             if (entry != null && (next = entry.getKey()) <= tail) {
                 return entry.getValue().getValue();
@@ -62,7 +62,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         int next = head | (randomHash & _16_BIT_MASK);
         int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
-        Node<V> node = null;
+        Node node = null;
         while ((node = circle.get(next)) != null) {
             if (equalPredicate.test(key, node.getValue()))
                 return node.getValue();
@@ -87,12 +87,12 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
             next = (next & _16_BIT_MASK) | head;
 
             do {
-                Node<V> node = null;
+                Node node = null;
                 if ((node = circle.get(next)) == null) { // 插入新值
                     if (start != null && currentEpoch == (headAndEpoch.get() & _16_BIT_MASK)) {
                         V v = start.apply(key);
                         if (v != null) {
-                            circle.put(next, new Node<V>(currentEpoch, v, metaInfo));
+                            circle.put(next, new Node(currentEpoch, v, metaInfo));
                             LOGGER.debug("Add new node = " + key);
                         }
                     }
@@ -116,7 +116,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         int tail = head | _16_BIT_MASK;// 尾节点位置
 
         int next = head;
-        Map.Entry<Integer, Node<V>> entry;
+        Map.Entry<Integer, Node> entry;
         while ((entry = circle.higherEntry(next)) != null // 下一个节点不为空
                 && (next = entry.getKey()) <= tail) { // 且下一个节点确保在范围内
             if (entry.getValue().getEpoch() + 1 == currentEpoch) { // 只移除上一代未更新的节点

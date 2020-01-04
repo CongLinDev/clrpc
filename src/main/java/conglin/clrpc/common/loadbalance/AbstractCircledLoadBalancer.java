@@ -28,7 +28,8 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
     // descriptions 中存储着 T 和 Integer
     // T为类型
-    // Integer 高16位代表该键所在的区域 region
+    // Integer 即 <region, epoch> 由 region 和 epoch 组成
+    // 高16位代表该键所在的区域 region
     // 低16位代表 该键的 epoch 方便淘汰算法将无效的V值淘汰
     protected Map<T, AtomicInteger> descriptions;
 
@@ -36,7 +37,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     // Integer 高16位为 descriptions 中的区域 region
     // 低16位使用自定义方法 将 K-V 打乱或是顺序存储
     // 这样，只需要到指定的区域中寻找满足条件的值即可
-    protected TreeMap<Integer, Node<V>> circle;
+    protected TreeMap<Integer, Node> circle;
 
     public AbstractCircledLoadBalancer() {
         descriptions = new ConcurrentHashMap<>();
@@ -69,7 +70,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
         int next = head;
         while (next <= tail) {
-            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(next);
+            Map.Entry<Integer, Node> entry = circle.higherEntry(next);
             V v = entry.getValue().getValue();
             consumer.accept(v);
             next = entry.getKey() + 1;
@@ -111,7 +112,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
         int next = head;
         while (next <= tail) {
-            Map.Entry<Integer, Node<V>> entry = circle.higherEntry(next);
+            Map.Entry<Integer, Node> entry = circle.higherEntry(next);
             V v = entry.getValue().getValue();
             if (predicate.test(v))
                 return v;
@@ -159,7 +160,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         // 创建区域头节点
         // 头节点不保存任何值，只是一个区域的标志
         // 即代表这个区域已经被某个 Type 占用了
-        circle.put(regionHead, new Node<V>());
+        circle.put(regionHead, createRegionHeadNode());
         // 刚好 regionHead 的 低16位为0，即 epoch 为 0
         AtomicInteger regionAndEpoch = new AtomicInteger(regionHead);
         AtomicInteger temp = descriptions.putIfAbsent(type, regionAndEpoch); // 以最先放入的服务为准
@@ -188,6 +189,15 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     abstract protected void removeInvalidNode(AtomicInteger headAndEpoch, int currentEpoch, Consumer<V> stop);
 
     /**
+     * 创建一个区域头节点
+     * 
+     * @return
+     */
+    protected Node createRegionHeadNode() {
+        return new Node();
+    }
+
+    /**
      * hash函数
      * 
      * @param obj
@@ -197,78 +207,77 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         return System.identityHashCode(obj);
     }
 
-}
+    class Node {
 
-class Node<V> {
+        protected AtomicInteger epoch;
 
-    protected AtomicInteger epoch;
+        protected V value;
 
-    protected V value;
+        // 元信息
+        protected String metaInfo;
 
-    // 元信息
-    protected String metaInfo;
+        public Node() {
+            this(0, null);
+        }
 
-    public Node() {
-        this(0, null);
-    }
+        public Node(V value) {
+            this(0, value);
+        }
 
-    public Node(V value) {
-        this(0, value);
-    }
+        public Node(int epoch, V value) {
+            this(epoch, value, "");
+        }
 
-    public Node(int epoch, V value) {
-        this(epoch, value, "");
-    }
+        public Node(int epoch, V value, String metaInfo) {
+            this.epoch = new AtomicInteger(epoch);
+            this.value = value;
+            this.metaInfo = metaInfo;
+        }
 
-    public Node(int epoch, V value, String metaInfo) {
-        this.epoch = new AtomicInteger(epoch);
-        this.value = value;
-        this.metaInfo = metaInfo;
-    }
+        /**
+         * 获得当前节点的代
+         * 
+         * @return
+         */
+        public int getEpoch() {
+            return epoch.get();
+        }
 
-    /**
-     * 获得当前节点的代
-     * 
-     * @return
-     */
-    public int getEpoch() {
-        return epoch.get();
-    }
+        /**
+         * 设置当前节点的代
+         * 
+         * @param epoch
+         * @return
+         */
+        public boolean setEpoch(int epoch) {
+            return this.epoch.compareAndSet(epoch - 1, epoch);
+        }
 
-    /**
-     * 设置当前节点的代
-     * 
-     * @param epoch
-     * @return
-     */
-    public boolean setEpoch(int epoch) {
-        return this.epoch.compareAndSet(epoch - 1, epoch);
-    }
+        /**
+         * 获取当前节点存储的值
+         * 
+         * @return
+         */
+        public V getValue() {
+            return value;
+        }
 
-    /**
-     * 获取当前节点存储的值
-     * 
-     * @return
-     */
-    public V getValue() {
-        return value;
-    }
+        /**
+         * 获得Node的元信息
+         * 
+         * @return
+         */
+        public String getMetaInfo() {
+            return metaInfo;
+        }
 
-    /**
-     * 获得Node的元信息
-     * 
-     * @return
-     */
-    public String getMetaInfo() {
-        return metaInfo;
-    }
-
-    /**
-     * 设置Node的元信息
-     * 
-     * @param metaInfo
-     */
-    public void setMetaInfo(String metaInfo) {
-        this.metaInfo = metaInfo;
+        /**
+         * 设置Node的元信息
+         * 
+         * @param metaInfo
+         */
+        public void setMetaInfo(String metaInfo) {
+            this.metaInfo = metaInfo;
+        }
     }
 }
