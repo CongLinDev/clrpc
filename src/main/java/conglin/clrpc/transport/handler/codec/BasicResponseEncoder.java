@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.handler.codec;
 
-import conglin.clrpc.common.codec.SerializationHandler;
+import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

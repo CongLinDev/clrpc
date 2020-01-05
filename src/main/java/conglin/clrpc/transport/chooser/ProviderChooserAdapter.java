@@ -10,8 +10,9 @@ import conglin.clrpc.transport.message.BasicRequest;
 public interface ProviderChooserAdapter {
     /**
      * 自定义策略
+     * 
      * @param request
      * @return
      */
-    int apply(BasicRequest request);
+    int apply(final BasicRequest request);
 }

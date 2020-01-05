@@ -32,22 +32,25 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     }
 
     @Override
-    protected void handleConusmer(Map<String, String> nodeAndData) {
+    protected void handleConusmer(String serviceName, Map<String, String> nodeAndData) {
         System.out.println("Consumer node Changed. Time=" + System.currentTimeMillis());
-        printNodeInfo(nodeAndData);
+        printNodeInfo(serviceName, nodeAndData);
     }
 
     @Override
-    protected void handleProvider(Map<String, String> nodeAndData) {
+    protected void handleProvider(String serviceName, Map<String, String> nodeAndData) {
         System.out.println("Provider node Changed. Time=" + System.currentTimeMillis());
-        printNodeInfo(nodeAndData);
+        printNodeInfo(serviceName, nodeAndData);
     }
 
     /**
      * 打印节点信息
+     * 
+     * @param serviceName
      * @param nodeAndData
      */
-    protected void printNodeInfo(Map<String, String> nodeAndData) {
+    protected void printNodeInfo(String serviceName, Map<String, String> nodeAndData) {
+        System.out.println("Service : " + serviceName);
         nodeAndData.forEach((node, data) -> System.out.println(node + "--->" + data));
     }
 }

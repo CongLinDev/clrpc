@@ -47,7 +47,7 @@ public class ProviderTransfer {
             LOGGER.info("Provider starts on {}", localAddress);
 
             // 进行准备工作
-            context.getServiceRegister().accept("");
+            context.getServiceRegister().accept(context.getMetaInformation());
 
             channelFuture.channel().closeFuture().sync();
         } catch (UnknownHostException | InterruptedException e) {

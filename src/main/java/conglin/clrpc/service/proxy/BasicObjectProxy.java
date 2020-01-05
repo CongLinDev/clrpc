@@ -4,20 +4,19 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.message.BasicRequest;
 
 public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicObjectProxy.class);
+
+    // 代理服务名
+    protected final String serviceName;
 
     public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(serviceName, sender, identifierGenerator);
+        super(sender, identifierGenerator);
+        this.serviceName = serviceName;
     }
 
     @Override
@@ -42,55 +41,36 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
-        request.setServiceName(serviceName);
-        request.setMethodName(methodName);
-        request.setParameters(args);
-        request.setParameterTypes(getClassType(args));
-
-        LOGGER.debug(request.toString());
-        return sender.sendRequest(request);
+        return super.doCall(serviceName, methodName, args);
     }
 
     @Override
     public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
-        request.setServiceName(serviceName);
-        request.setMethodName(methodName);
-        request.setParameters(args);
-        request.setParameterTypes(getClassType(args));
-
-        LOGGER.debug(request.toString());
-        return sender.sendRequest(remoteAddress, request);
+        return super.doCall(remoteAddress, serviceName, methodName, args);
     }
 
     @Override
     public RpcFuture call(Method method, Object... args) {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(method.getName()));
-        request.setServiceName(serviceName);
-        request.setMethodName(method.getName());
-        request.setParameters(args);
-        request.setParameterTypes(method.getParameterTypes());
-
-        LOGGER.debug(request.toString());
-        return sender.sendRequest(request);
+        return super.doCall(serviceName, method, args);
     }
 
     @Override
     public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(method.getName()));
-        request.setServiceName(serviceName);
-        request.setMethodName(method.getName());
-        request.setParameters(args);
-        request.setParameterTypes(method.getParameterTypes());
-
-        LOGGER.debug(request.toString());
-        return sender.sendRequest(remoteAddress, request);
+        return super.doCall(remoteAddress, serviceName, method, args);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T convert(Class<T> interfaceClass) {
         return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass }, this);
+    }
+
+    /**
+     * 获得绑定的服务名
+     * 
+     * @return
+     */
+    public String getServiceName() {
+        return serviceName;
     }
 }

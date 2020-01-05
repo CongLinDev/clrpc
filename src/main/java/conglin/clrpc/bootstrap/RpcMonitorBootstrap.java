@@ -6,10 +6,9 @@ package conglin.clrpc.bootstrap;
  * 使用如下代码启动 <blockquote>
  * 
  * <pre>
- *     RpcMonitorBootstrap bootstrap = ...; 
- *     bootstrap.monitor()
- *              .monitorService("UserService")
- *              .monitorService("AddressService")
+ *     RpcMonitorBootstrap bootstrap = ...; // choose you like 
+ *     bootstrap.monitor("UserService")
+ *              .monitor("AddressService")
  *              .start();
  * </pre>
  * 
@@ -20,27 +19,11 @@ package conglin.clrpc.bootstrap;
 public interface RpcMonitorBootstrap {
 
     /**
-     * 使用配置文件的形式 设置ZooKeeper的地址和根路径
-     * 
-     * @return
-     */
-    RpcMonitorBootstrap monitor();
-
-    /**
-     * 使用参数形式 设置ZooKeeper的地址和根路径
-     * 
-     * @param zooKeeperAddress ZooKeeper 地址
-     * @param rootPath         ZooKeeper根路径
-     * @return
-     */
-    RpcMonitorBootstrap monitor(String zooKeeperAddress, String rootPath);
-
-    /**
      * 监视服务 默认监视所有服务
      * 
      * @return
      */
-    RpcMonitorBootstrap monitorService();
+    RpcMonitorBootstrap monitor();
 
     /**
      * 监视指定的服务
@@ -48,7 +31,17 @@ public interface RpcMonitorBootstrap {
      * @param serviceName
      * @return
      */
-    RpcMonitorBootstrap monitorService(String serviceName);
+    RpcMonitorBootstrap monitor(String serviceName);
+
+    /**
+     * 监视指定的服务
+     * 
+     * @param interfaceClass
+     * @return
+     */
+    default RpcMonitorBootstrap monitor(Class<?> interfaceClass) {
+        return monitor(interfaceClass.getSimpleName());
+    }
 
     /**
      * 启动监视器 启动前要调用 <strong>monitor</strong> 方法

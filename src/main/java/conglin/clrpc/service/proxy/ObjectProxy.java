@@ -28,7 +28,7 @@ public interface ObjectProxy {
     RpcFuture call(Method method, Object... args);
 
     /**
-     * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(String, Exception)} 中使用该方法进行重试或回滚
+     * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(Exception)} 中使用该方法进行重试或回滚
      * 而不应该在一般的调用时使用该方法
      * 
      * @param remoteAddress 指定远程地址
@@ -40,7 +40,7 @@ public interface ObjectProxy {
     RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException;
 
     /**
-     * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(String, Exception)} 中使用该方法进行重试或回滚
+     * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(Exception)} 中使用该方法进行重试或回滚
      * 而不应该在一般的调用时使用该方法
      * 
      * @param remoteAddress 指定远程地址

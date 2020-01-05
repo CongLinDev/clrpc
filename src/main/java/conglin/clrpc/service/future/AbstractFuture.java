@@ -98,10 +98,10 @@ abstract public class AbstractFuture implements RpcFuture {
 
         private static final long serialVersionUID = -3359796046494665489L;
 
-        private final int CANCELLED = -1; // 取消
-        private final int PENDING = 0; // 等待
-        private final int DONE = 1; // 完成
-        private final int USED = 2; // 占用
+        private static final int CANCELLED = -1; // 取消
+        private static final int PENDING = 0; // 等待
+        private static final int DONE = 1; // 完成
+        private static final int USED = 2; // 占用
 
         @Override
         protected boolean tryAcquire(int arg) {

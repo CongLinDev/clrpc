@@ -7,7 +7,7 @@ public class RpcMonitorBootstrapFactory {
     /**
      * 监视器类型
      */
-    public enum MonitorType{
+    public enum MonitorType {
         CONSOLE
     }
 
@@ -17,21 +17,21 @@ public class RpcMonitorBootstrapFactory {
      * @param monitorType
      * @return
      */
-    public static RpcMonitorBootstrap rpcMonitorBootstrap(MonitorType monitorType){
-        switch(monitorType){
-            case CONSOLE:
-                return new ConsoleRpcMonitorBootstrap();
-            default:
-                return new ConsoleRpcMonitorBootstrap();
+    public static RpcMonitorBootstrap rpcMonitorBootstrap(MonitorType monitorType) {
+        switch (monitorType) {
+        case CONSOLE:
+            return new ConsoleRpcMonitorBootstrap();
+        default:
+            return new ConsoleRpcMonitorBootstrap();
         }
     }
 
     /**
-     * 获取控制台类型的监视器启动器
+     * 获取监视器启动器 默认为控制台类型的监视器启动器
      * 
      * @return
      */
-    public static RpcMonitorBootstrap rpcMonitorBootstrap(){
+    public static RpcMonitorBootstrap rpcMonitorBootstrap() {
         return rpcMonitorBootstrap(MonitorType.CONSOLE);
     }
 }

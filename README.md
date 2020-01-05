@@ -23,7 +23,7 @@
                 .publish("service2", new ServiceBean2())
                 .publish(Interface3.class, Implement3.class)
                 .start();
-    // 关闭服务
+    // 关闭服务提供者
     bootstrap.stop();
 
 ```
@@ -36,15 +36,18 @@
     // 开启服务消费者
     bootstrap.start();
 
+    // 使用通用的服务
+    CommonProxy commonProxy = bootstrap.subscribe();
+
     // 订阅同步服务
     Interface1 i1 = bootstrap.subscribe("service1");
     Interface2 i2 = bootstrap.subscribe(Interface2.class);
 
     // 订阅异步服务
-    ObjectProxy proxy = bootstrap.subscribeAsync("service3");
+    ObjectProxy objectProxy = bootstrap.subscribeAsync("service3");
 
     // 订阅事务服务
-    TransactionProxy transactionProxy = bootstrap.subscribeAsync();
+    TransactionProxy transactionProxy = bootstrap.subscribeTransaction();
 
     // 下面是你的业务逻辑代码
     // ......
@@ -60,13 +63,13 @@
     RpcMonitorBootstrap bootstrap = RpcMonitorBootstrapFactory.rpcMonitorBootstrap();
 
     // 设置监视器的配置以及你需要监视的服务
-    // 并开启监视器
-    bootstrap.monitor().monitorService().start();
+    // 并开启服务监视器
+    bootstrap.monitor().start();
 
     // 下面是你的业务逻辑代码
     // ......
 
-    // 关闭监视器
+    // 关闭服务监视器
     bootstrap.stop();
 
 ```

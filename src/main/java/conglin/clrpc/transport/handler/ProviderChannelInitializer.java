@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.handler;
 
-import conglin.clrpc.common.codec.SerializationHandler;
+import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.service.executor.ZooKeeperProviderServiceExecutor;
 import conglin.clrpc.transport.handler.codec.BasicResponseEncoder;

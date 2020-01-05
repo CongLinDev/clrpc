@@ -12,14 +12,26 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
  */
 public class GlobalResourceManager {
 
-    private static AtomicInteger counter = new AtomicInteger();
+    private AtomicInteger counter;
+
+    private GlobalResourceManager() {
+        counter = new AtomicInteger();
+    }
+
+    public static GlobalResourceManager manager() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    private static class SingletonHolder {
+        private static final GlobalResourceManager INSTANCE = new GlobalResourceManager();
+    }
 
     /**
      * 向全局资源管理器注册
      * 
      * @return 当前全局资源占用情况
      */
-    public static int register() {
+    public int register() {
         return counter.incrementAndGet();
     }
 
@@ -28,7 +40,7 @@ public class GlobalResourceManager {
      * 
      * @return 当前全局资源占用情况
      */
-    public static int unregister() {
+    public int unregister() {
         int currentCount = counter.decrementAndGet();
         if (currentCount == 0)
             destroy();
@@ -40,14 +52,14 @@ public class GlobalResourceManager {
      * 
      * @return
      */
-    public static int current() {
+    public int current() {
         return counter.get();
     }
 
     /**
      * 销毁资源
      */
-    private static void destroy() {
+    private void destroy() {
         ZooKeeperUtils.disconnectAllZooKeeper();
     }
 }

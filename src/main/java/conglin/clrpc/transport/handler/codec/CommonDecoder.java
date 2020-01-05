@@ -5,7 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.codec.SerializationHandler;
+import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import conglin.clrpc.transport.message.Message;

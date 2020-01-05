@@ -1,4 +1,4 @@
-package conglin.clrpc.common.codec;
+package conglin.clrpc.common.serialization;
 
 /**
  * 序列化处理器接口

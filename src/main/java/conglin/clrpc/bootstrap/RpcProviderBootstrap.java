@@ -41,15 +41,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     private final ProviderServiceHandler SERVICE_HANDLER;
 
     public RpcProviderBootstrap() {
-        super();
-        SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
-        PROVIDER_TRANSFER = new ProviderTransfer();
-    }
-
-    public RpcProviderBootstrap(String configFilename) {
-        super(configFilename);
-        SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
-        PROVIDER_TRANSFER = new ProviderTransfer();
+        this(null);
     }
 
     public RpcProviderBootstrap(PropertyConfigurer configurer) {
@@ -189,6 +181,8 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         context.setCacheManager(CACHE_MANAGER);
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());
+        // 设置元信息
+        context.setMetaInformation(option.getMetaInfomation());
 
         return context;
     }

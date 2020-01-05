@@ -7,7 +7,7 @@ public class ConsoleMonitorTest {
     public static void main(String[] args) {
         RpcMonitorBootstrap bootstrap = RpcMonitorBootstrapFactory.rpcMonitorBootstrap();
 
-        bootstrap.monitor().monitorService().start();
+        bootstrap.monitor().monitor().start();
         bootstrap.stop();
 
     }

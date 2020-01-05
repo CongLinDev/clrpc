@@ -1,9 +1,8 @@
-package conglin.clrpc.common.codec;
+package conglin.clrpc.common.serialization;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import conglin.clrpc.common.codec.SerializationHandler;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;

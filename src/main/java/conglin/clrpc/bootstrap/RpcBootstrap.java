@@ -10,35 +10,23 @@ import conglin.clrpc.transport.message.BasicResponse;
 
 abstract public class RpcBootstrap {
 
-    protected final boolean ENABLE_CACHE;
     protected final CacheManager<BasicRequest, BasicResponse> CACHE_MANAGER;
 
     protected final PropertyConfigurer CONFIGURER;
 
     public RpcBootstrap() {
-        this(JsonPropertyConfigurer.fromFile());
-    }
-
-    public RpcBootstrap(boolean enableCache) {
-        this(JsonPropertyConfigurer.fromFile(), enableCache);
-    }
-
-    public RpcBootstrap(String configFileName) {
-        this(JsonPropertyConfigurer.fromFile(configFileName));
+        this(null);
     }
 
     public RpcBootstrap(PropertyConfigurer configurer) {
-        this(configurer, configurer.getOrDefault("cache.enable", false));
-    }
+        if (configurer == null) {
+            this.CONFIGURER = JsonPropertyConfigurer.fromFile(); // default configurer
+        } else {
+            this.CONFIGURER = configurer;
+        }
 
-    public RpcBootstrap(String configFileName, boolean enableCache) {
-        this(JsonPropertyConfigurer.fromFile(configFileName), false);
-    }
-
-    public RpcBootstrap(PropertyConfigurer configurer, boolean enableCache) {
-        this.CONFIGURER = configurer;
-        this.ENABLE_CACHE = enableCache;
-        if (ENABLE_CACHE) {
+        boolean enableCache = configurer.getOrDefault("cache.enable", false);
+        if (enableCache) {
             CACHE_MANAGER = new CaffeineCacheManager(configurer);
         } else {
             CACHE_MANAGER = null;
@@ -49,14 +37,14 @@ abstract public class RpcBootstrap {
      * 准备
      */
     protected void start() {
-        GlobalResourceManager.register();
+        GlobalResourceManager.manager().register();
     }
 
     /**
      * 销毁
      */
     protected void stop() {
-        GlobalResourceManager.unregister();
+        GlobalResourceManager.manager().unregister();
     }
 
 }

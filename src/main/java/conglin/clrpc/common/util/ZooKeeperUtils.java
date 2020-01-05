@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apache.zookeeper.CreateMode;
@@ -277,6 +278,28 @@ public class ZooKeeperUtils {
         Map<String, String> nodeAndData = getChildrenNodeAndData(keeper, path, nodeList);
         if (consumer != null)
             consumer.accept(nodeAndData);
+        return nodeAndData;
+    }
+
+    /**
+     * 监视指定路径下所有子节点的名称和数据
+     * 
+     * @param keeper
+     * @param path
+     * @param group    监视组的标识符
+     * @param consumer
+     * @return
+     */
+    public static Map<String, String> watchChildrenNodeAndData(final ZooKeeper keeper, String path, String group,
+            BiConsumer<String, Map<String, String>> consumer) {
+        List<String> nodeList = getChildrenNode(keeper, path, event -> {
+            if (event.getType() == Event.EventType.NodeChildrenChanged) {
+                watchChildrenNodeAndData(keeper, path, group, consumer);
+            }
+        });
+        Map<String, String> nodeAndData = getChildrenNodeAndData(keeper, path, nodeList);
+        if (consumer != null)
+            consumer.accept(group, nodeAndData);
         return nodeAndData;
     }
 

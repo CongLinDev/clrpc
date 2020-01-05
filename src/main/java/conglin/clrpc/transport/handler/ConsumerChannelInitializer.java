@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.handler;
 
-import conglin.clrpc.common.codec.SerializationHandler;
+import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.transport.handler.codec.BasicRequestEncoder;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;

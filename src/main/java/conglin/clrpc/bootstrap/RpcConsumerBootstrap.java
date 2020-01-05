@@ -9,6 +9,7 @@ import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
@@ -44,15 +45,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private final ConsumerServiceHandler SERVICE_HANDLER;
 
     public RpcConsumerBootstrap() {
-        super();
-        SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
-        CONSUMER_TRANSFER = new ConsumerTransfer();
-    }
-
-    public RpcConsumerBootstrap(String configFilename) {
-        super(configFilename);
-        SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
-        CONSUMER_TRANSFER = new ConsumerTransfer();
+        this(null);
     }
 
     public RpcConsumerBootstrap(PropertyConfigurer configurer) {
@@ -113,8 +106,17 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * 
      * @return
      */
-    public TransactionProxy subscribeAsync() {
+    public TransactionProxy subscribeTransaction() {
         return SERVICE_HANDLER.getTransactionProxy();
+    }
+
+    /**
+     * 订阅通用服务
+     * 
+     * @return
+     */
+    public CommonProxy subscribeAsync() {
+        return SERVICE_HANDLER.getPrxoy();
     }
 
     /**
@@ -155,11 +157,14 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private ConsumerContext initContext(RpcConsumerOption option) {
         ConsumerContext context = new BasicConsumerContext();
 
+        // 设置本地地址
         context.setLocalAddress(IPAddressUtils.getHostAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
         // 设置cache管理器
         context.setCacheManager(CACHE_MANAGER);
+        // 设置元信息
+        context.setMetaInformation(option.getMetaInfomation());
 
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());

@@ -28,7 +28,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator,
             PropertyConfigurer configurer) {
-        super(null, sender, identifierGenerator);
+        super(sender, identifierGenerator);
         helper = new ZooKeeperTransactionHelper(configurer);
     }
 

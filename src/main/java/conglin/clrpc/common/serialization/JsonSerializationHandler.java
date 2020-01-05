@@ -1,4 +1,4 @@
-package conglin.clrpc.common.codec;
+package conglin.clrpc.common.serialization;
 
 import com.alibaba.fastjson.JSON;
 

@@ -61,10 +61,8 @@ public class ConsumerTransfer {
 
         timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
 
-        if (workerGroup == null) {
-            int workerThread = configurer.getOrDefault("consumer.thread.worker", 4);
-            workerGroup = new NioEventLoopGroup(workerThread);
-        }
+        int workerThread = configurer.getOrDefault("consumer.thread.worker", 4);
+        workerGroup = new NioEventLoopGroup(workerThread);
     }
 
     /**

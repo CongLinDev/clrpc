@@ -20,6 +20,7 @@ import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
+import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
@@ -64,6 +65,15 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     public ObjectProxy getPrxoy(String serviceName) {
         return new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator);
+    }
+
+    /**
+     * 获取通用的异步服务代理
+     * 
+     * @return
+     */
+    public CommonProxy getPrxoy() {
+        return new CommonProxy(context.getRequestSender(), identifierGenerator);
     }
 
     /**
@@ -121,7 +131,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param updateMethod
      */
     public void findService(String serviceName, BiConsumer<String, Map<String, String>> updateMethod) {
-        serviceDiscovery.register(serviceName, "");
+        serviceDiscovery.register(serviceName, context.getMetaInformation());
         serviceDiscovery.discover(serviceName, updateMethod);
     }
 

@@ -1,14 +1,22 @@
 package conglin.clrpc.bootstrap.option;
 
-import conglin.clrpc.common.codec.SerializationHandler;
 import conglin.clrpc.common.identifier.BasicIdentifierGenerator;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
 
 public class RpcConsumerOption extends RpcCommonOption {
 
-    // ID生成器
-    private IdentifierGenerator identifierGenerator;
+    /**
+     * 设置元信息
+     * 
+     * @param metaInfo the metaInfo to set
+     * @return this
+     */
+    public RpcConsumerOption setSerializationHandler(String metaInfo) {
+        super.metaInfomation(metaInfo);
+        return this;
+    }
 
     /**
      * 设置序列化处理器
@@ -20,6 +28,9 @@ public class RpcConsumerOption extends RpcCommonOption {
         super.serializationHandler(serializationHandler);
         return this;
     }
+
+    // ID生成器
+    private IdentifierGenerator identifierGenerator;
 
     /**
      * 设置 ID生成器
