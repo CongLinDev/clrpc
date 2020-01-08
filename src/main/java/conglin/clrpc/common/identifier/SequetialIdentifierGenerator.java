@@ -14,11 +14,11 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
 
     // 降级ID生成器
     // 本对象不可用时调用
-    protected BasicIdentifierGenerator downgradeGenerator;
+    protected IdentifierGenerator downgradeGenerator;
 
     public SequetialIdentifierGenerator(PropertyConfigurer configurer) {
         super(configurer, "/request/id");
-        downgradeGenerator = new BasicIdentifierGenerator();
+        downgradeGenerator = new RandomIdentifierGenerator();
     }
 
     @Override

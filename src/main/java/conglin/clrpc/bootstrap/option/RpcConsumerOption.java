@@ -1,7 +1,7 @@
 package conglin.clrpc.bootstrap.option;
 
-import conglin.clrpc.common.identifier.BasicIdentifierGenerator;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
 
@@ -50,7 +50,7 @@ public class RpcConsumerOption extends RpcCommonOption {
      */
     public IdentifierGenerator getIdentifierGenerator() {
         if (identifierGenerator == null)
-            identifierGenerator = new BasicIdentifierGenerator();
+            identifierGenerator = new RandomIdentifierGenerator();
         return identifierGenerator;
     }
 

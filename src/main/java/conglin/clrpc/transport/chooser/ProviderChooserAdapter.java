@@ -15,4 +15,14 @@ public interface ProviderChooserAdapter {
      * @return
      */
     int apply(final BasicRequest request);
+
+    /**
+     * Hash 算法
+     * 
+     * @param object
+     * @return
+     */
+    default int hash(Object object) {
+        return System.identityHashCode(object);
+    }
 }

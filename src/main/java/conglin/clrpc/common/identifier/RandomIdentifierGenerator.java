@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * 使用UUID生成随机的ID
  */
-public class BasicIdentifierGenerator implements IdentifierGenerator {
+public class RandomIdentifierGenerator implements IdentifierGenerator {
 
     @Override
     public long generate() {

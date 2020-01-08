@@ -105,6 +105,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
                     break;
                 } else { // 发生冲撞
                     next++; // 将 v 更新到该节点的后面
+                    LOGGER.warn("Hash collision. Consider to replace a hash algorithm for load balancer.");
                 }
             } while (next <= tail);
         }
