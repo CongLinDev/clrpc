@@ -1,35 +1,25 @@
 package conglin.clrpc.service.context;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.executor.AbstractConsumerServiceExecutor;
-import conglin.clrpc.service.executor.RequestSender;
-import conglin.clrpc.service.executor.ServiceExecutor;
+
 import conglin.clrpc.service.future.FuturesHolder;
-import conglin.clrpc.transport.chooser.ProviderChooser;
-import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
-import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.component.ProviderChooserAdapter;
+import conglin.clrpc.transport.component.RequestSender;
 
 public interface ConsumerContext extends CommonContext {
-    /**
-     * 设置执行器(包括发送器)
-     * 
-     * @param consumerServiceExecutor
-     */
-    void setConsumerServiceExecutor(AbstractConsumerServiceExecutor consumerServiceExecutor);
-
-    /**
-     * 获取执行器
-     * 
-     * @return
-     */
-    ServiceExecutor<BasicResponse> getServiceExecutor();
-
     /**
      * 获取发送器
      * 
      * @return
      */
     RequestSender getRequestSender();
+
+    /**
+     * 设置发送器
+     * 
+     * @param request
+     */
+    void setRequestSender(RequestSender requestSender);
 
     /**
      * 获取Future持有者
@@ -44,20 +34,6 @@ public interface ConsumerContext extends CommonContext {
      * @param futuresHolder
      */
     void setFuturesHolder(FuturesHolder<Long> futuresHolder);
-
-    /**
-     * 获得服务提供者挑选器
-     * 
-     * @return
-     */
-    ProviderChooser getProviderChooser();
-
-    /**
-     * 设置服务提供者挑选器
-     * 
-     * @param providerChooser
-     */
-    void setProviderChooser(ProviderChooser providerChooser);
 
     /**
      * 获得服务提供者挑选器适配器

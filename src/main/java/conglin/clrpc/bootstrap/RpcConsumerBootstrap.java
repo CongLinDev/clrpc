@@ -161,8 +161,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.setLocalAddress(IPAddressUtils.getHostAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
-        // 设置cache管理器
-        context.setCacheManager(CACHE_MANAGER);
         // 设置元信息
         context.setMetaInformation(option.getMetaInfomation());
 

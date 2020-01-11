@@ -3,7 +3,7 @@ package conglin.clrpc.bootstrap.option;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
+import conglin.clrpc.transport.component.ProviderChooserAdapter;
 
 public class RpcConsumerOption extends RpcCommonOption {
 

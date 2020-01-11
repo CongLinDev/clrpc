@@ -46,7 +46,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
 
     public RpcProviderBootstrap(PropertyConfigurer configurer) {
         super(configurer);
-        SERVICE_HANDLER = new ProviderServiceHandler(configurer);
+        SERVICE_HANDLER = new ProviderServiceHandler(CONFIGURER);
         PROVIDER_TRANSFER = new ProviderTransfer();
     }
 
@@ -177,8 +177,6 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         context.setLocalAddress(IPAddressUtils.getHostAndPort(CONFIGURER.getOrDefault("provider.port", 5100)));
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
-        // 设置cache管理器
-        context.setCacheManager(CACHE_MANAGER);
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());
         // 设置元信息

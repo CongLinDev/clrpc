@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import conglin.clrpc.common.exception.RequestException;
-import conglin.clrpc.service.executor.RequestSender;
+import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 

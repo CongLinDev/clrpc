@@ -1,4 +1,4 @@
-package conglin.clrpc.transport.chooser;
+package conglin.clrpc.transport.component;
 
 import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.channel.Channel;

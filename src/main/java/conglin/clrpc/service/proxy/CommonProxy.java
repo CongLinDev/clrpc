@@ -4,8 +4,8 @@ import java.lang.reflect.Method;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.transport.component.RequestSender;
 
 /**
  * 通用的代理

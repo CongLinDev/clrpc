@@ -107,14 +107,17 @@
 | provider.port | Integer | YES | 5100 | 服务提供者端口号 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
+| provider.channel-handler<br>.before-handle | List&lt;String&gt; | YES | Empty List | 处理请求之前的自定义ChannelHandler |
+| provider.channel-handler<br>.after-handle | List&lt;String&gt; | YES | Empty List | 处理请求之后的自定义ChannelHandler |
 | consumer.port | Integer | YES | 5200 | 服务使用者端口号 |
 | consumer.wait-time | Integer | YES | 5000 | 无服务提供者时等待重试时间，单位为毫秒 |
 | consumer.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
+| consumer.channel-handler<br>.before-handle | List&lt;String&gt; | YES | Empty List | 处理请求之前的自定义ChannelHandler |
+| consumer.channel-handler<br>.after-handle | List&lt;String&gt; | YES | Empty List | 处理请求之后的自定义ChannelHandler |
 | service.thread-pool.<br>core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread-pool.<br>max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread-pool.<br>keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread-pool.<br>queue | Integer | YES | 10 | 业务线程池队列数 |
-| cache.enable | Boolean | YES | false | 是否开启缓存 |
 
 ## Test
 

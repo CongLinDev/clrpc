@@ -4,23 +4,8 @@ import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.service.cache.CacheManager;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
 
 public class BasicCommonContext implements CommonContext {
-
-    protected CacheManager<BasicRequest, BasicResponse> cacheManager;
-
-    @Override
-    public CacheManager<BasicRequest, BasicResponse> getCacheManager() {
-        return cacheManager;
-    }
-
-    @Override
-    public void setCacheManager(CacheManager<BasicRequest, BasicResponse> cacheManager) {
-        this.cacheManager = cacheManager;
-    }
 
     protected ExecutorService executorService;
 

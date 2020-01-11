@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.executor.RequestSender;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 
 abstract public class AbstractProxy {
@@ -32,11 +33,7 @@ abstract public class AbstractProxy {
      * @return 类对象数组
      */
     protected Class<?>[] getClassType(Object[] objs) {
-        Class<?>[] types = new Class[objs.length];
-        for (int i = 0; i < objs.length; i++) {
-            types[i] = objs[i].getClass();
-        }
-        return types;
+        return ClassUtils.getClasses(objs);
     }
 
     /**

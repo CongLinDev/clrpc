@@ -4,25 +4,8 @@ import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.service.cache.CacheManager;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
 
 public interface CommonContext {
-
-    /**
-     * 获取缓存管理器
-     * 
-     * @return
-     */
-    CacheManager<BasicRequest, BasicResponse> getCacheManager();
-
-    /**
-     * 设置缓存管理器
-     * 
-     * @param cacheManager
-     */
-    void setCacheManager(CacheManager<BasicRequest, BasicResponse> cacheManager);
 
     /**
      * 获取线程池

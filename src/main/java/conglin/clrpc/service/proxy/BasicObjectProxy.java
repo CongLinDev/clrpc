@@ -6,8 +6,8 @@ import java.lang.reflect.Proxy;
 
 import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.executor.RequestSender;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.transport.component.RequestSender;
 
 public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
 

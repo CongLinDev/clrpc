@@ -27,20 +27,20 @@ public class GlobalResourceManager {
     }
 
     /**
-     * 向全局资源管理器注册
+     * 占用资源
      * 
      * @return 当前全局资源占用情况
      */
-    public int register() {
+    public int retain() {
         return counter.incrementAndGet();
     }
 
     /**
-     * 向全局资源管理器取消注册
+     * 释放资源
      * 
      * @return 当前全局资源占用情况
      */
-    public int unregister() {
+    public int release() {
         int currentCount = counter.decrementAndGet();
         if (currentCount == 0)
             destroy();

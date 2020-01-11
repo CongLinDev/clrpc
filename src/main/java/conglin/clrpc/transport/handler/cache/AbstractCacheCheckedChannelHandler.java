@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.service.cache.CacheManager;
+import conglin.clrpc.service.cache.caffeine.CaffeineCacheManager;
 import conglin.clrpc.service.context.CommonContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -23,7 +24,7 @@ abstract public class AbstractCacheCheckedChannelHandler extends ChannelInboundH
     private final CacheManager<BasicRequest, BasicResponse> CACHE_MANAGER;
 
     public AbstractCacheCheckedChannelHandler(CommonContext context) {
-        this.CACHE_MANAGER = context.getCacheManager();
+        this.CACHE_MANAGER = new CaffeineCacheManager(context.getPropertyConfigurer());
     }
 
     @Override

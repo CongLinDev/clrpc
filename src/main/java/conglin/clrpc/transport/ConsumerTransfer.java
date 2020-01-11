@@ -15,9 +15,9 @@ import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.executor.BasicConsumerServiceExecutor;
-import conglin.clrpc.transport.chooser.ProviderChooser;
-import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
+import conglin.clrpc.transport.component.DefaultRequestSender;
+import conglin.clrpc.transport.component.ProviderChooser;
+import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.handler.ConsumerChannelInitializer;
 import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.bootstrap.Bootstrap;
@@ -71,8 +71,8 @@ public class ConsumerTransfer {
      * @param context
      */
     protected void initContext(ConsumerContext context) {
-        context.setProviderChooser(new DefaultProviderChooser(context.getProviderChooserAdapter()));
-        context.setConsumerServiceExecutor(new BasicConsumerServiceExecutor(context));
+        context.setRequestSender(new DefaultRequestSender(context.getFuturesHolder(),
+                new DefaultProviderChooser(context.getProviderChooserAdapter())));
     }
 
     /**

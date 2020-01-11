@@ -1,49 +1,85 @@
-package conglin.clrpc.service.executor;
+package conglin.clrpc.transport.handler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.annotation.CacheableService;
 import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
-import conglin.clrpc.service.cache.CacheManager;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 
-public class BasicProviderServiceExecutor extends AbstractProviderServiceExecutor {
+abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicProviderServiceExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
-    protected final Function<String, Object> serviceObjectsHolder;
+    protected final ProviderContext context;
 
-    public BasicProviderServiceExecutor(Function<String, Object> serviceObjectsHolder, ExecutorService executor,
-            CacheManager<BasicRequest, BasicResponse> cacheManager) {
-        super(executor, cacheManager);
-        this.serviceObjectsHolder = serviceObjectsHolder;
-    }
+    private ChannelPipeline pipeline;
 
-    public BasicProviderServiceExecutor(Function<String, Object> serviceObjectsHolder, ExecutorService executor) {
-        super(executor);
-        this.serviceObjectsHolder = serviceObjectsHolder;
-    }
-
-    public BasicProviderServiceExecutor(ProviderContext context) {
-        this(context.getObjectsHolder(), context.getExecutorService(), context.getCacheManager());
+    public ProviderAbstractServiceChannelHandler(ProviderContext context) {
+        this.context = context;
     }
 
     @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+        this.pipeline = ctx.pipeline();
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
+        context.getExecutorService().submit(() -> {
+            next(msg, execute(msg));
+        });
+    }
+
+    /**
+     * 执行具体的业务逻辑
+     * 
+     * @param msg
+     * @return
+     */
+    abstract protected Object execute(T msg);
+
+    /**
+     * 传递给下一个 ChannelHandler
+     * 
+     * @param object
+     */
+    protected void next(T msg, Object result) {
+        if (result != null)
+            pipeline.fireChannelRead(new Pair<T, BasicResponse>(msg, (BasicResponse)result));
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        LOGGER.error(cause.getMessage());
+        ctx.close();
+    }
+
+    /**
+     * 执行请求
+     * 
+     * @param request
+     * @return
+     * @throws UnsupportedServiceException
+     * @throws ServiceExecutionException
+     */
     protected BasicResponse doExecute(BasicRequest request)
             throws UnsupportedServiceException, ServiceExecutionException {
         String serviceName = request.getServiceName();
         // 获取服务实现类
-        Object serviceBean = serviceObjectsHolder.apply(serviceName);
+        Object serviceBean = context.getObjectsHolder().apply(serviceName);
         // 如果服务实现类没有注册，抛出异常
         if (serviceBean == null) {
             throw new UnsupportedServiceException(request);

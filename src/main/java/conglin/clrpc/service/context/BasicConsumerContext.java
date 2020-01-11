@@ -1,31 +1,22 @@
 package conglin.clrpc.service.context;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.executor.AbstractConsumerServiceExecutor;
-import conglin.clrpc.service.executor.RequestSender;
-import conglin.clrpc.service.executor.ServiceExecutor;
 import conglin.clrpc.service.future.FuturesHolder;
-import conglin.clrpc.transport.chooser.ProviderChooser;
-import conglin.clrpc.transport.chooser.ProviderChooserAdapter;
-import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.component.ProviderChooserAdapter;
+import conglin.clrpc.transport.component.RequestSender;
 
 public class BasicConsumerContext extends BasicCommonContext implements ConsumerContext {
- 
-    protected AbstractConsumerServiceExecutor consumerServiceExecutor;
+
+    protected RequestSender requestSender;
 
     @Override
-    public void setConsumerServiceExecutor(AbstractConsumerServiceExecutor consumerServiceExecutor) {
-        this.consumerServiceExecutor = consumerServiceExecutor;
-    }
-
-    @Override
-    public ServiceExecutor<BasicResponse> getServiceExecutor() {
-        return consumerServiceExecutor;
+    public void setRequestSender(RequestSender requestSender){
+        this.requestSender = requestSender;
     }
 
     @Override
     public RequestSender getRequestSender() {
-        return consumerServiceExecutor;
+        return requestSender;
     }
 
     protected FuturesHolder<Long> futuresHolder;
@@ -38,18 +29,6 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
     @Override
     public void setFuturesHolder(FuturesHolder<Long> futuresHolder) {
         this.futuresHolder = futuresHolder;
-    }
-
-    protected ProviderChooser providerChooser;
-
-    @Override
-    public ProviderChooser getProviderChooser() {
-        return providerChooser;
-    }
-
-    @Override
-    public void setProviderChooser(ProviderChooser providerChooser) {
-        this.providerChooser = providerChooser;
     }
 
     protected ProviderChooserAdapter providerChooserAdapter;
