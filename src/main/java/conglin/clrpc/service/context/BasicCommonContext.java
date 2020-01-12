@@ -1,5 +1,7 @@
 package conglin.clrpc.service.context;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -7,7 +9,7 @@ import conglin.clrpc.common.serialization.SerializationHandler;
 
 public class BasicCommonContext implements CommonContext {
 
-    protected ExecutorService executorService;
+    private ExecutorService executorService;
 
     @Override
     public ExecutorService getExecutorService() {
@@ -19,8 +21,8 @@ public class BasicCommonContext implements CommonContext {
         this.executorService = executorService;
     }
 
-    protected PropertyConfigurer propertyConfigurer;
-    
+    private PropertyConfigurer propertyConfigurer;
+
     @Override
     public PropertyConfigurer getPropertyConfigurer() {
         return propertyConfigurer;
@@ -31,7 +33,7 @@ public class BasicCommonContext implements CommonContext {
         this.propertyConfigurer = propertyConfigurer;
     }
 
-    protected String localAddress;
+    private String localAddress;
 
     @Override
     public String getLocalAddress() {
@@ -43,7 +45,7 @@ public class BasicCommonContext implements CommonContext {
         this.localAddress = localAddress;
     }
 
-    protected SerializationHandler serializationHandler;
+    private SerializationHandler serializationHandler;
 
     @Override
     public SerializationHandler getSerializationHandler() {
@@ -52,10 +54,10 @@ public class BasicCommonContext implements CommonContext {
 
     @Override
     public void setSerializationHandler(SerializationHandler serializationHandler) {
-        this.serializationHandler = serializationHandler;        
+        this.serializationHandler = serializationHandler;
     }
 
-    protected String metaInfo;
+    private String metaInfo;
 
     @Override
     public String getMetaInformation() {
@@ -65,6 +67,13 @@ public class BasicCommonContext implements CommonContext {
     @Override
     public void setMetaInformation(String metaInfo) {
         this.metaInfo = metaInfo;
+    }
+
+    private Map<String, Object> extensionObjects = new HashMap<>();
+
+    @Override
+    public Map<String, Object> getExtensionObject() {
+        return extensionObjects;
     }
 
 }

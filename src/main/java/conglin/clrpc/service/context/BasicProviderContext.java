@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 public class BasicProviderContext extends BasicCommonContext implements ProviderContext {
 
-    protected Function<String, Object> objectHolder;
+    private Function<String, Object> objectHolder;
 
     @Override
     public Function<String, Object> getObjectsHolder() {
@@ -18,7 +18,7 @@ public class BasicProviderContext extends BasicCommonContext implements Provider
     }
     
 
-    protected Consumer<String> serviceRegister;
+    private Consumer<String> serviceRegister;
 
     @Override
     public Consumer<String> getServiceRegister() {

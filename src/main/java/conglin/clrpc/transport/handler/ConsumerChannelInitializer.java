@@ -14,6 +14,52 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
+/**
+ * 该类负责构建RPC的Consumer端的 {@link io.netty.channel.ChannelPipeline}
+ * 
+ * 其目前主要下面的 {@link io.netty.channel.ChannelHandler} 组成
+ * 
+ * <pre>
+ *                                                 I/O Request
+ *                                            via {@link Channel} or
+ *                                        {@link ChannelHandlerContext}
+ *                                                      |
+ *  +---------------------------------------------------+---------------+
+ *  |                           ChannelPipeline         |               |
+ *  |                                                  \|/              |
+ *  |              /|\                                  .               |
+ *  |               .                                   .               |
+ *  |      After handling request, you can add some ChannelHandlers.    |
+ *  |               .                                   .               |
+ *  |               .                                  \|/              |
+ *  |               |                                   |               |
+ *  |  +------------+--------------+                    |               |
+ *  |  |   RequestChannelHandler   |                    |               |
+ *  |  +------------+--------------+                   \|/              |
+ *  |              /|\                                  .               |
+ *  |               .                                   .               |
+ *  |      Before handling request, you can add some ChannelHandlers.   |
+ *  |               .                                   .               |
+ *  |               .                                   .               |
+ *  |  +------------+--------------+                    |               |
+ *  |  | BasicServiceChannelHandler|                    |               |
+ *  |  +------------+--------------+                    |               |
+ *  |              /|\                                 \|/              |
+ *  |    +----------+----------+            +-----------+----------+    |
+ *  |    |       Decoders      |            |        Encoders      |    |
+ *  |    +----------+----------+            +-----------+----------+    |
+ *  |              /|\                                  |               |
+ *  +---------------+-----------------------------------+---------------+
+ *                  |                                  \|/
+ *  +---------------+-----------------------------------+---------------+
+ *  |               |                                   |               |
+ *  |       [ Socket.read() ]                    [ Socket.write() ]     |
+ *  |                                                                   |
+ *  |  Netty Internal I/O Threads (Transport Implementation)            |
+ *  +-------------------------------------------------------------------+
+ * 
+ * </pre>
+ */
 public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private ChannelPipeline pipeline;

@@ -1,15 +1,15 @@
-package conglin.clrpc.transport.handler.cache;
+package conglin.clrpc.extension.cache.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.cache.CacheManager;
-import conglin.clrpc.service.cache.caffeine.CaffeineCacheManager;
+import conglin.clrpc.extension.cache.CacheManager;
+import conglin.clrpc.extension.cache.caffeine.CaffeineCacheManager;
 import conglin.clrpc.service.context.CommonContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * 检查请求对应的回复缓存是否存在，若存在且可用，则进行某些必要处理，反之将对象传递给下一个 ChannelHandler
@@ -17,25 +17,30 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * 该处理器的作用是检查缓存中是否存在基本请求{@link conglin.clrpc.transport.message.BasicRequest}
  * 对应的基本回复{@link conglin.clrpc.transport.message.BasicResponse} 并进行必要处理
  */
-abstract public class AbstractCacheCheckedChannelHandler extends ChannelInboundHandlerAdapter {
+abstract public class AbstractCacheCheckedChannelHandler<T extends BasicRequest> extends SimpleChannelInboundHandler<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCacheCheckedChannelHandler.class);
 
-    private final CacheManager<BasicRequest, BasicResponse> CACHE_MANAGER;
+    private final CacheManager<BasicRequest, BasicResponse> cacheManager;
 
     public AbstractCacheCheckedChannelHandler(CommonContext context) {
-        this.CACHE_MANAGER = new CaffeineCacheManager(context.getPropertyConfigurer());
+        @SuppressWarnings("unchecked")
+        CacheManager<BasicRequest, BasicResponse> cm = (CacheManager<BasicRequest, BasicResponse>)context.getExtensionObject().get("cacheManager");
+        if(cm == null){
+            cm = new CaffeineCacheManager(context.getPropertyConfigurer());
+            context.getExtensionObject().put("cacheManager", cm);
+        }
+        this.cacheManager = cm;
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
         if (!enableCache()) { // 未开启缓存
             super.channelRead(ctx, msg);
             return;
         }
 
-        BasicRequest request = (BasicRequest) msg;
-        BasicResponse cachedResponse = CACHE_MANAGER.get(request);
+        BasicResponse cachedResponse = cacheManager.get(msg);
 
         if (cachedResponse == null) { // 未找到缓存
             super.channelRead(ctx, msg);
@@ -44,7 +49,7 @@ abstract public class AbstractCacheCheckedChannelHandler extends ChannelInboundH
 
         LOGGER.debug("Find available cached response.");
         // 找到缓存后的处理
-        cache(ctx, request.getRequestId(), cachedResponse);
+        cache(ctx, msg, cachedResponse);
     }
 
     /**
@@ -53,15 +58,15 @@ abstract public class AbstractCacheCheckedChannelHandler extends ChannelInboundH
      * @return
      */
     protected boolean enableCache() {
-        return CACHE_MANAGER != null;
+        return cacheManager != null;
     }
 
     /**
      * 找到cache后的工作
      * 
      * @param ctx
-     * @param requestId
+     * @param msg
      * @param cachedResponse
      */
-    abstract protected void cache(ChannelHandlerContext ctx, Long requestId, BasicResponse cachedResponse);
+    abstract protected void cache(ChannelHandlerContext ctx, T msg, BasicResponse cachedResponse);
 }

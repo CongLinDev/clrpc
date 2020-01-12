@@ -7,7 +7,7 @@ import conglin.clrpc.transport.component.RequestSender;
 
 public class BasicConsumerContext extends BasicCommonContext implements ConsumerContext {
 
-    protected RequestSender requestSender;
+    private RequestSender requestSender;
 
     @Override
     public void setRequestSender(RequestSender requestSender){
@@ -19,7 +19,7 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
         return requestSender;
     }
 
-    protected FuturesHolder<Long> futuresHolder;
+    private FuturesHolder<Long> futuresHolder;
 
     @Override
     public FuturesHolder<Long> getFuturesHolder() {
@@ -31,7 +31,7 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
         this.futuresHolder = futuresHolder;
     }
 
-    protected ProviderChooserAdapter providerChooserAdapter;
+    private ProviderChooserAdapter providerChooserAdapter;
 
     @Override
     public ProviderChooserAdapter getProviderChooserAdapter() {
@@ -43,7 +43,7 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
         this.providerChooserAdapter = providerChooserAdapter;
     }
 
-    protected IdentifierGenerator identifierGenerator;
+    private IdentifierGenerator identifierGenerator;
 
     @Override
     public IdentifierGenerator getIdentifierGenerator() {

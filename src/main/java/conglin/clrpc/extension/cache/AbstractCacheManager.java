@@ -1,4 +1,4 @@
-package conglin.clrpc.service.cache;
+package conglin.clrpc.extension.cache;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 

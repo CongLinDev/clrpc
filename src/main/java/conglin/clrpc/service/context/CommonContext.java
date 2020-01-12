@@ -1,5 +1,6 @@
 package conglin.clrpc.service.context;
 
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -74,4 +75,11 @@ public interface CommonContext {
      * @param metaInfo
      */
     void setMetaInformation(String metaInfo);
+    
+    /**
+     * 对于扩展所需的对象则放入该 {@link java.util.Map} 
+     * 
+     * @return
+     */
+    Map<String, Object> getExtensionObject();
 }

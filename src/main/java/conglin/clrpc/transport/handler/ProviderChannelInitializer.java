@@ -12,6 +12,57 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
+/**
+ * 该类负责构建RPC的Provider端的 {@link io.netty.channel.ChannelPipeline}
+ * 
+ * 其目前主要下面的 {@link io.netty.channel.ChannelHandler} 组成
+ * 
+ * 
+ * <pre>
+ *                                                 I/O Request
+ *                                            via {@link Channel} or
+ *                                        {@link ChannelHandlerContext}
+ *                                                      |
+ *  +---------------------------------------------------+---------------+
+ *  |                           ChannelPipeline         |               |
+ *  |                                                  \|/              |
+ *  |  +------------+--------------+                    |               |
+ *  |  |   ResponseChannelHandler  |                    |               |
+ *  |  +------------+--------------+                    |               |
+ *  |              /|\                                  .               |
+ *  |               .                                   .               |
+ *  |      After handling request, you can add some ChannelHandlers.    |
+ *  |               .                                   .               |
+ *  |               .                                  \|/              |
+ *  |               |                                   |               |
+ *  |  +------------+--------------+                    |               |
+ *  |  | TransactionChannelHandler |                    |               |
+ *  |  +------------+--------------+                    |               |
+ *  |              /|\                                  |               |
+ *  |               |                                   |               |
+ *  |  +------------+--------------+                    |               |
+ *  |  | BasicServiceChannelHandler|                    |               |
+ *  |  +------------+--------------+                   \|/              |
+ *  |              /|\                                  .               |
+ *  |               .                                   .               |
+ *  |      Before handling request, you can add some ChannelHandlers.   |
+ *  |               .                                   .               |
+ *  |               .                                  \|/              |
+ *  |    +----------+----------+            +-----------+----------+    |
+ *  |    |       Decoders      |            |        Encoders      |    |
+ *  |    +----------+----------+            +-----------+----------+    |
+ *  |              /|\                                  |               |
+ *  +---------------+-----------------------------------+---------------+
+ *                  |                                  \|/
+ *  +---------------+-----------------------------------+---------------+
+ *  |               |                                   |               |
+ *  |       [ Socket.read() ]                    [ Socket.write() ]     |
+ *  |                                                                   |
+ *  |  Netty Internal I/O Threads (Transport Implementation)            |
+ *  +-------------------------------------------------------------------+
+ * 
+ * </pre>
+ */
 public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ProviderContext context;

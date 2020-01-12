@@ -3,10 +3,12 @@ package conglin.clrpc.common.identifier;
 /**
  * Twitter 的 SnowFalke算法实现
  * 
- * 对于64位的标识符：最高位不用，置为0；次41位作为当前的毫秒数；再次10位作为工作机器的ID；低12位作为序列号
+ * 对于64位的标识符：最高位不用，置为0；次41位作为当前的毫秒数；再次10位作为工作机器的ID；低12位作为序列号。
  * 
+ * <pre>
  * |  作用    |  保留  |  当前的毫秒数  | 机房ID |  机器ID |  序列号  |
  * | 占用位数 |    1   |       41      |   5    |    5    |    12   |
+ * </pre>
  */
 public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
 

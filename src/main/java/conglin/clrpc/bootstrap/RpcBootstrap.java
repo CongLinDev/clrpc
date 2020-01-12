@@ -13,11 +13,7 @@ abstract public class RpcBootstrap {
     }
 
     public RpcBootstrap(PropertyConfigurer configurer) {
-        if (configurer == null) {
-            this.CONFIGURER = JsonPropertyConfigurer.fromFile(); // default configurer
-        } else {
-            this.CONFIGURER = configurer;
-        }
+        this.CONFIGURER = (configurer != null) ? configurer : JsonPropertyConfigurer.fromFile();
     }
 
     /**

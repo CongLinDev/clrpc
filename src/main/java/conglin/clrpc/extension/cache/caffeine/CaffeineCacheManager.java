@@ -1,4 +1,4 @@
-package conglin.clrpc.service.cache.caffeine;
+package conglin.clrpc.extension.cache.caffeine;
 
 import java.util.concurrent.TimeUnit;
 
@@ -10,7 +10,7 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.service.cache.AbstractCacheManager;
+import conglin.clrpc.extension.cache.AbstractCacheManager;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 
