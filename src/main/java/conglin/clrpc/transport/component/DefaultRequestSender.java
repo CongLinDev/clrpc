@@ -20,12 +20,6 @@ public class DefaultRequestSender implements RequestSender {
     @Override
     public RpcFuture sendRequest(BasicRequest request) {
         RpcFuture future = putFuture(request);
-        if (future.isDone())
-            return future;
-
-        // executor.submit(()->{
-        // doSendRequest(request, request.getRequestId());
-        // });
         doSendRequest(request);
         return future;
     }
@@ -33,29 +27,17 @@ public class DefaultRequestSender implements RequestSender {
     @Override
     public RpcFuture sendRequest(String remoteAddress, BasicRequest request) {
         RpcFuture future = putFuture(request);
-        if (future.isDone())
-            return future;
-
-        // executor.submit(()->{
-        // doSendRequest(request, remoteAddress);
-        // });
         doSendRequest(request, remoteAddress);
         return future;
     }
 
     @Override
     public void resendRequest(BasicRequest request) {
-        // executor.submit(()->{
-        // doSendRequest(request);
-        // });
         doSendRequest(request);
     }
 
     @Override
     public void resendRequest(String remoteAddress, BasicRequest request) {
-        // executor.submit(()->{
-        // doSendRequest(request, remoteAddress);
-        // });
         doSendRequest(request, remoteAddress);
     }
 

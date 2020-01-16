@@ -8,8 +8,6 @@ import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.handler.codec.BasicResponseEncoder;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
 /**
@@ -63,7 +61,7 @@ import io.netty.channel.socket.SocketChannel;
  * 
  * </pre>
  */
-public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class ProviderChannelInitializer extends AbstractChannelInitializer {
 
     private final ProviderContext context;
 
@@ -73,54 +71,22 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
     }
 
     @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
-        ChannelPipeline pipeline = ch.pipeline();
+    protected void doInitChannel(SocketChannel ch) throws Exception {
         SerializationHandler serializationHandler = context.getSerializationHandler();
-        pipeline.addLast("Common Decoder", new CommonDecoder(serializationHandler)).addLast("BasicResponse Encoder",
+        pipeline().addLast("Common Decoder", new CommonDecoder(serializationHandler)).addLast("BasicResponse Encoder",
                 new BasicResponseEncoder(serializationHandler));
         // before handle request
-        initChannelBeforeHandleRequest(pipeline);
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.before-handle", new ArrayList<String>()));
         // handle request
-        pipeline.addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context)).addLast(
+        pipeline().addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context)).addLast(
                 "ProviderTransactionServiceChannelHandler", new ProviderTransactionServiceChannelHandler(context));
         // after handle request
-        initChannelAfterHandleRequest(pipeline);
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.after-handle", new ArrayList<String>()));
         // send response
-        pipeline.addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());
+        pipeline().addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());
     }
 
-    /**
-     * 初始化通道 向管道上添加 请求处理器 之前的处理器
-     * 
-     * 支持Inbound和Outbound处理器,但是考虑到实际处理顺序,最好添加Inbound处理器
-     * 
-     * @param pipeline
-     */
-    protected void initChannelBeforeHandleRequest(ChannelPipeline pipeline) {
-        context.getPropertyConfigurer().getOrDefault("provider.channel-handler.before-handle", new ArrayList<String>())
-                .stream().map(this::getChannelHandlerObject).forEach(pipeline::addLast);
-    }
-
-    /**
-     * 初始化通道 向管道上添加 请求处理器 之后的处理器
-     * 
-     * 支持Inbound和Outbound处理器,但是考虑到实际处理顺序,最好添加Inbound处理器
-     * 
-     * @param pipeline
-     */
-    protected void initChannelAfterHandleRequest(ChannelPipeline pipeline) {
-        context.getPropertyConfigurer().getOrDefault("provider.channel-handler.after-handle", new ArrayList<String>())
-                .stream().map(this::getChannelHandlerObject).forEach(pipeline::addLast);
-    }
-
-    /**
-     * 构造 {@link io.netty.channel.ChannelHandler}
-     * 
-     * 构造方法应当是一个参数,且参数类型为 {@link conglin.clrpc.service.context.ProviderContext}
-     * 
-     * @param qualifiedClassName
-     * @return
-     */
+    @Override
     protected ChannelHandler getChannelHandlerObject(String qualifiedClassName) {
         return ClassUtils.loadClassObject(ChannelHandler.class, qualifiedClassName, context);
     }
