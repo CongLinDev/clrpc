@@ -6,32 +6,64 @@ public class TransactionRequest extends BasicRequest {
 
     private static final long serialVersionUID = -7860287729080523289L;
 
-    protected Integer serialNumber;
+    protected Boolean serial;
 
-    public TransactionRequest(Long requestId) {
+    /**
+     * requestId 由两部分组成，高32位为事务ID，低32位为序列ID
+     * @param requestId
+     */
+    public TransactionRequest(Long requestId, Boolean serial) {
         super(requestId);
+        this.serial = serial;
+    }
+
+    /**
+     * requestId 由两部分组成，高32位为事务ID，低32位为序列ID
+     * @param requestId
+     */
+    public TransactionRequest(Long requestId) {
+        this(requestId, false);
+    }
+
+    public TransactionRequest(long transactionId, int serialId, Boolean serial) {
+        this(transactionId | serialId, serial);
+    }
+
+    public TransactionRequest(long transactionId, int serialId) {
+        this(transactionId | serialId);
     }
 
     public TransactionRequest(TransactionRequest request) {
         super(request);
-        this.serialNumber = request.getSerialNumber();
+        serial = request.isSerial();
     }
 
     /**
-     * 获取序列号
+     * 获取序列ID
      * 
-     * @return the serialNumber of Transaction
+     * @return
      */
-    public Integer getSerialNumber() {
-        return serialNumber;
+    public int getSerialId() {
+        return getRequestId().intValue();
+    }
+
+    public long getTransactionId() {
+        return getRequestId().longValue() & 0xFFFFFFFF00000000L;
     }
 
     /**
-     * 设置序列号
+     * 是否顺序执行
      * 
-     * @param serialNumber the serialNumber of Transaction to set
+     * @return the serial
      */
-    public void setSerialNumber(Integer serialNumber) {
-        this.serialNumber = serialNumber;
+    public Boolean isSerial() {
+        return serial;
+    }
+
+    /**
+     * @param serial the serial to set
+     */
+    public void setSerial(Boolean serial) {
+        this.serial = serial;
     }
 }

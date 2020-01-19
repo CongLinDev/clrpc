@@ -1,9 +1,5 @@
 package conglin.clrpc.service.future;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +13,11 @@ public class TransactionFuture extends AbstractCompositeFuture {
 
     protected final Callback subFutureCallback;
 
-    public TransactionFuture() {
+    private final long transactionId;
+
+    public TransactionFuture(long transactionId) {
         super();
+        this.transactionId = transactionId;
 
         subFutureCallback = new Callback() {
             @Override
@@ -27,7 +26,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
                 try {
                     if (checkCompleteFuture()) {
                         LOGGER.debug("Transaction request id=" + identifier() + " commit successfully.");
-                        done(null); // 全部的子Future完成后调用组合Future完成
+                        TransactionFuture.this.done(null); // 全部的子Future完成后调用组合Future完成
                     }
 
                 } catch (FutureCancelledException e) {
@@ -50,33 +49,14 @@ public class TransactionFuture extends AbstractCompositeFuture {
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException, RequestException {
-        try {
-            SYNCHRONIZER.acquire(0);
-            return null;
-        } finally {
-            SYNCHRONIZER.release(0);
-        }
+    protected Object doGet() throws RequestException {
+        // do nothing
+        return null;
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException, RequestException {
-        try {
-            if (SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))) {
-                return null;
-            } else {
-                throw new TimeoutException("TransactionFuture Timeout! " + identifier());
-            }
-        } finally {
-            SYNCHRONIZER.release(0);
-        }
-    }
-
-    @Override
-    public void done(Object result) {
-        SYNCHRONIZER.release(0);
-        runCallback();
+    public long identifier() {
+        return transactionId;
     }
 
     @Override

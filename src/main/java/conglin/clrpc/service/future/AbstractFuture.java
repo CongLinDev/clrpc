@@ -1,8 +1,13 @@
 package conglin.clrpc.service.future;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.exception.FutureRepeatedCallbackException;
+import conglin.clrpc.common.exception.RequestException;
 
 abstract public class AbstractFuture implements RpcFuture {
     protected static long TIME_THRESHOLD = 5000;
@@ -11,7 +16,7 @@ abstract public class AbstractFuture implements RpcFuture {
         TIME_THRESHOLD = timeThreshold;
     }
 
-    protected final FutureSynchronizer SYNCHRONIZER; // 同步器
+    private final FutureSynchronizer SYNCHRONIZER; // 同步器
 
     protected Callback futureCallback; // 回调
 
@@ -21,6 +26,54 @@ abstract public class AbstractFuture implements RpcFuture {
     public AbstractFuture() {
         this.SYNCHRONIZER = new FutureSynchronizer();
         startTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public Object get() throws InterruptedException, ExecutionException, RequestException {
+        try {
+            SYNCHRONIZER.acquire(0);
+            return doGet();
+        } finally {
+            SYNCHRONIZER.release(0);
+        }
+    }
+
+    @Override
+    public Object get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException, RequestException {
+        try {
+            if (SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))) {
+                return doGet();
+            } else {
+                throw new TimeoutException();
+            }
+        } finally {
+            SYNCHRONIZER.release(0);
+        }
+    }
+
+    /**
+     * 获取结果实际方法
+     * 
+     * @return
+     * @throws RequestException
+     */
+    abstract protected Object doGet() throws RequestException;
+
+    @Override
+    public void done(Object result) {
+        beforeDone(result);
+        SYNCHRONIZER.release(0);
+        runCallback();
+    }
+
+    /**
+     * 完成前一刻需要做的工作
+     * 
+     * @param result
+     */
+    protected void beforeDone(Object result) {
+        // 默认不做任何事情
     }
 
     @Override
@@ -50,6 +103,11 @@ abstract public class AbstractFuture implements RpcFuture {
         return error;
     }
 
+    @Override
+    public void retry() {
+        SYNCHRONIZER.retry();
+    }
+
     /**
      * 设置错误标志位
      */
@@ -64,8 +122,8 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public void addCallback(Callback callback) {
-        if (callback == null)
-            return;
+        if (futureCallback == null)
+            throw new FutureRepeatedCallbackException(futureCallback);
         this.futureCallback = callback;
         if (isDone())
             runCallback();

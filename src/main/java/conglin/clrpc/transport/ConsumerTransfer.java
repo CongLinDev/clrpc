@@ -72,7 +72,7 @@ public class ConsumerTransfer {
      */
     protected void initContext(ConsumerContext context) {
         context.setRequestSender(new DefaultRequestSender(context.getFuturesHolder(),
-                new DefaultProviderChooser(context.getProviderChooserAdapter())));
+                new DefaultProviderChooser(context.getProviderChooserAdapter()), context.getExecutorService()));
     }
 
     /**
@@ -80,7 +80,7 @@ public class ConsumerTransfer {
      */
     public void stop() {
         disconnectAllProviderNode();
-        signalAvailableChannelHandler();
+        signalWaitingConsumer();
 
         if (workerGroup != null)
             workerGroup.shutdownGracefully();
@@ -95,7 +95,7 @@ public class ConsumerTransfer {
     public void updateConnectedProvider(String serviceName, Map<String, String> providerAddress) {
         loadBalancer.update(serviceName, providerAddress, addr -> connectProviderNode(serviceName, addr),
                 Channel::close);
-        signalAvailableChannelHandler();
+        signalWaitingConsumer();
     }
 
     /**
@@ -115,8 +115,8 @@ public class ConsumerTransfer {
         Bootstrap bootstrap = new Bootstrap();
         ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(context);
         String localAddress = context.getLocalAddress();
-
-        bootstrap.localAddress(IPAddressUtils.getPort(localAddress)).group(workerGroup).channel(NioSocketChannel.class)
+        
+        bootstrap.group(workerGroup).channel(NioSocketChannel.class)
                 // .handler(new LoggingHandler(LogLevel.INFO))
                 .handler(channelInitializer);
         LOGGER.info("Consumer starts on {}", localAddress);
@@ -134,14 +134,22 @@ public class ConsumerTransfer {
     /**
      * 等待可用的服务提供者
      * 
+     * @param serviceName
+     * @param firstTime
      * @return
      * @throws InterruptedException
      */
-    private boolean waitingForChannelHandler() throws InterruptedException {
+    private boolean waitingForAvailableProvider(String serviceName, boolean firstTime) throws InterruptedException {
         lock.lock();
         try {
-            LOGGER.debug("Wait for Channel Handler " + timeoutForWait + " mm...");
-            return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
+            if (firstTime) { // 第一次不等待,而是选择再次请求
+                context.getProviderRefresher().accept(serviceName);
+                return true;
+            } else {
+                LOGGER.debug("Wait for Available Provider " + timeoutForWait + " mm...");
+                return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
+            }
+
         } finally {
             lock.unlock();
         }
@@ -150,7 +158,7 @@ public class ConsumerTransfer {
     /**
      * 有可用的ChannelHandler存在 唤醒等待的线程
      */
-    private void signalAvailableChannelHandler() {
+    private void signalWaitingConsumer() {
         lock.lock();
         try {
             connected.signalAll();
@@ -169,9 +177,11 @@ public class ConsumerTransfer {
 
         @Override
         public Channel choose(String serviceName, BasicRequest request) {
+            boolean firstTry = true;
             while (!loadBalancer.hasNext(serviceName)) {
                 try {
-                    waitingForChannelHandler();
+                    waitingForAvailableProvider(serviceName, firstTry);
+                    firstTry = false;
                 } catch (InterruptedException e) {
                     LOGGER.error("Waiting for available node is interrupted!", e);
                 }
@@ -186,12 +196,12 @@ public class ConsumerTransfer {
             int count = 0;
             // 尝试三次，若三次未成功，则放弃
             while ((channel = loadBalancer.get(serviceName, addition)) == null && count < 3) {
-                count++;
                 try {
-                    waitingForChannelHandler();
+                    waitingForAvailableProvider(serviceName, count == 0);
                 } catch (InterruptedException e) {
                     LOGGER.error("Waiting for available node is interrupted!", e);
                 }
+                count++;
             }
             return channel;
         }

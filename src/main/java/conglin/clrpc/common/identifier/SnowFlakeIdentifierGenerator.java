@@ -19,7 +19,7 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
     private long lastTimeStamp;
 
     // 上次使用的序列号
-    private int serialNumber;
+    private int serialId;
 
     public SnowFlakeIdentifierGenerator(int applicationId) {
         // 取低10位，放入 this.applicationId 中
@@ -33,9 +33,9 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
         long currentTimeStamp = System.currentTimeMillis();
         if (currentTimeStamp != lastTimeStamp) {
             lastTimeStamp = currentTimeStamp;
-            serialNumber = 0;
+            serialId = 0;
         } else {
-            serialNumber = (++serialNumber) & 0xfff;
+            serialId = (++serialId) & 0xfff;
         }
     }
 
@@ -47,7 +47,7 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
     @Override
     public long generate(String key) {
         updateTimeStamp();
-        return (lastTimeStamp << 22) | applicationId | serialNumber;
+        return (lastTimeStamp << 22) | applicationId | serialId;
     }
 
 }

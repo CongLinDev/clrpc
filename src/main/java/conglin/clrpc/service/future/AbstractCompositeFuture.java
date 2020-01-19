@@ -63,13 +63,6 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
         futures.parallelStream().filter(RpcFuture::isPending).forEach(RpcFuture::retry);
     }
 
-    @Override
-    public long identifier() {
-        if (size() <= 0)
-            return 0;
-        return futures.get(0).identifier();
-    }
-
     /**
      * 用于检查当前已经完成的子Future是否完成
      * 

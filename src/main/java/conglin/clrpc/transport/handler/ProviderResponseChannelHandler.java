@@ -17,7 +17,7 @@ public class ProviderResponseChannelHandler extends SimpleChannelInboundHandler<
     protected void channelRead0(ChannelHandlerContext ctx, Pair<BasicRequest, BasicResponse> msg) throws Exception {
         BasicResponse response = msg.getSecond();
         ctx.writeAndFlush(response);
-        LOGGER.debug("Send response for requestId={}", response.getRequestId());
+        LOGGER.debug("Send response which requestId={}", response.getRequestId());
 
     }
 }

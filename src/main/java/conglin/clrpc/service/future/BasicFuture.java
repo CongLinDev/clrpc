@@ -1,9 +1,5 @@
 package conglin.clrpc.service.future;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import conglin.clrpc.common.exception.RequestException;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
@@ -23,51 +19,19 @@ public class BasicFuture extends AbstractFuture {
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException, RequestException {
-        try {
-            SYNCHRONIZER.acquire(0);
-            if (response == null)
-                return null;
-            if (response.isError()) {
-                setError();
-                throw (RequestException) response.getResult();
-            }
-            return response.getResult();
-        } finally {
-            SYNCHRONIZER.release(0);
+    protected Object doGet() throws RequestException {
+        if (response == null)
+            return null;
+        if (response.isError()) {
+            setError();
+            throw (RequestException) response.getResult();
         }
-    }
-
-    @Override
-    public Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException, RequestException {
-        try {
-            if (SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))) {
-                if (response == null)
-                    return null;
-                if (response.isError()) {
-                    setError();
-                    throw (RequestException) response.getResult();
-                }
-                return response.getResult();
-            } else {
-                throw new TimeoutException("Timeout: " + request.toString());
-            }
-        } finally {
-            SYNCHRONIZER.release(0);
-        }
-    }
-
-    @Override
-    public void done(Object result) {
-        this.response = (BasicResponse) result;
-        SYNCHRONIZER.release(0);
-        runCallback();
+        return response.getResult();
     }
 
     @Override
     public void retry() {
-        SYNCHRONIZER.retry();
+        super.retry();
         sender.resendRequest(request);
         resetTime();
     }
@@ -84,6 +48,11 @@ public class BasicFuture extends AbstractFuture {
      */
     public BasicRequest request() {
         return this.request;
+    }
+
+    @Override
+    protected void beforeDone(Object result) {
+        this.response = (BasicResponse) result;
     }
 
     /**

@@ -9,7 +9,6 @@ import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
@@ -75,7 +74,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      */
     public <T> T subscribe(Class<T> interfaceClass, String serviceName) {
         LOGGER.info("Subscribe synchronous service named " + serviceName);
-        SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
+        refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
     }
 
@@ -97,7 +96,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      */
     public ObjectProxy subscribeAsync(String serviceName) {
         LOGGER.info("Subscribe asynchronous service named " + serviceName);
-        SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
+        refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(serviceName);
     }
 
@@ -111,12 +110,13 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 订阅通用服务
+     * 刷新服务提供者
      * 
-     * @return
+     * @param serviceName
      */
-    public CommonProxy subscribeAsync() {
-        return SERVICE_HANDLER.getPrxoy();
+    private void refreshProvider(String serviceName) {
+        LOGGER.debug("Refresh Service={} Privider ", serviceName);
+        SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
     }
 
     /**
@@ -157,8 +157,8 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private ConsumerContext initContext(RpcConsumerOption option) {
         ConsumerContext context = new BasicConsumerContext();
 
-        // 设置本地地址
-        context.setLocalAddress(IPAddressUtils.getHostAndPort(CONFIGURER.getOrDefault("consumer.port", 5200)));
+        // 设置本地地址，服务消费者可能连接多个服务提供者，端口号设为0
+        context.setLocalAddress(IPAddressUtils.getHostAndPort(0));
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
         // 设置元信息
@@ -170,7 +170,8 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.setIdentifierGenerator(option.getIdentifierGenerator());
         // 设置服务提供者挑选适配器
         context.setProviderChooserAdapter(option.getProviderChooserAdapter());
-
+        // 设置服务提供者刷新器
+        context.setProviderRefresher(this::refreshProvider);
         return context;
     }
 

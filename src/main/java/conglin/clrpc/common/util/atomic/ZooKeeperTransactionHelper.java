@@ -23,14 +23,14 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
 
     @Override
     public void begin(String subPath) throws TransactionException {
-        // 创建临时节点
-        if (ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath, PREPARE, CreateMode.EPHEMERAL) == null)
+        // 创建节点
+        if (ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath, PREPARE, CreateMode.PERSISTENT) == null)
             throw new TransactionException("Transaction begin failed. (sub_path = " + subPath + ")");
     }
 
     @Override
-    public void prepare(Long transactionId, Integer serialNumber) throws TransactionException {
-        prepare(transactionId.toString(), serialNumber.toString());
+    public void prepare(Long transactionId, Integer serialId) throws TransactionException {
+        prepare(transactionId.toString(), serialId.toString());
     }
 
     @Override
@@ -40,22 +40,21 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
                 CreateMode.EPHEMERAL) == null)
             throw new TransactionException(
                     "Transaction execute failed. (sub_path = " + subPath + ", serial=" + serial + " )");
-
     }
 
     @Override
-    public boolean sign(Long transactionId, Integer serialNumber) {
-        return sign(transactionId.toString(), serialNumber.toString());
+    public boolean sign(Long transactionId, Integer serialId) {
+        return sign(transactionId.toString(), serialId.toString());
     }
 
     @Override
     public boolean sign(String subPath, String serial) {
-        return casUpateSate(subPath + "/" + serial, PREPARE, COMMIT);
+        return casUpateState(subPath + "/" + serial, PREPARE, COMMIT);
     }
 
     @Override
-    public void reparepare(Long transactionId, Integer serialNumber) throws TransactionException {
-        reprepare(transactionId.toString(), serialNumber.toString());
+    public void reparepare(Long transactionId, Integer serialId) throws TransactionException {
+        reprepare(transactionId.toString(), serialId.toString());
     }
 
     @Override
@@ -72,8 +71,9 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
 
     @Override
     public void watch(String subPath, Callback callback) throws TransactionException {
+        String subnodePath = rootPath + "/" + subPath;
         Watcher watcher = event -> {
-            String newState = ZooKeeperUtils.watchNode(keeper, subPath, null);
+            String newState = ZooKeeperUtils.watchNode(keeper, subnodePath, null);
 
             if (Event.EventType.NodeDataChanged == event.getType()) {
                 if (COMMIT.equals(newState)) {
@@ -84,14 +84,14 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
             }
         };
 
-        String curState = ZooKeeperUtils.watchNode(keeper, rootPath + "/" + subPath, watcher);
+        String curState = ZooKeeperUtils.watchNode(keeper, subnodePath, watcher);
         if (curState == null)
             throw new TransactionException("Watch failed. (sub_path = " + subPath + ") ");
-        if (COMMIT.equals(curState)) { // 已经更改为 COMMIT
+        if (COMMIT.equals(curState)) { // 请求状态已经更改为 COMMIT
             // 直接移除watch即可
-            ZooKeeperUtils.removeWatcher(keeper, rootPath + "/" + subPath, watcher, WatcherType.Data);
+            ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
             callback.success(null);
-        } else if (ABORT.equals(curState)) { // 已经更改为 ABORT
+        } else if (ABORT.equals(curState)) { // 请求状态已经更改为 ABORT
             callback.fail(null);
         }
     }
@@ -139,7 +139,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
      * @param newState
      * @return
      */
-    protected boolean casUpateSate(String subPath, String oldState, String newState) {
+    protected boolean casUpateState(String subPath, String oldState, String newState) {
         return ZooKeeperUtils.compareAndSetNodeData(keeper, rootPath + "/" + subPath, oldState, newState);
     }
 }

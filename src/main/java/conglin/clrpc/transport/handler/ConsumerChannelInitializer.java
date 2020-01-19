@@ -76,11 +76,13 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
                 // handle response
                 .addLast("ConsumerBasicServiceChannelHandler", new ConsumerBasicServiceChannelHandler(context));
         // before handle request
-        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.before-handle", new ArrayList<String>()));
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.before",
+                new ArrayList<String>()));
         // handle request
         pipeline().addLast("ConsumerRequestChannelHandler", new ConsumerRequestChannelHandler());
         // after handle request
-        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.after-handle", new ArrayList<String>()));
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.after",
+                new ArrayList<String>()));
     }
 
     @Override

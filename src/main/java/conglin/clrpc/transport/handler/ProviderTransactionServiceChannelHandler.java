@@ -30,39 +30,45 @@ public class ProviderTransactionServiceChannelHandler
         return doExecute(msg);
     }
 
-    // @Override
+    /**
+     * 执行请求具体方法
+     * 
+     * @param request
+     * @return
+     */
     protected Object doExecute(TransactionRequest request) {
 
         // 标记事务的本条请求被当前服务提供者所占有
-        if (!helper.sign(request.getRequestId(), request.getSerialNumber()))
+        long transactionId = request.getTransactionId();
+        int serialId = request.getSerialId();
+        LOGGER.debug("Receive transaction transactionId={}", transactionId);
+
+        if (!helper.sign(transactionId, serialId)) {
+            LOGGER.debug("Ignore transaction transactionId={}", transactionId);
             return null;
+        }
 
         try {
-            helper.watch(request.getRequestId(), new Callback() {
+            helper.watch(transactionId, new Callback() {
                 @Override
                 public void success(Object result) {
 
                     try {
                         BasicResponse response = ProviderTransactionServiceChannelHandler.super.doExecute(request);
                         next(request, response);
-                        LOGGER.debug("Transaction id=" + request.getRequestId() + " serialNumber="
-                                + request.getSerialNumber() + " has executed.");
+                        LOGGER.debug("Transaction id=" + transactionId + " serialId=" + serialId + " has executed.");
                     } catch (UnsupportedServiceException | ServiceExecutionException e) {
                         LOGGER.error("Request failed: " + e.getMessage());
 
                         // 重新标记，由服务消费者在下次定时轮询时重新请求
-                        helper.reparepare(request.getRequestId(), request.getSerialNumber());
-                        // send nothing
-                        return;
+                        helper.reparepare(transactionId, serialId);
                     }
-
                 }
 
                 @Override
                 public void fail(Exception exception) {
                     // do nothing
-                    LOGGER.info("Transaction id=" + request.getRequestId() + " serialNumber="
-                            + request.getSerialNumber() + " has cancelled.");
+                    LOGGER.debug("Transaction transactionId={}, serialId={} has cancelled.", transactionId, serialId);
                 }
             });
         } catch (TransactionException e) {

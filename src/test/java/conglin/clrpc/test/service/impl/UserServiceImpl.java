@@ -8,6 +8,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(Long userId, String username) {
+        System.out.println(System.currentTimeMillis());
         System.out.println(userId + "--------------------" + username);
         return new User(userId, username);
     }

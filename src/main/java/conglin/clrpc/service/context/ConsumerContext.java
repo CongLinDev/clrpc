@@ -1,5 +1,7 @@
 package conglin.clrpc.service.context;
 
+import java.util.function.Consumer;
+
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 
 import conglin.clrpc.service.future.FuturesHolder;
@@ -62,4 +64,18 @@ public interface ConsumerContext extends CommonContext {
      * @param identifierGenerator
      */
     void setIdentifierGenerator(IdentifierGenerator identifierGenerator);
+
+    /**
+     * 获得服务提供者刷新器
+     * 
+     * @return
+     */
+    Consumer<String> getProviderRefresher();
+
+    /**
+     * 设置服务提供者刷新器
+     * 
+     * @param providerRefresher
+     */
+    void setProviderRefresher(Consumer<String> providerRefresher);
 }

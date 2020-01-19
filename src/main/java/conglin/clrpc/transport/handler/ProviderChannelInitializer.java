@@ -34,12 +34,12 @@ import io.netty.channel.socket.SocketChannel;
  *  |               .                                  \|/              |
  *  |               |                                   |               |
  *  |  +------------+--------------+                    |               |
- *  |  | TransactionChannelHandler |                    |               |
+ *  |  | BasicServiceChannelHandler|                    |               |
  *  |  +------------+--------------+                    |               |
  *  |              /|\                                  |               |
  *  |               |                                   |               |
  *  |  +------------+--------------+                    |               |
- *  |  | BasicServiceChannelHandler|                    |               |
+ *  |  | TransactionChannelHandler |                    |               |
  *  |  +------------+--------------+                   \|/              |
  *  |              /|\                                  .               |
  *  |               .                                   .               |
@@ -76,12 +76,16 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
         pipeline().addLast("Common Decoder", new CommonDecoder(serializationHandler)).addLast("BasicResponse Encoder",
                 new BasicResponseEncoder(serializationHandler));
         // before handle request
-        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.before-handle", new ArrayList<String>()));
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.before",
+                new ArrayList<String>()));
         // handle request
-        pipeline().addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context)).addLast(
-                "ProviderTransactionServiceChannelHandler", new ProviderTransactionServiceChannelHandler(context));
+        pipeline()
+                .addLast("ProviderTransactionServiceChannelHandler",
+                        new ProviderTransactionServiceChannelHandler(context))
+                .addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context));
         // after handle request
-        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.after-handle", new ArrayList<String>()));
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.afters",
+                new ArrayList<String>()));
         // send response
         pipeline().addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());
     }

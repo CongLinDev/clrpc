@@ -2,6 +2,9 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import conglin.clrpc.common.Available;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.TransactionException;
@@ -20,6 +23,8 @@ import conglin.clrpc.transport.message.TransactionRequest;
  */
 public class ZooKeeperTransactionProxy extends AbstractProxy implements TransactionProxy, Available {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
+
     protected long currentTransactionId;
 
     protected final TransactionHelper helper;
@@ -34,41 +39,40 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public TransactionProxy begin() throws TransactionException {
-        future = new TransactionFuture();
-
-        currentTransactionId = identifierGenerator.generate(); // 生成一个新的ID
+        currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
+        future = new TransactionFuture(currentTransactionId);
+        LOGGER.debug("Transaction id={} will begin.", currentTransactionId);
         helper.begin(currentTransactionId); // 开启事务
         return this;
     }
 
     @Override
     public TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId);
-
+        TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1);
         request.setServiceName(serviceName);
         request.setMethodName(method);
         request.setParameters(args);
         request.setParameterTypes(getClassType(args));
-        request.setSerialNumber(future.size() + 1); // 由future进行控制序列号
+
         handleRequest(request);
         return this;
     }
 
     @Override
     public TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId);
-
+        TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1);
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
-        request.setSerialNumber(future.size() + 1); // 由future进行控制序列号
+
         handleRequest(request);
         return this;
     }
 
     @Override
     public RpcFuture commit() throws TransactionException {
+        LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
         helper.commit(currentTransactionId);
         RpcFuture f = future;
         future = null; // 提交后该代理对象可以进行重用
@@ -79,6 +83,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     public void abort() throws TransactionException {
         if (future.isDone())
             throw new TransactionException("Transaction request has commited. Can not abort.");
+        LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
         helper.abort(currentTransactionId);
         future = null;
     }
@@ -90,10 +95,9 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
      * @throws TransactionException
      */
     protected void handleRequest(TransactionRequest request) throws TransactionException {
+        helper.prepare(currentTransactionId, request.getSerialId());
         RpcFuture f = sender.sendRequest(request);
-        if (future.combine(f)) {
-            helper.prepare(currentTransactionId, request.getSerialNumber());
-        } else {
+        if (!future.combine(f)) {
             throw new TransactionException("Request added failed. " + request);
         }
     }

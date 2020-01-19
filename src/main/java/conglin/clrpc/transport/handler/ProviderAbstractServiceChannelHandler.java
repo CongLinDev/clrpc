@@ -105,7 +105,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
 
-        LOGGER.debug("Invoking class=" + serviceBeanClass.getName() + " And invoking method=" + methodName);
+        LOGGER.debug("Invoking class={} method={}", serviceBeanClass.getName(), methodName);
 
         try {
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);

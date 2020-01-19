@@ -1,10 +1,11 @@
 package conglin.clrpc.transport.component;
 
+import java.util.concurrent.ExecutorService;
+
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
-import io.netty.channel.Channel;
 
 public class DefaultRequestSender implements RequestSender {
 
@@ -12,9 +13,12 @@ public class DefaultRequestSender implements RequestSender {
 
     protected final ProviderChooser providerChooser;
 
-    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser) {
+    protected final ExecutorService threadPool;
+
+    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser, ExecutorService threadPool) {
         this.futuresHolder = futuresHolder;
         this.providerChooser = providerChooser;
+        this.threadPool = threadPool;
     }
 
     @Override
@@ -60,8 +64,7 @@ public class DefaultRequestSender implements RequestSender {
      */
     protected void doSendRequest(BasicRequest request) {
         String serviceName = request.getServiceName();
-        Channel channel = providerChooser.choose(serviceName, request);
-        channel.pipeline().fireChannelRead(request);
+        providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
     }
 
     /**
@@ -72,8 +75,7 @@ public class DefaultRequestSender implements RequestSender {
      */
     protected void doSendRequest(BasicRequest request, String targetAddress) {
         String serviceName = request.getServiceName();
-        Channel channel = providerChooser.choose(serviceName, targetAddress);
-        channel.pipeline().fireChannelRead(request);
+        providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
     }
 
 }
