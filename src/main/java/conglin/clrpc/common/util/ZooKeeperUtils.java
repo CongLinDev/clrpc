@@ -2,6 +2,7 @@ package conglin.clrpc.common.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -356,8 +357,10 @@ public class ZooKeeperUtils {
      */
     public static Map<String, String> getChildrenNodeAndData(final ZooKeeper keeper, String path,
             List<String> nodeList) {
-        Map<String, String> dataMap = new HashMap<>(nodeList.size());
+        if (nodeList.size() == 0)
+            return Collections.emptyMap();
 
+        Map<String, String> dataMap = new HashMap<>(nodeList.size());
         for (String node : nodeList) {
             String nodePath = path + "/" + node;
             try {
@@ -379,8 +382,10 @@ public class ZooKeeperUtils {
      * @return
      */
     public static List<String> getChildrenData(final ZooKeeper keeper, String path, List<String> nodeList) {
-        List<String> dataList = new ArrayList<>(nodeList.size());
+        if (nodeList.size() == 0)
+            return Collections.emptyList();
 
+        List<String> dataList = new ArrayList<>(nodeList.size());
         for (String node : nodeList) {
             String nodePath = path + "/" + node;
             try {
@@ -407,7 +412,7 @@ public class ZooKeeperUtils {
         } catch (KeeperException | InterruptedException e) {
             LOGGER.error("ZooKeeper get children node data path=" + path + " failed.", e);
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     /**

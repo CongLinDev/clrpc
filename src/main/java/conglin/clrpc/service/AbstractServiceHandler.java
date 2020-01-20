@@ -2,6 +2,8 @@ package conglin.clrpc.service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -45,12 +47,37 @@ abstract public class AbstractServiceHandler implements Destroyable {
      * @return
      */
     public ExecutorService threadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queues) {
-        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS,
-                queues == 0 ? new SynchronousQueue<Runnable>()
-                        : (queues < 0 ? new LinkedBlockingQueue<Runnable>()
-                                : new LinkedBlockingQueue<Runnable>(queues)),
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, queues == 0
+                ? new SynchronousQueue<Runnable>()
+                : (queues < 0 ? new LinkedBlockingQueue<Runnable>() : new LinkedBlockingQueue<Runnable>(queues)),
+                REJECT_HANDLER);
     }
+
+    /**
+     * 线程池拒绝策略
+     * 
+     * 当任务因线程池满了被拒绝后，首先在指定时间内再次尝试加入线程池。若失败，则创建临时线程运行该任务。若临时线程创建失败，则抛出异常。
+     */
+    private static RejectedExecutionHandler REJECT_HANDLER = (runnable, executor) -> {
+
+        boolean offered = false;
+        try {
+            // 再次尝试将其加入线程池
+            offered = executor.getQueue().offer(runnable, 10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+        }
+
+        if (!offered) {
+            LOGGER.debug("Readd task failed");
+            try {
+                // 直接创建临时线程运行任务
+                new Thread(runnable, "Temporary task executor").start();
+            } catch (Throwable throwable) {
+                throw new RejectedExecutionException("Failed to start a new thread ", throwable);
+            }
+        }
+    };
 
     @Override
     public void destroy() throws DestroyFailedException {

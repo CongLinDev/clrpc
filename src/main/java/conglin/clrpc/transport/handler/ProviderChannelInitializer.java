@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.handler;
 
-import java.util.ArrayList;
+import java.util.Collections;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.common.util.ClassUtils;
@@ -77,15 +77,15 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
                 new BasicResponseEncoder(serializationHandler));
         // before handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.before",
-                new ArrayList<String>()));
+                Collections.emptyList()));
         // handle request
         pipeline()
                 .addLast("ProviderTransactionServiceChannelHandler",
                         new ProviderTransactionServiceChannelHandler(context))
                 .addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context));
         // after handle request
-        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.afters",
-                new ArrayList<String>()));
+        addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.after",
+                Collections.emptyList()));
         // send response
         pipeline().addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());
     }

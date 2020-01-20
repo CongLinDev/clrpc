@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.handler;
 
-import java.util.ArrayList;
+import java.util.Collections;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.common.util.ClassUtils;
@@ -77,12 +77,12 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
                 .addLast("ConsumerBasicServiceChannelHandler", new ConsumerBasicServiceChannelHandler(context));
         // before handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.before",
-                new ArrayList<String>()));
+                Collections.emptyList()));
         // handle request
         pipeline().addLast("ConsumerRequestChannelHandler", new ConsumerRequestChannelHandler());
         // after handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.after",
-                new ArrayList<String>()));
+                Collections.emptyList()));
     }
 
     @Override

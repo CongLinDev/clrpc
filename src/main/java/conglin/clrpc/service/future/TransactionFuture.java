@@ -39,9 +39,8 @@ public class TransactionFuture extends AbstractCompositeFuture {
 
             @Override
             public void fail(Exception e) {
-                // 该方法一定不会被调用
-                // 因为当事务Future接收到原子请求的回复时候， 原子请求一定执行完成了
-                // 若原子请求执行失败，则请求会被服务提供者抛弃而不返回任何回复
+                // 该方法只有当中止事务时，才会被执行
+                // 而当原子请求执行错误时，不会向服务消费者发送回复
                 setError();
                 LOGGER.error(e.getMessage());
             }
