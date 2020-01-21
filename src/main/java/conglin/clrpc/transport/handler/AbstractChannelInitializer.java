@@ -2,7 +2,6 @@ package conglin.clrpc.transport.handler;
 
 import java.util.List;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -27,20 +26,11 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     abstract protected void doInitChannel(SocketChannel ch) throws Exception;
 
     /**
-     * 返回当前绑定的 {@link io.netty.channel.Channel}
-     * 
-     * @return
-     */
-    public Channel channel() {
-        return this.pipeline.channel();
-    }
-
-    /**
      * 返回当前绑定的 {@link io.netty.channel.ChannelPipeline}
      * 
      * @return
      */
-    public ChannelPipeline pipeline() {
+    protected ChannelPipeline pipeline() {
         return this.pipeline;
     }
 

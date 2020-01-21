@@ -18,6 +18,5 @@ public class ProviderResponseChannelHandler extends SimpleChannelInboundHandler<
         BasicResponse response = msg.getSecond();
         ctx.writeAndFlush(response);
         LOGGER.debug("Send response which requestId={}", response.getRequestId());
-
     }
 }

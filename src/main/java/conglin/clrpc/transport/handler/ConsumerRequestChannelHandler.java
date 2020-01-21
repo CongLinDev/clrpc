@@ -21,6 +21,5 @@ public class ConsumerRequestChannelHandler extends ChannelInboundHandlerAdapter 
         } else {
             super.channelRead(ctx, msg);
         }
-
     }
 }

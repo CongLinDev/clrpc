@@ -73,12 +73,12 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
         pipeline().addLast("BasicRequest Encoder", new BasicRequestEncoder(serializationHandler))
                 .addLast("TransactionRequest Encoder", new TransactionRequestEncoder(serializationHandler))
                 .addLast("Common Decoder", new CommonDecoder(serializationHandler))
-                // handle response
+                // ansyc handle response
                 .addLast("ConsumerBasicServiceChannelHandler", new ConsumerBasicServiceChannelHandler(context));
         // before handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.before",
                 Collections.emptyList()));
-        // handle request
+        // ansyc handle request
         pipeline().addLast("ConsumerRequestChannelHandler", new ConsumerRequestChannelHandler());
         // after handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.after",

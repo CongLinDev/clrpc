@@ -94,6 +94,8 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
                         if (v != null) {
                             circle.put(next, new Node(currentEpoch, v, metaInfo));
                             LOGGER.debug("Add new node = " + key);
+                        } else {
+                            LOGGER.error("Null Object from {}", key);
                         }
                     }
                     break;

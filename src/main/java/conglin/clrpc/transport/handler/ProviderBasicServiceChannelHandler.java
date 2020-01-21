@@ -19,19 +19,16 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
 
     @Override
     protected Object execute(BasicRequest msg) {
-        
-        BasicResponse response = null;
         try {
             LOGGER.debug("Receive basic request requestId={}", msg.getRequestId());
-            response = doExecute(msg);
+            return doExecute(msg);
         } catch (UnsupportedServiceException | ServiceExecutionException e) {
             LOGGER.error("Request failed: {}", e.getMessage());
-            response = new BasicResponse(msg.getRequestId());
+            BasicResponse response = new BasicResponse(msg.getRequestId());
             response.signError();
             response.setResult(e);
+            return response;
         }
-
-        return response;
     }
 
 }

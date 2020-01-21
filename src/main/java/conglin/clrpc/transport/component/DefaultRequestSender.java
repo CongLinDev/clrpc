@@ -15,7 +15,8 @@ public class DefaultRequestSender implements RequestSender {
 
     protected final ExecutorService threadPool;
 
-    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser, ExecutorService threadPool) {
+    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser,
+            ExecutorService threadPool) {
         this.futuresHolder = futuresHolder;
         this.providerChooser = providerChooser;
         this.threadPool = threadPool;
@@ -63,8 +64,10 @@ public class DefaultRequestSender implements RequestSender {
      * @param request
      */
     protected void doSendRequest(BasicRequest request) {
-        String serviceName = request.getServiceName();
-        providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
+        threadPool.execute(() -> {
+            String serviceName = request.getServiceName();
+            providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
+        });
     }
 
     /**
@@ -74,8 +77,10 @@ public class DefaultRequestSender implements RequestSender {
      * @param targetAddress
      */
     protected void doSendRequest(BasicRequest request, String targetAddress) {
-        String serviceName = request.getServiceName();
-        providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
+        threadPool.execute(() -> {
+            String serviceName = request.getServiceName();
+            providerChooser.choose(serviceName, targetAddress).pipeline().fireChannelRead(request);
+        });
     }
 
 }
