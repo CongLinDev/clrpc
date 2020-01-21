@@ -1,4 +1,3 @@
-src/main/resources/log4j.properties
 target/
 architecture/
 temp/
@@ -9,4 +8,5 @@ logs/
 .classpath
 .settings
 .project
-clrpc.iml
+Dockerfile
+src/main/resources/log4j.properties

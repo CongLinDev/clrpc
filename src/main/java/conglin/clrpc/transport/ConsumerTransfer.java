@@ -22,7 +22,7 @@ import conglin.clrpc.transport.handler.ConsumerChannelInitializer;
 import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -30,7 +30,7 @@ public class ConsumerTransfer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerTransfer.class);
 
-    private EventLoopGroup workerGroup;
+    private Bootstrap nettyBootstrap;
 
     private final ReentrantLock lock;
     private final Condition connected;
@@ -61,8 +61,7 @@ public class ConsumerTransfer {
 
         timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
 
-        int workerThread = configurer.getOrDefault("consumer.thread.worker", 4);
-        workerGroup = new NioEventLoopGroup(workerThread);
+        initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
     }
 
     /**
@@ -76,14 +75,25 @@ public class ConsumerTransfer {
     }
 
     /**
+     * 初始化 Netty Bootstrap
+     * 
+     * @param workerThread
+     */
+    private void initNettyBootstrap(int workerThread) {
+        nettyBootstrap = new Bootstrap();
+        nettyBootstrap.group(new NioEventLoopGroup(workerThread)).channel(NioSocketChannel.class)
+                // .handler(new LoggingHandler(LogLevel.INFO))
+                .handler(new ConsumerChannelInitializer(context));
+    }
+
+    /**
      * 停止服务
      */
     public void stop() {
         disconnectAllProviderNode();
         signalWaitingConsumer();
 
-        if (workerGroup != null)
-            workerGroup.shutdownGracefully();
+        nettyBootstrap.config().group().shutdownGracefully();
     }
 
     /**
@@ -112,19 +122,13 @@ public class ConsumerTransfer {
      * @param remoteAddress
      */
     private Channel connectProviderNode(String serviceName, String remoteAddress) {
-        Bootstrap bootstrap = new Bootstrap();
-        ConsumerChannelInitializer channelInitializer = new ConsumerChannelInitializer(context);
         String localAddress = context.getLocalAddress();
-        
-        bootstrap.group(workerGroup).channel(NioSocketChannel.class)
-                // .handler(new LoggingHandler(LogLevel.INFO))
-                .handler(channelInitializer);
         LOGGER.info("Consumer starts on {}", localAddress);
 
         try {
-            bootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
+            ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
-            return channelInitializer.channel();
+            return channelFuture.channel();
         } catch (UnknownHostException | InterruptedException e) {
             LOGGER.error("Cannot connect to remote provider. Remote Address : " + remoteAddress, e);
         }
