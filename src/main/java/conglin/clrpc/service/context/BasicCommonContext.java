@@ -1,5 +1,6 @@
 package conglin.clrpc.service.context;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -33,15 +34,15 @@ public class BasicCommonContext implements CommonContext {
         this.propertyConfigurer = propertyConfigurer;
     }
 
-    private String localAddress;
+    private InetSocketAddress localAddress;
 
     @Override
-    public String getLocalAddress() {
+    public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
 
     @Override
-    public void setLocalAddress(String localAddress) {
+    public void setLocalAddress(InetSocketAddress localAddress) {
         this.localAddress = localAddress;
     }
 

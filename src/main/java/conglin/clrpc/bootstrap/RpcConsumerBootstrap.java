@@ -158,7 +158,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         ConsumerContext context = new BasicConsumerContext();
 
         // 设置本地地址，服务消费者可能连接多个服务提供者，端口号设为0
-        context.setLocalAddress(IPAddressUtils.getHostAndPort(0));
+        context.setLocalAddress(IPAddressUtils.localAddress());
         // 设置属性配置器
         context.setPropertyConfigurer(CONFIGURER);
         // 设置元信息

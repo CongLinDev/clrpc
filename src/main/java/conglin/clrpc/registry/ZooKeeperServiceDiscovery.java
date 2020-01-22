@@ -1,5 +1,6 @@
 package conglin.clrpc.registry;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -12,9 +13,11 @@ import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
 /**
- * 服务发现 使用 Zookeeper 作为服务注册
+ * 注册发现类 默认情况下使用ZooKeeper注册服务 根路径 {root-path} 默认为 /clrpc （可在配置文件中更改）
+ * 
+ * 例如：对于一个服务 UserService 其路径为 /{root-path}/service/UserService 在该路径下有两个结点
+ * /providers 和 /consumers 其子节点分别记录服务提供者的IP和服务消费者的IP
  */
-
 public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceDiscovery.class);
@@ -23,6 +26,10 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
 
     private final ZooKeeper keeper;
     private final String rootPath;
+
+    public ZooKeeperServiceDiscovery(InetSocketAddress localAddress, PropertyConfigurer configurer) {
+        this(localAddress.toString(), configurer);
+    }
 
     public ZooKeeperServiceDiscovery(String localAddress, PropertyConfigurer configurer) {
 
@@ -35,7 +42,7 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         int sessionTimeout = configurer.getOrDefault("zookeeper.discovery.session-timeout", 5000);
         keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
 
-        this.localAddress = localAddress;
+        this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
     }
 
     @Override
@@ -50,7 +57,7 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         String serviceNode = rootPath + "/" + serviceName;
         ZooKeeperUtils.createNode(keeper, serviceNode, serviceName);
         // 创建消费者节点
-        String consumerNode = rootPath + "/" + serviceName + "/consumers/" + localAddress;
+        String consumerNode = rootPath + "/" + serviceName + "/consumers" + localAddress;
         ZooKeeperUtils.createNode(keeper, consumerNode, data, CreateMode.EPHEMERAL);
 
         LOGGER.debug("Register a service consumer which consumers " + serviceName);
@@ -59,7 +66,7 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
     @Override
     public void unregister(String serviceName) {
         // 移除服务消费者节点
-        String consumerNode = rootPath + "/" + serviceName + "/consumers/" + localAddress;
+        String consumerNode = rootPath + "/" + serviceName + "/consumers" + localAddress;
         ZooKeeperUtils.deleteNode(keeper, consumerNode);
 
         LOGGER.debug("Unregister a service consumer which consumers " + serviceName);

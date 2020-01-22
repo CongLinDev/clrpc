@@ -32,7 +32,7 @@ public class IPAddressUtils {
      * 
      * @return
      */
-    public static String getLocalhost() {
+    public static String localhost() {
         return LOCAL_HOST;
     }
 
@@ -42,8 +42,37 @@ public class IPAddressUtils {
      * @param port
      * @return
      */
-    public static String getHostAndPort(int port) {
+    public static String localAddressString() {
+        return LOCAL_HOST + ":0";
+    }
+
+    /**
+     * 返回本地地址和给定端口号拼接的字符串
+     * 
+     * @param port
+     * @return
+     */
+    public static String localAddressString(int port) {
         return LOCAL_HOST + ":" + port;
+    }
+
+    /**
+     * 返回本地地址
+     * 
+     * @param port
+     * @return
+     */
+    public static InetSocketAddress localAddress(int port) {
+        return new InetSocketAddress(LOCAL_HOST, port);
+    }
+
+    /**
+     * 返回本地地址
+     * 
+     * @return
+     */
+    public static InetSocketAddress localAddress() {
+        return localAddress(0);
     }
 
     public static InetSocketAddress splitHostAndPortResolved(String data) throws UnknownHostException {

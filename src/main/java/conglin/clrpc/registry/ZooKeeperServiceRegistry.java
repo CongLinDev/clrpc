@@ -1,5 +1,7 @@
 package conglin.clrpc.registry;
 
+import java.net.InetSocketAddress;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -23,6 +25,10 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
     private final String rootPath; // zookeeper根地址
     private final ZooKeeper keeper;
 
+    public ZooKeeperServiceRegistry(InetSocketAddress localAddress, PropertyConfigurer configurer) {
+        this(localAddress.toString(), configurer);
+    }
+
     public ZooKeeperServiceRegistry(String localAddress, PropertyConfigurer configurer) {
 
         String path = configurer.getOrDefault("zookeeper.registry.root-path", "/clrpc");
@@ -33,7 +39,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         int sessionTimeout = configurer.getOrDefault("zookeeper.registry.session-timeout", 5000);
         keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
 
-        this.localAddress = localAddress;
+        this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
     }
 
     @Override
@@ -43,7 +49,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         ZooKeeperUtils.createNode(keeper, serviceNode, serviceName);
 
         // 创建服务提供者节点
-        String providerNode = rootPath + "/" + serviceName + "/providers/" + localAddress;
+        String providerNode = rootPath + "/" + serviceName + "/providers" + localAddress;
         ZooKeeperUtils.createNode(keeper, providerNode, data, CreateMode.EPHEMERAL);
 
         LOGGER.debug("Register a service provider which provides " + serviceName);
@@ -52,7 +58,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
     @Override
     public void unregister(String serviceName) {
         // 移除服务提供者节点
-        String providerNode = rootPath + "/" + serviceName + "/providers/" + localAddress;
+        String providerNode = rootPath + "/" + serviceName + "/providers" + localAddress;
         ZooKeeperUtils.deleteNode(keeper, providerNode);
 
         LOGGER.debug("Unregister a service provider which provides " + serviceName);

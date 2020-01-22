@@ -1,5 +1,6 @@
 package conglin.clrpc.service.context;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -41,12 +42,12 @@ public interface CommonContext {
      * 
      * @return
      */
-    String getLocalAddress();
+    InetSocketAddress getLocalAddress();
 
     /**
      * 设置本地地址
      */
-    void setLocalAddress(String localAddress);
+    void setLocalAddress(InetSocketAddress localAddress);
 
     /**
      * 获取序列化处理器

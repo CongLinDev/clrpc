@@ -58,9 +58,7 @@ public class ConsumerTransfer {
         initContext(context);
 
         PropertyConfigurer configurer = context.getPropertyConfigurer();
-
         timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
-
         initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
     }
 
@@ -122,15 +120,18 @@ public class ConsumerTransfer {
      * @param remoteAddress
      */
     private Channel connectProviderNode(String serviceName, String remoteAddress) {
-        String localAddress = context.getLocalAddress();
-        LOGGER.info("Consumer starts on {}", localAddress);
-
         try {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
-            LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
+            if (channelFuture.isSuccess()) {
+                LOGGER.info("Consumer starts on {}", channelFuture.channel().localAddress());
+                LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
+            } else {
+                LOGGER.error("Provider starts failed");
+                throw new InterruptedException();
+            }
             return channelFuture.channel();
         } catch (UnknownHostException | InterruptedException e) {
-            LOGGER.error("Cannot connect to remote provider. Remote Address : " + remoteAddress, e);
+            LOGGER.error("Cannot connect to remote provider {}. Cause={}", remoteAddress, e);
         }
         return null;
     }

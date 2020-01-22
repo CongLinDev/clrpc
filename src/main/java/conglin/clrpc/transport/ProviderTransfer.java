@@ -1,12 +1,11 @@
 package conglin.clrpc.transport;
 
-import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.handler.ProviderChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -19,7 +18,7 @@ public class ProviderTransfer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransfer.class);
 
     private ServerBootstrap nettyBootstrap;
-    
+
     private ProviderContext context;
 
     /**
@@ -33,17 +32,21 @@ public class ProviderTransfer {
         initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
                 configurer.getOrDefault("provider.thread.worker", 4));
 
-        String localAddress = context.getLocalAddress();
+        InetSocketAddress localAddress = context.getLocalAddress();
+        String localAddressString = localAddress.toString();
         try {
 
-            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(localAddress))
-                    .sync();
-            LOGGER.info("Provider starts on {}", localAddress);
-            // 进行准备工作
-            context.getServiceRegister().accept(context.getMetaInformation());
+            ChannelFuture channelFuture = nettyBootstrap.bind(localAddress).sync();
+            if (channelFuture.isSuccess()) {
+                context.getServiceRegister().accept(context.getMetaInformation());
+                LOGGER.info("Provider starts on {}", localAddressString);
+            } else {
+                LOGGER.error("Provider starts failed");
+                throw new InterruptedException();
+            }
             channelFuture.channel().closeFuture().sync();
-        } catch (UnknownHostException | InterruptedException e) {
-            LOGGER.error("Cannot bind local address. {}", localAddress);
+        } catch (InterruptedException e) {
+            LOGGER.error("Cannot bind local address. {}", localAddressString);
         }
     }
 
