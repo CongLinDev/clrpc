@@ -92,4 +92,11 @@ public interface PropertyConfigurer {
 
         return v;
     }
+
+    /**
+     * 配置源
+     */
+    enum Source {
+        CONTENT, FILE, NETWORK
+    }
 }
