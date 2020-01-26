@@ -24,17 +24,19 @@ public interface Chain<T> {
     void setNextDirectly(Chain<T> next);
 
     /**
-     * 能否处理该任务
-     * @param task
-     * @return
-     */
-    boolean canHandle(T task);
-
-    /**
      * 处理任务逻辑
      * @param task
      */
     void doHandle(T task);
+
+    /**
+     * 能否处理该任务
+     * @param task
+     * @return
+     */
+    default boolean canHandle(T task) {
+        return true;
+    }
 
     /**
      * 处理任务
@@ -78,11 +80,6 @@ public interface Chain<T> {
         @Override
         public void setNextDirectly(Chain<Object> next) {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean canHandle(Object task) {
-            return true;
         }
 
         @Override

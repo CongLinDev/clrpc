@@ -5,7 +5,7 @@ import conglin.clrpc.test.service.HelloService;
 public class HelloServiceImpl implements HelloService{
     @Override
     public String hello() {
-        System.out.println(System.currentTimeMillis() + "      hello");
-        return "hello-consumer";
+        // System.out.println(System.currentTimeMillis() + "      hello");
+        return "hello";
     }
 }

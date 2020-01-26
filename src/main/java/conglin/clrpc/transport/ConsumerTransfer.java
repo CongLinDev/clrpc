@@ -42,7 +42,8 @@ public class ConsumerTransfer {
 
     public ConsumerTransfer() {
         loadBalancer = new ConsistentHashLoadBalancer<>(
-                (addr, ch) -> ((InetSocketAddress) ch.remoteAddress()).toString().compareTo(addr) == 0);
+                (addr, ch) -> ((InetSocketAddress) ch.remoteAddress()).toString().equals(addr),
+                this::connectProviderNode, Channel::close);
 
         lock = new ReentrantLock();
         connected = lock.newCondition();
@@ -101,8 +102,7 @@ public class ConsumerTransfer {
      * @param providerAddress 服务器地址
      */
     public void updateConnectedProvider(String serviceName, Map<String, String> providerAddress) {
-        loadBalancer.update(serviceName, providerAddress, addr -> connectProviderNode(serviceName, addr),
-                Channel::close);
+        loadBalancer.update(serviceName, providerAddress);
         signalWaitingConsumer();
     }
 
@@ -116,10 +116,9 @@ public class ConsumerTransfer {
     /**
      * 连接某个特定的服务提供者
      * 
-     * @param serviceName
      * @param remoteAddress
      */
-    private Channel connectProviderNode(String serviceName, String remoteAddress) {
+    private Channel connectProviderNode(String remoteAddress) {
         try {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
@@ -154,7 +153,6 @@ public class ConsumerTransfer {
                 LOGGER.debug("Wait for Available Provider " + timeoutForWait + " mm...");
                 return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
             }
-
         } finally {
             lock.unlock();
         }
@@ -183,7 +181,12 @@ public class ConsumerTransfer {
         @Override
         public Channel choose(String serviceName, BasicRequest request) {
             boolean firstTry = true;
-            while (!loadBalancer.hasNext(serviceName)) {
+            int random = adapter.apply(request);
+
+            while (true) {
+                Channel channel = loadBalancer.get(serviceName, random);
+                if (channel != null)
+                    return channel;
                 try {
                     waitingForAvailableProvider(serviceName, firstTry);
                     firstTry = false;
@@ -191,8 +194,6 @@ public class ConsumerTransfer {
                     LOGGER.error("Waiting for available node is interrupted!", e);
                 }
             }
-            int random = adapter.apply(request);
-            return loadBalancer.get(serviceName, random);
         }
 
         @Override

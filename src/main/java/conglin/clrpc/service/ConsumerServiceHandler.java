@@ -75,6 +75,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     public CommonProxy getPrxoy() {
         return new CommonProxy(context.getRequestSender(), identifierGenerator);
     }
+
     /**
      * 获取事务服务代理
      * 

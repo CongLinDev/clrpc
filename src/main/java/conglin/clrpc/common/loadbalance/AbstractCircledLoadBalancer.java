@@ -5,7 +5,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -63,10 +62,9 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
             return;
-        int code = regionAndEpoch.get();
-
-        int head = code & _32_16_BIT_MASK;
-        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
 
         int next = head;
         while (next <= tail) {
@@ -82,10 +80,9 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
             return false;
-        int code = regionAndEpoch.get();
-
-        int head = code & _32_16_BIT_MASK;
-        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
 
         Integer next = circle.higherKey(head);
         if (next == null || next > tail)
@@ -105,10 +102,9 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
             return null;
-        int code = regionAndEpoch.get();
-
-        int head = code & _32_16_BIT_MASK;
-        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
 
         int next = head;
         while (next <= tail) {
@@ -123,22 +119,130 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     }
 
     @Override
-    public void update(T type, Map<K, String> data, Function<K, V> start, Consumer<V> stop) {
-        AtomicInteger code = null;
+    public void update(T type, Map<K, String> data) {
+        AtomicInteger regionAndEpoch = null;
         int currentEpoch = 0;
 
-        if ((code = descriptions.get(type)) == null) {
+        if ((regionAndEpoch = descriptions.get(type)) == null) {
             // 首次更新需要申请一个可用的区域
-            code = applyForAvailableRegion(type);
-            LOGGER.debug("First update Region head number = " + code.get());
+            regionAndEpoch = applyForAvailableRegion(type);
+            LOGGER.debug("Apply for new Region.");
         } else {
             // 非首次更新的话 更新epoch
-            currentEpoch = code.incrementAndGet() & _16_BIT_MASK;
-            LOGGER.debug("Update Region Head number = " + (code.get() & _32_16_BIT_MASK) + " Epoch = " + currentEpoch);
+            currentEpoch = regionAndEpoch.incrementAndGet() & _16_BIT_MASK;
         }
-        createOrUpdateNode(code, currentEpoch, data, start);
-        removeInvalidNode(code, currentEpoch, stop);
+
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
+        LOGGER.debug("Update Region[head={}, tail={}], Epoch={}", head, tail, currentEpoch);
+
+        // 遍历更新的数据，对给定的数据进行更新
+        for (Map.Entry<K, String> entry : data.entrySet()) {
+            K key = entry.getKey();
+            String metaInfo = entry.getValue();
+
+            int position = hash(key) & _16_BIT_MASK | head;// 获取区域内部编号
+
+            do {
+                Node node = null;
+                if ((node = circle.get(position)) == null) { // 插入新值
+                    // 插入前再次检查 epoch
+                    if ((currentEpoch == (regionAndEpoch.get() & _16_BIT_MASK))
+                            && (node = createNode(key, metaInfo, currentEpoch)) != null) {
+                        circle.put(position, node);
+                        break;
+                    }
+                } else if (match(key, node.getValue()) && updateNode(node, metaInfo, currentEpoch)) { // 更新epoch
+                    LOGGER.debug("Update old node = {}", key);
+                    break;
+                } else { // 发生冲撞
+                    LOGGER.warn("Hash collision. Consider to replace a hash algorithm for load balancer.");
+                    if (++position >= tail) { // 将 v 更新到该节点的后面
+                        position = head | 1;
+                    }
+                }
+            } while (true);
+        }
+
+        // 移除过期节点
+        int position = head;
+        Map.Entry<Integer, Node> entry;
+        while ((entry = circle.higherEntry(position)) != null // 下一个节点不为空
+                && (position = entry.getKey()) <= tail) { // 且下一个节点确保在范围内
+            if (removeNode(entry.getValue(), currentEpoch)) { // 只移除上一代未更新的节点
+                circle.remove(position);
+            }
+        }
     }
+
+    /**
+     * 返回区域起点
+     * 
+     * @param regionAndEpoch
+     * @return
+     */
+    protected int regionHead(AtomicInteger regionAndEpoch) {
+        return regionAndEpoch.get() & _32_16_BIT_MASK;
+    }
+
+    /**
+     * 返回区域终点
+     * 
+     * @param regionHead
+     * @return
+     */
+    protected int regionTail(int regionHead) {
+        return regionHead | _16_BIT_MASK;
+    }
+
+    /**
+     * 返回区域终点
+     * 
+     * @param regionAndEpoch
+     * @return
+     */
+    protected int regionTail(AtomicInteger regionAndEpoch) {
+        return regionTail(regionHead(regionAndEpoch));
+    }
+
+    /**
+     * 创建节点
+     * 
+     * @param key
+     * @param metaInfo
+     * @param currentEpoch
+     * @return
+     */
+    abstract protected Node createNode(K key, String metaInfo, int currentEpoch);
+
+    /**
+     * 更新节点
+     * 
+     * @param node
+     * @param metaInfo
+     * @param currentEpoch
+     * @return
+     */
+    abstract protected boolean updateNode(Node node, String metaInfo, int currentEpoch);
+
+    /**
+     * 移除节点
+     * 
+     * @param node
+     * @param currentEpoch
+     * @return
+     */
+    abstract protected boolean removeNode(Node node, int currentEpoch);
+
+    /**
+     * 检查 K 与 V 是否匹配
+     * 
+     * @param key
+     * @param value
+     * @return
+     */
+    abstract protected boolean match(K key, V value);
 
     /**
      * 为 新的类型 在 {@link AbstractCircledLoadBalancer#circle} 申请一块可用的区域 确定区域并添加区域头节点
@@ -166,27 +270,6 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         AtomicInteger temp = descriptions.putIfAbsent(type, regionAndEpoch); // 以最先放入的服务为准
         return temp == null ? regionAndEpoch : temp;
     }
-
-    /**
-     * 创建或更新有效节点
-     * 
-     * @param headAndEpoch 区域头节点和最新的epoch
-     * @param currentEpoch 本轮的epoch
-     * @param data         数据
-     * @param start        添加V后需要的工作
-     */
-    abstract protected void createOrUpdateNode(AtomicInteger headAndEpoch, int currentEpoch, Map<K, String> data,
-            Function<K, V> start);
-
-    /**
-     * 移除无效节点，即 移除 {@link Node#getEpoch()} < currentEpoch 的节点 范围为 (head, tail] 其中
-     * tail = head | _16_BIT_MASK
-     * 
-     * @param headAndEpoch 区域头节点和最新的epoch
-     * @param currentEpoch 当前 epoch
-     * @param stop         结束工作
-     */
-    abstract protected void removeInvalidNode(AtomicInteger headAndEpoch, int currentEpoch, Consumer<V> stop);
 
     /**
      * 创建一个区域头节点

@@ -21,11 +21,45 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsistentHashLoadBalancer.class);
 
     // 用于自定义比较 K 和 V 是否匹配
-    protected final BiPredicate<K, V> equalPredicate;
+    private final BiPredicate<K, V> matcher;
+    // 用于更新，将 K 转换为 V
+    private final Function<K, V> convertor;
+    // 用于销毁，将V销毁
+    private final Consumer<V> destructor;
 
-    public ConsistentHashLoadBalancer(BiPredicate<K, V> equalPredicate) {
+    public ConsistentHashLoadBalancer(BiPredicate<K, V> matcher, Function<K, V> convertor) {
+        this(matcher, convertor, v -> LOGGER.debug("Destroy object", v));
+    }
+
+    public ConsistentHashLoadBalancer(BiPredicate<K, V> matcher, Function<K, V> convertor, Consumer<V> destructor) {
         super();
-        this.equalPredicate = equalPredicate;
+        this.matcher = matcher;
+        this.convertor = convertor;
+        this.destructor = destructor;
+    }
+
+    @Override
+    protected boolean match(K key, V value) {
+        return matcher.test(key, value);
+    }
+
+    /**
+     * 将 K 对象转换为 V 对象
+     * 
+     * @param key
+     * @return
+     */
+    protected V convert(K key) {
+        return convertor.apply(key);
+    }
+
+    /**
+     * 将 V 销毁
+     * 
+     * @param value
+     */
+    protected void destroy(V value) {
+        destructor.accept(value);
     }
 
     @Override
@@ -33,11 +67,11 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
             return null;
-        int code = regionAndEpoch.get();
 
-        int head = code & _32_16_BIT_MASK;
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
         int next = head | (random & _16_BIT_MASK);
-        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         for (int count = 0; count < 2; count++) { // 检查两轮即可
             Map.Entry<Integer, Node> entry = circle.higherEntry(next);
@@ -55,16 +89,16 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
             return null;
-        int code = regionAndEpoch.get();
 
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
         int randomHash = hash(key);
-        int head = code & _32_16_BIT_MASK;
         int next = head | (randomHash & _16_BIT_MASK);
-        int tail = head | _16_BIT_MASK;// 区域编号不得超过最大编号
 
         Node node = null;
         while ((node = circle.get(next)) != null) {
-            if (equalPredicate.test(key, node.getValue()))
+            if (match(key, node.getValue()))
                 return node.getValue();
 
             if (++next > tail)
@@ -74,63 +108,35 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected void createOrUpdateNode(AtomicInteger headAndEpoch, int currentEpoch, Map<K, String> data,
-            Function<K, V> start) {
-        int head = headAndEpoch.get() & _32_16_BIT_MASK;
-        int tail = headAndEpoch.get() | _16_BIT_MASK;// 区域编号不得超过最大编号
-
-        for (Map.Entry<K, String> entry : data.entrySet()) {
-            K key = entry.getKey();
-            String metaInfo = entry.getValue();
-
-            int next = hash(key);// 获取区域编号
-            next = (next & _16_BIT_MASK) | head;
-
-            do {
-                Node node = null;
-                if ((node = circle.get(next)) == null) { // 插入新值
-                    if (start != null && currentEpoch == (headAndEpoch.get() & _16_BIT_MASK)) {
-                        V v = start.apply(key);
-                        if (v != null) {
-                            circle.put(next, new Node(currentEpoch, v, metaInfo));
-                            LOGGER.debug("Add new node = " + key);
-                        } else {
-                            LOGGER.error("Null Object from {}", key);
-                        }
-                    }
-                    break;
-                } else if (equalPredicate.test(key, node.getValue())) { // 更新epoch
-                    if (currentEpoch > node.getEpoch() && !node.setEpoch(currentEpoch))
-                        continue;
-                    node.setMetaInfo(metaInfo);
-                    LOGGER.debug("Update old node = " + key);
-                    break;
-                } else { // 发生冲撞
-                    next++; // 将 v 更新到该节点的后面
-                    LOGGER.warn("Hash collision. Consider to replace a hash algorithm for load balancer.");
-                }
-            } while (next <= tail);
+    protected Node createNode(K key, String metaInfo, int currentEpoch) {
+        V v = convert(key);
+        if (v != null) {
+            LOGGER.debug("Add new node = {}", key);
+            return new Node(currentEpoch, v, metaInfo);
+        } else {
+            LOGGER.error("Null Object from {}", key);
+            return null;
         }
     }
 
     @Override
-    protected void removeInvalidNode(AtomicInteger headAndEpoch, int currentEpoch, Consumer<V> stop) {
-        int head = headAndEpoch.get() & _32_16_BIT_MASK;
-        int tail = head | _16_BIT_MASK;// 尾节点位置
-
-        int next = head;
-        Map.Entry<Integer, Node> entry;
-        while ((entry = circle.higherEntry(next)) != null // 下一个节点不为空
-                && (next = entry.getKey()) <= tail) { // 且下一个节点确保在范围内
-            if (entry.getValue().getEpoch() + 1 == currentEpoch) { // 只移除上一代未更新的节点
-                circle.remove(entry.getKey());
-                LOGGER.debug("Remove valid node.");
-                if (stop != null) {
-                    stop.accept(entry.getValue().getValue());
-                }
-                entry = null; // help gc
-            }
+    protected boolean updateNode(Node node, String metaInfo, int currentEpoch) {
+        if (currentEpoch <= node.getEpoch())
+            return false;
+        if (node.setEpoch(currentEpoch)) {
+            node.setMetaInfo(metaInfo);
+            return true;
         }
+        return false;
     }
 
+    @Override
+    protected boolean removeNode(Node node, int currentEpoch) {
+        if (node.getEpoch() + 1 == currentEpoch) {
+            LOGGER.debug("Remove valid node.");
+            destroy(node.getValue());
+            return true;
+        }
+        return false;
+    }
 }
