@@ -1,6 +1,5 @@
 package conglin.clrpc.transport;
 
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -42,9 +41,7 @@ public class ConsumerTransfer {
     private LoadBalancer<String, String, Channel> loadBalancer;
 
     public ConsumerTransfer() {
-        loadBalancer = new ConsistentHashLoadBalancer<>(
-                (addr, ch) -> ((InetSocketAddress) ch.remoteAddress()).toString().equals(addr),
-                this::connectProviderNode, Channel::close);
+        loadBalancer = new ConsistentHashLoadBalancer<>(this::connectProviderNode, Channel::close);
 
         lock = new ReentrantLock();
         connected = lock.newCondition();

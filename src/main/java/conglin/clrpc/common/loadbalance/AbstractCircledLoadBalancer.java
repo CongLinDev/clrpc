@@ -143,8 +143,6 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         // 遍历更新的数据，对给定的数据进行更新
         for (Pair<K, String> pair : data) {
             K key = pair.getFirst();
-            String metaInfo = pair.getSecond();
-
             int position = hash(key) & _16_BIT_MASK | head;// 获取区域内部编号
 
             do {
@@ -152,11 +150,11 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
                 if ((node = circle.get(position)) == null) { // 插入新值
                     // 插入前再次检查 epoch
                     if ((currentEpoch == (regionAndEpoch.get() & _16_BIT_MASK))
-                            && (node = createNode(key, metaInfo, currentEpoch)) != null) {
+                            && (node = createNode(pair, currentEpoch)) != null) {
                         circle.put(position, node);
                         break;
                     }
-                } else if (match(key, node.getValue()) && updateNode(node, metaInfo, currentEpoch)) { // 更新epoch
+                } else if (node.match(key) && updateNode(node, pair, currentEpoch)) { // 更新epoch
                     LOGGER.debug("Update old node = {}", key);
                     break;
                 } else { // 发生冲撞
@@ -212,22 +210,21 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     /**
      * 创建节点
      * 
-     * @param key
-     * @param metaInfo
+     * @param data
      * @param currentEpoch
      * @return
      */
-    abstract protected Node createNode(K key, String metaInfo, int currentEpoch);
+    abstract protected Node createNode(Pair<K, String> data, int currentEpoch);
 
     /**
      * 更新节点
      * 
      * @param node
-     * @param metaInfo
+     * @param data
      * @param currentEpoch
      * @return
      */
-    abstract protected boolean updateNode(Node node, String metaInfo, int currentEpoch);
+    abstract protected boolean updateNode(Node node, Pair<K, String> data, int currentEpoch);
 
     /**
      * 移除节点
@@ -237,15 +234,6 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
      * @return
      */
     abstract protected boolean removeNode(Node node, int currentEpoch);
-
-    /**
-     * 检查 K 与 V 是否匹配
-     * 
-     * @param key
-     * @param value
-     * @return
-     */
-    abstract protected boolean match(K key, V value);
 
     /**
      * 为 新的类型 在 {@link AbstractCircledLoadBalancer#circle} 申请一块可用的区域 确定区域并添加区域头节点
@@ -299,8 +287,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
         protected V value;
 
-        // 元信息
-        protected String metaInfo;
+        protected Pair<K, String> metaInfomation;
 
         public Node() {
             this(0, null);
@@ -311,13 +298,13 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         }
 
         public Node(int epoch, V value) {
-            this(epoch, value, "");
+            this(epoch, value, null);
         }
 
-        public Node(int epoch, V value, String metaInfo) {
+        public Node(int epoch, V value, Pair<K, String> metaInfomation){
             this.epoch = new AtomicInteger(epoch);
             this.value = value;
-            this.metaInfo = metaInfo;
+            this.metaInfomation = metaInfomation;
         }
 
         /**
@@ -349,21 +336,31 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         }
 
         /**
-         * 获得Node的元信息
+         * 获取元信息
          * 
-         * @return
+         * @return the metaInfomation
          */
-        public String getMetaInfo() {
-            return metaInfo;
+        public Pair<K, String> getMetaInfomation() {
+            return metaInfomation;
         }
 
         /**
-         * 设置Node的元信息
+         * 设置元信息
          * 
-         * @param metaInfo
+         * @param metaInfomation the metaInfomation to set
          */
-        public void setMetaInfo(String metaInfo) {
-            this.metaInfo = metaInfo;
+        public void setMetaInfomation(Pair<K, String> metaInfomation) {
+            this.metaInfomation = metaInfomation;
+        }
+
+        /**
+         * 检查是否匹配
+         * 
+         * @param key
+         * @return
+         */
+        public boolean match(K key) {
+            return metaInfomation.getFirst().equals(key);
         }
     }
 }

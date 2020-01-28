@@ -2,12 +2,13 @@ package conglin.clrpc.common.loadbalance;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.Pair;
 
 /**
  * 该类用作一致性哈希负载均衡 适合一个 type 对应多个 key-value 的负载均衡
@@ -20,27 +21,19 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsistentHashLoadBalancer.class);
 
-    // 用于自定义比较 K 和 V 是否匹配
-    private final BiPredicate<K, V> matcher;
     // 用于更新，将 K 转换为 V
     private final Function<K, V> convertor;
     // 用于销毁，将V销毁
     private final Consumer<V> destructor;
 
-    public ConsistentHashLoadBalancer(BiPredicate<K, V> matcher, Function<K, V> convertor) {
-        this(matcher, convertor, v -> LOGGER.debug("Destroy object", v));
+    public ConsistentHashLoadBalancer(Function<K, V> convertor) {
+        this(convertor, v -> LOGGER.debug("Destroy object", v));
     }
 
-    public ConsistentHashLoadBalancer(BiPredicate<K, V> matcher, Function<K, V> convertor, Consumer<V> destructor) {
+    public ConsistentHashLoadBalancer(Function<K, V> convertor, Consumer<V> destructor) {
         super();
-        this.matcher = matcher;
         this.convertor = convertor;
         this.destructor = destructor;
-    }
-
-    @Override
-    protected boolean match(K key, V value) {
-        return matcher.test(key, value);
     }
 
     /**
@@ -98,7 +91,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
 
         Node node = null;
         while ((node = circle.get(next)) != null) {
-            if (match(key, node.getValue()))
+            if (node.match(key))
                 return node.getValue();
 
             if (++next > tail)
@@ -108,11 +101,12 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected Node createNode(K key, String metaInfo, int currentEpoch) {
+    protected Node createNode(Pair<K, String> data, int currentEpoch) {
+        K key = data.getFirst();
         V v = convert(key);
         if (v != null) {
             LOGGER.debug("Add new node = {}", key);
-            return new Node(currentEpoch, v, metaInfo);
+            return new Node(currentEpoch, v, data);
         } else {
             LOGGER.error("Null Object from {}", key);
             return null;
@@ -120,11 +114,11 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected boolean updateNode(Node node, String metaInfo, int currentEpoch) {
+    protected boolean updateNode(Node node, Pair<K, String> data, int currentEpoch) {
         if (currentEpoch <= node.getEpoch())
             return false;
         if (node.setEpoch(currentEpoch)) {
-            node.setMetaInfo(metaInfo);
+            node.setMetaInfomation(data);
             return true;
         }
         return false;
