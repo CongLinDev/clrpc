@@ -60,7 +60,7 @@ public class CommonDecoder extends ByteToMessageDecoder {
             result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
             break;
         default:
-            LOGGER.error("Can not decode message type=" + messageType);
+            LOGGER.error("Can not decode message type={}", messageType);
         }
         return result;
     }

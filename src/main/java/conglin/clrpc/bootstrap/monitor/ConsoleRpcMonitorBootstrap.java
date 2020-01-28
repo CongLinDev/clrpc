@@ -1,9 +1,11 @@
 package conglin.clrpc.bootstrap.monitor;
 
-import java.util.Map;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.Pair;
 
 class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
@@ -32,25 +34,25 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     }
 
     @Override
-    protected void handleConusmer(String serviceName, Map<String, String> nodeAndData) {
+    protected void handleConusmer(String serviceName, Collection<Pair<String, String>> nodeList) {
         System.out.println("Consumer node Changed. Time=" + System.currentTimeMillis());
-        printNodeInfo(serviceName, nodeAndData);
+        printNodeInfo(serviceName, nodeList);
     }
 
     @Override
-    protected void handleProvider(String serviceName, Map<String, String> nodeAndData) {
+    protected void handleProvider(String serviceName, Collection<Pair<String, String>> nodeList) {
         System.out.println("Provider node Changed. Time=" + System.currentTimeMillis());
-        printNodeInfo(serviceName, nodeAndData);
+        printNodeInfo(serviceName, nodeList);
     }
 
     /**
      * 打印节点信息
      * 
      * @param serviceName
-     * @param nodeAndData
+     * @param nodeList
      */
-    protected void printNodeInfo(String serviceName, Map<String, String> nodeAndData) {
+    protected void printNodeInfo(String serviceName, Collection<Pair<String, String>> nodeList) {
         System.out.println("Service : " + serviceName);
-        nodeAndData.forEach((node, data) -> System.out.println(node + "--->" + data));
+        nodeList.forEach((node) -> System.out.println(node.getFirst() + "--->" + node.getSecond()));
     }
 }

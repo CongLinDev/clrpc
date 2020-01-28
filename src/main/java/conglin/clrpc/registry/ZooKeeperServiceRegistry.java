@@ -52,7 +52,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         String providerNode = rootPath + "/" + serviceName + "/providers" + localAddress;
         ZooKeeperUtils.createNode(keeper, providerNode, data, CreateMode.EPHEMERAL);
 
-        LOGGER.debug("Register a service provider which provides " + serviceName);
+        LOGGER.debug("Register a service provider which provides {}.", serviceName);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         String providerNode = rootPath + "/" + serviceName + "/providers" + localAddress;
         ZooKeeperUtils.deleteNode(keeper, providerNode);
 
-        LOGGER.debug("Unregister a service provider which provides " + serviceName);
+        LOGGER.debug("Unregister a service provider which provides {}.", serviceName);
 
     }
 }

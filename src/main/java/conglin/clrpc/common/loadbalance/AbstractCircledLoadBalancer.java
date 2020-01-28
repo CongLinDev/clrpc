@@ -1,5 +1,6 @@
 package conglin.clrpc.common.loadbalance;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +10,8 @@ import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.Pair;
 
 /**
  * 该类用作一致性哈希负载均衡 适合一个 type 对应多个 key-value 的负载均衡
@@ -119,7 +122,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     }
 
     @Override
-    public void update(T type, Map<K, String> data) {
+    public void update(T type, Collection<Pair<K, String>> data) {
         AtomicInteger regionAndEpoch = null;
         int currentEpoch = 0;
 
@@ -138,9 +141,9 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         LOGGER.debug("Update Region[head={}, tail={}], Epoch={}", head, tail, currentEpoch);
 
         // 遍历更新的数据，对给定的数据进行更新
-        for (Map.Entry<K, String> entry : data.entrySet()) {
-            K key = entry.getKey();
-            String metaInfo = entry.getValue();
+        for (Pair<K, String> pair : data) {
+            K key = pair.getFirst();
+            String metaInfo = pair.getSecond();
 
             int position = hash(key) & _16_BIT_MASK | head;// 获取区域内部编号
 

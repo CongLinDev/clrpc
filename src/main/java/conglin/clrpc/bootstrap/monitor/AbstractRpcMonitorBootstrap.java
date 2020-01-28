@@ -1,7 +1,6 @@
 package conglin.clrpc.bootstrap.monitor;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.Watcher.Event;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.RpcBootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
+import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
@@ -32,12 +32,12 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
         String path = CONFIGURER.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
         keeper = ZooKeeperUtils.connectZooKeeper(monitorAddress, sessionTimeout);
-        LOGGER.info("Starting to monitor zookeeper whose address=" + monitorAddress + "  root-path=" + rootPath);
+        LOGGER.info("Starting to monitor zookeeper whose address={} root-path={}.", monitorAddress, rootPath);
     }
 
     @Override
     public RpcMonitorBootstrap monitor() {
-        List<String> services = ZooKeeperUtils.getChildrenNode(keeper, rootPath, event -> {
+        Collection<String> services = ZooKeeperUtils.listChildrenNode(keeper, rootPath, event -> {
             if (event.getType() == Event.EventType.NodeChildrenChanged) {
                 monitor();
             }
@@ -52,9 +52,9 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
         String providerPath = concretePath + "/providers";
         String consumerPath = concretePath + "/consumers";
 
-        LOGGER.info("Monitor service named " + serviceName);
-        ZooKeeperUtils.watchChildrenNodeAndData(keeper, providerPath, serviceName, this::handleProvider);
-        ZooKeeperUtils.watchChildrenNodeAndData(keeper, consumerPath, serviceName, this::handleConusmer);
+        LOGGER.info("Monitor service named {}.", serviceName);
+        ZooKeeperUtils.watchChildrenList(keeper, providerPath, serviceName, this::handleProvider);
+        ZooKeeperUtils.watchChildrenList(keeper, consumerPath, serviceName, this::handleConusmer);
         return this;
     }
 
@@ -72,15 +72,15 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
      * 处理服务消费者节点和数据
      * 
      * @param serviceName
-     * @param nodeAndData
+     * @param nodeList
      */
-    abstract protected void handleConusmer(String serviceName, Map<String, String> nodeAndData);
+    abstract protected void handleConusmer(String serviceName, Collection<Pair<String, String>> nodeList);
 
     /**
      * 处理服务提供者节点和数据
      * 
      * @param serviceName
-     * @param nodeAndData
+     * @param nodeList
      */
-    abstract protected void handleProvider(String serviceName, Map<String, String> nodeAndData);
+    abstract protected void handleProvider(String serviceName, Collection<Pair<String, String>> nodeList);
 }

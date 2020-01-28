@@ -1,6 +1,7 @@
 package conglin.clrpc.service;
 
 import java.lang.reflect.Proxy;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
@@ -11,6 +12,7 @@ import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
@@ -130,7 +132,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param serviceName
      * @param updateMethod
      */
-    public void findService(String serviceName, BiConsumer<String, Map<String, String>> updateMethod) {
+    public void findService(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
         serviceDiscovery.register(serviceName, context.getMetaInformation());
         serviceDiscovery.discover(serviceName, updateMethod);
     }
@@ -141,7 +143,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param interfaceClass
      * @param updateMethod
      */
-    public void findService(Class<?> interfaceClass, BiConsumer<String, Map<String, String>> updateMethod) {
+    public void findService(Class<?> interfaceClass,
+            BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
         findService(interfaceClass.getSimpleName(), updateMethod);
     }
 
@@ -182,7 +185,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
                     RpcFuture f = iterator.next();
                     if (f.isPending() && f.timeout()) {
                         f.retry();
-                        LOGGER.warn("Service response(requestId=" + f.identifier() + ") is too slow. Retry...");
+                        LOGGER.warn("Service response(requestId={}) is too slow. Retry...", f.identifier());
                     }
                 }
             }

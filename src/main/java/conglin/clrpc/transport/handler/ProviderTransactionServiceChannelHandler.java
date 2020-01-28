@@ -56,9 +56,9 @@ public class ProviderTransactionServiceChannelHandler
                     try {
                         BasicResponse response = ProviderTransactionServiceChannelHandler.super.doExecute(request);
                         next(request, response);
-                        LOGGER.debug("Transaction id=" + transactionId + " serialId=" + serialId + " has executed.");
+                        LOGGER.debug("Transaction transactionId={} serialId={} has executed.", transactionId, serialId);
                     } catch (UnsupportedServiceException | ServiceExecutionException e) {
-                        LOGGER.error("Request failed: " + e.getMessage());
+                        LOGGER.error("Request failed: {}", e.getMessage());
 
                         // 重新标记，由服务消费者在下次定时轮询时重新请求
                         helper.reparepare(transactionId, serialId);
@@ -67,7 +67,7 @@ public class ProviderTransactionServiceChannelHandler
 
                 @Override
                 public void fail(Exception exception) {
-                    LOGGER.debug("Transaction transactionId={}, serialId={} has cancelled.", transactionId, serialId);
+                    LOGGER.debug("Transaction transactionId={} serialId={} has cancelled.", transactionId, serialId);
                     // 返回错误回复
                     BasicResponse response = new BasicResponse(request.getRequestId());
                     response.signError();

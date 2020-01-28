@@ -1,7 +1,7 @@
 package conglin.clrpc.registry;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
+import java.util.Collection;
 import java.util.function.BiConsumer;
 
 import org.apache.zookeeper.CreateMode;
@@ -9,6 +9,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ZooKeeperUtils;
 
@@ -46,9 +47,9 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void discover(String serviceName, BiConsumer<String, Map<String, String>> updateMethod) {
+    public void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
         String providerNodes = rootPath + "/" + serviceName + "/providers";
-        ZooKeeperUtils.watchChildrenNodeAndData(keeper, providerNodes, map -> updateMethod.accept(serviceName, map));
+        ZooKeeperUtils.watchChildrenList(keeper, providerNodes, provider -> updateMethod.accept(serviceName, provider));
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         String consumerNode = rootPath + "/" + serviceName + "/consumers" + localAddress;
         ZooKeeperUtils.createNode(keeper, consumerNode, data, CreateMode.EPHEMERAL);
 
-        LOGGER.debug("Register a service consumer which consumers " + serviceName);
+        LOGGER.debug("Register a service consumer which consumers {}.", serviceName);
     }
 
     @Override
@@ -69,6 +70,6 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         String consumerNode = rootPath + "/" + serviceName + "/consumers" + localAddress;
         ZooKeeperUtils.deleteNode(keeper, consumerNode);
 
-        LOGGER.debug("Unregister a service consumer which consumers " + serviceName);
+        LOGGER.debug("Unregister a service consumer which consumers {}.", serviceName);
     }
 }

@@ -1,7 +1,9 @@
 package conglin.clrpc.registry;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.function.BiConsumer;
+
+import conglin.clrpc.common.Pair;
 
 /**
  * 服务发现
@@ -16,5 +18,5 @@ public interface ServiceDiscovery extends Registerable {
      * @param updateMethod
      * @return
      */
-    void discover(String serviceName, BiConsumer<String, Map<String, String>> updateMethod);
+    void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod);
 }

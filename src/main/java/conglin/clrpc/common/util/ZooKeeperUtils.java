@@ -2,6 +2,7 @@ package conglin.clrpc.common.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,8 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.Pair;
 
 public class ZooKeeperUtils {
 
@@ -226,7 +229,7 @@ public class ZooKeeperUtils {
      * @param path
      * @return
      */
-    public static List<String> watchChildrenData(final ZooKeeper keeper, String path) {
+    public static Collection<String> watchChildrenData(final ZooKeeper keeper, String path) {
         return watchChildrenData(keeper, path, null);
     }
 
@@ -238,13 +241,14 @@ public class ZooKeeperUtils {
      * @param consumer
      * @return
      */
-    public static List<String> watchChildrenData(final ZooKeeper keeper, String path, Consumer<List<String>> consumer) {
-        List<String> nodeList = getChildrenNode(keeper, path, event -> {
+    public static Collection<String> watchChildrenData(final ZooKeeper keeper, String path,
+            Consumer<Collection<String>> consumer) {
+        Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
             if (event.getType() == Event.EventType.NodeChildrenChanged) {
                 watchChildrenData(keeper, path, consumer);
             }
         });
-        List<String> data = getChildrenData(keeper, path, nodeList);
+        Collection<String> data = listChildrenData(keeper, path, nodeList);
         if (consumer != null)
             consumer.accept(data);
         return data;
@@ -257,8 +261,8 @@ public class ZooKeeperUtils {
      * @param path
      * @return
      */
-    public static Map<String, String> watchChildrenNodeAndData(final ZooKeeper keeper, String path) {
-        return watchChildrenNodeAndData(keeper, path, null);
+    public static Collection<Pair<String, String>> watchChildrenList(final ZooKeeper keeper, String path) {
+        return watchChildrenList(keeper, path, null);
     }
 
     /**
@@ -269,14 +273,14 @@ public class ZooKeeperUtils {
      * @param consumer
      * @return
      */
-    public static Map<String, String> watchChildrenNodeAndData(final ZooKeeper keeper, String path,
-            Consumer<Map<String, String>> consumer) {
-        List<String> nodeList = getChildrenNode(keeper, path, event -> {
+    public static Collection<Pair<String, String>> watchChildrenList(final ZooKeeper keeper, String path,
+            Consumer<Collection<Pair<String, String>>> consumer) {
+        Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
             if (event.getType() == Event.EventType.NodeChildrenChanged) {
-                watchChildrenNodeAndData(keeper, path, consumer);
+                watchChildrenList(keeper, path, consumer);
             }
         });
-        Map<String, String> nodeAndData = getChildrenNodeAndData(keeper, path, nodeList);
+        Collection<Pair<String, String>> nodeAndData = listChildren(keeper, path, nodeList);
         if (consumer != null)
             consumer.accept(nodeAndData);
         return nodeAndData;
@@ -287,22 +291,100 @@ public class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path
-     * @param group    监视组的标识符
+     * @param group    组的标识符
      * @param consumer
      * @return
      */
-    public static Map<String, String> watchChildrenNodeAndData(final ZooKeeper keeper, String path, String group,
-            BiConsumer<String, Map<String, String>> consumer) {
-        List<String> nodeList = getChildrenNode(keeper, path, event -> {
+    public static Collection<Pair<String, String>> watchChildrenList(final ZooKeeper keeper, String path, String group,
+            BiConsumer<String, Collection<Pair<String, String>>> consumer) {
+        Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
             if (event.getType() == Event.EventType.NodeChildrenChanged) {
-                watchChildrenNodeAndData(keeper, path, group, consumer);
+                watchChildrenList(keeper, path, group, consumer);
             }
         });
-        Map<String, String> nodeAndData = getChildrenNodeAndData(keeper, path, nodeList);
+        Collection<Pair<String, String>> nodeAndData = listChildren(keeper, path, nodeList);
         if (consumer != null)
             consumer.accept(group, nodeAndData);
         return nodeAndData;
     }
+
+    /**
+     * 监视指定路径下所有子节点的名称和数据
+     * 
+     * @param keeper
+     * @param path
+     * @return
+     */
+    public static Map<String, String> watchChildrenMap(final ZooKeeper keeper, String path) {
+        return watchChildrenMap(keeper, path, null);
+    }
+
+    /**
+     * 监视指定路径下所有子节点的名称和数据
+     * 
+     * @param keeper
+     * @param path
+     * @param consumer
+     * @return
+     */
+    public static Map<String, String> watchChildrenMap(final ZooKeeper keeper, String path,
+            Consumer<Map<String, String>> consumer) {
+        Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
+            if (event.getType() == Event.EventType.NodeChildrenChanged) {
+                watchChildrenMap(keeper, path, consumer);
+            }
+        });
+        Map<String, String> nodeAndData = mapChildren(keeper, path, nodeList);
+        if (consumer != null)
+            consumer.accept(nodeAndData);
+        return nodeAndData;
+    }
+
+    /**
+     * 监视指定路径下所有子节点的名称和数据
+     * 
+     * @param keeper
+     * @param path
+     * @param group    组的标识符
+     * @param consumer
+     * @return
+     */
+    public static Map<String, String> watchChildrenMap(final ZooKeeper keeper, String path, String group,
+            BiConsumer<String, Map<String, String>> consumer) {
+        Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
+            if (event.getType() == Event.EventType.NodeChildrenChanged) {
+                watchChildrenMap(keeper, path, group, consumer);
+            }
+        });
+        Map<String, String> nodeAndData = mapChildren(keeper, path, nodeList);
+        if (consumer != null)
+            consumer.accept(group, nodeAndData);
+        return nodeAndData;
+    }
+
+    // /**
+    // * 监视指定路径下所有子节点的名称和数据
+    // *
+    // * @param keeper
+    // * @param path
+    // * @param group 监视组的标识符
+    // * @param consumer
+    // * @return
+    // */
+    // public static Map<String, String> watchChildrenMap(final ZooKeeper keeper,
+    // String path, String group,
+    // BiConsumer<String, Collection<Pair<String, String>>> consumer) {
+    // Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
+    // if (event.getType() == Event.EventType.NodeChildrenChanged) {
+    // watchChildrenMap(keeper, path, group, consumer);
+    // }
+    // });
+    // Collection<Pair<String, String>> nodeAndData = listChildren(keeper, path,
+    // nodeList);
+    // if (consumer != null)
+    // consumer.accept(group, nodeAndData);
+    // return nodeAndData;
+    // }
 
     /**
      * 移除给定路径下的给定类型的指定Watcher
@@ -355,12 +437,12 @@ public class ZooKeeperUtils {
      * @param nodeList
      * @return
      */
-    public static Map<String, String> getChildrenNodeAndData(final ZooKeeper keeper, String path,
-            List<String> nodeList) {
-        if (nodeList.size() == 0)
+    public static Map<String, String> mapChildren(final ZooKeeper keeper, String path, Collection<String> nodeList) {
+        int size = nodeList.size();
+        if (size == 0)
             return Collections.emptyMap();
 
-        Map<String, String> dataMap = new HashMap<>(nodeList.size());
+        Map<String, String> dataMap = new HashMap<>(size);
         for (String node : nodeList) {
             String nodePath = path + "/" + node;
             try {
@@ -374,6 +456,33 @@ public class ZooKeeperUtils {
     }
 
     /**
+     * 获取指定路径下所有子节点的名称和数据列表
+     * 
+     * @param keeper
+     * @param path
+     * @param nodeList
+     * @return
+     */
+    public static Collection<Pair<String, String>> listChildren(final ZooKeeper keeper, String path,
+            Collection<String> nodeList) {
+        int size = nodeList.size();
+        if (size == 0)
+            return Collections.emptyList();
+
+        List<Pair<String, String>> nodePairs = new ArrayList<>(size);
+        for (String node : nodeList) {
+            String nodePath = path + "/" + node;
+            try {
+                String nodeData = new String(keeper.getData(nodePath, false, null));
+                nodePairs.add(new Pair<>(node, nodeData));
+            } catch (KeeperException | InterruptedException e) {
+                LOGGER.debug("ZooKeeper get node Data path={} failed. Cause={}", nodePath, e);
+            }
+        }
+        return nodePairs;
+    }
+
+    /**
      * 获取指定路径下所有子节点的数据
      * 
      * @param keeper
@@ -381,11 +490,13 @@ public class ZooKeeperUtils {
      * @param nodeList
      * @return
      */
-    public static List<String> getChildrenData(final ZooKeeper keeper, String path, List<String> nodeList) {
-        if (nodeList.size() == 0)
+    public static Collection<String> listChildrenData(final ZooKeeper keeper, String path,
+            Collection<String> nodeList) {
+        int size = nodeList.size();
+        if (size == 0)
             return Collections.emptyList();
 
-        List<String> dataList = new ArrayList<>(nodeList.size());
+        List<String> dataList = new ArrayList<>(size);
         for (String node : nodeList) {
             String nodePath = path + "/" + node;
             try {
@@ -406,7 +517,7 @@ public class ZooKeeperUtils {
      * @param watcher
      * @return
      */
-    public static List<String> getChildrenNode(final ZooKeeper keeper, String path, Watcher watcher) {
+    public static Collection<String> listChildrenNode(final ZooKeeper keeper, String path, Watcher watcher) {
         try {
             return keeper.getChildren(path, watcher);
         } catch (KeeperException | InterruptedException e) {

@@ -71,8 +71,8 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
         String serviceBeanClassName = serviceBeanClass.getSimpleName();
         if (!serviceBeanClassName.endsWith("ServiceImpl")) {
-            LOGGER.error(
-                    serviceBeanClassName + " is not permitted. And you must use 'xxxServiceImpl' format classname.");
+            LOGGER.error("{} is not permitted. And you must use 'xxxServiceImpl' format classname.",
+                    serviceBeanClassName);
             return this;
         } else {
             return publish(serviceBeanClassName.substring(0, serviceBeanClassName.length() - 4), serviceBeanClass);
@@ -88,14 +88,14 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      */
     public RpcProviderBootstrap publish(String serviceName, Class<?> serviceBeanClass) {
         if (serviceBeanClass.isInterface()) {
-            LOGGER.error(serviceBeanClass.getName() + " is not a service class. And it will not be published");
+            LOGGER.error("{} is not a service class. And it will not be published", serviceBeanClass.getName());
         } else {
             try {
                 Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
                 return publish(serviceName, serviceBean);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                LOGGER.error("Can not publish service. " + e.getMessage());
+                LOGGER.error("Can not publish service. Cause={}", e.getMessage());
             }
         }
         return this;
@@ -110,7 +110,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      */
     public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {
         SERVICE_HANDLER.publish(serviceName, serviceBean);
-        LOGGER.info("Publish service named " + serviceName);
+        LOGGER.info("Publish service named {}.", serviceName);
         return this;
     }
 

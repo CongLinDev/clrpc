@@ -73,7 +73,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 返回代理服务类
      */
     public <T> T subscribe(Class<T> interfaceClass, String serviceName) {
-        LOGGER.info("Subscribe synchronous service named " + serviceName);
+        LOGGER.info("Subscribe synchronous service named {}.", serviceName);
         refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
     }
@@ -95,7 +95,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 返回代理服务类
      */
     public ObjectProxy subscribeAsync(String serviceName) {
-        LOGGER.info("Subscribe asynchronous service named " + serviceName);
+        LOGGER.info("Subscribe asynchronous service named {}.", serviceName);
         refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(serviceName);
     }

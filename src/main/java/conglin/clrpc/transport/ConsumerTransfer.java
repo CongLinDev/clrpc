@@ -2,7 +2,7 @@ package conglin.clrpc.transport;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
@@ -98,11 +99,11 @@ public class ConsumerTransfer {
     /**
      * 更新连接的服务器
      * 
-     * @param serviceName     服务名
-     * @param providerAddress 服务器地址
+     * @param serviceName 服务名
+     * @param providers   服务提供者
      */
-    public void updateConnectedProvider(String serviceName, Map<String, String> providerAddress) {
-        loadBalancer.update(serviceName, providerAddress);
+    public void updateConnectedProvider(String serviceName, Collection<Pair<String, String>> providers) {
+        loadBalancer.update(serviceName, providers);
         signalWaitingConsumer();
     }
 

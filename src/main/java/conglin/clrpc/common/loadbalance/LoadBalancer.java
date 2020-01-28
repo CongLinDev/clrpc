@@ -1,8 +1,10 @@
 package conglin.clrpc.common.loadbalance;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import conglin.clrpc.common.Pair;
 
 /**
  * 该接口用作负载均衡 适合 {一个 type 对应多个 key-value 对} 组的负载均衡
@@ -19,7 +21,7 @@ public interface LoadBalancer<T, K, V> {
      * @param type
      * @param data 其中key为连接的ip地址，value为 服务器的元信息
      */
-    void update(T type, Map<K, String> data);
+    void update(T type, Collection<Pair<K, String>> data);
 
     /**
      * 根据指定算法返回对象
