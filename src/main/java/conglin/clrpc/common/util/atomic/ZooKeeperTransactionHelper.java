@@ -17,8 +17,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void begin(Long transactionId) throws TransactionException {
-        begin(transactionId.toString());
+    public void begin(long transactionId) throws TransactionException {
+        begin(String.valueOf(transactionId));
     }
 
     @Override
@@ -29,32 +29,32 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void prepare(Long transactionId, Integer serialId) throws TransactionException {
-        prepare(transactionId.toString(), serialId.toString());
+    public void prepare(long transactionId, int serialId) throws TransactionException {
+        prepare(String.valueOf(transactionId), String.valueOf(serialId));
     }
 
     @Override
     public void prepare(String subPath, String serial) throws TransactionException {
         // 创建临时子节点
-        if (ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath + "/" + serial, PREPARE,
+        if (ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath + "/" + serial, SIGN,
                 CreateMode.EPHEMERAL) == null)
             throw new TransactionException(
                     "Transaction execute failed. (sub_path = " + subPath + ", serial=" + serial + " )");
     }
 
     @Override
-    public boolean sign(Long transactionId, Integer serialId) {
-        return sign(transactionId.toString(), serialId.toString());
+    public boolean sign(long transactionId, int serialId) {
+        return sign(String.valueOf(transactionId), String.valueOf(serialId));
     }
 
     @Override
     public boolean sign(String subPath, String serial) {
-        return casUpateState(subPath + "/" + serial, PREPARE, COMMIT);
+        return casUpateState(subPath + "/" + serial, PREPARE, SIGN);
     }
 
     @Override
-    public void reparepare(Long transactionId, Integer serialId) throws TransactionException {
-        reprepare(transactionId.toString(), serialId.toString());
+    public void reparepare(long transactionId, int serialId) throws TransactionException {
+        reprepare(String.valueOf(transactionId), String.valueOf(serialId));
     }
 
     @Override
@@ -65,8 +65,17 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void watch(Long transactionId, Callback callback) throws TransactionException {
-        watch(transactionId.toString(), callback);
+    public void watch(long transactionId, Callback callback) throws TransactionException {
+        watch(String.valueOf(transactionId), callback);
+    }
+
+    @Override
+    public void watch(long transactionId, int serialId, Callback callback) throws TransactionException {
+        if (serialId == 0) {
+            watch(transactionId, callback);
+        } else {
+            watch(transactionId + "/" + serialId, callback);
+        }
     }
 
     @Override
@@ -97,8 +106,13 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void abort(Long transactionId) throws TransactionException {
-        abort(transactionId.toString());
+    public void abort(long transactionId) throws TransactionException {
+        abort(String.valueOf(transactionId));
+    }
+
+    @Override
+    public void abort(long transactionId, int serialId) throws TransactionException {
+        abort(transactionId + "/" + serialId);
     }
 
     @Override
@@ -109,9 +123,13 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     }
 
     @Override
-    public void commit(Long transactionId) throws TransactionException {
-        commit(transactionId.toString());
+    public void commit(long transactionId) throws TransactionException {
+        commit(String.valueOf(transactionId));
+    }
 
+    @Override
+    public void commit(long transactionId, int serialId) throws TransactionException {
+        commit(transactionId + "/" + serialId);
     }
 
     @Override

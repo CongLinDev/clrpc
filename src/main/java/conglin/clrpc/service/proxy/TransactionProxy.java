@@ -8,12 +8,20 @@ import conglin.clrpc.service.future.RpcFuture;
 public interface TransactionProxy {
 
     /**
-     * 开始一个事务
+     * 开始一个事务，默认非顺序执行
      * 
      * @return this object
      * @throws TransactionException
      */
     TransactionProxy begin() throws TransactionException;
+
+    /**
+     * 开始一个事务
+     * @param serial 是否顺序执行
+     * @return this object
+     * @throws TransactionException
+     */
+    TransactionProxy begin(boolean serial) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求

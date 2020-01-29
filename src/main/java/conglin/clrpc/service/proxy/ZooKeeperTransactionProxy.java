@@ -26,6 +26,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
 
     protected long currentTransactionId;
+    protected boolean serial; // 是否顺序执行
 
     protected final TransactionHelper helper;
 
@@ -39,8 +40,14 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public TransactionProxy begin() throws TransactionException {
-        currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
-        future = new TransactionFuture(currentTransactionId);
+        return begin(false);
+    }
+
+    @Override
+    public TransactionProxy begin(boolean serial) throws TransactionException {
+        this.currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
+        this.serial = serial;
+        this.future = new TransactionFuture(currentTransactionId);
         LOGGER.debug("Transaction id={} will begin.", currentTransactionId);
         helper.begin(currentTransactionId); // 开启事务
         return this;
@@ -48,7 +55,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1);
+        TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1, serial);
         request.setServiceName(serviceName);
         request.setMethodName(method);
         request.setParameters(args);

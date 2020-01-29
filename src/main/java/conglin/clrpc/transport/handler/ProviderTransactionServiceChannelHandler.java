@@ -49,12 +49,14 @@ public class ProviderTransactionServiceChannelHandler
         }
 
         try {
-            helper.watch(transactionId, new Callback() {
+            // 若顺序执行，则监视上一个子节点，反之监视事务节点
+            helper.watch(transactionId, (request.isSerial() ? serialId - 1 : 0), new Callback() {
                 @Override
                 public void success(Object result) {
 
                     try {
                         BasicResponse response = ProviderTransactionServiceChannelHandler.super.doExecute(request);
+                        helper.commit(transactionId, serialId);
                         next(request, response);
                         LOGGER.debug("Transaction transactionId={} serialId={} has executed.", transactionId, serialId);
                     } catch (UnsupportedServiceException | ServiceExecutionException e) {
@@ -67,13 +69,13 @@ public class ProviderTransactionServiceChannelHandler
 
                 @Override
                 public void fail(Exception exception) {
-                    LOGGER.debug("Transaction transactionId={} serialId={} has cancelled.", transactionId, serialId);
                     // 返回错误回复
                     BasicResponse response = new BasicResponse(request.getRequestId());
                     response.signError();
                     response.setResult(new TransactionException("Transaction has been cancelled."));
-
+                    helper.abort(transactionId, serialId);
                     next(request, response);
+                    LOGGER.debug("Transaction transactionId={} serialId={} has cancelled.", transactionId, serialId);
                 }
             });
         } catch (TransactionException e) {
