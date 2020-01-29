@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
 
+/**
+ * ZooKeeper 工具类
+ */
 public class ZooKeeperUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperUtils.class);
@@ -361,30 +364,6 @@ public class ZooKeeperUtils {
             consumer.accept(group, nodeAndData);
         return nodeAndData;
     }
-
-    // /**
-    // * 监视指定路径下所有子节点的名称和数据
-    // *
-    // * @param keeper
-    // * @param path
-    // * @param group 监视组的标识符
-    // * @param consumer
-    // * @return
-    // */
-    // public static Map<String, String> watchChildrenMap(final ZooKeeper keeper,
-    // String path, String group,
-    // BiConsumer<String, Collection<Pair<String, String>>> consumer) {
-    // Collection<String> nodeList = listChildrenNode(keeper, path, event -> {
-    // if (event.getType() == Event.EventType.NodeChildrenChanged) {
-    // watchChildrenMap(keeper, path, group, consumer);
-    // }
-    // });
-    // Collection<Pair<String, String>> nodeAndData = listChildren(keeper, path,
-    // nodeList);
-    // if (consumer != null)
-    // consumer.accept(group, nodeAndData);
-    // return nodeAndData;
-    // }
 
     /**
      * 移除给定路径下的给定类型的指定Watcher

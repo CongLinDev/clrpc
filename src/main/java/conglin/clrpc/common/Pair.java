@@ -48,4 +48,22 @@ public class Pair<P, Q> {
     public void setSecond(Q second) {
         this.q = second;
     }
+
+    @Override
+    public int hashCode() {
+        if (p == null || q == null)
+            return 0;
+        return p.hashCode() ^ q.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (!(obj instanceof Pair))
+            return false;
+        @SuppressWarnings("unchecked")
+        Pair<P, Q> pair = (Pair<P, Q>) obj;
+        return pair.getFirst().equals(p) && pair.getSecond().equals(q);
+    }
 }
