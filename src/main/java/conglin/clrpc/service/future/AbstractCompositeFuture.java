@@ -3,21 +3,32 @@ package conglin.clrpc.service.future;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import conglin.clrpc.common.exception.FutureCancelledException;
+import conglin.clrpc.common.exception.RequestException;
 
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
-    protected final List<RpcFuture> futures;
+    private final List<RpcFuture> futures;
 
+    /**
+     * 构造一个空的复合Future
+     * 
+     */
     public AbstractCompositeFuture() {
-        super();
-        this.futures = new LinkedList<>();
+        this(null);
     }
 
-    public AbstractCompositeFuture(Collection<? extends RpcFuture> collection) {
+    /**
+     * 构造一个以当前集合为基础的复合Future
+     * 
+     * @param futures
+     */
+    public AbstractCompositeFuture(Collection<? extends RpcFuture> futures) {
         super();
-        this.futures = new LinkedList<>(collection);
+        this.futures = (futures == null) ? new LinkedList<>() : new LinkedList<>(futures);
     }
 
     /**
@@ -79,4 +90,15 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
         return true;
     }
 
+    @Override
+    protected Object doGet() throws RequestException {
+        // return results as list
+        return futures.stream().map(t -> {
+            try {
+                return t.get();
+            } catch (InterruptedException | ExecutionException | RequestException e) {
+                return e;
+            }
+        }).collect(Collectors.toList());
+    }
 }

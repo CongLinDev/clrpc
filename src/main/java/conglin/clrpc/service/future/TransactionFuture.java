@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.FutureCancelledException;
 import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.common.exception.TransactionException;
 
 public class TransactionFuture extends AbstractCompositeFuture {
 
@@ -15,6 +16,11 @@ public class TransactionFuture extends AbstractCompositeFuture {
 
     private final long transactionId;
 
+    /**
+     * 构造一个事务Future
+     * 
+     * @param transactionId 事务ID
+     */
     public TransactionFuture(long transactionId) {
         super();
         this.transactionId = transactionId;
@@ -48,12 +54,6 @@ public class TransactionFuture extends AbstractCompositeFuture {
     }
 
     @Override
-    protected Object doGet() throws RequestException {
-        // do nothing
-        return null;
-    }
-
-    @Override
     public long identifier() {
         return transactionId;
     }
@@ -63,17 +63,17 @@ public class TransactionFuture extends AbstractCompositeFuture {
         future.addCallback(subFutureCallback);
     }
 
-    /**
-     * 因为事务类型的Future无具体的结果，所以 {@link TransactionFuture#doRunCallback()} 调用的
-     * {@link Callback#success(Object)} 以及
-     * {@link Callback#fail(String, RequestException)} 参数均为 {@code null}
-     */
     @Override
     protected void doRunCallback() {
         if (!isError()) {
-            this.futureCallback.success(null);
+            try {
+                // {@link AbstractCompositeFuture#doGet()} 不会抛出异常
+                this.futureCallback.success(doGet());
+            } catch (RequestException e) {
+                LOGGER.error(e.getMessage());
+            }
         } else {
-            this.futureCallback.fail(null);
+            this.futureCallback.fail(new TransactionException("Transaction has cancelled."));
         }
     }
 
