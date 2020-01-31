@@ -15,6 +15,11 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IdempotentService{
+public @interface IdempotentService {
+    /**
+     * 是否是幂等的方法
+     * 
+     * @return
+     */
     boolean idempotence() default true;
 }

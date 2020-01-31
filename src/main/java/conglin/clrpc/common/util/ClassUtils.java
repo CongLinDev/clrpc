@@ -47,6 +47,7 @@ public class ClassUtils {
      * @return
      */
     public static Class<?>[] getClasses(Object... objects) {
+        if(objects == null) return new Class<?>[0];
         Class<?>[] types = new Class[objects.length];
         for (int i = 0; i < objects.length; i++) {
             types[i] = objects[i].getClass();

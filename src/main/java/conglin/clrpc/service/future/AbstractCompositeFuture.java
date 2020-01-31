@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import conglin.clrpc.common.exception.FutureCancelledException;
-import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.common.exception.RpcServiceException;
 
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
@@ -91,12 +90,12 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     @Override
-    protected Object doGet() throws RequestException {
+    protected Object doGet() throws RpcServiceException {
         // return results as list
         return futures.stream().map(t -> {
             try {
                 return t.get();
-            } catch (InterruptedException | ExecutionException | RequestException e) {
+            } catch (InterruptedException | ExecutionException | RpcServiceException e) {
                 return e;
             }
         }).collect(Collectors.toList());

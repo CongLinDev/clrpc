@@ -23,26 +23,14 @@ public class DefaultRequestSender implements RequestSender {
     }
 
     @Override
-    public RpcFuture sendRequest(BasicRequest request) {
-        RpcFuture future = putFuture(request);
-        doSendRequest(request);
-        return future;
-    }
-
-    @Override
-    public RpcFuture sendRequest(String remoteAddress, BasicRequest request) {
+    public RpcFuture sendRequest(BasicRequest request, String remoteAddress) {
         RpcFuture future = putFuture(request);
         doSendRequest(request, remoteAddress);
         return future;
     }
 
     @Override
-    public void resendRequest(BasicRequest request) {
-        doSendRequest(request);
-    }
-
-    @Override
-    public void resendRequest(String remoteAddress, BasicRequest request) {
+    public void resendRequest(BasicRequest request, String remoteAddress) {
         doSendRequest(request, remoteAddress);
     }
 
@@ -62,24 +50,16 @@ public class DefaultRequestSender implements RequestSender {
      * 发送请求
      * 
      * @param request
-     */
-    protected void doSendRequest(BasicRequest request) {
-        threadPool.execute(() -> {
-            String serviceName = request.getServiceName();
-            providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
-        });
-    }
-
-    /**
-     * 发送请求
-     * 
-     * @param request
      * @param targetAddress
      */
     protected void doSendRequest(BasicRequest request, String targetAddress) {
+        String serviceName = request.getServiceName();
         threadPool.execute(() -> {
-            String serviceName = request.getServiceName();
-            providerChooser.choose(serviceName, targetAddress).pipeline().fireChannelRead(request);
+            if (targetAddress == null) {
+                providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
+            } else {
+                providerChooser.choose(serviceName, targetAddress).pipeline().fireChannelRead(request);
+            }
         });
     }
 

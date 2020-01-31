@@ -6,8 +6,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.FutureRepeatedCallbackException;
-import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.common.exception.RpcServiceException;
 
 abstract public class AbstractFuture implements RpcFuture {
     protected static long TIME_THRESHOLD = 5000;
@@ -29,7 +28,7 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException, RequestException {
+    public Object get() throws InterruptedException, ExecutionException, RpcServiceException {
         try {
             SYNCHRONIZER.acquire(0);
             return doGet();
@@ -40,7 +39,7 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException, RequestException {
+            throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException {
         try {
             if (SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))) {
                 return doGet();
@@ -56,9 +55,9 @@ abstract public class AbstractFuture implements RpcFuture {
      * 获取结果实际方法
      * 
      * @return
-     * @throws RequestException
+     * @throws RpcServiceException
      */
-    abstract protected Object doGet() throws RequestException;
+    abstract protected Object doGet() throws RpcServiceException;
 
     @Override
     public void done(Object result) {
@@ -121,12 +120,13 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public void addCallback(Callback callback) {
+    public boolean addCallback(Callback callback) {
         if (futureCallback == null)
-            throw new FutureRepeatedCallbackException(futureCallback);
+            return false;
         this.futureCallback = callback;
         if (isDone())
             runCallback();
+        return true;
     }
 
     /**

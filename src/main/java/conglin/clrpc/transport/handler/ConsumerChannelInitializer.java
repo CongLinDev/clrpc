@@ -5,6 +5,7 @@ import java.util.Collections;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
 import conglin.clrpc.transport.handler.codec.BasicRequestEncoder;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;
 import conglin.clrpc.transport.handler.codec.TransactionRequestEncoder;

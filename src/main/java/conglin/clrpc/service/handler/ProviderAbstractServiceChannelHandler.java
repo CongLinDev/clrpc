@@ -1,4 +1,4 @@
-package conglin.clrpc.transport.handler;
+package conglin.clrpc.service.handler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.annotation.CacheableService;
+import conglin.clrpc.common.annotation.IdempotentService;
 import conglin.clrpc.common.annotation.IgnoreService;
-import conglin.clrpc.common.exception.ServiceExecutionException;
-import conglin.clrpc.common.exception.UnsupportedServiceException;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -82,7 +82,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
         Object serviceBean = context.getObjectsHolder().apply(serviceName);
         // 如果服务实现类没有注册，抛出异常
         if (serviceBean == null) {
-            throw new UnsupportedServiceException(request);
+            throw new UnsupportedServiceException(serviceName);
         }
 
         return jdkReflectInvoke(serviceBean, request);
@@ -102,9 +102,8 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
         Class<?> serviceBeanClass = serviceBean.getClass();
         String methodName = request.getMethodName();
-        Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
-
+        Class<?>[] parameterTypes = ClassUtils.getClasses(parameters);
         LOGGER.debug("Invoking class={} method={}", serviceBeanClass.getName(), methodName);
 
         try {
@@ -127,21 +126,26 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      * @throws NoSuchMethodException
      */
     protected void handleAnnotation(Method method, BasicResponse response) throws NoSuchMethodException {
-        // 处理 {@link IgnoreService}
         IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
         if (ignoreService != null && ignoreService.ignore())
             throw new NoSuchMethodException(method.getName());
+
+        IdempotentService idempotentService = method.getAnnotation(IdempotentService.class);
+        if(idempotentService != null && idempotentService.idempotence()){
+            response.signIdempotent();
+            return;
+        }
 
         // 处理{@link CacheableService}
         CacheableService cacheableService = method.getAnnotation(CacheableService.class);
         if (cacheableService == null)
             return;// 默认值为0，不必调用方法设置为0
         if (cacheableService.consumer()) {
-            response.canCacheForConsumer();
+            response.signCacheForConsumer();
             response.setExpireTime(cacheableService.exprie());
         }
         if (cacheableService.provider()) {
-            response.canCacheForProvider();
+            response.signCacheForProvider();
             response.setExpireTime(cacheableService.exprie());
         }
     }

@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.common.exception.RpcServiceException;
 
 public interface RpcFuture {
     /**
@@ -14,9 +14,9 @@ public interface RpcFuture {
      * @return
      * @throws InterruptedException
      * @throws ExecutionException
-     * @throws RequestException
+     * @throws RpcServiceException
      */
-    Object get() throws InterruptedException, ExecutionException, RequestException;
+    Object get() throws InterruptedException, ExecutionException, RpcServiceException;
 
     /**
      * 在指定时间内获取结果
@@ -27,17 +27,18 @@ public interface RpcFuture {
      * @throws InterruptedException
      * @throws ExecutionException
      * @throws TimeoutException
-     * @throws RequestException
+     * @throws RpcServiceException
      */
     Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException, RequestException;
+            throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException;
 
     /**
      * 添加回调函数
      * 
      * @param callback
+     * @return
      */
-    void addCallback(Callback callback);
+    boolean addCallback(Callback callback);
 
     /**
      * 该 {@code RpcFuture} 的标识符

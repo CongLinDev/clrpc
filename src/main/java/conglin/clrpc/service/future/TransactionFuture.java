@@ -4,8 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.FutureCancelledException;
-import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.common.exception.TransactionException;
 
 public class TransactionFuture extends AbstractCompositeFuture {
@@ -69,7 +68,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
             try {
                 // {@link AbstractCompositeFuture#doGet()} 不会抛出异常
                 this.futureCallback.success(doGet());
-            } catch (RequestException e) {
+            } catch (RpcServiceException e) {
                 LOGGER.error(e.getMessage());
             }
         } else {

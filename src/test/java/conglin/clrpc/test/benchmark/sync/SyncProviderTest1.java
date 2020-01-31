@@ -1,7 +1,6 @@
 package conglin.clrpc.test.benchmark.sync;
 
 import conglin.clrpc.bootstrap.RpcProviderBootstrap;
-import conglin.clrpc.test.service.HelloService;
 import conglin.clrpc.test.service.impl.HelloServiceImpl;
 
 /**
@@ -13,7 +12,7 @@ public class SyncProviderTest1 {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         try {
             System.out.println("Provider opening...");
-            bootstrap.publish(HelloService.class, HelloServiceImpl.class)
+            bootstrap.publish("HelloService", HelloServiceImpl.class)
                     .start();
             
         }finally{

@@ -6,7 +6,7 @@
 
 ## Setup
 
-**开发阶段** 均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
+当前阶段均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
 
 你可以使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地进行使用。
 
@@ -86,7 +86,7 @@
 
 ### Config File
 
-配置文件位置默认在项目 **resources** 目录下，默认格式为 **json** ，默认文件为 `clrpc-config.json`。
+配置文件位置默认在项目 **src/main/resources** 目录下，默认格式为 `json` ，默认文件为 `clrpc-config.json`。
 
 ### Config Items
 
@@ -156,9 +156,14 @@ Conclusion:
 
 ## Extension
 
-`clrpc` 自身暂时不支持**熔断**、**服务降级**等功能。
+**clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
 
-你可以使用诸如 [resilience4j](https://github.com/resilience4j/resilience4j) 、 [Hystrix](https://github.com/Netflix/Hystrix) 等框架或库进行 **熔断**、**高频控制**、**隔离**、**限流**。
+你只需要编写基于接口 `io.netty.channel.ChannelHandler` 的类且提供只有一个参数（类型如下表）的构造方法，并告知 **clrpc** 该类作用的时机即可完成对消息处理的扩展。
+
+| Role | Type | Remark |
+| :------: | :------: | :------: |
+| Provider | conglin.clrpc.service.context.ProviderContext | 上下文 |
+| Consumer | conglin.clrpc.service.context.ConsumerContext | 上下文 |
 
 ## License
 

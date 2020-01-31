@@ -5,7 +5,6 @@ import java.util.Random;
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
-import conglin.clrpc.test.pojo.User;
 
 /**
  * 测试异步调用服务
@@ -27,7 +26,7 @@ public class AsyncConsumerTest1 {
 
                     @Override
                     public void success(Object result) {
-                        System.out.println(((User) result).toString());
+                        System.out.println(result.toString());
                     }
 
                     @Override

@@ -1,8 +1,8 @@
-package conglin.clrpc.common.exception;
+package conglin.clrpc.service.future;
 
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.common.exception.RpcServiceException;
 
-public class FutureCancelledException extends Exception {
+public class FutureCancelledException extends RpcServiceException {
 
     private static final long serialVersionUID = -6235027907224439419L;
 

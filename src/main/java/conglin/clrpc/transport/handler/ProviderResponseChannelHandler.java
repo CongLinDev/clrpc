@@ -11,7 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class ProviderResponseChannelHandler extends SimpleChannelInboundHandler<Pair<BasicRequest, BasicResponse>> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBasicServiceChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderResponseChannelHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Pair<BasicRequest, BasicResponse> msg) throws Exception {

@@ -1,6 +1,6 @@
 package conglin.clrpc.service.future;
 
-import conglin.clrpc.common.exception.RequestException;
+import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -19,12 +19,12 @@ public class BasicFuture extends AbstractFuture {
     }
 
     @Override
-    protected Object doGet() throws RequestException {
+    protected Object doGet() throws RpcServiceException {
         if (response == null)
             return null;
         if (response.isError()) {
             setError();
-            throw (RequestException) response.getResult();
+            throw (RpcServiceException) response.getResult();
         }
         return response.getResult();
     }
@@ -65,7 +65,7 @@ public class BasicFuture extends AbstractFuture {
         if (!isError()) {
             this.futureCallback.success(response.getResult());
         } else {
-            this.futureCallback.fail((RequestException) response.getResult());
+            this.futureCallback.fail((RpcServiceException) response.getResult());
         }
     }
 }

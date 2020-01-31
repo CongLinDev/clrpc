@@ -2,7 +2,6 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
-import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.service.future.RpcFuture;
 
 /**
@@ -35,9 +34,8 @@ public interface ObjectProxy {
      * @param methodName    方法名
      * @param args          参数
      * @return
-     * @throws NoSuchProviderException
      */
-    RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException;
+    RpcFuture call(String remoteAddress, String methodName, Object... args);
 
     /**
      * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(Exception)} 中使用该方法进行重试或回滚
@@ -47,9 +45,8 @@ public interface ObjectProxy {
      * @param method        方法
      * @param args          参数
      * @return
-     * @throws NoSuchProviderException
      */
-    RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException;
+    RpcFuture call(String remoteAddress, Method method, Object... args);
 
     /**
      * 将对象代理转为接口代理

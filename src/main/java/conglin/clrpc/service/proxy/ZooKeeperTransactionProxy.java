@@ -59,7 +59,6 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
         request.setServiceName(serviceName);
         request.setMethodName(method);
         request.setParameters(args);
-        request.setParameterTypes(getClassType(args));
 
         handleRequest(request);
         return this;
@@ -71,7 +70,6 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
         request.setServiceName(serviceName);
         request.setMethodName(method.getName());
         request.setParameters(args);
-        request.setParameterTypes(method.getParameterTypes());
 
         handleRequest(request);
         return this;

@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
@@ -45,7 +44,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
     }
 
     @Override
-    public RpcFuture call(String remoteAddress, String methodName, Object... args) throws NoSuchProviderException {
+    public RpcFuture call(String remoteAddress, String methodName, Object... args) {
         return super.doCall(remoteAddress, serviceName, methodName, args);
     }
 
@@ -55,7 +54,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
     }
 
     @Override
-    public RpcFuture call(String remoteAddress, Method method, Object... args) throws NoSuchProviderException {
+    public RpcFuture call(String remoteAddress, Method method, Object... args) {
         return super.doCall(remoteAddress, serviceName, method, args);
     }
 

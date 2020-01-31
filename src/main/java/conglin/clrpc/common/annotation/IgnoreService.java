@@ -15,6 +15,11 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IgnoreService{
+public @interface IgnoreService {
+    /**
+     * 是否忽略服务
+     * 
+     * @return
+     */
     boolean ignore() default true;
 }

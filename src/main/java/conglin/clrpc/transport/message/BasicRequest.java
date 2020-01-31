@@ -12,7 +12,6 @@ public class BasicRequest extends Message implements Serializable {
 
     private String serviceName;
     private String methodName;
-    private Class<?>[] parameterTypes;
     private Object[] parameters;
 
     public BasicRequest(Long requestId) {
@@ -23,7 +22,6 @@ public class BasicRequest extends Message implements Serializable {
         super(request);
         this.serviceName = request.getServiceName();
         this.methodName = request.getMethodName();
-        this.parameterTypes = request.getParameterTypes();
         this.parameters = request.getParameters();
     }
 
@@ -64,24 +62,6 @@ public class BasicRequest extends Message implements Serializable {
     }
 
     /**
-     * 获取参数类型
-     * 
-     * @return the parameterTypes
-     */
-    public Class<?>[] getParameterTypes() {
-        return parameterTypes;
-    }
-
-    /**
-     * 设置参数类型
-     * 
-     * @param parameterTypes the parameterTypes to set
-     */
-    public void setParameterTypes(Class<?>[] parameterTypes) {
-        this.parameterTypes = parameterTypes;
-    }
-
-    /**
      * 获取参数
      * 
      * @return the parameters
@@ -102,14 +82,12 @@ public class BasicRequest extends Message implements Serializable {
     @Override
     public String toString() {
         return "BasicRequest [requestId=" + getRequestId() + ", serviceName=" + serviceName + ", methodName="
-                + methodName + ", parameters=" + Arrays.toString(parameters) + ", parameterTypes="
-                + Arrays.toString(parameterTypes) + "]";
+                + methodName + ", parameters=" + Arrays.toString(parameters) + "]";
     }
 
     @Override
     public int hashCode() {
-        return serviceName.hashCode() ^ methodName.hashCode() ^ Objects.hash((Object[]) parameterTypes)
-                ^ Objects.hash(parameters);
+        return serviceName.hashCode() ^ methodName.hashCode() ^ Objects.hash(parameters);
     }
 
     @Override
@@ -120,7 +98,6 @@ public class BasicRequest extends Message implements Serializable {
             return false;
         BasicRequest r = (BasicRequest) obj;
         return this.serviceName.equals(r.getServiceName()) && this.methodName.equals(r.getMethodName())
-                && Objects.deepEquals(parameterTypes, r.getParameterTypes())
                 && Objects.deepEquals(parameters, r.getParameters());
     }
 
@@ -129,10 +106,6 @@ public class BasicRequest extends Message implements Serializable {
         BasicRequest r = new BasicRequest(getRequestId());
         r.setServiceName(serviceName);
         r.setMethodName(methodName);
-
-        Class<?>[] pt = new Class<?>[parameterTypes.length];
-        System.arraycopy(parameterTypes, 0, pt, 0, parameterTypes.length);
-        r.setParameterTypes(pt);
 
         Object[] p = new Object[parameters.length];
         System.arraycopy(parameters, 0, p, 0, parameters.length);

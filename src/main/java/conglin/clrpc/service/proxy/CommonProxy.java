@@ -2,7 +2,6 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Method;
 
-import conglin.clrpc.common.exception.NoSuchProviderException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
@@ -39,10 +38,8 @@ public class CommonProxy extends AbstractProxy {
      * @param methodName    方法名
      * @param args          参数
      * @return future
-     * @throws NoSuchProviderException
      */
-    public RpcFuture call(String remoteAddress, String serviceName, String methodName, Object... args)
-            throws NoSuchProviderException {
+    public RpcFuture call(String remoteAddress, String serviceName, String methodName, Object... args) {
         return super.doCall(remoteAddress, serviceName, methodName, args);
     }
 
@@ -67,10 +64,8 @@ public class CommonProxy extends AbstractProxy {
      * @param method        方法
      * @param args          参数
      * @return future
-     * @throws NoSuchProviderException
      */
-    public RpcFuture call(String remoteAddress, String serviceName, Method method, Object... args)
-            throws NoSuchProviderException {
+    public RpcFuture call(String remoteAddress, String serviceName, Method method, Object... args) {
         return super.doCall(remoteAddress, serviceName, method, args);
     }
 
