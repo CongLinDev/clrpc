@@ -38,10 +38,10 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         // 服务注册地址
-        String registryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
-        LOGGER.debug("Discovering zookeeper service address = " + registryAddress);
+        String discoveryAddress = configurer.getOrDefault("zookeeper.discovery.address", "127.0.0.1:2181");
         int sessionTimeout = configurer.getOrDefault("zookeeper.discovery.session-timeout", 5000);
-        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
+        keeper = ZooKeeperUtils.connectZooKeeper(discoveryAddress, sessionTimeout);
+        LOGGER.debug("Discovering zookeeper service address = {}", discoveryAddress);
 
         this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
     }

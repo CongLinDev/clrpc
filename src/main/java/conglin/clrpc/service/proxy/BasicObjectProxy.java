@@ -20,8 +20,9 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String methodName = method.getName();
         if (Object.class == method.getDeclaringClass()) {
-            switch (method.getName()) {
+            switch (methodName) {
             case "equals":
                 return proxy == args[0];
             case "hashCode":
@@ -34,7 +35,7 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
             }
         }
 
-        RpcFuture future = call(method, args);
+        RpcFuture future = call(methodName, args);
         return future.get();
     }
 

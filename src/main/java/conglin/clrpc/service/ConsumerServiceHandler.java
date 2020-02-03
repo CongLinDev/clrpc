@@ -138,17 +138,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     }
 
     /**
-     * 发现服务 共两步 1. 注册消费者 2. 发现服务并进行连接服务提供者
-     * 
-     * @param interfaceClass
-     * @param updateMethod
-     */
-    public void findService(Class<?> interfaceClass,
-            BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
-        findService(interfaceClass.getSimpleName(), updateMethod);
-    }
-
-    /**
      * 对于每个 BasicRequest 请求，都会有一个 RpcFuture 等待一个 BasicResponse 响应 这些未到达客户端的
      * BasicResponse 响应 换言之即为 RpcFuture 被保存在 ConsumerServiceHandler 中的一个 list 中
      * 以下代码用于 RpcFuture 的管理和维护

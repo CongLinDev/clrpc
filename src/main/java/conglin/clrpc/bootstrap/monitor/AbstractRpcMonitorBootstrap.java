@@ -2,23 +2,17 @@ package conglin.clrpc.bootstrap.monitor;
 
 import java.util.Collection;
 
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.Watcher.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.bootstrap.RpcBootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.ZooKeeperUtils;
+import conglin.clrpc.common.util.IPAddressUtils;
+import conglin.clrpc.registry.ServiceMonitor;
+import conglin.clrpc.registry.ZooKeeperServiceMonitor;
 
 abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implements RpcMonitorBootstrap {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRpcMonitorBootstrap.class);
-
-    protected final ZooKeeper keeper;
-    protected final String rootPath;
+    private final ServiceMonitor serviceMonitor;
 
     public AbstractRpcMonitorBootstrap() {
         this(null);
@@ -26,36 +20,29 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
 
     public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
         super(configurer);
-        int sessionTimeout = CONFIGURER.getOrDefault("zookeeper.monitor.session-timeout", 5000);
-
-        String monitorAddress = CONFIGURER.getOrDefault("zookeeper.monitor.address", "127.0.0.1:2181");
-        String path = CONFIGURER.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
-        rootPath = path.endsWith("/") ? path + "service" : path + "/service";
-        keeper = ZooKeeperUtils.connectZooKeeper(monitorAddress, sessionTimeout);
-        LOGGER.info("Starting to monitor zookeeper whose address={} root-path={}.", monitorAddress, rootPath);
+        serviceMonitor = new ZooKeeperServiceMonitor(IPAddressUtils.localAddressString(), CONFIGURER);
     }
 
     @Override
     public RpcMonitorBootstrap monitor() {
-        Collection<String> services = ZooKeeperUtils.listChildrenNode(keeper, rootPath, event -> {
-            if (event.getType() == Event.EventType.NodeChildrenChanged) {
-                monitor();
-            }
-        });
-        services.forEach(this::monitor);
+        serviceMonitor.monitor(this::handleProvider, this::handleConsumer);
         return this;
     }
 
     @Override
     public RpcMonitorBootstrap monitor(String serviceName) {
-        String concretePath = rootPath + "/" + serviceName;
-        String providerPath = concretePath + "/providers";
-        String consumerPath = concretePath + "/consumers";
-
-        LOGGER.info("Monitor service named {}.", serviceName);
-        ZooKeeperUtils.watchChildrenList(keeper, providerPath, serviceName, this::handleProvider);
-        ZooKeeperUtils.watchChildrenList(keeper, consumerPath, serviceName, this::handleConusmer);
+        serviceMonitor.monitor(serviceName, this::handleProvider, this::handleConsumer);
         return this;
+    }
+
+    @Override
+    public RpcMonitorBootstrap monitor(Class<?> serviceClass) {
+        return monitor(getServiceName(serviceClass));
+    }
+
+    @Override
+    public Collection<String> listServices() {
+        return serviceMonitor.listServices();
     }
 
     @Override
@@ -74,7 +61,7 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
      * @param serviceName
      * @param nodeList
      */
-    abstract protected void handleConusmer(String serviceName, Collection<Pair<String, String>> nodeList);
+    abstract protected void handleConsumer(String serviceName, Collection<Pair<String, String>> nodeList);
 
     /**
      * 处理服务提供者节点和数据

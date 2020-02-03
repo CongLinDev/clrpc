@@ -19,9 +19,8 @@
     RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
     // 发布服务并开启服务
-    bootstrap.publish("service1", ServiceBean1.class)
+    bootstrap.publish(ServiceBean1.class)
                 .publish("service2", new ServiceBean2())
-                .publish(Interface3.class, Implement3.class)
                 .start();
     // 关闭服务提供者
     bootstrap.stop();
@@ -40,11 +39,11 @@
     CommonProxy commonProxy = bootstrap.subscribe();
 
     // 订阅同步服务
-    Interface1 i1 = bootstrap.subscribe("service1");
+    Interface1 i1 = bootstrap.subscribe(Interface1.class, "service1");
     Interface2 i2 = bootstrap.subscribe(Interface2.class);
 
     // 订阅异步服务
-    ObjectProxy objectProxy = bootstrap.subscribeAsync("service3");
+    ObjectProxy objectProxy = bootstrap.subscribe("service3");
 
     // 订阅事务服务
     TransactionProxy transactionProxy = bootstrap.subscribeTransaction();
@@ -64,7 +63,7 @@
 
     // 设置监视器的配置以及你需要监视的服务
     // 并开启服务监视器
-    bootstrap.monitor().start();
+    bootstrap.monitor("service1").monitor(Interface2.class).start();
 
     // 下面是你的业务逻辑代码
     // ......
@@ -86,7 +85,7 @@
 
 ### Config File
 
-配置文件位置默认在项目 **src/main/resources** 目录下，默认格式为 `json` ，默认文件为 `clrpc-config.json`。
+配置文件位置默认在项目 `src/main/resources` 目录下，默认格式为 `json` ，默认文件为 `clrpc-config.json`。
 
 ### Config Items
 

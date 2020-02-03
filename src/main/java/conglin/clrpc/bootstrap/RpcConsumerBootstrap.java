@@ -9,6 +9,7 @@ import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
@@ -23,11 +24,11 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * bootstrap.start();
  * 
  * // 订阅同步服务
- * Interface1 i1 = bootstrap.subscribe("service1");
+ * Interface1 i1 = bootstrap.subscribe(Interface1.class, "service1");
  * Interface2 i2 = bootstrap.subscribe(Interface2.class);
  * 
  * // 订阅异步服务
- * ObjectProxy proxy = bootstrap.subscribeAsync("service3");
+ * ObjectProxy proxy = bootstrap.subscribe("service3");
  *
  * </pre>
  * 
@@ -54,6 +55,15 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     }
 
     /**
+     * 获取通用代理
+     * 
+     * @return
+     */
+    public CommonProxy subscribe() {
+        return SERVICE_HANDLER.getPrxoy();
+    }
+
+    /**
      * 订阅同步服务，获取同步服务代理
      * 
      * @param <T>
@@ -61,7 +71,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 返回代理服务类
      */
     public <T> T subscribe(Class<T> interfaceClass) {
-        return subscribe(interfaceClass, interfaceClass.getSimpleName());
+        return subscribe(interfaceClass, getServiceName(interfaceClass));
     }
 
     /**
@@ -73,6 +83,8 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 返回代理服务类
      */
     public <T> T subscribe(Class<T> interfaceClass, String serviceName) {
+        if (serviceName == null)
+            throw new NullPointerException();
         LOGGER.info("Subscribe synchronous service named {}.", serviceName);
         refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
@@ -81,20 +93,12 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 订阅异步服务，获取异步服务代理
      * 
-     * @param interfaceClass 接口类
-     * @return 返回代理服务类
-     */
-    public ObjectProxy subscribeAsync(Class<?> interfaceClass) {
-        return subscribeAsync(interfaceClass.getSimpleName());
-    }
-
-    /**
-     * 订阅异步服务，获取异步服务代理
-     * 
      * @param serviceName 返回代理服务类
      * @return 返回代理服务类
      */
-    public ObjectProxy subscribeAsync(String serviceName) {
+    public ObjectProxy subscribe(String serviceName) {
+        if (serviceName == null)
+            throw new NullPointerException();
         LOGGER.info("Subscribe asynchronous service named {}.", serviceName);
         refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(serviceName);

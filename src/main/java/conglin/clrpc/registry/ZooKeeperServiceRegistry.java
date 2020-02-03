@@ -38,6 +38,7 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "127.0.0.1:2181");
         int sessionTimeout = configurer.getOrDefault("zookeeper.registry.session-timeout", 5000);
         keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
+        LOGGER.debug("Registering zookeeper service address = {}", registryAddress);
 
         this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
     }

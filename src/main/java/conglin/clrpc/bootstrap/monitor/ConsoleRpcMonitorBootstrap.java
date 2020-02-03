@@ -34,7 +34,7 @@ class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     }
 
     @Override
-    protected void handleConusmer(String serviceName, Collection<Pair<String, String>> nodeList) {
+    protected void handleConsumer(String serviceName, Collection<Pair<String, String>> nodeList) {
         System.out.println("Consumer node Changed. Time=" + System.currentTimeMillis());
         printNodeInfo(serviceName, nodeList);
     }

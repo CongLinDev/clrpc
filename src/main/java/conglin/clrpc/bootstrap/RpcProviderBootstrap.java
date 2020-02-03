@@ -21,8 +21,7 @@ import io.netty.bootstrap.ServerBootstrap;
  * 
  * <pre>
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
- * bootstrap.publish("service1", ServiceBean1.class).publish("service2", new ServiceBean2())
- *         .publish(Interface3.class, Implement3.class).start();
+ * bootstrap.publish(ServiceBean1.class).publish("service2", new ServiceBean2()).start();
  * </pre>
  * 
  * </blockquote>
@@ -53,50 +52,22 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     /**
      * 保存即将发布的服务
      * 
-     * @param <T>
-     * @param interfaceClass   服务接口类
-     * @param serviceBeanClass 服务实现类，该类必须提供一个无参构造函数
-     * @return
-     */
-    public <T> RpcProviderBootstrap publish(Class<T> interfaceClass, Class<? extends T> serviceBeanClass) {
-        return publish(interfaceClass.getSimpleName(), serviceBeanClass);
-    }
-
-    /**
-     * 保存即将发布的服务
+     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
+     * 同时，服务类应当提供一个无参构造方法用于创建服务对象
      * 
-     * @param serviceBeanClass 类名必须满足 'xxxServiceImpl' 格式
+     * 若不满足上述两个条件，应当使用 {@link RpcProviderBootstrap#publish(String, Object)} 方法
+     * 
+     * @param serviceBeanClass 该类必须提供一个无参构造方法
      * @return
      */
     public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
-        String serviceBeanClassName = serviceBeanClass.getSimpleName();
-        if (!serviceBeanClassName.endsWith("ServiceImpl")) {
-            LOGGER.error("{} is not permitted. And you must use 'xxxServiceImpl' format classname.",
-                    serviceBeanClassName);
-            return this;
-        } else {
-            return publish(serviceBeanClassName.substring(0, serviceBeanClassName.length() - 4), serviceBeanClass);
-        }
-    }
-
-    /**
-     * 保存即将发布的服务
-     * 
-     * @param serviceName      服务名
-     * @param serviceBeanClass 服务实现类，该类必须提供一个无参构造函数
-     * @return
-     */
-    public RpcProviderBootstrap publish(String serviceName, Class<?> serviceBeanClass) {
-        if (serviceBeanClass.isInterface()) {
-            LOGGER.error("{} is not a service class. And it will not be published", serviceBeanClass.getName());
-        } else {
-            try {
-                Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
-                return publish(serviceName, serviceBean);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                LOGGER.error("Can not publish service. Cause={}", e.getMessage());
-            }
+        String serviceName = getServiceName(serviceBeanClass);
+        try {
+            Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
+            return publish(serviceName, serviceBean);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e) {
+            LOGGER.error("Can not publish service. Cause={}", e.getMessage());
         }
         return this;
     }
@@ -109,19 +80,11 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {
+        if (serviceName == null)
+            throw new NullPointerException();
         SERVICE_HANDLER.publish(serviceName, serviceBean);
         LOGGER.info("Publish service named {}.", serviceName);
         return this;
-    }
-
-    /**
-     * 取消已经发布的服务
-     * 
-     * @param interfaceClass
-     * @return
-     */
-    public RpcProviderBootstrap unpublish(Class<?> interfaceClass) {
-        return unpublish(interfaceClass.getSimpleName());
     }
 
     /**

@@ -11,10 +11,9 @@ public class AsyncProviderTest1 {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         try {
             System.out.println("Provider opening...");
-            
-            bootstrap.publish("UserService", UserServiceImpl.class).start();
-            
-        }finally{
+            bootstrap.publish("UserService", new UserServiceImpl()).start();
+
+        } finally {
             bootstrap.stop();
             System.out.println("Provider closing...");
         }

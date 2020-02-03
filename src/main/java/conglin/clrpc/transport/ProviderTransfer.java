@@ -35,7 +35,6 @@ public class ProviderTransfer {
         InetSocketAddress localAddress = context.getLocalAddress();
         String localAddressString = localAddress.toString();
         try {
-
             ChannelFuture channelFuture = nettyBootstrap.bind(localAddress).sync();
             if (channelFuture.isSuccess()) {
                 context.getServiceRegister().accept(context.getMetaInformation());

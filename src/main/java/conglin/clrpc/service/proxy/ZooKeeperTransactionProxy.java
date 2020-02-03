@@ -19,7 +19,8 @@ import conglin.clrpc.transport.message.TransactionRequest;
 /**
  * 使用 ZooKeeper 控制分布式事务 注意，该类是线程不安全的
  * 
- * 在某一时刻最多只能保证一个事务
+ * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用
+ * {@link ZooKeeperTransactionProxy#isAvailable()} 查看
  */
 public class ZooKeeperTransactionProxy extends AbstractProxy implements TransactionProxy, Available {
 
@@ -66,13 +67,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1);
-        request.setServiceName(serviceName);
-        request.setMethodName(method.getName());
-        request.setParameters(args);
-
-        handleRequest(request);
-        return this;
+        return call(serviceName, method.getName(), args);
     }
 
     @Override

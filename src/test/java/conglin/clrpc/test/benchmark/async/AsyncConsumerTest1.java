@@ -15,7 +15,7 @@ public class AsyncConsumerTest1 {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        ObjectProxy objectProxy = bootstrap.subscribeAsync("UserService");
+        ObjectProxy objectProxy = bootstrap.subscribe("UserService");
 
         Random random = new Random();
         for (int i = 0; i < 10; i++) {

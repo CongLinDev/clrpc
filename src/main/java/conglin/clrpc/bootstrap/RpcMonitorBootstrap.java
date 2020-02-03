@@ -1,5 +1,7 @@
 package conglin.clrpc.bootstrap;
 
+import java.util.Collection;
+
 /**
  * RPC monitor端启动类
  * 
@@ -36,12 +38,17 @@ public interface RpcMonitorBootstrap {
     /**
      * 监视指定的服务
      * 
-     * @param interfaceClass
+     * @param serviceClass
      * @return
      */
-    default RpcMonitorBootstrap monitor(Class<?> interfaceClass) {
-        return monitor(interfaceClass.getSimpleName());
-    }
+    RpcMonitorBootstrap monitor(Class<?> serviceClass);
+
+    /**
+     * 列出所有的可用服务
+     * 
+     * @return
+     */
+    Collection<String> listServices();
 
     /**
      * 启动监视器 启动前要调用 <strong>monitor</strong> 方法

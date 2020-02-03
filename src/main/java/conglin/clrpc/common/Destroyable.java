@@ -5,6 +5,7 @@ import conglin.clrpc.common.exception.DestroyFailedException;
 public interface Destroyable {
     /**
      * 销毁
+     * 
      * @throws DestroyFailedException
      */
     default void destroy() throws DestroyFailedException {
@@ -13,6 +14,7 @@ public interface Destroyable {
 
     /**
      * 是否销毁
+     * 
      * @return
      */
     default boolean isDestroyed() {
