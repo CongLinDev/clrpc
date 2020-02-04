@@ -24,6 +24,16 @@ public interface LoadBalancer<T, K, V> {
     void update(T type, Collection<Pair<K, String>> data);
 
     /**
+     * 根据寻找第一个可用对象
+     * 
+     * @param type
+     * @return
+     */
+    default V get(T type) {
+        return get(type, 0);
+    }
+
+    /**
      * 根据指定算法返回对象
      * 
      * @param type
@@ -57,6 +67,16 @@ public interface LoadBalancer<T, K, V> {
      * @return
      */
     boolean hasType(T type);
+
+    /**
+     * 给定类型下是否有可用的对象
+     * 
+     * @param type
+     * @return
+     */
+    default boolean hasNext(T type) {
+        return hasType(type) && get(type) != null;
+    }
 
     /**
      * 对所有节点做出某个操作
