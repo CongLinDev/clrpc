@@ -51,12 +51,12 @@ public interface LoadBalancer<T, K, V> {
     V get(T type, Predicate<V> predicate);
 
     /**
-     * 是否有满足 type 的可用的对象
+     * 是否存在该类型
      * 
      * @param type
      * @return
      */
-    boolean hasNext(T type);
+    boolean hasType(T type);
 
     /**
      * 对所有节点做出某个操作

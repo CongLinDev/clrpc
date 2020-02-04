@@ -137,23 +137,26 @@ public class ConsumerTransfer {
      * 等待可用的服务提供者
      * 
      * @param serviceName
-     * @param firstTime
      * @return
      * @throws InterruptedException
      */
-    private boolean waitingForAvailableProvider(String serviceName, boolean firstTime) throws InterruptedException {
+    private boolean waitingForAvailableProvider(String serviceName) throws InterruptedException {
         lock.lock();
         try {
-            if (firstTime) { // 第一次不等待,而是选择再次请求
-                context.getProviderRefresher().accept(serviceName);
-                return true;
-            } else {
-                LOGGER.debug("Wait for Available Provider " + timeoutForWait + " mm...");
-                return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
-            }
+            LOGGER.debug("Wait for Available Provider " + timeoutForWait + " mm...");
+            return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * 手动刷新服务提供者
+     * 
+     * @param serviceName
+     */
+    private void refreshProvider(String serviceName) {
+        context.getProviderRefresher().accept(serviceName);
     }
 
     /**
@@ -178,16 +181,19 @@ public class ConsumerTransfer {
 
         @Override
         public Channel choose(String serviceName, BasicRequest request) {
-            boolean firstTry = true;
             int random = adapter.apply(request);
 
             while (true) {
+                if (!loadBalancer.hasType(serviceName)) {
+                    refreshProvider(serviceName);
+                    continue;
+                }
+
                 Channel channel = loadBalancer.get(serviceName, random);
                 if (channel != null)
                     return channel;
                 try {
-                    waitingForAvailableProvider(serviceName, firstTry);
-                    firstTry = false;
+                    waitingForAvailableProvider(serviceName);
                 } catch (InterruptedException e) {
                     LOGGER.error("Waiting for available node is interrupted!", e);
                 }
@@ -196,18 +202,25 @@ public class ConsumerTransfer {
 
         @Override
         public Channel choose(String serviceName, String addition) {
-            Channel channel = null;
             int count = 0;
             // 尝试三次，若三次未成功，则放弃
-            while ((channel = loadBalancer.get(serviceName, addition)) == null && count < 3) {
+            while (count < 3) {
+                if (!loadBalancer.hasType(serviceName)) {
+                    refreshProvider(serviceName);
+                    continue;
+                }
+
+                Channel channel = loadBalancer.get(serviceName, addition);
+                if (channel != null)
+                    return channel;
                 try {
-                    waitingForAvailableProvider(serviceName, count == 0);
+                    waitingForAvailableProvider(serviceName);
                 } catch (InterruptedException e) {
                     LOGGER.error("Waiting for available node is interrupted!", e);
                 }
                 count++;
             }
-            return channel;
+            return null;
         }
     }
 }

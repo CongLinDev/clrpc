@@ -51,7 +51,11 @@ public interface RpcMonitorBootstrap {
     Collection<String> listServices();
 
     /**
-     * 启动监视器 启动前要调用 <strong>monitor</strong> 方法
+     * 启动监视器
+     * 
+     * 启动前要调用 {@link RpcMonitorBootstrap#monitor()} 或
+     * {@link RpcMonitorBootstrap#monitor(Class)} 或
+     * {@link RpcMonitorBootstrap#monitor(String)} 方法
      */
     void start();
 

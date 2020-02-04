@@ -59,7 +59,7 @@
 
 ```java
     // 由监视器工厂创建监视器
-    RpcMonitorBootstrap bootstrap = RpcMonitorBootstrapFactory.rpcMonitorBootstrap();
+    RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
 
     // 设置监视器的配置以及你需要监视的服务
     // 并开启服务监视器

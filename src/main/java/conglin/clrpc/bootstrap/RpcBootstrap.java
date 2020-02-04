@@ -12,7 +12,7 @@ abstract public class RpcBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcBootstrap.class);
 
-    protected final PropertyConfigurer CONFIGURER;
+    private final PropertyConfigurer CONFIGURER;
 
     public RpcBootstrap() {
         this(null);
@@ -37,7 +37,7 @@ abstract public class RpcBootstrap {
     }
 
     /**
-     * 返回服务类的服务名
+     * 返回服务类的注解服务名
      * 
      * @param serviceClass
      * @return
@@ -50,4 +50,12 @@ abstract public class RpcBootstrap {
         return null;
     }
 
+    /**
+     * 返回配置器
+     * 
+     * @return
+     */
+    protected PropertyConfigurer configurer() {
+        return CONFIGURER;
+    }
 }

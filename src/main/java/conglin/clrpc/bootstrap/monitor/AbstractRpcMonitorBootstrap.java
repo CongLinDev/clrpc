@@ -20,7 +20,7 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
 
     public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
         super(configurer);
-        serviceMonitor = new ZooKeeperServiceMonitor(IPAddressUtils.localAddressString(), CONFIGURER);
+        serviceMonitor = new ZooKeeperServiceMonitor(IPAddressUtils.localAddressString(), configurer());
     }
 
     @Override

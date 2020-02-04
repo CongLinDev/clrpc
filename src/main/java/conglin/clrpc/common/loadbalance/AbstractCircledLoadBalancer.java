@@ -79,16 +79,9 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     }
 
     @Override
-    public boolean hasNext(T type) {
+    public boolean hasType(T type) {
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
-            return false;
-        // 获取当前区域范围 [head, tail]
-        int head = regionHead(regionAndEpoch);
-        int tail = regionTail(head);// 区域编号不得超过最大编号
-
-        Integer next = circle.higherKey(head);
-        if (next == null || next > tail)
             return false;
         return true;
     }

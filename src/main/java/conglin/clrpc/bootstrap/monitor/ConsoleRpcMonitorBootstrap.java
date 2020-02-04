@@ -6,13 +6,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
+import conglin.clrpc.common.config.PropertyConfigurer;
 
-class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
+public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleRpcMonitorBootstrap.class);
 
-    protected ConsoleRpcMonitorBootstrap() {
-        super();
+    public ConsoleRpcMonitorBootstrap() {
+        this(null);
+    }
+
+    public ConsoleRpcMonitorBootstrap(PropertyConfigurer configurer) {
+        super(configurer);
     }
 
     @Override

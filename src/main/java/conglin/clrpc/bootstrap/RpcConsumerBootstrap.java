@@ -50,7 +50,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
 
     public RpcConsumerBootstrap(PropertyConfigurer configurer) {
         super(configurer);
-        SERVICE_HANDLER = new ConsumerServiceHandler(CONFIGURER);
+        SERVICE_HANDLER = new ConsumerServiceHandler(configurer());
         CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
@@ -164,7 +164,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         // 设置本地地址，服务消费者可能连接多个服务提供者，端口号设为0
         context.setLocalAddress(IPAddressUtils.localAddress());
         // 设置属性配置器
-        context.setPropertyConfigurer(CONFIGURER);
+        context.setPropertyConfigurer(configurer());
         // 设置元信息
         context.setMetaInformation(option.getMetaInfomation());
 
