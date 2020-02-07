@@ -4,6 +4,7 @@ import conglin.clrpc.common.Pair;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -17,10 +18,7 @@ public class ProviderCacheCheckedChannelHandler<T extends BasicRequest> extends 
     }
 
     @Override
-    protected void cache(ChannelHandlerContext ctx, T msg, BasicResponse cachedResponse) {
-        BasicResponse response = new BasicResponse(msg.getRequestId());
-        response.setResult(cachedResponse.getResult());
-
-        ctx.fireChannelRead(new Pair<T, BasicResponse>(msg, response));
+    protected void cache(ChannelHandlerContext ctx, T msg, CacheableResponse cachedResponse) {
+        ctx.fireChannelRead(new Pair<T, BasicResponse>(msg, cachedResponse.copy(msg.getRequestId())));
     }
 }

@@ -1,4 +1,4 @@
-package conglin.clrpc.common.annotation;
+package conglin.clrpc.extension.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

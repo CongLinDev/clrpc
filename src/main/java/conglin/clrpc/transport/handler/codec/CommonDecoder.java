@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.CacheableResponse;
 import conglin.clrpc.transport.message.Message;
 import conglin.clrpc.transport.message.TransactionRequest;
 import io.netty.buffer.ByteBuf;
@@ -55,6 +56,9 @@ public class CommonDecoder extends ByteToMessageDecoder {
             break;
         case BasicResponse.MESSAGE_TYPE:
             result = serializationHandler.deserialize(messageBody, BasicResponse.class);
+            break;
+        case CacheableResponse.MESSAGE_TYPE:
+            result = serializationHandler.deserialize(messageBody, CacheableResponse.class);
             break;
         case TransactionRequest.MESSAGE_TYPE:
             result = serializationHandler.deserialize(messageBody, TransactionRequest.class);

@@ -3,10 +3,10 @@ package conglin.clrpc.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.annotation.Service;
 import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.global.GlobalResourceManager;
+import conglin.clrpc.service.annotation.Service;
 
 abstract public class RpcBootstrap {
 

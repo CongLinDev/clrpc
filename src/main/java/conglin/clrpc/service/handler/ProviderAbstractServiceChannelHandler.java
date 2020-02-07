@@ -7,10 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
-import conglin.clrpc.common.annotation.CacheableService;
-import conglin.clrpc.common.annotation.IdempotentService;
-import conglin.clrpc.common.annotation.IgnoreService;
 import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.annotation.IgnoreService;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -108,7 +106,12 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
         try {
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
-            handleAnnotation(method, response);
+
+            // 服务是否被忽略
+            IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
+            if (ignoreService != null && ignoreService.ignore())
+                throw new ServiceExecutionException(request, new NoSuchMethodException(methodName));
+            
             method.setAccessible(true);
             response.setResult(method.invoke(serviceBean, parameters));
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
@@ -116,37 +119,5 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
             throw new ServiceExecutionException(request, e);
         }
         return response;
-    }
-
-    /**
-     * 处理注解
-     * 
-     * @param method
-     * @param response
-     * @throws NoSuchMethodException
-     */
-    protected void handleAnnotation(Method method, BasicResponse response) throws NoSuchMethodException {
-        IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
-        if (ignoreService != null && ignoreService.ignore())
-            throw new NoSuchMethodException(method.getName());
-
-        IdempotentService idempotentService = method.getAnnotation(IdempotentService.class);
-        if(idempotentService != null && idempotentService.idempotence()){
-            response.signIdempotent();
-            return;
-        }
-
-        // 处理{@link CacheableService}
-        CacheableService cacheableService = method.getAnnotation(CacheableService.class);
-        if (cacheableService == null)
-            return;// 默认值为0，不必调用方法设置为0
-        if (cacheableService.consumer()) {
-            response.signCacheForConsumer();
-            response.setExpireTime(cacheableService.exprie());
-        }
-        if (cacheableService.provider()) {
-            response.signCacheForProvider();
-            response.setExpireTime(cacheableService.exprie());
-        }
     }
 }

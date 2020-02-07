@@ -7,7 +7,7 @@ import conglin.clrpc.extension.cache.CacheManager;
 import conglin.clrpc.extension.cache.caffeine.CaffeineCacheManager;
 import conglin.clrpc.service.context.CommonContext;
 import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -21,11 +21,11 @@ abstract public class AbstractCacheCheckedChannelHandler<T extends BasicRequest>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCacheCheckedChannelHandler.class);
 
-    private final CacheManager<BasicRequest, BasicResponse> cacheManager;
+    private final CacheManager<BasicRequest, CacheableResponse> cacheManager;
 
     public AbstractCacheCheckedChannelHandler(CommonContext context) {
         @SuppressWarnings("unchecked")
-        CacheManager<BasicRequest, BasicResponse> cm = (CacheManager<BasicRequest, BasicResponse>)context.getExtensionObject().get("cacheManager");
+        CacheManager<BasicRequest, CacheableResponse> cm = (CacheManager<BasicRequest, CacheableResponse>)context.getExtensionObject().get("cacheManager");
         if(cm == null){
             cm = new CaffeineCacheManager(context.getPropertyConfigurer());
             context.getExtensionObject().put("cacheManager", cm);
@@ -40,7 +40,7 @@ abstract public class AbstractCacheCheckedChannelHandler<T extends BasicRequest>
             return;
         }
 
-        BasicResponse cachedResponse = cacheManager.get(msg);
+        CacheableResponse cachedResponse = cacheManager.get(msg);
 
         if (cachedResponse == null) { // 未找到缓存
             super.channelRead(ctx, msg);
@@ -68,5 +68,5 @@ abstract public class AbstractCacheCheckedChannelHandler<T extends BasicRequest>
      * @param msg
      * @param cachedResponse
      */
-    abstract protected void cache(ChannelHandlerContext ctx, T msg, BasicResponse cachedResponse);
+    abstract protected void cache(ChannelHandlerContext ctx, T msg, CacheableResponse cachedResponse);
 }

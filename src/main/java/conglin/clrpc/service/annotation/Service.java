@@ -1,4 +1,4 @@
-package conglin.clrpc.common.annotation;
+package conglin.clrpc.service.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,19 +7,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 该注解用于提供服务的 ServiceBean 的方法上
+ * 该注解用于提供服务的 ServiceBean 的类型上
  * 
- * {@link IgnoreService#ignore()} 为 true 时不向外界提供该方法的服务调用
+ * {@link Service#name()} 为 设置的服务名
  */
 
 @Documented
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IgnoreService {
+public @interface Service {
     /**
-     * 是否忽略服务
+     * 服务名
      * 
      * @return
      */
-    boolean ignore() default true;
+    public String name();
 }

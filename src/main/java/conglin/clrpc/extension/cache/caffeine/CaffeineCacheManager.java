@@ -12,11 +12,11 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.AbstractCacheManager;
 import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.CacheableResponse;
 
-public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, BasicResponse>{
+public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, CacheableResponse>{
 
-    protected final Cache<BasicRequest, BasicResponse> cache;
+    protected final Cache<BasicRequest, CacheableResponse> cache;
 
     public CaffeineCacheManager(PropertyConfigurer configurer){
         super(configurer);
@@ -24,22 +24,22 @@ public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, Bas
             .initialCapacity(INITIAL_CAPACITY)
             .maximumSize(MAX_SIZE)
             .expireAfterWrite(MAX_EXPIRE_TIME, TimeUnit.MILLISECONDS)
-            .expireAfter(new Expiry<BasicRequest, BasicResponse>() {
+            .expireAfter(new Expiry<BasicRequest, CacheableResponse>() {
 
                     @Override
-                    public long expireAfterCreate(@NonNull BasicRequest key, @NonNull BasicResponse value,
+                    public long expireAfterCreate(@NonNull BasicRequest key, @NonNull CacheableResponse value,
                             long currentTime) {
                             return TimeUnit.MILLISECONDS.toNanos(value.getExpireTime());
                     }
 
                     @Override
-                    public long expireAfterUpdate(@NonNull BasicRequest key, @NonNull BasicResponse value,
+                    public long expireAfterUpdate(@NonNull BasicRequest key, @NonNull CacheableResponse value,
                             long currentTime, @NonNegative long currentDuration) {
                         return 0;
                     }
 
                     @Override
-                    public long expireAfterRead(@NonNull BasicRequest key, @NonNull BasicResponse value,
+                    public long expireAfterRead(@NonNull BasicRequest key, @NonNull CacheableResponse value,
                             long currentTime, @NonNegative long currentDuration) {
                         return 0;
                     }
@@ -48,12 +48,12 @@ public class CaffeineCacheManager extends AbstractCacheManager<BasicRequest, Bas
     }
 
     @Override
-    public void put(BasicRequest key, BasicResponse value) {
+    public void put(BasicRequest key, CacheableResponse value) {
         cache.put(key, value);
     }
 
     @Override
-    public BasicResponse get(BasicRequest key) {
+    public CacheableResponse get(BasicRequest key) {
         return cache.getIfPresent(key);
     }
 

@@ -3,7 +3,7 @@ package conglin.clrpc.extension.cache.handler;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -24,7 +24,7 @@ public class ConsumerCacheCheckedChannelHandler<T extends BasicRequest> extends 
     }
 
     @Override
-    protected void cache(ChannelHandlerContext ctx, T msg, BasicResponse cachedResponse) {
+    protected void cache(ChannelHandlerContext ctx, T msg, CacheableResponse cachedResponse) {
         futuresHolder.getFuture(msg.getRequestId()).done(cachedResponse);
     }
 }
