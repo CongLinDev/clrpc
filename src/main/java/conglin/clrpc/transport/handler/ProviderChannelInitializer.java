@@ -7,8 +7,8 @@ import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.service.handler.ProviderTransactionServiceChannelHandler;
-import conglin.clrpc.transport.handler.codec.BasicResponseEncoder;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;
+import conglin.clrpc.transport.handler.codec.CommonEncoder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.socket.SocketChannel;
 
@@ -49,7 +49,7 @@ import io.netty.channel.socket.SocketChannel;
  *  |               .                                   .               |
  *  |               .                                  \|/              |
  *  |    +----------+----------+            +-----------+----------+    |
- *  |    |       Decoders      |            |        Encoders      |    |
+ *  |    |       Decoder       |            |        Encoder       |    |
  *  |    +----------+----------+            +-----------+----------+    |
  *  |              /|\                                  |               |
  *  +---------------+-----------------------------------+---------------+
@@ -75,8 +75,8 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
     @Override
     protected void doInitChannel(SocketChannel ch) throws Exception {
         SerializationHandler serializationHandler = context.getSerializationHandler();
-        pipeline().addLast("Common Decoder", new CommonDecoder(serializationHandler)).addLast("BasicResponse Encoder",
-                new BasicResponseEncoder(serializationHandler));
+        pipeline().addLast("Common Encoder", new CommonEncoder(serializationHandler)).addLast("Common Decoder",
+                new CommonDecoder(serializationHandler));
         // before handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("provider.channel-handler.before",
                 Collections.emptyList()));
@@ -94,7 +94,7 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
 
     @Override
     protected ChannelHandler getChannelHandlerObject(String qualifiedClassName) {
-        return ClassUtils.loadClassObject(ChannelHandler.class, qualifiedClassName, context);
+        return ClassUtils.loadClassObject(qualifiedClassName, ChannelHandler.class, context);
     }
 
 }

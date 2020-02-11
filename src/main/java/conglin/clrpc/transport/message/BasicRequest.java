@@ -10,6 +10,11 @@ public class BasicRequest extends Message implements Serializable {
 
     transient public static final int MESSAGE_TYPE = 2;
 
+    @Override
+    public int messageType() {
+        return MESSAGE_TYPE;
+    }
+
     private String serviceName;
     private String methodName;
     private Object[] parameters;

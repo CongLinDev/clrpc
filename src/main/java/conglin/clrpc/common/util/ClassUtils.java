@@ -17,19 +17,19 @@ public class ClassUtils {
      * @return
      */
     public static Object loadClassObject(String qualifiedClassName, Object... args) {
-        return loadClassObject(Object.class, qualifiedClassName, args);
+        return loadClassObject(qualifiedClassName, Object.class, args);
     }
 
     /**
      * 反射加载指定类型的全限定类名下的类
      * 
      * @param <T>
-     * @param superClass
      * @param qualifiedClassName
+     * @param superClass
      * @param args
      * @return
      */
-    public static <T> T loadClassObject(Class<T> superClass, String qualifiedClassName, Object... args) {
+    public static <T> T loadClassObject(String qualifiedClassName, Class<T> superClass, Object... args) {
         try {
             Class<? extends T> clazz = Class.forName(qualifiedClassName).asSubclass(superClass);
             return clazz.getConstructor(getClasses(args)).newInstance(args);
@@ -47,7 +47,8 @@ public class ClassUtils {
      * @return
      */
     public static Class<?>[] getClasses(Object... objects) {
-        if(objects == null) return new Class<?>[0];
+        if (objects == null)
+            return new Class<?>[0];
         Class<?>[] types = new Class[objects.length];
         for (int i = 0; i < objects.length; i++) {
             types[i] = objects[i].getClass();

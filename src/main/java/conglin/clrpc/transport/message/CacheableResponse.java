@@ -1,17 +1,24 @@
 package conglin.clrpc.transport.message;
 
-import java.io.Serializable;
-
-public class CacheableResponse extends BasicResponse implements Serializable {
+public class CacheableResponse extends BasicResponse {
 
     private static final long serialVersionUID = 8675701922448321682L;
 
     transient public static final int MESSAGE_TYPE = 3;
 
+    @Override
+    public int messageType() {
+        return MESSAGE_TYPE;
+    }
+
     private int flag;
 
     public CacheableResponse(Long requestId) {
         super(requestId);
+    }
+
+    public CacheableResponse(Long requestId, Boolean error) {
+        super(requestId, error);
     }
 
     public CacheableResponse(BasicResponse response) {

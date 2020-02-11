@@ -1,6 +1,5 @@
 package conglin.clrpc.test.service;
 
-
-public interface HelloService{
+public interface HelloService {
     String hello();
 }

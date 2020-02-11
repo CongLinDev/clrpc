@@ -19,7 +19,7 @@
     RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
     // 发布服务并开启服务
-    bootstrap.publish(ServiceBean1.class)
+    bootstrap.publish(ServiceBean1.class) // 配合 @Service 注解
                 .publish("service2", new ServiceBean2())
                 .start();
     // 关闭服务提供者
@@ -39,8 +39,8 @@
     CommonProxy commonProxy = bootstrap.subscribe();
 
     // 订阅同步服务
-    Interface1 i1 = bootstrap.subscribe(Interface1.class, "service1");
-    Interface2 i2 = bootstrap.subscribe(Interface2.class);
+    Interface1 i1 = bootstrap.subscribe("service1", Interface1.class);
+    Interface2 i2 = bootstrap.subscribe(Interface2.class); // 配合 @Service 注解
 
     // 订阅异步服务
     ObjectProxy objectProxy = bootstrap.subscribe("service3");

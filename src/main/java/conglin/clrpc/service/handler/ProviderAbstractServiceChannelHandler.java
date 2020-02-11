@@ -61,7 +61,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error(cause.getMessage());
+        LOGGER.error("ExceptionCaught : {}", cause);
         ctx.close();
     }
 

@@ -55,7 +55,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     public void unregisterService(String serviceName) {
         serviceRegistry.unregister(serviceName);
         serviceObjects.remove(serviceName);
-        LOGGER.debug("Remove service named " + serviceName);
+        LOGGER.debug("Remove service named {}", serviceName);
     }
 
     /**

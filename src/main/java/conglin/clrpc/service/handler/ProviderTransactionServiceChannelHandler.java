@@ -68,8 +68,7 @@ public class ProviderTransactionServiceChannelHandler
                 @Override
                 public void fail(Exception exception) {
                     // 返回错误回复
-                    BasicResponse response = new BasicResponse(request.getRequestId());
-                    response.signError();
+                    BasicResponse response = new BasicResponse(request.getRequestId(), true);
                     response.setResult(new TransactionException("Transaction has been cancelled."));
                     helper.abort(transactionId, serialId);
                     next(request, response);

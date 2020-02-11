@@ -2,9 +2,14 @@ package conglin.clrpc.transport.message;
 
 public class TransactionRequest extends BasicRequest {
 
+    private static final long serialVersionUID = -7860287729080523289L;
+
     transient public static final int MESSAGE_TYPE = 4;
 
-    private static final long serialVersionUID = -7860287729080523289L;
+    @Override
+    public int messageType() {
+        return MESSAGE_TYPE;
+    }
 
     protected Boolean serial;
 
@@ -25,7 +30,7 @@ public class TransactionRequest extends BasicRequest {
      * @param requestId 由两部分组成，高32位为事务ID，低32位为序列ID
      */
     public TransactionRequest(Long requestId) {
-        this(requestId, false);
+        this(requestId, Boolean.FALSE);
     }
 
     /**

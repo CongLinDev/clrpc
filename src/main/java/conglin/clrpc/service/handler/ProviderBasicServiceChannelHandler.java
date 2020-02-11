@@ -22,8 +22,7 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
             return doExecute(msg);
         } catch (UnsupportedServiceException | ServiceExecutionException e) {
             LOGGER.error("Request failed: {}", e.getMessage());
-            BasicResponse response = new BasicResponse(msg.getRequestId());
-            response.signError();
+            BasicResponse response = new BasicResponse(msg.getRequestId(), true);
             response.setResult(e);
             return response;
         }

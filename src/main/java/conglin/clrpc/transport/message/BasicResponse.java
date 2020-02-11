@@ -8,11 +8,21 @@ public class BasicResponse extends Message implements Serializable {
 
     transient public static final int MESSAGE_TYPE = 1;
 
+    @Override
+    public int messageType() {
+        return MESSAGE_TYPE;
+    }
+
     private Object result;
     private Boolean error;
 
     public BasicResponse(Long requestId) {
+        this(requestId, Boolean.FALSE);
+    }
+
+    public BasicResponse(Long requestId, Boolean error) {
         super(requestId);
+        this.error = error;
     }
 
     public BasicResponse(BasicResponse response) {

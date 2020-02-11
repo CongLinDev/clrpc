@@ -15,7 +15,6 @@ public class ConsumerRequestChannelHandler extends ChannelInboundHandlerAdapter 
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof BasicRequest) {
             BasicRequest request = (BasicRequest) msg;
-
             ctx.writeAndFlush(request);
             LOGGER.debug("Send request for requestId={}", request.getRequestId());
         } else {

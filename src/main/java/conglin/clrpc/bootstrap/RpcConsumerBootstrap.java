@@ -24,7 +24,7 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * bootstrap.start();
  * 
  * // 订阅同步服务
- * Interface1 i1 = bootstrap.subscribe(Interface1.class, "service1");
+ * Interface1 i1 = bootstrap.subscribe("service1", Interface1.class);
  * Interface2 i2 = bootstrap.subscribe(Interface2.class);
  * 
  * // 订阅异步服务
@@ -71,18 +71,18 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 返回代理服务类
      */
     public <T> T subscribe(Class<T> interfaceClass) {
-        return subscribe(interfaceClass, getServiceName(interfaceClass));
+        return subscribe(getServiceName(interfaceClass), interfaceClass);
     }
 
     /**
      * 订阅同步服务，获取同步服务代理
      * 
      * @param <T>
-     * @param interfaceClass 接口类
      * @param serviceName    服务名
+     * @param interfaceClass 接口类
      * @return 返回代理服务类
      */
-    public <T> T subscribe(Class<T> interfaceClass, String serviceName) {
+    public <T> T subscribe(String serviceName, Class<T> interfaceClass) {
         if (serviceName == null)
             throw new NullPointerException();
         LOGGER.info("Subscribe synchronous service named {}.", serviceName);

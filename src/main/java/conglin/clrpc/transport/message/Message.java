@@ -1,5 +1,11 @@
 package conglin.clrpc.transport.message;
 
+/**
+ * 消息类
+ * 
+ * 具体的消息类必须实现 {@link Message#messageType()} 方法
+ * 以及 {@link Message#MESSAGE_TYPE} 域
+ */
 abstract public class Message {
 
     /**
@@ -9,8 +15,19 @@ abstract public class Message {
      * 
      * 其中 0 被抽象消息占用 7 被保留
      */
-    transient public static final int MESSAGE_TYPE = 0;
     transient public static final int MESSAGE_TYPE_MASK = 0x7;
+    transient public static final int MESSAGE_TYPE = 0;
+    
+    /**
+     * 返回信息类型
+     * 
+     * 每个具体的类型必须实现该方法
+     * 
+     * @return
+     */
+    public int messageType() {
+        return MESSAGE_TYPE;
+    }
 
     private final Long requestId;
 
