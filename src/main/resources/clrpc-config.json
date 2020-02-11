@@ -12,18 +12,19 @@
     "zookeeper.atomicity.root-path": "/clrpc",
     "zookeeper.atomicity.session-timeout": 5000,
 
+    "meta.provider.*": {},
+    "meta.consumer.*": {},
+
     "provider.port": 5200,
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
     "provider.channel-handler.before": [],
     "provider.channel-handler.after": [],
-    "provider.meta": {},
 
     "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
     "consumer.channel-handler.before": [],
     "consumer.channel-handler.after": [],
-    "consumer.meta": {},
 
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,

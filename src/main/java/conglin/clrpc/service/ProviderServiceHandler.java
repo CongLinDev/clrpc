@@ -16,6 +16,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderServiceHandler.class);
 
+    private ProviderContext context;
+
     // 服务映射
     // String保存服务名 Object保存服务实现类
     private final Map<String, Object> serviceObjects;
@@ -62,7 +64,9 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * 将数据注册到注册中心
      */
     protected void registerService() {
-        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName));
+        PropertyConfigurer configurer = context.getPropertyConfigurer();
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName,
+                configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
     }
 
     /**
@@ -72,6 +76,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      */
     public void start(ProviderContext context) {
         serviceRegistry = new ZooKeeperServiceRegistry(context.getLocalAddress(), context.getPropertyConfigurer());
+        this.context = context;
         initContext(context);
     }
 

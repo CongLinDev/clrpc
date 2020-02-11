@@ -44,7 +44,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      */
     public static JsonPropertyConfigurer fromFile(String filename) {
         try (InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
-            return new JsonPropertyConfigurer(new String(inputStream.readAllBytes()));
+            return fromContent(new String(inputStream.readAllBytes()));
         } catch (IOException e) {
             LOGGER.error("Resolve File={} failed. Cause: {}", filename, e);
             return empty();
@@ -59,7 +59,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      */
     public static JsonPropertyConfigurer fromFile(File file) {
         try (InputStream inputStream = new FileInputStream(file)) {
-            return new JsonPropertyConfigurer(new String(inputStream.readAllBytes()));
+            return fromContent(new String(inputStream.readAllBytes()));
         } catch (IOException e) {
             LOGGER.error("Resolve File={} failed. Cause: {}", file.getName(), e);
             return empty();
@@ -74,7 +74,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      */
     public static JsonPropertyConfigurer fromURL(URL url) {
         try (InputStream inputStream = url.openConnection().getInputStream()) {
-            return new JsonPropertyConfigurer(new String(inputStream.readAllBytes()));
+            return fromContent(new String(inputStream.readAllBytes()));
         } catch (IOException e) {
             LOGGER.error("Resolve URL={} failed. Cause: {}", url, e);
             return empty();
@@ -168,6 +168,16 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
         if (object == null)
             object = new JSONObject();
         return new JsonPropertyConfigurer(object);
+    }
+
+    @Override
+    public PropertyConfigurer subConfigurer(String specialKey, String commonKey) {
+        JSONObject object = CONFIG_HOLDER.getJSONObject(specialKey);
+        if (object == null) {
+            return subConfigurer(commonKey);
+        } else {
+            return new JsonPropertyConfigurer(object);
+        }
     }
 
     @Override

@@ -133,7 +133,9 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param updateMethod
      */
     public void findService(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
-        serviceDiscovery.register(serviceName);
+        String metaInfo = context.getPropertyConfigurer()
+                .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString();
+        serviceDiscovery.register(serviceName, metaInfo);
         serviceDiscovery.discover(serviceName, updateMethod);
     }
 

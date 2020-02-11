@@ -103,21 +103,27 @@
 | zookeeper.atomicity.address | String | YES | 127.0.0.1:2181 | 原子性服务地址 |
 | zookeeper.atomicity.root-path | String | YES | /clrpc | 原子性服务根节点 |
 | zookeeper.atomicity.<br>session-timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
+| meta.provider.\* | Map&lt;String, Object&gt; | YES | Empty Map | 服务提供者通用元信息，发布至注册中心 |
+| meta.consumer.\* | Map&lt;String, Object&gt; | YES | Empty Map | 服务消费者通用元信息，发布至注册中心 |
 | provider.port | Integer | YES | 5200 | 服务提供者端口号 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
 | provider.channel-handler<br>.before | List&lt;String&gt; | YES | Empty List | 处理请求之前的自定义ChannelHandler |
 | provider.channel-handler<br>.after | List&lt;String&gt; | YES | Empty List | 处理请求之后的自定义ChannelHandler |
-| provider.meta | Map&lt;String, Object&gt; | YES | Empty Map | 服务提供者元信息，发布至注册中心 |
 | consumer.wait-time | Integer | YES | 5000 | 无服务提供者时等待重试时间，单位为毫秒 |
 | consumer.thread.worker | Integer | YES | 4 | 服务使用者的workerGroup线程数 |
 | consumer.channel-handler<br>.before | List&lt;String&gt; | YES | Empty List | 处理请求之前的自定义ChannelHandler |
 | consumer.channel-handler<br>.after | List&lt;String&gt; | YES | Empty List | 处理请求之后的自定义ChannelHandler |
-| consumer.meta | Map&lt;String, Object&gt; | YES | Empty Map | 服务消费者元信息，发布至注册中心 |
 | service.thread-pool.<br>core-size | Integer | YES | 5 | 业务线程池核心线程数 |
 | service.thread-pool.<br>max-size | Integer | YES | 10 | 业务线程池最大线程数 |
 | service.thread-pool.<br>keep-alive | Integer | YES | 1000 | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 | service.thread-pool.<br>queue | Integer | YES | 10 | 业务线程池队列数 |
+
+### Config Items Remark
+
+在一个进程中，针对不同的服务可以使用不同的元信息。
+
+例如服务提供者提供了 `AService` 和 `BService`，那么发布的元信息在配置文件中分别对应于 `meta.provider.AService` 和 `meta.provider.BService` 指向的具体元信息；若具体元信息不存在，则发布 `meta.provider.*` 对应的通用元信息；若通用元信息不存在，则发布空信息。
 
 ## Test
 
