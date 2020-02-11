@@ -9,6 +9,13 @@ public interface Registerable {
      * 注册
      * 
      * @param key
+     */
+    void register(String key);
+
+    /**
+     * 注册
+     * 
+     * @param key
      * @param data
      */
     void register(String key, String data);

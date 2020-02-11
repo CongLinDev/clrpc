@@ -142,8 +142,6 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         context.setPropertyConfigurer(configurer());
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());
-        // 设置元信息
-        context.setMetaInformation(option.getMetaInfomation());
 
         return context;
     }

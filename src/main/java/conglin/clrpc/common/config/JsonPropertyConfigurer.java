@@ -1,8 +1,11 @@
 package conglin.clrpc.common.config;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -40,7 +43,27 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      * @return
      */
     public static JsonPropertyConfigurer fromFile(String filename) {
-        return new JsonPropertyConfigurer(Source.FILE, filename);
+        try (InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
+            return new JsonPropertyConfigurer(new String(inputStream.readAllBytes()));
+        } catch (IOException e) {
+            LOGGER.error("Resolve File={} failed. Cause: {}", filename, e);
+            return empty();
+        }
+    }
+
+    /**
+     * 将本地文件内容导入配置器
+     * 
+     * @param file
+     * @return
+     */
+    public static JsonPropertyConfigurer fromFile(File file) {
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return new JsonPropertyConfigurer(new String(inputStream.readAllBytes()));
+        } catch (IOException e) {
+            LOGGER.error("Resolve File={} failed. Cause: {}", file.getName(), e);
+            return empty();
+        }
     }
 
     /**
@@ -49,8 +72,13 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      * @param url
      * @return
      */
-    public static JsonPropertyConfigurer fromURL(String url) {
-        return new JsonPropertyConfigurer(Source.NETWORK, url);
+    public static JsonPropertyConfigurer fromURL(URL url) {
+        try (InputStream inputStream = url.openConnection().getInputStream()) {
+            return new JsonPropertyConfigurer(new String(inputStream.readAllBytes()));
+        } catch (IOException e) {
+            LOGGER.error("Resolve URL={} failed. Cause: {}", url, e);
+            return empty();
+        }
     }
 
     /**
@@ -60,84 +88,52 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      * @return
      */
     public static JsonPropertyConfigurer fromContent(String content) {
-        return new JsonPropertyConfigurer(Source.CONTENT, content);
+        return new JsonPropertyConfigurer(content);
+    }
+
+    /**
+     * 将 {@link java.util.Map} 内元素作为配置器
+     * 
+     * @param map 配置内容
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static JsonPropertyConfigurer fromMap(Map<String, ? extends Object> map) {
+        return new JsonPropertyConfigurer((Map<String, Object>) map);
     }
 
     /**
      * 获取一个空的配置器
      */
-    public JsonPropertyConfigurer() {
-        this(Source.CONTENT, emptyJsonString());
+    protected JsonPropertyConfigurer() {
+        this(new JSONObject());
     }
 
     /**
-     * 获取一个配置器
+     * 使用 {@link java.util.Map} 初始化配置器
      * 
-     * @param source
+     * @param map
+     */
+    protected JsonPropertyConfigurer(Map<String, Object> map) {
+        this(new JSONObject(map));
+    }
+
+    /**
+     * 使用文本内容初始化配置器
+     * 
      * @param content
      */
-    public JsonPropertyConfigurer(Source source, String content) {
-        switch (source) {
-        case CONTENT: // 输入应当是json数据
-            CONFIG_HOLDER = JSONObject.parseObject(content);
-            break;
-        case FILE: // 输入应当是文件名
-            CONFIG_HOLDER = JSONObject.parseObject(new String(resolveFile(content)));
-            break;
-        case NETWORK:
-            CONFIG_HOLDER = JSONObject.parseObject(new String(resolveURL(content)));
-            break;
-        default: // 默认返回一个空的配置器
-            CONFIG_HOLDER = JSONObject.parseObject(emptyJsonString());
-        }
+    protected JsonPropertyConfigurer(String content) {
+        this(JSONObject.parseObject(content));
     }
 
     /**
-     * 解析本地文件
+     * 使用json对象直接获取配置器
      * 
-     * @param filename 文件名
-     * @return 文件字节数组
+     * @param jsonObject
      */
-    protected static byte[] resolveFile(String filename) {
-        try (InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
-            return inputStream.readAllBytes();
-        } catch (IOException e) {
-            LOGGER.error("Resolve File={} failed. Cause: {}", filename, e);
-            return emptyJsonBytes();
-        }
-    }
-
-    /**
-     * 解析网络文件
-     * 
-     * @param url
-     * @return
-     */
-    protected static byte[] resolveURL(String url) {
-        try (InputStream inputStream = new URL(url).openConnection().getInputStream()) {
-            return inputStream.readAllBytes();
-        } catch (IOException e) {
-            LOGGER.error("Resolve URL={} failed. Cause: {}", url, e);
-            return emptyJsonBytes();
-        }
-    }
-
-    /**
-     * 空的json对象字符串
-     * 
-     * @return
-     */
-    public static String emptyJsonString() {
-        return "{}";
-    }
-
-    /**
-     * 空的json对象字节数组
-     * 
-     * @return
-     */
-    public static byte[] emptyJsonBytes() {
-        return emptyJsonString().getBytes();
+    protected JsonPropertyConfigurer(JSONObject jsonObject) {
+        this.CONFIG_HOLDER = jsonObject;
     }
 
     @Override
@@ -148,6 +144,30 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     @Override
     public Object put(String key, Object value) {
         return CONFIG_HOLDER.put(key, value);
+    }
+
+    @Override
+    public void putAll(Map<String, ? extends Object> map) {
+        CONFIG_HOLDER.putAll(map);
+    }
+
+    @Override
+    public void clear() {
+        CONFIG_HOLDER.clear();
+    }
+
+    @Override
+    public Object remove(String key) {
+        return CONFIG_HOLDER.remove(key);
+    }
+
+    @Override
+    public PropertyConfigurer subConfigurer(String key) {
+        JSONObject object = CONFIG_HOLDER.getJSONObject(key);
+        // if cannot find subconfigurer, will return empty configurer
+        if (object == null)
+            object = new JSONObject();
+        return new JsonPropertyConfigurer(object);
     }
 
     @Override

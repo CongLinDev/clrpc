@@ -15,17 +15,6 @@ public class RpcMonitorOption extends RpcCommonOption {
         return this;
     }
 
-    /**
-     * 设置元信息
-     * 
-     * @param metaInfo the metaInfo to set
-     * @return this
-     */
-    public RpcMonitorOption setSerializationHandler(String metaInfo) {
-        super.metaInfomation(metaInfo);
-        return this;
-    }
-
     // 监视地址（ZooKeeper地址）
     protected String monitorAddress;
 

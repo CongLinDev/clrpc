@@ -8,17 +8,6 @@ import conglin.clrpc.transport.component.ProviderChooserAdapter;
 public class RpcConsumerOption extends RpcCommonOption {
 
     /**
-     * 设置元信息
-     * 
-     * @param metaInfo the metaInfo to set
-     * @return this
-     */
-    public RpcConsumerOption setSerializationHandler(String metaInfo) {
-        super.metaInfomation(metaInfo);
-        return this;
-    }
-
-    /**
      * 设置序列化处理器
      * 
      * @param serializationHandler the serializationHandler to set

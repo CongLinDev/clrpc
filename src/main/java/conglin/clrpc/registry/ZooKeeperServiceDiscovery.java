@@ -28,6 +28,8 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
     private final ZooKeeper keeper;
     private final String rootPath;
 
+    private final String metaInfo;
+
     public ZooKeeperServiceDiscovery(InetSocketAddress localAddress, PropertyConfigurer configurer) {
         this(localAddress.toString(), configurer);
     }
@@ -44,12 +46,19 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         LOGGER.debug("Discovering zookeeper service address = {}", discoveryAddress);
 
         this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
+
+        this.metaInfo = configurer.subConfigurer("consumer.meta").toString();
     }
 
     @Override
     public void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
         String providerNodes = rootPath + "/" + serviceName + "/providers";
         ZooKeeperUtils.watchChildrenList(keeper, providerNodes, provider -> updateMethod.accept(serviceName, provider));
+    }
+
+    @Override
+    public void register(String key) {
+        register(key, metaInfo);
     }
 
     @Override

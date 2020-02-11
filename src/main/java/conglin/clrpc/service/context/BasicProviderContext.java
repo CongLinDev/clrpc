@@ -1,7 +1,8 @@
 package conglin.clrpc.service.context;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
+
+import conglin.clrpc.common.Task;
 
 public class BasicProviderContext extends BasicCommonContext implements ProviderContext {
 
@@ -18,16 +19,15 @@ public class BasicProviderContext extends BasicCommonContext implements Provider
     }
     
 
-    private Consumer<String> serviceRegister;
+    private Task serviceRegister;
 
     @Override
-    public Consumer<String> getServiceRegister() {
+    public Task getServiceRegister() {
         return serviceRegister;
     }
 
     @Override
-    public void setServiceRegister(Consumer<String> serviceRegister) {
+    public void setServiceRegister(Task serviceRegister) {
         this.serviceRegister = serviceRegister;
     }
-
 }

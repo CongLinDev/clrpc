@@ -38,8 +38,7 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         try {
             if (SYNCHRONIZER.tryAcquireNanos(0, unit.toNanos(timeout))) {
                 return doGet();

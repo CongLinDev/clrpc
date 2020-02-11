@@ -25,6 +25,8 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
     private final String rootPath; // zookeeper根地址
     private final ZooKeeper keeper;
 
+    private final String metaInfo;
+
     public ZooKeeperServiceRegistry(InetSocketAddress localAddress, PropertyConfigurer configurer) {
         this(localAddress.toString(), configurer);
     }
@@ -41,6 +43,13 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
         LOGGER.debug("Registering zookeeper service address = {}", registryAddress);
 
         this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
+
+        this.metaInfo = configurer.subConfigurer("provider.meta").toString();
+    }
+
+    @Override
+    public void register(String key) {
+        register(key, metaInfo);
     }
 
     @Override

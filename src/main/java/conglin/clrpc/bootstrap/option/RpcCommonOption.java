@@ -29,25 +29,4 @@ public class RpcCommonOption {
             serializationHandler = new ProtostuffSerializationHandler();
         return serializationHandler;
     }
-
-    private String metaInfo = "";
-
-    /**
-     * 设置元信息
-     * 
-     * @param metaInfo the metaInfo to set
-     * @return this
-     */
-    protected RpcCommonOption metaInfomation(String metaInfo) {
-        this.metaInfo = metaInfo;
-        return this;
-    }
-
-    /**
-     * 返回元信息
-     * @return the metaInfo
-     */
-    public String getMetaInfomation() {
-        return metaInfo;
-    }
 }

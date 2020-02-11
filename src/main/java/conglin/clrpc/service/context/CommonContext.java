@@ -62,20 +62,6 @@ public interface CommonContext {
      * @param serializationHandler
      */
     void setSerializationHandler(SerializationHandler serializationHandler);
-
-    /**
-     * 获取本机的元信息
-     * 
-     * @return
-     */
-    String getMetaInformation();
-
-    /**
-     * 设置本机的元信息
-     * 
-     * @param metaInfo
-     */
-    void setMetaInformation(String metaInfo);
     
     /**
      * 对于扩展所需的对象则放入该 {@link java.util.Map} 

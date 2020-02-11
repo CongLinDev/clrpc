@@ -60,11 +60,9 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     /**
      * 将数据注册到注册中心
-     * 
-     * @param data
      */
-    protected void registerService(String data) {
-        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, data));
+    protected void registerService() {
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName));
     }
 
     /**

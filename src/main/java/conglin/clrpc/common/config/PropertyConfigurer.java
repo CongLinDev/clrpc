@@ -1,5 +1,6 @@
 package conglin.clrpc.common.config;
 
+import java.util.Map;
 import java.util.function.Predicate;
 
 public interface PropertyConfigurer {
@@ -58,10 +59,7 @@ public interface PropertyConfigurer {
      */
     default <T> T getOrDefault(String key, T t, Predicate<T> predicate) {
         T value = getOrDefault(key, t);
-        if (predicate == null)
-            return value;
-
-        if (predicate.test(value)) {
+        if (predicate == null || predicate.test(value)) {
             return value;
         } else {
             return t;
@@ -89,14 +87,29 @@ public interface PropertyConfigurer {
         if (v == null) {
             v = put(key, value);
         }
-
         return v;
     }
 
+    void putAll(Map<String, ? extends Object> map);
+
     /**
-     * 配置源
+     * 移除配置项
+     * 
+     * @param key
+     * @return
      */
-    enum Source {
-        CONTENT, FILE, NETWORK
-    }
+    Object remove(String key);
+
+    /**
+     * 清空
+     */
+    void clear();
+
+    /**
+     * 获取子配置器
+     * 
+     * @param key
+     * @return
+     */
+    PropertyConfigurer subConfigurer(String key);
 }

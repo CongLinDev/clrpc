@@ -58,18 +58,6 @@ public class BasicCommonContext implements CommonContext {
         this.serializationHandler = serializationHandler;
     }
 
-    private String metaInfo;
-
-    @Override
-    public String getMetaInformation() {
-        return metaInfo;
-    }
-
-    @Override
-    public void setMetaInformation(String metaInfo) {
-        this.metaInfo = metaInfo;
-    }
-
     private Map<String, Object> extensionObjects = new HashMap<>();
 
     @Override

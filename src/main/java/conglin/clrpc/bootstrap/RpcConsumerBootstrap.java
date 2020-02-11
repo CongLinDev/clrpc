@@ -165,8 +165,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.setLocalAddress(IPAddressUtils.localAddress());
         // 设置属性配置器
         context.setPropertyConfigurer(configurer());
-        // 设置元信息
-        context.setMetaInformation(option.getMetaInfomation());
 
         // 设置序列化处理器
         context.setSerializationHandler(option.getSerializationHandler());

@@ -37,7 +37,7 @@ public class ProviderTransfer {
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(localAddress).sync();
             if (channelFuture.isSuccess()) {
-                context.getServiceRegister().accept(context.getMetaInformation());
+                context.getServiceRegister().run();
                 LOGGER.info("Provider starts on {}", localAddressString);
             } else {
                 LOGGER.error("Provider starts failed");
