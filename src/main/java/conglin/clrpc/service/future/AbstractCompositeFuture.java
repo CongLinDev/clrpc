@@ -95,7 +95,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
         return futures.stream().map(t -> {
             try {
                 return t.get();
-            } catch (InterruptedException | ExecutionException | RpcServiceException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 return e;
             }
         }).collect(Collectors.toList());

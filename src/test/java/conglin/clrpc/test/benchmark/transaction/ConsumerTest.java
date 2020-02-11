@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutionException;
 
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.TransactionProxy;
 
@@ -39,7 +38,7 @@ public class ConsumerTest {
         });
         try {
             future.get();
-        } catch (InterruptedException | ExecutionException | RpcServiceException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
         bootstrap.stop();

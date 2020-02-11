@@ -1,36 +1,10 @@
 package conglin.clrpc.service.future;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
 
-public interface RpcFuture {
-    /**
-     * 获取结果
-     * 
-     * @return
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws RpcServiceException
-     */
-    Object get() throws InterruptedException, ExecutionException, RpcServiceException;
-
-    /**
-     * 在指定时间内获取结果
-     * 
-     * @param timeout
-     * @param unit
-     * @return
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws TimeoutException
-     * @throws RpcServiceException
-     */
-    Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException, RpcServiceException;
+public interface RpcFuture extends Future<Object> {
 
     /**
      * 添加回调函数
@@ -58,32 +32,6 @@ public interface RpcFuture {
      * @param result
      */
     void done(Object result);
-
-    /**
-     * 取消
-     * 
-     * @param mayInterruptIfRunning
-     * @return
-     */
-    boolean cancel(boolean mayInterruptIfRunning);
-
-    /**
-     * 以下为状态相关方法
-     */
-
-    /**
-     * 是否完成
-     * 
-     * @return
-     */
-    boolean isDone();
-
-    /**
-     * 是否取消
-     * 
-     * @return
-     */
-    boolean isCancelled();
 
     /**
      * 是否等待中
