@@ -30,6 +30,8 @@ public class ClassUtils {
      * @return
      */
     public static <T> T loadClassObject(String qualifiedClassName, Class<T> superClass, Object... args) {
+        if (qualifiedClassName == null)
+            return null;
         try {
             Class<? extends T> clazz = Class.forName(qualifiedClassName).asSubclass(superClass);
             return clazz.getConstructor(getClasses(args)).newInstance(args);

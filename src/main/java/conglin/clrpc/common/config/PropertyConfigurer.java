@@ -106,6 +106,13 @@ public interface PropertyConfigurer {
     void clear();
 
     /**
+     * 是否是空的配置器
+     * 
+     * @return
+     */
+    boolean isEmpty();
+
+    /**
      * 获取子配置器
      * 
      * @param key

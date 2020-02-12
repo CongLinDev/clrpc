@@ -157,6 +157,11 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     }
 
     @Override
+    public boolean isEmpty() {
+        return CONFIG_HOLDER.isEmpty();
+    }
+
+    @Override
     public Object remove(String key) {
         return CONFIG_HOLDER.remove(key);
     }
