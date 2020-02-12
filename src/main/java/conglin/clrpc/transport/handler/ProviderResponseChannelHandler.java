@@ -9,12 +9,14 @@ import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class ProviderResponseChannelHandler extends SimpleChannelInboundHandler<Pair<BasicRequest, BasicResponse>> {
+public class ProviderResponseChannelHandler
+        extends SimpleChannelInboundHandler<Pair<? extends BasicRequest, ? extends BasicResponse>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderResponseChannelHandler.class);
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Pair<BasicRequest, BasicResponse> msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Pair<? extends BasicRequest, ? extends BasicResponse> msg)
+            throws Exception {
         BasicResponse response = msg.getSecond();
         ctx.writeAndFlush(response);
         LOGGER.debug("Send response which requestId={}", response.getRequestId());

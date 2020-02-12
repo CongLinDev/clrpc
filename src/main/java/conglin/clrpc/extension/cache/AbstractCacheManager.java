@@ -9,8 +9,8 @@ abstract public class AbstractCacheManager<K, V> implements CacheManager<K, V> {
     protected final int MAX_EXPIRE_TIME;
 
     public AbstractCacheManager(PropertyConfigurer configurer) {
-        INITIAL_CAPACITY = configurer.getOrDefault("cache.initial-capacity", 16);
-        MAX_SIZE = configurer.getOrDefault("cache.max-size", 10000);
-        MAX_EXPIRE_TIME = configurer.getOrDefault("cache.max-expire-time", 1 << 20);
+        INITIAL_CAPACITY = configurer.getOrDefault("extension.cache.initial-capacity", 16);
+        MAX_SIZE = configurer.getOrDefault("extension.cache.max-size", 10000);
+        MAX_EXPIRE_TIME = configurer.getOrDefault("extension.cache.max-expire-time", 1 << 20);
     }
 }

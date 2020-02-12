@@ -40,7 +40,10 @@ public class CacheableResponse extends BasicResponse {
     public CacheableResponse copy(Long requestId) {
         CacheableResponse response = new CacheableResponse(requestId);
         response.setFlag(this.flag);
-        response.setResult(response.getResult());
+        response.setResult(this.getResult());
+        if (this.isError()) {
+            response.signError();
+        }
         return response;
     }
 

@@ -1,8 +1,6 @@
 package conglin.clrpc.service.context;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -57,12 +55,4 @@ public class BasicCommonContext implements CommonContext {
     public void setSerializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
     }
-
-    private Map<String, Object> extensionObjects = new HashMap<>();
-
-    @Override
-    public Map<String, Object> getExtensionObject() {
-        return extensionObjects;
-    }
-
 }

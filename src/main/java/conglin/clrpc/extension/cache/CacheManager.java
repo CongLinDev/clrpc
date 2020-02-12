@@ -10,6 +10,16 @@ public interface CacheManager<K, V> {
     V get(K key);
 
     /**
+     * 是否存在缓存
+     * 
+     * @param key
+     * @return
+     */
+    default boolean isExist(K key) {
+        return get(key) != null;
+    }
+
+    /**
      * 加入缓存
      * 
      * @param key

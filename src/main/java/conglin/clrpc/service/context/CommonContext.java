@@ -1,7 +1,6 @@
 package conglin.clrpc.service.context;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -62,11 +61,4 @@ public interface CommonContext {
      * @param serializationHandler
      */
     void setSerializationHandler(SerializationHandler serializationHandler);
-    
-    /**
-     * 对于扩展所需的对象则放入该 {@link java.util.Map} 
-     * 
-     * @return
-     */
-    Map<String, Object> getExtensionObject();
 }

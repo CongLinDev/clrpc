@@ -96,5 +96,4 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
     protected ChannelHandler getChannelHandlerObject(String qualifiedClassName) {
         return ClassUtils.loadClassObject(qualifiedClassName, ChannelHandler.class, context);
     }
-
 }
