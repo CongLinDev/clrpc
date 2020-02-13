@@ -53,7 +53,7 @@ public class CacheableResponse extends BasicResponse {
     }
 
     /**
-     * 以下方法均为设置或获取 {@link CacheableResponse#flag} 的方法
+     * 以下方法均为设置或获取 {@link conglin.clrpc.transport.message.CacheableResponse#flag} 的方法
      * 
      * {@link CacheableResponse#flag} 共 32 位 从低到高为 [0 - 31] 各比特位的含义如下：
      * 

@@ -1,5 +1,10 @@
 package conglin.clrpc.bootstrap;
 
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +31,7 @@ abstract public class RpcBootstrap {
      * 准备
      */
     protected void start() {
-        GlobalResourceManager.manager().retain();
+        GlobalResourceManager.manager().acquire();
     }
 
     /**
@@ -48,6 +53,17 @@ abstract public class RpcBootstrap {
             return service.name();
         LOGGER.error("Unnamed service from {}", serviceClass.getName());
         return null;
+    }
+
+    /**
+     * 获取父接口的注解服务名
+     * 
+     * @param serviceClass
+     * @return
+     */
+    protected Collection<String> getSuperServiceName(Class<?> serviceClass) {
+        return Stream.of(serviceClass.getInterfaces()).map(this::getServiceName).filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**

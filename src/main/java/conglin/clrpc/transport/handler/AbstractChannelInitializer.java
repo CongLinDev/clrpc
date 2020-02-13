@@ -35,7 +35,7 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     }
 
     /**
-     * 在 {@link AbstractChannelInitializer#pipeline} 后添加指定的
+     * 在 {@link AbstractChannelInitializer#pipeline()} 后添加指定的
      * {@link io.netty.channel.ChannelHandler}
      * 
      * @param handlerClassnames

@@ -53,9 +53,6 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * 保存即将发布的服务
      * 
      * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
-     * 同时，服务类应当提供一个无参构造方法用于创建服务对象
-     * 
-     * 若不满足上述两个条件，应当使用 {@link RpcProviderBootstrap#publish(String, Object)} 方法
      * 
      * @param serviceBeanClass 该类必须提供一个无参构造方法
      * @return

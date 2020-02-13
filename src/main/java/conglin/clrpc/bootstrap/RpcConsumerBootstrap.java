@@ -66,6 +66,8 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 订阅同步服务，获取同步服务代理
      * 
+     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
+     * 
      * @param <T>
      * @param interfaceClass 接口类
      * @return 返回代理服务类

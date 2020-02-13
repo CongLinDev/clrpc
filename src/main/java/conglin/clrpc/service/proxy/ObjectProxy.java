@@ -53,7 +53,7 @@ public interface ObjectProxy {
      * 
      * 需要注意的是，调用者必须保证参数中的interfaceClass的服务名与对象代理的服务名相同。 如果不能保证这个条件，建议调用
      * {@link conglin.clrpc.bootstrap.RpcConsumerBootstrap#subscribe(Class)} 或是
-     * {@link conglin.clrpc.bootstrap.RpcConsumerBootstrap#subscribe(Class, String)}
+     * {@link conglin.clrpc.bootstrap.RpcConsumerBootstrap#subscribe(String, Class)}
      * 方法获取接口代理
      * 
      * 相比较来说，建议调用上方提及的方法而不是调用该方法。

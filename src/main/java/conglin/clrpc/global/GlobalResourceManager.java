@@ -31,7 +31,7 @@ public class GlobalResourceManager {
      * 
      * @return 当前全局资源占用情况
      */
-    public int retain() {
+    public int acquire() {
         return counter.incrementAndGet();
     }
 
