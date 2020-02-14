@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * 
  * {@link Service#name()} 为 设置的服务名
  * 
- * 注意：接口上的注解是不能被继承的。如果在接口上使用该注解，那么在使用具体的实现类时必须重写该注解。
+ * 注意：该注解只能被使用在服务接口上，服务实现类通过继承服务接口来发布服务。
  */
 
 @Documented
@@ -26,4 +26,11 @@ public @interface Service {
      * @return
      */
     public String name();
+
+    /**
+     * 是否忽略该服务
+     * 
+     * @return
+     */
+    public boolean ignore() default false;
 }

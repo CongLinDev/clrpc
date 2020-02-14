@@ -67,7 +67,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         int next = head | (random & _16_BIT_MASK);
 
         for (int count = 0; count < 2; count++) { // 检查两轮即可
-            Map.Entry<Integer, Node> entry = circle.higherEntry(next);
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
 
             if (entry != null && (next = entry.getKey()) <= tail) {
                 return entry.getValue().getValue();
@@ -89,7 +89,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
         int randomHash = hash(key);
         int next = head | (randomHash & _16_BIT_MASK);
 
-        Node node = null;
+        Node<K, V> node = null;
         while ((node = circle.get(next)) != null) {
             if (node.match(key))
                 return node.getValue();
@@ -101,12 +101,12 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected Node createNode(Pair<K, String> data, int currentEpoch) {
+    protected Node<K, V> createNode(Pair<K, String> data, int currentEpoch) {
         K key = data.getFirst();
         V v = convert(key);
         if (v != null) {
             LOGGER.debug("Add new node = {}", key);
-            return new Node(currentEpoch, v, data);
+            return new Node<K, V>(currentEpoch, v, data);
         } else {
             LOGGER.error("Null Object from {}", key);
             return null;
@@ -114,7 +114,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected boolean updateNode(Node node, Pair<K, String> data, int currentEpoch) {
+    protected boolean updateNode(Node<K, V> node, Pair<K, String> data, int currentEpoch) {
         if (currentEpoch <= node.getEpoch())
             return false;
         if (node.setEpoch(currentEpoch)) {
@@ -125,7 +125,7 @@ public class ConsistentHashLoadBalancer<T, K, V> extends AbstractCircledLoadBala
     }
 
     @Override
-    protected boolean removeNode(Node node, int currentEpoch) {
+    protected boolean removeNode(Node<K, V> node, int currentEpoch) {
         if (node.getEpoch() + 1 == currentEpoch) {
             LOGGER.debug("Remove valid node.");
             destroy(node.getValue());

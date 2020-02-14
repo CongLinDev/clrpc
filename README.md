@@ -20,8 +20,9 @@
 
     // 发布服务并开启服务
     bootstrap.publish(ServiceBean1.class) // 配合 @conglin.clrpc.service.annotation.Service 注解
-                .publish("service2", new ServiceBean2())
-                .start();
+            .publish(new ServiceBean2())  // 配合 @conglin.clrpc.service.annotation.Service 注解
+            .publish("service3", new ServiceBean3())
+            .start();
     // 关闭服务提供者
     bootstrap.stop();
 

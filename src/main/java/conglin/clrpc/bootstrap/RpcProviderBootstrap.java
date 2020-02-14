@@ -58,14 +58,26 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
-        String serviceName = getServiceName(serviceBeanClass);
         try {
             Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
-            return publish(serviceName, serviceBean);
+            return publish(serviceBean);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | NoSuchMethodException | SecurityException e) {
             LOGGER.error("Can not publish service. Cause={}", e.getMessage());
         }
+        return this;
+    }
+
+    /**
+     * 保存即将发布的服务
+     * 
+     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
+     * 
+     * @param serviceBean 服务实现对象
+     * @return
+     */
+    public RpcProviderBootstrap publish(Object serviceBean) {
+        getSuperServiceName(serviceBean.getClass()).forEach(serviceName -> publish(serviceName, serviceBean));
         return this;
     }
 

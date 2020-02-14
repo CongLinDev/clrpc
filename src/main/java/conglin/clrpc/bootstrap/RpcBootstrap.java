@@ -44,25 +44,25 @@ abstract public class RpcBootstrap {
     /**
      * 返回服务类的注解服务名
      * 
-     * @param serviceClass
+     * @param clazz
      * @return
      */
-    protected String getServiceName(Class<?> serviceClass) {
-        Service service = serviceClass.getAnnotation(Service.class);
-        if (service != null)
+    protected String getServiceName(Class<?> clazz) {
+        Service service = clazz.getAnnotation(Service.class);
+        if (service != null && !service.ignore())
             return service.name();
-        LOGGER.error("Unnamed service from {}", serviceClass.getName());
+        LOGGER.warn("Unavailable service from {}", clazz.getName());
         return null;
     }
 
     /**
      * 获取父接口的注解服务名
      * 
-     * @param serviceClass
+     * @param clazz
      * @return
      */
-    protected Collection<String> getSuperServiceName(Class<?> serviceClass) {
-        return Stream.of(serviceClass.getInterfaces()).map(this::getServiceName).filter(Objects::nonNull)
+    protected Collection<String> getSuperServiceName(Class<?> clazz) {
+        return Stream.of(clazz.getInterfaces()).map(this::getServiceName).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

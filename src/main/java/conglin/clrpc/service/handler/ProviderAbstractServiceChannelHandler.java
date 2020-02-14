@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.annotation.IgnoreService;
+import conglin.clrpc.service.annotation.IgnoreMethod;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -108,8 +108,8 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
 
             // 服务是否被忽略
-            IgnoreService ignoreService = method.getAnnotation(IgnoreService.class);
-            if (ignoreService != null && ignoreService.ignore())
+            IgnoreMethod ignoreMethod = method.getAnnotation(IgnoreMethod.class);
+            if (ignoreMethod != null && ignoreMethod.ignore())
                 throw new ServiceExecutionException(request, new NoSuchMethodException(methodName));
             
             method.setAccessible(true);

@@ -151,7 +151,7 @@ abstract public class AbstractFuture implements RpcFuture {
     /**
      * 用于RpcFuture的同步器
      */
-    class FutureSynchronizer extends AbstractQueuedSynchronizer {
+    static class FutureSynchronizer extends AbstractQueuedSynchronizer {
 
         private static final long serialVersionUID = -3359796046494665489L;
 

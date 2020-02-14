@@ -39,7 +39,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
     // Integer 高16位为 descriptions 中的区域 region
     // 低16位使用自定义方法 将 K-V 打乱或是顺序存储
     // 这样，只需要到指定的区域中寻找满足条件的值即可
-    protected TreeMap<Integer, Node> circle;
+    protected TreeMap<Integer, Node<K, V>> circle;
 
     public AbstractCircledLoadBalancer() {
         descriptions = new ConcurrentHashMap<>();
@@ -71,7 +71,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
         int next = head;
         while (next <= tail) {
-            Map.Entry<Integer, Node> entry = circle.higherEntry(next);
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
             V v = entry.getValue().getValue();
             consumer.accept(v);
             next = entry.getKey() + 1;
@@ -104,7 +104,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
         int next = head;
         while (next <= tail) {
-            Map.Entry<Integer, Node> entry = circle.higherEntry(next);
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
             V v = entry.getValue().getValue();
             if (predicate.test(v))
                 return v;
@@ -139,7 +139,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
             int position = hash(key) & _16_BIT_MASK | head;// 获取区域内部编号
 
             do {
-                Node node = null;
+                Node<K, V> node = null;
                 if ((node = circle.get(position)) == null) { // 插入新值
                     // 插入前再次检查 epoch
                     if ((currentEpoch == (regionAndEpoch.get() & _16_BIT_MASK))
@@ -161,7 +161,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
 
         // 移除过期节点
         int position = head;
-        Map.Entry<Integer, Node> entry;
+        Map.Entry<Integer, Node<K, V>> entry;
         while ((entry = circle.higherEntry(position)) != null // 下一个节点不为空
                 && (position = entry.getKey()) <= tail) { // 且下一个节点确保在范围内
             if (removeNode(entry.getValue(), currentEpoch)) { // 只移除上一代未更新的节点
@@ -207,7 +207,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
      * @param currentEpoch
      * @return
      */
-    abstract protected Node createNode(Pair<K, String> data, int currentEpoch);
+    abstract protected Node<K, V> createNode(Pair<K, String> data, int currentEpoch);
 
     /**
      * 更新节点
@@ -217,7 +217,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
      * @param currentEpoch
      * @return
      */
-    abstract protected boolean updateNode(Node node, Pair<K, String> data, int currentEpoch);
+    abstract protected boolean updateNode(Node<K, V>node, Pair<K, String> data, int currentEpoch);
 
     /**
      * 移除节点
@@ -226,7 +226,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
      * @param currentEpoch
      * @return
      */
-    abstract protected boolean removeNode(Node node, int currentEpoch);
+    abstract protected boolean removeNode(Node<K, V>node, int currentEpoch);
 
     /**
      * 为 新的类型 在 {@link AbstractCircledLoadBalancer#circle} 申请一块可用的区域 确定区域并添加区域头节点
@@ -260,8 +260,8 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
      * 
      * @return
      */
-    protected Node createRegionHeadNode() {
-        return new Node();
+    protected Node<K, V> createRegionHeadNode() {
+        return new Node<K, V>();
     }
 
     /**
@@ -274,7 +274,7 @@ abstract public class AbstractCircledLoadBalancer<T, K, V> implements LoadBalanc
         return System.identityHashCode(obj);
     }
 
-    class Node {
+    static class Node<K, V> {
 
         protected AtomicInteger epoch;
 
