@@ -9,7 +9,7 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 
 abstract public class AbstractFuture implements RpcFuture {
-    protected static long TIME_THRESHOLD = 5000;
+    private static long TIME_THRESHOLD = 5000;
 
     public static void setTimeThreshold(long timeThreshold) {
         TIME_THRESHOLD = timeThreshold;
@@ -19,8 +19,8 @@ abstract public class AbstractFuture implements RpcFuture {
 
     protected Callback futureCallback; // 回调
 
-    protected long startTime; // 开始时间
-    protected volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
+    private long startTime; // 开始时间
+    private volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
     public AbstractFuture() {
         this.SYNCHRONIZER = new FutureSynchronizer();
@@ -104,6 +104,7 @@ abstract public class AbstractFuture implements RpcFuture {
     @Override
     public void retry() {
         SYNCHRONIZER.retry();
+        resetTime();
     }
 
     /**

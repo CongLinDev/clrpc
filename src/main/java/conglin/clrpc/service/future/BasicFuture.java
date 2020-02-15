@@ -1,21 +1,17 @@
 package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.exception.RpcServiceException;
-import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 
 public class BasicFuture extends AbstractFuture {
 
-    protected final BasicRequest request;
+    private final BasicRequest request;
     protected BasicResponse response;
 
-    protected final RequestSender sender;
-
-    public BasicFuture(RequestSender sender, BasicRequest request) {
+    public BasicFuture(BasicRequest request) {
         super();
         this.request = request;
-        this.sender = sender;
     }
 
     @Override
@@ -27,13 +23,6 @@ public class BasicFuture extends AbstractFuture {
             throw (RpcServiceException) response.getResult();
         }
         return response.getResult();
-    }
-
-    @Override
-    public void retry() {
-        super.retry();
-        sender.resendRequest(request);
-        resetTime();
     }
 
     @Override

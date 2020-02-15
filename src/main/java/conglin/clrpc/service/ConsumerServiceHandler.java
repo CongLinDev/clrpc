@@ -4,8 +4,6 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
@@ -98,7 +96,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
         serviceDiscovery = new ZooKeeperServiceDiscovery(context.getLocalAddress(), context.getPropertyConfigurer());
         identifierGenerator = context.getIdentifierGenerator();
         initContext(context);
-        checkFuture();
     }
 
     /**
@@ -160,27 +157,9 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
         return rpcFutures.remove(key);
     }
 
-    /**
-     * 轮询线程，检查超时 RpcFuture 超时重试
-     * 
-     * @param sender
-     */
-    private void checkFuture() {
-        final long MAX_DELARY = 3000; // 最大延迟为3000 ms
-        new Timer("check-uncomplete-future", true).schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-                Iterator<RpcFuture> iterator = rpcFutures.values().iterator();
-                while (iterator.hasNext()) {
-                    RpcFuture f = iterator.next();
-                    if (f.isPending() && f.timeout()) {
-                        f.retry();
-                        LOGGER.warn("Service response(requestId={}) is too slow. Retry...", f.identifier());
-                    }
-                }
-            }
-        }, MAX_DELARY);
+    @Override
+    public Iterator<RpcFuture> iterator() {
+        return rpcFutures.values().iterator();
     }
 
     /**

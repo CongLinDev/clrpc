@@ -1,5 +1,7 @@
 package conglin.clrpc.service.future;
 
+import java.util.Iterator;
+
 public interface FuturesHolder<K> {
     /**
      * 加入 Future
@@ -24,4 +26,11 @@ public interface FuturesHolder<K> {
      * @return
      */
     RpcFuture removeFuture(K key);
+
+    /**
+     * 获取迭代器
+     * 
+     * @return
+     */
+    Iterator<RpcFuture> iterator();
 }
