@@ -27,13 +27,17 @@ import conglin.clrpc.common.Pair;
 /**
  * ZooKeeper 工具类
  */
-public class ZooKeeperUtils {
+public final class ZooKeeperUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperUtils.class);
 
     private static final Map<String, ZooKeeper> ZOOKEEPER_CONNECTION_POOL = new HashMap<>();
 
     private static final int DEFAULT_SESSION_TIMEOUT = 5000; // ms
+
+    private ZooKeeperUtils() {
+        // Unused.
+    }
 
     /**
      * 复用ZooKeeper连接

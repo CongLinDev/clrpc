@@ -143,7 +143,7 @@ public class ConsumerTransfer {
     private boolean waitingForAvailableProvider(String serviceName) throws InterruptedException {
         lock.lock();
         try {
-            LOGGER.debug("Wait for Available Provider " + timeoutForWait + " mm...");
+            LOGGER.debug("Wait for Available Provider {} ms ...", timeoutForWait);
             return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();

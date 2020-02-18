@@ -13,6 +13,9 @@ import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
 
+/**
+ * 默认的请求发送器，采用异步直接发送请求
+ */
 public class DefaultRequestSender implements RequestSender {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestSender.class);

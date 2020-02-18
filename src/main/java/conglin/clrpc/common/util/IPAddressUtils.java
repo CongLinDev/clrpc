@@ -10,7 +10,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IPAddressUtils {
+public final class IPAddressUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPAddressUtils.class);
 
@@ -25,6 +25,10 @@ public class IPAddressUtils {
             LOGGER.error(e.getMessage());
         }
         LOCAL_HOST = (hostAddress == null) ? "127.0.0.1" : hostAddress;
+    }
+
+    private IPAddressUtils() {
+        // Unused.
     }
 
     /**

@@ -5,9 +5,13 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClassUtils {
+public final class ClassUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassUtils.class);
+
+    private ClassUtils() {
+        // Unused.
+    }
 
     /**
      * 反射加载给定全限定类名下的类

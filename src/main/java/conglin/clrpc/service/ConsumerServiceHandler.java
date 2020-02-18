@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.registry.ServiceDiscovery;
 import conglin.clrpc.registry.ZooKeeperServiceDiscovery;
 import conglin.clrpc.service.context.ConsumerContext;
@@ -21,7 +20,6 @@ import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.CommonProxy;
-import conglin.clrpc.service.proxy.ObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 
@@ -34,9 +32,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     private ServiceDiscovery serviceDiscovery;
 
     private ConsumerContext context;
-
-    // ID生成器
-    private IdentifierGenerator identifierGenerator;
 
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
@@ -54,7 +49,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     @SuppressWarnings("unchecked")
     public <T> T getPrxoy(Class<T> interfaceClass, String serviceName) {
         return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass },
-                new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator));
+                getPrxoy(serviceName));
     }
 
     /**
@@ -63,8 +58,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param serviceName
      * @return
      */
-    public ObjectProxy getPrxoy(String serviceName) {
-        return new BasicObjectProxy(serviceName, context.getRequestSender(), identifierGenerator);
+    public BasicObjectProxy getPrxoy(String serviceName) {
+        return new BasicObjectProxy(serviceName, context.getRequestSender(), context.getIdentifierGenerator());
     }
 
     /**
@@ -73,7 +68,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @return
      */
     public CommonProxy getPrxoy() {
-        return new CommonProxy(context.getRequestSender(), identifierGenerator);
+        return new CommonProxy(context.getRequestSender(), context.getIdentifierGenerator());
     }
 
     /**
@@ -82,7 +77,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @return
      */
     public TransactionProxy getTransactionProxy() {
-        return new ZooKeeperTransactionProxy(context.getRequestSender(), identifierGenerator,
+        return new ZooKeeperTransactionProxy(context.getRequestSender(), context.getIdentifierGenerator(),
                 context.getPropertyConfigurer());
     }
 
@@ -94,7 +89,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     public void start(ConsumerContext context) {
         this.context = context;
         serviceDiscovery = new ZooKeeperServiceDiscovery(context.getLocalAddress(), context.getPropertyConfigurer());
-        identifierGenerator = context.getIdentifierGenerator();
         initContext(context);
     }
 
