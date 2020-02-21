@@ -122,16 +122,16 @@ public class ConsumerTransfer {
         try {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
-                String localAddress = IPAddressUtils.localAddressString((InetSocketAddress)channelFuture.channel().localAddress());
+                LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
+                String localAddress = IPAddressUtils.addressString((InetSocketAddress)channelFuture.channel().localAddress());
                 LOGGER.info("Consumer starts on {}", localAddress);
                 context.getServiceRegister().register(serviceName, localAddress, context.getPropertyConfigurer()
                         .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString());
-                LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
+                return channelFuture.channel();
             } else {
                 LOGGER.error("Provider starts failed");
                 throw new InterruptedException();
             }
-            return channelFuture.channel();
         } catch (UnknownHostException | InterruptedException e) {
             LOGGER.error("Cannot connect to remote provider {}. Cause={}", remoteAddress, e);
         }

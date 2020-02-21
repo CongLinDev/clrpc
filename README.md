@@ -106,7 +106,7 @@
 | zookeeper.atomicity.<br>session-timeout | Integer | YES | 5000 | 超时时间，单位为毫秒 |
 | meta.provider.\* | Map&lt;String, Object&gt; | YES | Empty Map | 服务提供者通用元信息，发布至注册中心 |
 | meta.consumer.\* | Map&lt;String, Object&gt; | YES | Empty Map | 服务消费者通用元信息，发布至注册中心 |
-| provider.port | Integer | YES | 5200 | 服务提供者端口号 |
+| provider.port | Integer | YES | 0 | 服务提供者端口号 |
 | provider.thread.boss | Integer | YES | 1 | 服务提供者的bossGroup线程数 |
 | provider.thread.worker | Integer | YES | 4 | 服务提供者的workerGroup线程数 |
 | provider.channel-handler<br>.before | List&lt;String&gt; | YES | Empty List | 处理请求之前的自定义ChannelHandler |

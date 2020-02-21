@@ -2,7 +2,10 @@ package conglin.clrpc.common.util;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,64 +17,62 @@ public final class IPAddressUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPAddressUtils.class);
 
-    private static final String LOCAL_HOST;
-
-    static {
-        String hostAddress = null;
-        try {
-            InetAddress address = InetAddress.getLocalHost();
-            hostAddress = address.getHostAddress();
-        } catch (UnknownHostException e) {
-            LOGGER.error(e.getMessage());
-        }
-        LOCAL_HOST = (hostAddress == null) ? "127.0.0.1" : hostAddress;
-    }
+    private static final InetAddress LOCAL_HOST = getRealLocalHost();
 
     private IPAddressUtils() {
         // Unused.
     }
 
     /**
+     * 获取真实的本地ip地址
+     * 
+     * @return
+     */
+    private static InetAddress getRealLocalHost() {
+        try {
+            Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
+            while (enumeration.hasMoreElements()) {
+                NetworkInterface networkInterface = enumeration.nextElement();
+
+                if (networkInterface.isUp()) {
+                    Enumeration<InetAddress> addressEnumeration = networkInterface.getInetAddresses();
+
+                    while (addressEnumeration.hasMoreElements()) {
+                        InetAddress address = addressEnumeration.nextElement();
+                        if (!address.isLinkLocalAddress() && !address.isLoopbackAddress()
+                                && address.isSiteLocalAddress()) {
+                            return address;
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            LOGGER.error("Get localhost failed. {}", e);
+        }
+        return InetAddress.getLoopbackAddress();
+    }
+
+    /**
      * 返回本地地址
      * 
      * @return
      */
-    public static String localhost() {
+    public static InetAddress localhost() {
         return LOCAL_HOST;
     }
 
     /**
-     * 返回本地地址和给定端口号拼接的字符串
-     * 
-     * @param port
-     * @return
-     */
-    public static String localAddressString() {
-        return LOCAL_HOST + ":0";
-    }
-
-    /**
-     * 返回本地地址和给定端口号拼接的字符串
-     * 
-     * @param port
-     * @return
-     */
-    public static String localAddressString(int port) {
-        return LOCAL_HOST + ":" + port;
-    }
-
-    /**
-     * 返回本地地址和给定端口号拼接的字符串
+     * 返回地址和给定端口号拼接的字符串
      * 
      * @param address
      * @return
      */
-    public static String localAddressString(InetSocketAddress address) {
-        return localAddressString(address.getPort());
+    public static String addressString(InetSocketAddress address) {
+        return address.getAddress().getHostAddress() + ":" + address.getPort();
     }
 
     /**
-     * 返回本地地址
+     * 返回本地地址和端口
      * 
      * @param port
      * @return
@@ -81,7 +82,7 @@ public final class IPAddressUtils {
     }
 
     /**
-     * 返回本地地址
+     * 返回本地地址和端口(默认为0)
      * 
      * @return
      */

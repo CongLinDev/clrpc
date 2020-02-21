@@ -1,6 +1,5 @@
 package conglin.clrpc.registry;
 
-import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
@@ -20,11 +19,7 @@ public class ZooKeeperServiceMonitor implements ServiceMonitor {
     private final ZooKeeper keeper;
     private final String rootPath;
 
-    public ZooKeeperServiceMonitor(InetSocketAddress localAddress, PropertyConfigurer configurer) {
-        this(localAddress.toString(), configurer);
-    }
-
-    public ZooKeeperServiceMonitor(String localAddress, PropertyConfigurer configurer) {
+    public ZooKeeperServiceMonitor(PropertyConfigurer configurer) {
 
         String path = configurer.getOrDefault("zookeeper.monitor.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";

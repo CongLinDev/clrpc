@@ -40,14 +40,14 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     @Override
     protected void handleConsumer(String serviceName, Collection<Pair<String, String>> nodeList) {
-        System.out.println("Consumer node Changed. Time=" + System.currentTimeMillis());
-        printNodeInfo(serviceName, nodeList);
+        System.out.println(serviceName + " Consumer node Changed. Time=" + System.currentTimeMillis());
+        printNodeInfo(nodeList);
     }
 
     @Override
     protected void handleProvider(String serviceName, Collection<Pair<String, String>> nodeList) {
-        System.out.println("Provider node Changed. Time=" + System.currentTimeMillis());
-        printNodeInfo(serviceName, nodeList);
+        System.out.println(serviceName + " Provider node Changed. Time=" + System.currentTimeMillis());
+        printNodeInfo(nodeList);
     }
 
     /**
@@ -56,8 +56,11 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
      * @param serviceName
      * @param nodeList
      */
-    protected void printNodeInfo(String serviceName, Collection<Pair<String, String>> nodeList) {
-        System.out.println("Service : " + serviceName);
-        nodeList.forEach(node -> System.out.println(node.getFirst() + "--->" + node.getSecond()));
+    protected void printNodeInfo(Collection<Pair<String, String>> nodeList) {
+        if(!nodeList.isEmpty()) {
+            nodeList.forEach(node -> System.out.println("\t" + node.getFirst() + "--->" + node.getSecond()));
+        } else {
+            System.out.println("\tEmpty list.");
+        }
     }
 }

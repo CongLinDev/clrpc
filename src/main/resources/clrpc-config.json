@@ -15,7 +15,7 @@
     "meta.provider.*": {},
     "meta.consumer.*": {},
 
-    "provider.port": 5200,
+    "provider.port": 0,
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
     "provider.channel-handler.before": [],

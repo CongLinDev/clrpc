@@ -1,5 +1,7 @@
 package conglin.clrpc.transport;
 
+import java.net.InetSocketAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,19 +33,21 @@ public class ProviderTransfer {
         initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
                 configurer.getOrDefault("provider.thread.worker", 4));
 
-        String localAddressString = IPAddressUtils.localAddressString(context.getServicePort());
         try {
-            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localhost(), context.getServicePort()).sync();
+            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(context.getServicePort()))
+                    .sync();
+            String localAddress = IPAddressUtils
+                    .addressString((InetSocketAddress) channelFuture.channel().localAddress());
             if (channelFuture.isSuccess()) {
-                context.getServiceRegister().accept(localAddressString);
-                LOGGER.info("Provider starts on {}", localAddressString);
+                context.getServiceRegister().accept(localAddress);
+                LOGGER.info("Provider starts on {}", localAddress);
             } else {
                 LOGGER.error("Provider starts failed");
                 throw new InterruptedException();
             }
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            LOGGER.error("Cannot bind local address. {}", localAddressString);
+            LOGGER.error("Cannot bind port {}.", context.getServicePort());
         }
     }
 

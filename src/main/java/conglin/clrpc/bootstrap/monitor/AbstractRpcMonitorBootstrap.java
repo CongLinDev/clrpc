@@ -6,7 +6,6 @@ import conglin.clrpc.bootstrap.RpcBootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.registry.ServiceMonitor;
 import conglin.clrpc.registry.ZooKeeperServiceMonitor;
 
@@ -20,7 +19,7 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
 
     public AbstractRpcMonitorBootstrap(PropertyConfigurer configurer) {
         super(configurer);
-        serviceMonitor = new ZooKeeperServiceMonitor(IPAddressUtils.localAddressString(), configurer());
+        serviceMonitor = new ZooKeeperServiceMonitor(configurer());
     }
 
     @Override
