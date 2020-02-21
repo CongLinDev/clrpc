@@ -3,6 +3,7 @@ package conglin.clrpc.service.context;
 import java.util.function.Consumer;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.registry.ServiceRegistry;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
@@ -67,5 +68,17 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
     @Override
     public void setProviderRefresher(Consumer<String> providerRefresher) {
         this.providerRefresher = providerRefresher;
+    }
+
+    private ServiceRegistry serviceRegister;
+
+    @Override
+    public ServiceRegistry getServiceRegister() {
+        return serviceRegister;
+    }
+
+    @Override
+    public void setServiceRegister(ServiceRegistry serviceRegister) {
+        this.serviceRegister = serviceRegister;
     }
 }

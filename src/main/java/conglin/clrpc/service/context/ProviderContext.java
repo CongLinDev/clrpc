@@ -1,8 +1,7 @@
 package conglin.clrpc.service.context;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
-
-import conglin.clrpc.common.Task;
 
 public interface ProviderContext extends CommonContext {
 
@@ -25,13 +24,28 @@ public interface ProviderContext extends CommonContext {
      * 
      * @return
      */
-    Task getServiceRegister();
+    Consumer<String> getServiceRegister();
 
     /**
      * 设置服务注册器
      * 
      * @param serviceRegister
      */
-    void setServiceRegister(Task serviceRegister);
+    void setServiceRegister(Consumer<String> serviceRegister);
+
+    /**
+     * 获取服务开放的端口
+     * 
+     * @return
+     */
+    int getServicePort();
+
+    /**
+     * 设置服务开放的端口
+     * 
+     * @param port
+     * @return
+     */
+    void setServicePort(int port);
 
 }

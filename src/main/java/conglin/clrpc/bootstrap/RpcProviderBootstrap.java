@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.RpcProviderOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.service.context.BasicProviderContext;
 import conglin.clrpc.service.context.ProviderContext;
@@ -97,17 +96,6 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 取消已经发布的服务
-     * 
-     * @param serviceName
-     * @return
-     */
-    public RpcProviderBootstrap unpublish(String serviceName) {
-        SERVICE_HANDLER.unregisterService(serviceName);
-        return this;
-    }
-
-    /**
      * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
      */
     public void start() {
@@ -145,8 +133,8 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     private ProviderContext initContext(RpcProviderOption option) {
         ProviderContext context = new BasicProviderContext();
 
-        // 设置本地地址
-        context.setLocalAddress(IPAddressUtils.localAddress(configurer().getOrDefault("provider.port", 5200)));
+        // 设置服务端口
+        context.setServicePort(configurer().getOrDefault("provider.port", 5200));
         // 设置属性配置器
         context.setPropertyConfigurer(configurer());
         // 设置序列化处理器

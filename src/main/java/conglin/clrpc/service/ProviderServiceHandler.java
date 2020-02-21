@@ -50,22 +50,11 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     }
 
     /**
-     * 移除服务
-     * 
-     * @param serviceName 服务名
-     */
-    public void unregisterService(String serviceName) {
-        serviceRegistry.unregister(serviceName);
-        serviceObjects.remove(serviceName);
-        LOGGER.debug("Remove service named {}", serviceName);
-    }
-
-    /**
      * 将数据注册到注册中心
      */
-    protected void registerService() {
+    protected void registerService(String address) {
         PropertyConfigurer configurer = context.getPropertyConfigurer();
-        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName,
+        serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, address,
                 configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
     }
 
@@ -75,7 +64,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param context
      */
     public void start(ProviderContext context) {
-        serviceRegistry = new ZooKeeperServiceRegistry(context.getLocalAddress(), context.getPropertyConfigurer());
+        serviceRegistry = new ZooKeeperServiceRegistry(context.getPropertyConfigurer());
         this.context = context;
         initContext(context);
     }

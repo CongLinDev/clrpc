@@ -25,12 +25,12 @@ public @interface Service {
      * 
      * @return
      */
-    public String name();
+    String name();
 
     /**
      * 是否忽略该服务
      * 
      * @return
      */
-    public boolean ignore() default false;
+    boolean ignore() default false;
 }

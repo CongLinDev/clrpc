@@ -1,11 +1,10 @@
 package conglin.clrpc.transport;
 
-import java.net.InetSocketAddress;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.handler.ProviderChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -32,12 +31,11 @@ public class ProviderTransfer {
         initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
                 configurer.getOrDefault("provider.thread.worker", 4));
 
-        InetSocketAddress localAddress = context.getLocalAddress();
-        String localAddressString = localAddress.toString();
+        String localAddressString = IPAddressUtils.localAddressString(context.getServicePort());
         try {
-            ChannelFuture channelFuture = nettyBootstrap.bind(localAddress).sync();
+            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localhost(), context.getServicePort()).sync();
             if (channelFuture.isSuccess()) {
-                context.getServiceRegister().run();
+                context.getServiceRegister().accept(localAddressString);
                 LOGGER.info("Provider starts on {}", localAddressString);
             } else {
                 LOGGER.error("Provider starts failed");

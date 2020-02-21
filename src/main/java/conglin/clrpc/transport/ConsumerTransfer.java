@@ -1,5 +1,6 @@
 package conglin.clrpc.transport;
 
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +42,7 @@ public class ConsumerTransfer {
     private LoadBalancer<String, String, Channel> loadBalancer;
 
     public ConsumerTransfer() {
-        loadBalancer = new ConsistentHashLoadBalancer<>(this::connectProviderNode, Channel::close);
+        loadBalancer = new ConsistentHashLoadBalancer<>(this::connectProviderNode, this::disconnectProviderNode);
 
         lock = new ReentrantLock();
         connected = lock.newCondition();
@@ -114,14 +115,18 @@ public class ConsumerTransfer {
     /**
      * 连接某个特定的服务提供者
      * 
+     * @param serviceName
      * @param remoteAddress
      */
-    private Channel connectProviderNode(String remoteAddress) {
+    private Channel connectProviderNode(String serviceName, String remoteAddress) {
         try {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
-                LOGGER.info("Consumer starts on {}", channelFuture.channel().localAddress());
-                LOGGER.debug("Connect to remote provider successfully. Remote Address : " + remoteAddress);
+                String localAddress = IPAddressUtils.localAddressString((InetSocketAddress)channelFuture.channel().localAddress());
+                LOGGER.info("Consumer starts on {}", localAddress);
+                context.getServiceRegister().register(serviceName, localAddress, context.getPropertyConfigurer()
+                        .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString());
+                LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
             } else {
                 LOGGER.error("Provider starts failed");
                 throw new InterruptedException();
@@ -131,6 +136,17 @@ public class ConsumerTransfer {
             LOGGER.error("Cannot connect to remote provider {}. Cause={}", remoteAddress, e);
         }
         return null;
+    }
+
+    /**
+     * 取消连接某个服务提供者
+     * 
+     * @param serviceName
+     * @param channel
+     */
+    private void disconnectProviderNode(String serviceName, Channel channel) {
+        context.getServiceRegister().unregister(serviceName, channel.localAddress().toString());
+        channel.close();
     }
 
     /**

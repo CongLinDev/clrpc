@@ -1,7 +1,5 @@
 package conglin.clrpc.registry;
 
-import java.net.InetSocketAddress;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -20,48 +18,31 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceRegistry.class);
 
-    private final String localAddress; // 本地地址
-
     private final String rootPath; // zookeeper根地址
     private final ZooKeeper keeper;
 
-    public ZooKeeperServiceRegistry(InetSocketAddress localAddress, PropertyConfigurer configurer) {
-        this(localAddress.toString(), configurer);
-    }
-
-    public ZooKeeperServiceRegistry(String localAddress, PropertyConfigurer configurer) {
-
+    public ZooKeeperServiceRegistry(PropertyConfigurer configurer) {
         String path = configurer.getOrDefault("zookeeper.registry.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
 
         // 服务注册地址
-        String registryAddress = configurer.getOrDefault("zookeeper.registry.address", "127.0.0.1:2181");
+        String address = configurer.getOrDefault("zookeeper.registry.address", "127.0.0.1:2181");
         int sessionTimeout = configurer.getOrDefault("zookeeper.registry.session-timeout", 5000);
-        keeper = ZooKeeperUtils.connectZooKeeper(registryAddress, sessionTimeout);
-        LOGGER.debug("Registering zookeeper service address = {}", registryAddress);
-
-        this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
+        LOGGER.debug("Registering zookeeper service address = {}", address);
+        keeper = ZooKeeperUtils.connectZooKeeper(address, sessionTimeout);
     }
 
     @Override
-    public void register(String serviceName, String data) {
-        // 创建服务节点
-        String serviceNode = rootPath + "/" + serviceName;
-        ZooKeeperUtils.createNode(keeper, serviceNode, serviceName);
-
+    public void register(String type, String key, String value) {
         // 创建服务提供者节点
-        String providerNode = rootPath + "/" + serviceName + "/providers" + localAddress;
-        ZooKeeperUtils.createNode(keeper, providerNode, data, CreateMode.EPHEMERAL);
-
-        LOGGER.debug("Register a service provider which provides {}.", serviceName);
+        String providerNode = rootPath + "/" + type + "/providers" + (key.charAt(0) == '/' ? key : "/" + key);
+        ZooKeeperUtils.createNode(keeper, providerNode, value, CreateMode.EPHEMERAL);
     }
 
     @Override
-    public void unregister(String serviceName) {
-        // 移除服务提供者节点
-        String providerNode = rootPath + "/" + serviceName + "/providers" + localAddress;
+    public void unregister(String type, String key) {
+        String providerNode = rootPath + "/" + type + "/providers" + (key.charAt(0) == '/' ? key : "/" + key);
         ZooKeeperUtils.deleteNode(keeper, providerNode);
-
-        LOGGER.debug("Unregister a service provider which provides {}.", serviceName);
+        LOGGER.debug("Unregister a service provider which provides {}.", type);
     }
 }

@@ -4,8 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.Watcher.Event;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +16,6 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
 public class ZooKeeperServiceMonitor implements ServiceMonitor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceMonitor.class);
-
-    private final String localAddress; // 本地地址
 
     private final ZooKeeper keeper;
     private final String rootPath;
@@ -36,8 +34,6 @@ public class ZooKeeperServiceMonitor implements ServiceMonitor {
         int sessionTimeout = configurer.getOrDefault("zookeeper.monitor.session-timeout", 5000);
         keeper = ZooKeeperUtils.connectZooKeeper(monitorAddress, sessionTimeout);
         LOGGER.debug("Monitoring zookeeper service address = {}", monitorAddress);
-
-        this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
     }
 
     @Override
@@ -67,14 +63,4 @@ public class ZooKeeperServiceMonitor implements ServiceMonitor {
         ZooKeeperUtils.watchChildrenList(keeper, providerPath, serviceName, handleProvider);
         ZooKeeperUtils.watchChildrenList(keeper, consumerPath, serviceName, handleConsumer);
     }
-
-    /**
-     * 本地地址
-     * 
-     * @return
-     */
-    public String localAddress() {
-        return localAddress;
-    }
-
 }

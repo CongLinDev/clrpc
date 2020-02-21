@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.RpcConsumerOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
@@ -163,8 +162,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private ConsumerContext initContext(RpcConsumerOption option) {
         ConsumerContext context = new BasicConsumerContext();
 
-        // 设置本地地址，服务消费者可能连接多个服务提供者，端口号设为0
-        context.setLocalAddress(IPAddressUtils.localAddress());
         // 设置属性配置器
         context.setPropertyConfigurer(configurer());
 

@@ -61,6 +61,16 @@ public final class IPAddressUtils {
     }
 
     /**
+     * 返回本地地址和给定端口号拼接的字符串
+     * 
+     * @param address
+     * @return
+     */
+    public static String localAddressString(InetSocketAddress address) {
+        return localAddressString(address.getPort());
+    }
+
+    /**
      * 返回本地地址
      * 
      * @param port

@@ -10,13 +10,13 @@ import conglin.clrpc.common.Pair;
  * 
  * 用于服务消费者监视 注册中心 中服务提供者的状态变更 以便及时通知服务消费者
  */
-public interface ServiceDiscovery extends Registerable {
+public interface ServiceDiscovery extends ServiceRegistry {
     /**
      * 发现服务
      * 
      * @param serviceName
-     * @param updateMethod
+     * @param updater
      * @return
      */
-    void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod);
+    void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updater);
 }

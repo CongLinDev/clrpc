@@ -1,6 +1,5 @@
 package conglin.clrpc.registry;
 
-import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
@@ -23,16 +22,10 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceDiscovery.class);
 
-    private final String localAddress; // 本地地址
-
+    private final String rootPath; // zookeeper根地址
     private final ZooKeeper keeper;
-    private final String rootPath;
 
-    public ZooKeeperServiceDiscovery(InetSocketAddress localAddress, PropertyConfigurer configurer) {
-        this(localAddress.toString(), configurer);
-    }
-
-    public ZooKeeperServiceDiscovery(String localAddress, PropertyConfigurer configurer) {
+    public ZooKeeperServiceDiscovery(PropertyConfigurer configurer) {
 
         String path = configurer.getOrDefault("zookeeper.discovery.root-path", "/clrpc");
         rootPath = path.endsWith("/") ? path + "service" : path + "/service";
@@ -42,34 +35,27 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
         int sessionTimeout = configurer.getOrDefault("zookeeper.discovery.session-timeout", 5000);
         keeper = ZooKeeperUtils.connectZooKeeper(discoveryAddress, sessionTimeout);
         LOGGER.debug("Discovering zookeeper service address = {}", discoveryAddress);
-
-        this.localAddress = localAddress.charAt(0) == '/' ? localAddress : "/" + localAddress;
     }
 
     @Override
-    public void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
-        String providerNodes = rootPath + "/" + serviceName + "/providers";
-        ZooKeeperUtils.watchChildrenList(keeper, providerNodes, provider -> updateMethod.accept(serviceName, provider));
+    public void discover(String type, BiConsumer<String, Collection<Pair<String, String>>> updater) {
+        String providerNodes = rootPath + "/" + type + "/providers";
+        ZooKeeperUtils.watchChildrenList(keeper, providerNodes, provider -> updater.accept(type, provider));
     }
 
     @Override
-    public void register(String serviceName, String data) {
-        // 创建服务节点
-        String serviceNode = rootPath + "/" + serviceName;
-        ZooKeeperUtils.createNode(keeper, serviceNode, serviceName);
-        // 创建消费者节点
-        String consumerNode = rootPath + "/" + serviceName + "/consumers" + localAddress;
-        ZooKeeperUtils.createNode(keeper, consumerNode, data, CreateMode.EPHEMERAL);
-
-        LOGGER.debug("Register a service consumer which consumers {}.", serviceName);
+    public void register(String type, String key, String value) {
+        // 创建服务提供者节点
+        String consumerNode = rootPath + "/" + type + "/consumers" + (key.charAt(0) == '/' ? key : "/" + key);
+        ZooKeeperUtils.createNode(keeper, consumerNode, value, CreateMode.EPHEMERAL);
+        LOGGER.debug("Register a service consumer which consumers {}.", type);
     }
 
     @Override
-    public void unregister(String serviceName) {
-        // 移除服务消费者节点
-        String consumerNode = rootPath + "/" + serviceName + "/consumers" + localAddress;
+    public void unregister(String type, String key) {
+        String consumerNode = rootPath + "/" + type + "/consumers" + (key.charAt(0) == '/' ? key : "/" + key);
         ZooKeeperUtils.deleteNode(keeper, consumerNode);
 
-        LOGGER.debug("Unregister a service consumer which consumers {}.", serviceName);
+        LOGGER.debug("Unregister a service consumer which consumers {}.", type);
     }
 }

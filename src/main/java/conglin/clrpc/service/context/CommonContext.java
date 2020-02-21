@@ -1,6 +1,5 @@
 package conglin.clrpc.service.context;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -35,18 +34,6 @@ public interface CommonContext {
      * @param propertyConfigurer
      */
     void setPropertyConfigurer(PropertyConfigurer propertyConfigurer);
-
-    /**
-     * 获取本地地址
-     * 
-     * @return
-     */
-    InetSocketAddress getLocalAddress();
-
-    /**
-     * 设置本地地址
-     */
-    void setLocalAddress(InetSocketAddress localAddress);
 
     /**
      * 获取序列化处理器

@@ -58,6 +58,6 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
      */
     protected void printNodeInfo(String serviceName, Collection<Pair<String, String>> nodeList) {
         System.out.println("Service : " + serviceName);
-        nodeList.forEach((node) -> System.out.println(node.getFirst() + "--->" + node.getSecond()));
+        nodeList.forEach(node -> System.out.println(node.getFirst() + "--->" + node.getSecond()));
     }
 }

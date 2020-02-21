@@ -88,7 +88,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     public void start(ConsumerContext context) {
         this.context = context;
-        serviceDiscovery = new ZooKeeperServiceDiscovery(context.getLocalAddress(), context.getPropertyConfigurer());
+        serviceDiscovery = new ZooKeeperServiceDiscovery(context.getPropertyConfigurer());
         initContext(context);
     }
 
@@ -99,6 +99,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     protected void initContext(ConsumerContext context) {
         context.setExecutorService(getExecutorService());
+        context.setServiceRegister(serviceDiscovery);
         context.setFuturesHolder(this);
     }
 
@@ -124,9 +125,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      * @param updateMethod
      */
     public void findService(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
-        String metaInfo = context.getPropertyConfigurer()
-                .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString();
-        serviceDiscovery.register(serviceName, metaInfo);
         serviceDiscovery.discover(serviceName, updateMethod);
     }
 
