@@ -62,7 +62,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
             return publish(serviceBean);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | NoSuchMethodException | SecurityException e) {
-            LOGGER.error("Can not publish service. Cause={}", e.getMessage());
+            LOGGER.error("Can not publish service. Cause: {}", e.getMessage());
         }
         return this;
     }

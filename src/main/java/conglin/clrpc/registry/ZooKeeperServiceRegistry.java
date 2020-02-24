@@ -35,13 +35,13 @@ public class ZooKeeperServiceRegistry implements ServiceRegistry {
     @Override
     public void register(String type, String key, String value) {
         // 创建服务提供者节点
-        String providerNode = rootPath + "/" + type + "/providers" + (key.charAt(0) == '/' ? key : "/" + key);
+        String providerNode = rootPath + "/" + type + "/providers" + (key.startsWith("/") ? key : "/" + key);
         ZooKeeperUtils.createNode(keeper, providerNode, value, CreateMode.EPHEMERAL);
     }
 
     @Override
     public void unregister(String type, String key) {
-        String providerNode = rootPath + "/" + type + "/providers" + (key.charAt(0) == '/' ? key : "/" + key);
+        String providerNode = rootPath + "/" + type + "/providers" + (key.startsWith("/") ? key : "/" + key);
         ZooKeeperUtils.deleteNode(keeper, providerNode);
         LOGGER.debug("Unregister a service provider which provides {}.", type);
     }

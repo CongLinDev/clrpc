@@ -46,14 +46,14 @@ public class ZooKeeperServiceDiscovery implements ServiceDiscovery {
     @Override
     public void register(String type, String key, String value) {
         // 创建服务提供者节点
-        String consumerNode = rootPath + "/" + type + "/consumers" + (key.charAt(0) == '/' ? key : "/" + key);
+        String consumerNode = rootPath + "/" + type + "/consumers" + (key.startsWith("/") ? key : "/" + key);
         ZooKeeperUtils.createNode(keeper, consumerNode, value, CreateMode.EPHEMERAL);
         LOGGER.debug("Register a service consumer which consumers {}.", type);
     }
 
     @Override
     public void unregister(String type, String key) {
-        String consumerNode = rootPath + "/" + type + "/consumers" + (key.charAt(0) == '/' ? key : "/" + key);
+        String consumerNode = rootPath + "/" + type + "/consumers" + (key.startsWith("/") ? key : "/" + key);
         ZooKeeperUtils.deleteNode(keeper, consumerNode);
 
         LOGGER.debug("Unregister a service consumer which consumers {}.", type);

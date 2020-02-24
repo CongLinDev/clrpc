@@ -87,7 +87,9 @@ public final class ZooKeeperUtils {
             LOGGER.debug("ZooKeeper address={} is connecting...", address);
             countDownLatch.await();
         } catch (IOException | InterruptedException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("ZooKeeper address={} connected failed. Cause: {}", address, e.getMessage());
+            if (countDownLatch.getCount() == 1) // count down
+                countDownLatch.countDown();
         }
         return keeper;
     }
@@ -101,9 +103,9 @@ public final class ZooKeeperUtils {
         if (keeper != null && keeper.getState().isAlive()) {
             try {
                 keeper.close();
-                LOGGER.debug("ZooKeeper session close success.");
+                LOGGER.debug("ZooKeeper session(id={}) close success.", keeper.getSessionId());
             } catch (InterruptedException e) {
-                LOGGER.error("ZooKeeper session close failed.", e);
+                LOGGER.error("ZooKeeper session close failed. Cause: {}", e.getMessage());
             }
         }
     }
@@ -150,14 +152,13 @@ public final class ZooKeeperUtils {
      */
     public static String createNode(final ZooKeeper keeper, String path, String data, CreateMode mode) {
         // 创建上级节点
-        int index = path.lastIndexOf('/');
-        createNode(keeper, path.substring(0, index));
+        createNode(keeper, path.substring(0, path.lastIndexOf('/')));
 
         try {
             Stat stat = keeper.exists(path, false);
             if (stat == null) {
                 String subPath = keeper.create(path, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, mode);
-                LOGGER.debug("Create zookeeper node : {}", subPath);
+                LOGGER.debug("Zookeeper create {} node whose path is {}", mode, subPath);
                 return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
@@ -183,7 +184,7 @@ public final class ZooKeeperUtils {
                 String higherLevelPath = path.substring(0, index);
                 createNode(keeper, higherLevelPath);
                 String subPath = keeper.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-                LOGGER.debug("Create zookeeper node : {}", subPath);
+                LOGGER.debug("Zookeeper create PERSISTENT node whose path is {}", subPath);
                 return subPath;
             }
         } catch (KeeperException | InterruptedException e) {
@@ -201,13 +202,13 @@ public final class ZooKeeperUtils {
      */
     public static String deleteNode(final ZooKeeper keeper, String path) {
         try {
-            List<String> subNodes = keeper.getChildren(path, false);
-            for (String subNode : subNodes)
-                keeper.delete(path + "/" + subNode, -1);
+            // 递归删除子节点
+            listChildrenNode(keeper, path, null).forEach(sub -> deleteNode(keeper, path + "/" + sub));
+            // 删除当前节点
             keeper.delete(path, -1);
             return path;
-        } catch (InterruptedException | KeeperException e) {
-            LOGGER.error(e.getMessage());
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.error("ZooKeeper delete node failed. Cause: {}.", e.getMessage());
         }
         return null;
     }
@@ -218,13 +219,13 @@ public final class ZooKeeperUtils {
      * @param keeper
      * @param path
      * @param watcher
-     * @return
+     * @return 节点的值
      */
     public static String watchNode(final ZooKeeper keeper, String path, Watcher watcher) {
         try {
             return new String(keeper.getData(path, watcher, null));
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.debug("ZooKeeper watch node failed.", e);
+            LOGGER.error("ZooKeeper watch node failed. Cause: {}", e.getMessage());
         }
         return null;
     }
@@ -382,7 +383,7 @@ public final class ZooKeeperUtils {
             keeper.removeWatches(path, watcher, watcherType, true);
             LOGGER.debug("ZooKeeper remove watcher of path={}", path);
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.error("ZooKeeper remove watcher of path={} failed. Cause={}", path, e);
+            LOGGER.error("ZooKeeper remove watcher of path={} failed. Cause: {}", path, e);
         }
     }
 
@@ -408,7 +409,7 @@ public final class ZooKeeperUtils {
             keeper.removeAllWatches(path, watcherType, true);
             LOGGER.debug("ZooKeeper remove all watchers of path={}", path);
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.error("ZooKeeper remove all watchers of path={} failed. Cause=", path, e);
+            LOGGER.error("ZooKeeper remove all watchers of path={} failed. Cause: {}", path, e);
         }
     }
 
@@ -432,7 +433,7 @@ public final class ZooKeeperUtils {
                 String nodeData = new String(keeper.getData(nodePath, false, null));
                 dataMap.put(node, nodeData);
             } catch (KeeperException | InterruptedException e) {
-                LOGGER.debug("ZooKeeper get node Data path={} failed. Cause={}", nodePath, e);
+                LOGGER.debug("ZooKeeper get node Data path={} failed. Cause: {}", nodePath, e.getMessage());
             }
         }
         return dataMap;
@@ -459,7 +460,7 @@ public final class ZooKeeperUtils {
                 String nodeData = new String(keeper.getData(nodePath, false, null));
                 nodePairs.add(new Pair<>(node, nodeData));
             } catch (KeeperException | InterruptedException e) {
-                LOGGER.debug("ZooKeeper get node Data path={} failed. Cause={}", nodePath, e);
+                LOGGER.debug("ZooKeeper get node Data path={} failed. Cause: {}", nodePath, e);
             }
         }
         return nodePairs;
@@ -486,7 +487,7 @@ public final class ZooKeeperUtils {
                 String nodeData = new String(keeper.getData(nodePath, false, null));
                 dataList.add(nodeData);
             } catch (KeeperException | InterruptedException e) {
-                LOGGER.debug("ZooKeeper get node data path={} failed. Cause={}", nodePath, e);
+                LOGGER.debug("ZooKeeper get node data path={} failed. Cause: {}", nodePath, e);
             }
         }
         return dataList;
@@ -498,13 +499,15 @@ public final class ZooKeeperUtils {
      * @param keeper
      * @param path
      * @param watcher
-     * @return
+     * @return 返回子节点的名而不是绝对路径
      */
     public static Collection<String> listChildrenNode(final ZooKeeper keeper, String path, Watcher watcher) {
         try {
             return keeper.getChildren(path, watcher);
+        } catch (KeeperException.NoNodeException e) {
+            LOGGER.warn("ZooKeeper node(path={}) has no children node", path);
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.error("ZooKeeper get children node data path={} failed. Cause={}", path, e);
+            LOGGER.error("ZooKeeper get children node data path={} failed. Cause: {}", path, e);
         }
         return Collections.emptyList();
     }
@@ -535,7 +538,7 @@ public final class ZooKeeperUtils {
             keeper.setData(path, newData.getBytes(), version);
             return newData;
         } catch (KeeperException | InterruptedException e) {
-            LOGGER.error("ZooKeeper set node data path={} failed. Cause=", path, e);
+            LOGGER.error("ZooKeeper set node data path={} failed. Cause: {}", path, e);
         }
         return null;
     }

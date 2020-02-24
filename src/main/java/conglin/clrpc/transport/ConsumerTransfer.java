@@ -133,7 +133,7 @@ public class ConsumerTransfer {
                 throw new InterruptedException();
             }
         } catch (UnknownHostException | InterruptedException e) {
-            LOGGER.error("Cannot connect to remote provider {}. Cause={}", remoteAddress, e);
+            LOGGER.error("Cannot connect to remote provider {}. Cause: {}", remoteAddress, e.getMessage());
         }
         return null;
     }
