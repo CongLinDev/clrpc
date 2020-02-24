@@ -15,63 +15,61 @@
 ### Service Provider
 
 ```java
-    // 创建服务提供者
-    RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
+// 创建服务提供者
+RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
-    // 发布服务并开启服务
-    bootstrap.publish(ServiceBean1.class) // 配合 @conglin.clrpc.service.annotation.Service 注解
-            .publish(new ServiceBean2())  // 配合 @conglin.clrpc.service.annotation.Service 注解
-            .publish("service3", new ServiceBean3())
-            .start();
-    // 关闭服务提供者
-    bootstrap.stop();
-
+// 发布服务并开启服务
+bootstrap.publish(ServiceBean1.class) // 配合 @conglin.clrpc.service.annotation.Service 注解
+        .publish(new ServiceBean2())  // 配合 @conglin.clrpc.service.annotation.Service 注解
+        .publish("service3", new ServiceBean3())
+        .start();
+// 关闭服务提供者
+bootstrap.stop();
 ```
 
 ### Service Consumer
 
 ```java
-    // 创建服务消费者
-    RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-    // 开启服务消费者
-    bootstrap.start();
+// 创建服务消费者
+RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
+// 开启服务消费者
+bootstrap.start();
 
-    // 使用通用的服务
-    CommonProxy commonProxy = bootstrap.subscribe();
+// 使用通用的服务
+CommonProxy commonProxy = bootstrap.subscribe();
 
-    // 订阅同步服务
-    Interface1 i1 = bootstrap.subscribe("service1", Interface1.class);
-    Interface2 i2 = bootstrap.subscribe(Interface2.class); // 配合 @conglin.clrpc.service.annotation.Service 注解
+// 订阅同步服务
+Interface1 i1 = bootstrap.subscribe("service1", Interface1.class);
+Interface2 i2 = bootstrap.subscribe(Interface2.class); // 配合 @conglin.clrpc.service.annotation.Service 注解
 
-    // 订阅异步服务
-    ObjectProxy objectProxy = bootstrap.subscribe("service3");
+// 订阅异步服务
+ObjectProxy objectProxy = bootstrap.subscribe("service3");
 
-    // 订阅事务服务
-    TransactionProxy transactionProxy = bootstrap.subscribeTransaction();
+// 订阅事务服务
+TransactionProxy transactionProxy = bootstrap.subscribeTransaction();
 
-    // 下面是你的业务逻辑代码
-    // ......
+// 下面是你的业务逻辑代码
+// ......
 
-    // 关闭服务消费者
-    bootstrap.stop();
+// 关闭服务消费者
+bootstrap.stop();
 ```
 
 ### Service Monitor
 
 ```java
-    // 由监视器工厂创建监视器
-    RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
+// 由监视器工厂创建监视器
+RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
 
-    // 设置监视器的配置以及你需要监视的服务
-    // 并开启服务监视器
-    bootstrap.monitor("service1").monitor(Interface2.class).start();
+// 设置监视器的配置以及你需要监视的服务
+// 并开启服务监视器
+bootstrap.monitor("service1").monitor(Interface2.class).start();
 
-    // 下面是你的业务逻辑代码
-    // ......
+// 下面是你的业务逻辑代码
+// ......
 
-    // 关闭服务监视器
-    bootstrap.stop();
-
+// 关闭服务监视器
+bootstrap.stop();
 ```
 
 ## Architecture
@@ -167,7 +165,7 @@ Conclusion:
 
 **clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
 
-你只需要编写基于接口 `io.netty.channel.ChannelHandler` 的类且提供只有一个参数（类型如下表）的构造方法，并告知 **clrpc** 该类作用的时机即可完成对消息处理的扩展。
+使用者只需要提供实现接口 `io.netty.channel.ChannelHandler` 的类且存在一个参数（类型如下表）的构造方法，并在配置文件中告知 **clrpc** 该类作用的时机即可完成对消息处理的扩展。
 
 |   Role   |                     Type                      | Remark |
 | :------: | :-------------------------------------------: | :----: |
