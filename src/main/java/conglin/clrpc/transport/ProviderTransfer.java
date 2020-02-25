@@ -32,10 +32,9 @@ public class ProviderTransfer {
         PropertyConfigurer configurer = context.getPropertyConfigurer();
         initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
                 configurer.getOrDefault("provider.thread.worker", 4));
-
+        int servicePort = configurer.getOrDefault("provider.port", 0);
         try {
-            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(context.getServicePort()))
-                    .sync();
+            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(servicePort)).sync();
             String localAddress = IPAddressUtils
                     .addressString((InetSocketAddress) channelFuture.channel().localAddress());
             if (channelFuture.isSuccess()) {
@@ -47,7 +46,7 @@ public class ProviderTransfer {
             }
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            LOGGER.error("Cannot bind port {}.", context.getServicePort());
+            LOGGER.error("Cannot bind port {}.", servicePort);
         }
     }
 

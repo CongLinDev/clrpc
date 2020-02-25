@@ -133,8 +133,6 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     private ProviderContext initContext(RpcProviderOption option) {
         ProviderContext context = new BasicProviderContext();
 
-        // 设置服务端口
-        context.setServicePort(configurer().getOrDefault("provider.port", 0));
         // 设置属性配置器
         context.setPropertyConfigurer(configurer());
         // 设置序列化处理器

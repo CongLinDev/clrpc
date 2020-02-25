@@ -32,20 +32,4 @@ public interface ProviderContext extends CommonContext {
      * @param serviceRegister
      */
     void setServiceRegister(Consumer<String> serviceRegister);
-
-    /**
-     * 获取服务开放的端口
-     * 
-     * @return
-     */
-    int getServicePort();
-
-    /**
-     * 设置服务开放的端口
-     * 
-     * @param port
-     * @return
-     */
-    void setServicePort(int port);
-
 }

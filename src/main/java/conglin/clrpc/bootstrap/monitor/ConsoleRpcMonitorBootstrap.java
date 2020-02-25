@@ -26,7 +26,8 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
         LOGGER.info("Console monitor started.");
         try {
-            Thread.sleep(Integer.MAX_VALUE);
+            // Thread.sleep(Integer.MAX_VALUE);
+            this.wait();
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
@@ -35,6 +36,7 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     @Override
     public void stop() {
         LOGGER.info("Console monitor stoped.");
+        this.notify();
         super.stop();
     }
 

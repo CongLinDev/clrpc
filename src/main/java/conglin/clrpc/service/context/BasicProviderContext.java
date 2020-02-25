@@ -28,16 +28,4 @@ public class BasicProviderContext extends BasicCommonContext implements Provider
     public void setServiceRegister(Consumer<String> serviceRegister) {
         this.serviceRegister = serviceRegister;
     }
-
-    private int servicePort;
-
-    @Override
-    public int getServicePort() {
-        return servicePort;
-    }
-
-    @Override
-    public void setServicePort(int port) {
-        this.servicePort = port;
-    }
 }

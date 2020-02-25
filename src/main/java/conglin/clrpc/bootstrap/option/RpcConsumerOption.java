@@ -2,10 +2,25 @@ package conglin.clrpc.bootstrap.option;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
+import conglin.clrpc.common.serialization.ProtostuffSerializationHandler;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
 
-public class RpcConsumerOption extends RpcCommonOption {
+public class RpcConsumerOption {
+
+    // 序列化处理器
+    private SerializationHandler serializationHandler;
+
+    /**
+     * 获取序列化处理器，若未设置则返回默认值
+     * 
+     * @return the serializationHandler
+     */
+    public SerializationHandler getSerializationHandler() {
+        if (serializationHandler == null)
+            serializationHandler = new ProtostuffSerializationHandler();
+        return serializationHandler;
+    }
 
     /**
      * 设置序列化处理器
@@ -14,7 +29,7 @@ public class RpcConsumerOption extends RpcCommonOption {
      * @return this
      */
     public RpcConsumerOption setSerializationHandler(SerializationHandler serializationHandler) {
-        super.serializationHandler(serializationHandler);
+        this.serializationHandler = serializationHandler;
         return this;
     }
 
