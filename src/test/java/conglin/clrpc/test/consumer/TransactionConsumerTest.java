@@ -14,7 +14,9 @@ public class TransactionConsumerTest {
         bootstrap.start();
         TransactionProxy proxy = bootstrap.subscribeTransaction();
 
-        proxy.begin().call("HelloService", "hello").call("UserService", "getUser", 1256L, "小明");
+        proxy.begin();
+        RpcFuture f1 = proxy.call("HelloService", "hello");
+        RpcFuture f2 = proxy.call("UserService", "getUser", 1256L, "小明");
 
         try {
             System.out.println("sleep...");
@@ -33,11 +35,13 @@ public class TransactionConsumerTest {
 
             @Override
             public void fail(Exception exception) {
-                System.out.println("fail");
+                System.out.println("fail...");
             }
         });
         try {
-            future.get();
+            System.out.println(future.get());
+            System.out.println(f1.get());
+            System.out.println(f2.get());
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }

@@ -2,20 +2,24 @@ package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
+import conglin.clrpc.transport.message.BasicRequest;
 
 public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, InvocationHandler {
 
     // 代理服务名
     protected final String serviceName;
 
+    // ID生成器
+    protected final IdentifierGenerator identifierGenerator;
+
     public BasicObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender, identifierGenerator);
+        super(sender);
         this.serviceName = serviceName;
+        this.identifierGenerator = identifierGenerator;
     }
 
     @Override
@@ -23,15 +27,15 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
         String methodName = method.getName();
         if (Object.class == method.getDeclaringClass()) {
             switch (methodName) {
-            case "equals":
-                return proxy == args[0];
-            case "hashCode":
-                return System.identityHashCode(proxy);
-            case "toString":
-                return proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
-                        + ", with InvocationHandler " + this;
-            default:
-                throw new IllegalStateException(String.valueOf(method));
+                case "equals":
+                    return proxy == args[0];
+                case "hashCode":
+                    return System.identityHashCode(proxy);
+                case "toString":
+                    return proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
+                            + ", with InvocationHandler " + this;
+                default:
+                    throw new IllegalStateException(String.valueOf(method));
             }
         }
 
@@ -41,28 +45,20 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
 
     @Override
     public RpcFuture call(String methodName, Object... args) {
-        return super.doCall(serviceName, methodName, args);
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
+        request.setServiceName(serviceName);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        return super.call(request);
     }
 
     @Override
     public RpcFuture call(String remoteAddress, String methodName, Object... args) {
-        return super.doCall(remoteAddress, serviceName, methodName, args);
-    }
-
-    @Override
-    public RpcFuture call(Method method, Object... args) {
-        return super.doCall(serviceName, method, args);
-    }
-
-    @Override
-    public RpcFuture call(String remoteAddress, Method method, Object... args) {
-        return super.doCall(remoteAddress, serviceName, method, args);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T convert(Class<T> interfaceClass) {
-        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass }, this);
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
+        request.setServiceName(serviceName);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        return super.call(request, remoteAddress);
     }
 
     /**

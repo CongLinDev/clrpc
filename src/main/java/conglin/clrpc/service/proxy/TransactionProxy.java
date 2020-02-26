@@ -10,18 +10,18 @@ public interface TransactionProxy {
     /**
      * 开始一个事务，默认非顺序执行
      * 
-     * @return this object
      * @throws TransactionException
      */
-    TransactionProxy begin() throws TransactionException;
+    default void begin() throws TransactionException {
+        begin(false);
+    }
 
     /**
      * 开始一个事务
      * @param serial 是否顺序执行
-     * @return this object
      * @throws TransactionException
      */
-    TransactionProxy begin(boolean serial) throws TransactionException;
+    void begin(boolean serial) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
@@ -29,10 +29,10 @@ public interface TransactionProxy {
      * @param serviceName 服务名
      * @param method      服务方法
      * @param args        服务参数
-     * @return this object
+     * @return sub future
      * @throws TransactionException
      */
-    TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException;
+    RpcFuture call(String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
@@ -40,15 +40,15 @@ public interface TransactionProxy {
      * @param serviceName 服务名
      * @param method      服务方法
      * @param args        服务参数
-     * @return this object
+     * @return sub future
      * @throws TransactionException
      */
-    TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException;
+    RpcFuture call(String serviceName, Method method, Object... args) throws TransactionException;
 
     /**
-     * 提交服务
+     * 提交事务
      * 
-     * @return Future
+     * @return transaction future
      * @throws TransactionException
      */
     RpcFuture commit() throws TransactionException;

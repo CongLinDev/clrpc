@@ -130,8 +130,9 @@ bootstrap.stop();
 
 + OS：Manjaro 19.0 Kyria
 + Kernel: x86_64 Linux 5.4.18-1-MANJARO
-+ CPU：Intel Core i5-6300HQ @ 4x 3.2GHz
++ CPU：Intel Core i5-6300HQ @ 4x 2.30GHz
 + RAM: 11873 MB
++ JDK: openjdk-13.0.2
 
 ### Synchronous Test (without cache)
 

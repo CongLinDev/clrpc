@@ -26,6 +26,9 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
 
+    // ID生成器
+    protected final IdentifierGenerator identifierGenerator;
+
     protected long currentTransactionId;
     protected boolean serial; // 是否顺序执行
 
@@ -35,38 +38,32 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator,
             PropertyConfigurer configurer) {
-        super(sender, identifierGenerator);
+        super(sender);
+        this.identifierGenerator = identifierGenerator;
         helper = new ZooKeeperTransactionHelper(configurer);
     }
 
     @Override
-    public TransactionProxy begin() throws TransactionException {
-        return begin(false);
-    }
-
-    @Override
-    public TransactionProxy begin(boolean serial) throws TransactionException {
+    public void begin(boolean serial) throws TransactionException {
         this.currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
         this.serial = serial;
         this.future = new TransactionFuture(currentTransactionId);
         LOGGER.debug("Transaction id={} will begin.", currentTransactionId);
         helper.begin(currentTransactionId); // 开启事务
-        return this;
     }
 
     @Override
-    public TransactionProxy call(String serviceName, String method, Object... args) throws TransactionException {
+    public RpcFuture call(String serviceName, String method, Object... args) throws TransactionException {
         TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1, serial);
         request.setServiceName(serviceName);
         request.setMethodName(method);
         request.setParameters(args);
 
-        handleRequest(request);
-        return this;
+        return call(request);
     }
 
     @Override
-    public TransactionProxy call(String serviceName, Method method, Object... args) throws TransactionException {
+    public RpcFuture call(String serviceName, Method method, Object... args) throws TransactionException {
         return call(serviceName, method.getName(), args);
     }
 
@@ -94,12 +91,13 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
      * @param request
      * @throws TransactionException
      */
-    protected void handleRequest(TransactionRequest request) throws TransactionException {
+    protected RpcFuture call(TransactionRequest request) throws TransactionException {
         helper.prepare(currentTransactionId, request.getSerialId());
-        RpcFuture f = sender.sendRequest(request);
+        RpcFuture f = super.call(request);
         if (!future.combine(f)) {
             throw new TransactionException("Request added failed. " + request);
         }
+        return f;
     }
 
     @Override

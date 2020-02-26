@@ -1,10 +1,9 @@
 package conglin.clrpc.service.proxy;
 
-import java.lang.reflect.Method;
-
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
+import conglin.clrpc.transport.message.BasicRequest;
 
 /**
  * 通用的代理
@@ -13,8 +12,12 @@ import conglin.clrpc.transport.component.RequestSender;
  */
 public class CommonProxy extends AbstractProxy {
 
+    // ID生成器
+    protected final IdentifierGenerator identifierGenerator;
+
     public CommonProxy(RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender, identifierGenerator);
+        super(sender);
+        this.identifierGenerator = identifierGenerator;
     }
 
     /**
@@ -26,7 +29,11 @@ public class CommonProxy extends AbstractProxy {
      * @return future
      */
     public RpcFuture call(String serviceName, String methodName, Object... args) {
-        return super.doCall(serviceName, methodName, args);
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
+        request.setServiceName(serviceName);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        return super.call(request);
     }
 
     /**
@@ -40,33 +47,10 @@ public class CommonProxy extends AbstractProxy {
      * @return future
      */
     public RpcFuture call(String remoteAddress, String serviceName, String methodName, Object... args) {
-        return super.doCall(remoteAddress, serviceName, methodName, args);
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
+        request.setServiceName(serviceName);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        return super.call(request, remoteAddress);
     }
-
-    /**
-     * 异步调用函数 使用负载均衡策略
-     * 
-     * @param serviceName 服务名
-     * @param method      方法
-     * @param args        参数
-     * @return future
-     */
-    public RpcFuture call(String serviceName, Method method, Object... args) {
-        return super.doCall(serviceName, method, args);
-    }
-
-    /**
-     * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(Exception)} 中使用该方法进行重试或回滚
-     * 而不应该在一般的调用时使用该方法
-     * 
-     * @param remoteAddress 指定远程地址
-     * @param serviceName   服务名
-     * @param method        方法
-     * @param args          参数
-     * @return future
-     */
-    public RpcFuture call(String remoteAddress, String serviceName, Method method, Object... args) {
-        return super.doCall(remoteAddress, serviceName, method, args);
-    }
-
 }

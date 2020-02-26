@@ -7,7 +7,7 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
 /**
  * clrpc 为了性能选择复用部分资源 全局资源管理器使用计数标记的方法管理资源
  * 
- * 若你想使用这些资源，请在使用前调用 {@link GlobalResourceManager#retain()} 方法
+ * 若你想使用这些资源，请在使用前调用 {@link GlobalResourceManager#acquire()} 方法
  * 若你不再使用这些资源，请在使用后调用 {@link GlobalResourceManager#release()} 方法
  */
 public class GlobalResourceManager {

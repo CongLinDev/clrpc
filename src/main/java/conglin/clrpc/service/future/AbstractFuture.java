@@ -121,7 +121,7 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public boolean addCallback(Callback callback) {
-        if (futureCallback == null)
+        if (futureCallback != null)
             return false;
         this.futureCallback = callback;
         if (isDone())
