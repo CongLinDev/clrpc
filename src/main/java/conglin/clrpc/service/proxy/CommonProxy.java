@@ -46,11 +46,11 @@ public class CommonProxy extends AbstractProxy {
      * @param args          参数
      * @return future
      */
-    public RpcFuture call(String remoteAddress, String serviceName, String methodName, Object... args) {
+    public RpcFuture callWith(String remoteAddress, String serviceName, String methodName, Object... args) {
         BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
         request.setServiceName(serviceName);
         request.setMethodName(methodName);
         request.setParameters(args);
-        return super.call(request, remoteAddress);
+        return super.callWith(remoteAddress, request);
     }
 }

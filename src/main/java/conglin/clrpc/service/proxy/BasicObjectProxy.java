@@ -53,12 +53,12 @@ public class BasicObjectProxy extends AbstractProxy implements ObjectProxy, Invo
     }
 
     @Override
-    public RpcFuture call(String remoteAddress, String methodName, Object... args) {
+    public RpcFuture callWith(String remoteAddress, String methodName, Object... args) {
         BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
         request.setServiceName(serviceName);
         request.setMethodName(methodName);
         request.setParameters(args);
-        return super.call(request, remoteAddress);
+        return super.callWith(remoteAddress, request);
     }
 
     /**

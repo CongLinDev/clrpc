@@ -24,5 +24,5 @@ public interface ObjectProxy {
      * @param args          参数
      * @return
      */
-    RpcFuture call(String remoteAddress, String methodName, Object... args);
+    RpcFuture callWith(String remoteAddress, String methodName, Object... args);
 }
