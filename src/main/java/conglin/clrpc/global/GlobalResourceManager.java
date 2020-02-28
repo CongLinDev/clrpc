@@ -18,6 +18,11 @@ public class GlobalResourceManager {
         counter = new AtomicInteger();
     }
 
+    /**
+     * 获取manager对象
+     * 
+     * @return
+     */
     public static GlobalResourceManager manager() {
         return SingletonHolder.INSTANCE;
     }

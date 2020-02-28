@@ -6,11 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
-import conglin.clrpc.transport.message.CacheableResponse;
+import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.transport.message.Message;
-import conglin.clrpc.transport.message.TransactionRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -29,44 +26,13 @@ public class CommonDecoder extends ByteToMessageDecoder {
     // 配置编码器
     private final SerializationHandler serializationHandler;
 
+    // 消息类型管理
+    private final GlobalMessageManager manager;
+
     public CommonDecoder(SerializationHandler serializationHandler) {
         super();
         this.serializationHandler = serializationHandler;
-    }
-
-    /**
-     * 解码
-     * 
-     * @param messageHeader
-     * @param messageBody
-     * @return
-     */
-    protected Object decode(int messageHeader, byte[] messageBody) {
-        Object result = null;
-
-        /**
-         * 根据不同的消息类型，对消息进行解码
-         * 
-         * 消息类型占用一个字节
-         */
-        int messageType = messageHeader & Message.MESSAGE_TYPE_MASK;
-        switch (messageType) {
-        case BasicRequest.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, BasicRequest.class);
-            break;
-        case BasicResponse.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, BasicResponse.class);
-            break;
-        case CacheableResponse.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, CacheableResponse.class);
-            break;
-        case TransactionRequest.MESSAGE_TYPE:
-            result = serializationHandler.deserialize(messageBody, TransactionRequest.class);
-            break;
-        default:
-            LOGGER.error("Can not decode message type={}", messageType);
-        }
-        return result;
+        manager = GlobalMessageManager.manager();
     }
 
     @Override
@@ -88,9 +54,10 @@ public class CommonDecoder extends ByteToMessageDecoder {
             return;
         }
 
+        int messageType = messageHeader & Message.MESSAGE_TYPE_MASK;
+        Class<? extends Message> clazz = manager.getMessageClass(messageType);
         byte[] messageBody = new byte[dataLengh];
         in.readBytes(messageBody);
-
-        out.add(decode(messageHeader, messageBody));
+        out.add(serializationHandler.deserialize(messageBody, clazz));
     }
 }

@@ -1,6 +1,7 @@
 package conglin.clrpc.bootstrap.monitor;
 
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,8 @@ import conglin.clrpc.common.config.PropertyConfigurer;
 public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleRpcMonitorBootstrap.class);
+    
+    private final CountDownLatch latch;
 
     public ConsoleRpcMonitorBootstrap() {
         this(null);
@@ -18,6 +21,7 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
     public ConsoleRpcMonitorBootstrap(PropertyConfigurer configurer) {
         super(configurer);
+        latch = new CountDownLatch(1);
     }
 
     @Override
@@ -26,8 +30,7 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
 
         LOGGER.info("Console monitor started.");
         try {
-            // Thread.sleep(Integer.MAX_VALUE);
-            this.wait();
+            latch.await();
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
@@ -36,7 +39,7 @@ public class ConsoleRpcMonitorBootstrap extends AbstractRpcMonitorBootstrap {
     @Override
     public void stop() {
         LOGGER.info("Console monitor stoped.");
-        this.notify();
+        latch.countDown();
         super.stop();
     }
 
