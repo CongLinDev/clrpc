@@ -12,7 +12,7 @@ public class HelloServiceSyncConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        HelloService helloService = bootstrap.subscribe("HelloService", HelloService.class);
+        HelloService helloService = bootstrap.refreshAndSubscribe("HelloService", HelloService.class);
         String s = helloService.hello();
         System.out.println(s);
 

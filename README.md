@@ -34,6 +34,8 @@ bootstrap.stop();
 RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
+// 提前刷新需要订阅服务，亦可直接调用 refreshAndSubscribe 刷新并获取代理
+bootstrap.refresh("service1").refresh("service2").refresh("service3");
 
 // 使用通用的服务
 CommonProxy commonProxy = bootstrap.subscribe();
@@ -118,11 +120,15 @@ bootstrap.stop();
 |   service.thread-pool.<br>keep-alive    |          Integer          |  YES  |      1000      | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
 |      service.thread-pool.<br>queue      |          Integer          |  YES  |       10       |                        业务线程池队列数                        |
 
-### Config Items Remark
+#### About customized meta infomation
 
 在一个进程中，针对不同的服务可以使用不同的元信息。
 
 例如服务提供者提供了 `AService` 和 `BService`，那么发布的元信息在配置文件中分别对应于 `meta.provider.AService` 和 `meta.provider.BService` 指向的具体元信息；若具体元信息不存在，则发布 `meta.provider.*` 对应的通用元信息；若通用元信息不存在，则发布空信息。
+
+#### About customized channel handler
+
+[Click me](#Extension).
 
 ## Test
 

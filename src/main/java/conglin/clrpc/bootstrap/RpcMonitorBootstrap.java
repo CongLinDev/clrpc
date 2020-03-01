@@ -5,13 +5,17 @@ import java.util.Collection;
 /**
  * RPC monitor端启动类
  * 
- * 使用如下代码启动 <blockquote>
+ * 使用如下代码启动
+ * 
+ * <blockquote>
  * 
  * <pre>
- *     RpcMonitorBootstrap bootstrap = ...; // choose you like 
- *     bootstrap.monitor("UserService")
- *              .monitor("AddressService")
- *              .start();
+ * 
+ * RpcMonitorBootstrap bootstrap = ...; // choose you like 
+ * bootstrap.monitor("service1")
+ *          .monitor("service2")
+ *          .start();
+ * 
  * </pre>
  * 
  * </blockquote>

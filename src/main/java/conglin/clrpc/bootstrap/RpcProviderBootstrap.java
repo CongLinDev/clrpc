@@ -19,8 +19,10 @@ import io.netty.bootstrap.ServerBootstrap;
  * 使用如下代码启动 <blockquote>
  * 
  * <pre>
+ * 
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
  * bootstrap.publish(ServiceBean1.class).publish("service2", new ServiceBean2()).start();
+ * 
  * </pre>
  * 
  * </blockquote>

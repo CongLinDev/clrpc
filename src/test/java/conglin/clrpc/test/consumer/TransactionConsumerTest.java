@@ -13,7 +13,8 @@ public class TransactionConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
         TransactionProxy proxy = bootstrap.subscribeTransaction();
-
+        bootstrap.refresh("HelloService").refresh("UserService");
+        
         proxy.begin();
         RpcFuture f1 = proxy.call("HelloService", "hello");
         RpcFuture f2 = proxy.call("UserService", "getUser", 1256L, "小明");

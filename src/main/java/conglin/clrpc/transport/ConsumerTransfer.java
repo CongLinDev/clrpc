@@ -123,7 +123,8 @@ public class ConsumerTransfer {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
-                String localAddress = IPAddressUtils.addressString((InetSocketAddress)channelFuture.channel().localAddress());
+                String localAddress = IPAddressUtils
+                        .addressString((InetSocketAddress) channelFuture.channel().localAddress());
                 LOGGER.info("Consumer starts on {}", localAddress);
                 context.getServiceRegister().register(serviceName, localAddress, context.getPropertyConfigurer()
                         .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString());
@@ -167,12 +168,13 @@ public class ConsumerTransfer {
     }
 
     /**
-     * 手动刷新服务提供者
+     * 是否需要刷新 Provider
      * 
      * @param serviceName
+     * @return
      */
-    private void refreshProvider(String serviceName) {
-        context.getProviderRefresher().accept(serviceName);
+    public boolean needRefresh(String serviceName) {
+        return !loadBalancer.hasType(serviceName);
     }
 
     /**
@@ -198,13 +200,8 @@ public class ConsumerTransfer {
         @Override
         public Channel choose(String serviceName, BasicRequest request) {
             int random = adapter.apply(request);
-
+            // 不断尝试
             while (true) {
-                if (!loadBalancer.hasType(serviceName)) {
-                    refreshProvider(serviceName);
-                    continue;
-                }
-
                 Channel channel = loadBalancer.get(serviceName, random);
                 if (channel != null)
                     return channel;
@@ -221,11 +218,6 @@ public class ConsumerTransfer {
             int count = 0;
             // 尝试三次，若三次未成功，则放弃
             while (count < 3) {
-                if (!loadBalancer.hasType(serviceName)) {
-                    refreshProvider(serviceName);
-                    continue;
-                }
-
                 Channel channel = loadBalancer.get(serviceName, addition);
                 if (channel != null)
                     return channel;

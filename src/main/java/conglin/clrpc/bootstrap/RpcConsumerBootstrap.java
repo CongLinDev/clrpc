@@ -16,11 +16,14 @@ import conglin.clrpc.transport.ConsumerTransfer;
 /**
  * RPC consumer端启动类
  * 
- * 使用如下代码启动 <blockquote>
+ * 使用如下代码启动
+ * 
+ * <blockquote>
  * 
  * <pre>
  * RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
  * bootstrap.start();
+ * bootstrap.refresh("service1").refresh("service2").refresh("service3");
  * 
  * // 订阅同步服务
  * Interface1 i1 = bootstrap.subscribe("service1", Interface1.class);
@@ -56,7 +59,9 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 获取通用代理
      * 
-     * @return
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 刷新
+     * 
+     * @return proxy
      */
     public CommonProxy subscribe() {
         return SERVICE_HANDLER.getPrxoy();
@@ -67,9 +72,11 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * 
      * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
      * 
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 刷新
+     * 
      * @param <T>
      * @param interfaceClass 接口类
-     * @return 返回代理服务类
+     * @return 代理服务对象
      */
     public <T> T subscribe(Class<T> interfaceClass) {
         return subscribe(getServiceName(interfaceClass), interfaceClass);
@@ -78,50 +85,107 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 订阅同步服务，获取同步服务代理
      * 
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 刷新
+     * 
      * @param <T>
      * @param serviceName    服务名
      * @param interfaceClass 接口类
-     * @return 返回代理服务类
+     * @return 代理服务对象
      */
     public <T> T subscribe(String serviceName, Class<T> interfaceClass) {
         if (serviceName == null)
             throw new NullPointerException();
         LOGGER.info("Subscribe synchronous service named {}.", serviceName);
-        refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
     }
 
     /**
      * 订阅异步服务，获取异步服务代理
      * 
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 刷新
+     * 
      * @param serviceName 返回代理服务类
-     * @return 返回代理服务类
+     * @return 代理服务类
      */
     public ObjectProxy subscribe(String serviceName) {
         if (serviceName == null)
             throw new NullPointerException();
         LOGGER.info("Subscribe asynchronous service named {}.", serviceName);
-        refreshProvider(serviceName);
         return SERVICE_HANDLER.getPrxoy(serviceName);
+    }
+
+    /**
+     * 刷新并订阅同步服务，获取同步服务代理
+     * 
+     * 该方法相当与调用 {@link RpcConsumerBootstrap#refresh(String)} 和
+     * {@link RpcConsumerBootstrap#subscribe(Class)}
+     * 
+     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
+     * 
+     * @param <T>
+     * @param interfaceClass 接口类
+     * @return 代理服务对象
+     */
+    public <T> T refreshAndSubscribe(Class<T> interfaceClass) {
+        String serviceName = getServiceName(interfaceClass);
+        return refreshAndSubscribe(serviceName, interfaceClass);
+    }
+
+    /**
+     * 刷新并订阅同步服务，获取同步服务代理
+     * 
+     * 该方法相当与调用 {@link RpcConsumerBootstrap#refresh(String)} 和
+     * {@link RpcConsumerBootstrap#subscribe(String, Class)}
+     * 
+     * @param <T>
+     * @param serviceName    服务名
+     * @param interfaceClass 接口类
+     * @return 代理服务对象
+     */
+    public <T> T refreshAndSubscribe(String serviceName, Class<T> interfaceClass) {
+        refresh(serviceName);
+        return subscribe(serviceName, interfaceClass);
+    }
+
+    /**
+     * 刷新并订阅异步服务，获取异步服务代理
+     * 
+     * 该方法相当与调用 {@link RpcConsumerBootstrap#refresh(String)} 和
+     * {@link RpcConsumerBootstrap#subscribe(String)}
+     * 
+     * @param serviceName 返回代理服务类
+     * @return proxy
+     */
+    public ObjectProxy refreshAndSubscribe(String serviceName) {
+        refresh(serviceName);
+        return subscribe(serviceName);
     }
 
     /**
      * 订阅事务服务
      * 
-     * @return
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 刷新
+     * 
+     * @return proxy
      */
     public TransactionProxy subscribeTransaction() {
         return SERVICE_HANDLER.getTransactionProxy();
     }
 
     /**
-     * 刷新服务提供者
+     * 刷新服务
      * 
      * @param serviceName
+     * @return this
      */
-    private void refreshProvider(String serviceName) {
-        LOGGER.debug("Refresh Service={} Privider ", serviceName);
-        SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
+    public RpcConsumerBootstrap refresh(String serviceName) {
+        if (serviceName == null)
+            throw new NullPointerException();
+        if (CONSUMER_TRANSFER.needRefresh(serviceName)) {
+            LOGGER.debug("Refresh Service=({}) Privider.", serviceName);
+            SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
+        }
+        return this;
     }
 
     /**
@@ -157,7 +221,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * 初始化上下文
      * 
      * @param option
-     * @return
+     * @return context
      */
     private ConsumerContext initContext(RpcConsumerOption option) {
         ConsumerContext context = new BasicConsumerContext();
@@ -171,8 +235,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.setIdentifierGenerator(option.getIdentifierGenerator());
         // 设置服务提供者挑选适配器
         context.setProviderChooserAdapter(option.getProviderChooserAdapter());
-        // 设置服务提供者刷新器
-        context.setProviderRefresher(this::refreshProvider);
         return context;
     }
 

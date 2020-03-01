@@ -8,7 +8,7 @@ public class HelloServiceAsyncConsumerTimeTest {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
         System.out.println("Consumer opening...");
         bootstrap.start();
-        ObjectProxy objectProxy = bootstrap.subscribe("HelloService");
+        ObjectProxy objectProxy = bootstrap.refreshAndSubscribe("HelloService");
 
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {

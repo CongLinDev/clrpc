@@ -15,7 +15,7 @@ public class UserServiceAsyncConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        ObjectProxy objectProxy = bootstrap.subscribe("UserService");
+        ObjectProxy objectProxy = bootstrap.refreshAndSubscribe("UserService");
 
         Random random = new Random();
         for (int i = 0; i < 10; i++) {
