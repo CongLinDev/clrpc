@@ -18,9 +18,16 @@ public class GlobalMessageManager {
 
     private final Class<?> messageClasses[];
 
-    private GlobalMessageManager() {
-        messageClasses = new Class[Message.MESSAGE_TYPE_MASK + 1];
+    private final int MESSAGE_TYPE_CAPACITY;
+
+    private GlobalMessageManager(int capacity) {
+        MESSAGE_TYPE_CAPACITY = capacity;
+        messageClasses = new Class[MESSAGE_TYPE_CAPACITY];
         initDefaultMessageType();
+    }
+
+    private GlobalMessageManager() {
+        this(Message.MESSAGE_TYPE_MASK + 1);
     }
 
     /**
@@ -35,7 +42,7 @@ public class GlobalMessageManager {
     }
 
     /**
-     * 获取manager对象
+     * 获取 GlobalMessageManager 对象
      * 
      * @return
      */
@@ -54,6 +61,8 @@ public class GlobalMessageManager {
      * @return
      */
     public Class<? extends Message> getMessageClass(int messageType) {
+        if (messageType >= MESSAGE_TYPE_CAPACITY && messageType > -1)
+            throw new IllegalArgumentException("Message type=" + messageType + " is illeagl.");
         @SuppressWarnings("unchecked")
         Class<? extends Message> clazz = (Class<? extends Message>) messageClasses[messageType];
         if (clazz == null)
@@ -68,6 +77,8 @@ public class GlobalMessageManager {
      * @param clazz
      */
     public void setMessageClass(int messageType, Class<? extends Message> clazz) {
+        if (messageType >= MESSAGE_TYPE_CAPACITY && messageType > -1)
+            throw new IllegalArgumentException("Message type=" + messageType + " is illeagl.");
         if (messageClasses[messageType] != null)
             throw new IllegalArgumentException("Message type=" + messageType + " has been used.");
         messageClasses[messageType] = clazz;
@@ -88,11 +99,33 @@ public class GlobalMessageManager {
     }
 
     /**
+     * 寻找可用的消息类型。若找不到返回 -1
+     * 
+     * @return
+     */
+    public int availableMessageType() {
+        for (int index = 0; index < MESSAGE_TYPE_CAPACITY; index++) {
+            if (messageClasses[index] == null)
+                return index;
+        }
+        return -1;
+    }
+
+    /**
      * 可用的消息类型列表
      * 
      * @return
      */
     public Collection<Class<?>> messageTypes() {
         return Stream.of(messageClasses).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    /**
+     * 消息类型容量
+     * 
+     * @return
+     */
+    public int capacity() {
+        return MESSAGE_TYPE_CAPACITY;
     }
 }

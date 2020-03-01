@@ -12,14 +12,14 @@ import conglin.clrpc.common.util.ZooKeeperUtils;
  */
 public class GlobalResourceManager {
 
-    private AtomicInteger counter;
+    private final AtomicInteger counter;
 
     private GlobalResourceManager() {
         counter = new AtomicInteger();
     }
 
     /**
-     * 获取manager对象
+     * 获取 GlobalResourceManager 对象
      * 
      * @return
      */
