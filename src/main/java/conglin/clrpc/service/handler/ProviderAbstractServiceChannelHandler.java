@@ -96,7 +96,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      */
     protected BasicResponse jdkReflectInvoke(Object serviceBean, BasicRequest request)
             throws ServiceExecutionException {
-        BasicResponse response = new BasicResponse(request.getRequestId());
+        BasicResponse response = new BasicResponse(request.getMessageId());
 
         Class<?> serviceBeanClass = serviceBean.getClass();
         String methodName = request.getMethodName();

@@ -27,7 +27,7 @@ public class BasicFuture extends AbstractFuture {
 
     @Override
     public long identifier() {
-        return request.getRequestId();
+        return request.getMessageId();
     }
 
     /**

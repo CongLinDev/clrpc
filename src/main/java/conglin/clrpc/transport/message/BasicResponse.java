@@ -16,12 +16,12 @@ public class BasicResponse extends Message implements Serializable {
     private Object result;
     private Boolean error;
 
-    public BasicResponse(Long requestId) {
-        this(requestId, Boolean.FALSE);
+    public BasicResponse(Long messageId) {
+        this(messageId, Boolean.FALSE);
     }
 
-    public BasicResponse(Long requestId, Boolean error) {
-        super(requestId);
+    public BasicResponse(Long messageId, Boolean error) {
+        super(messageId);
         this.error = error;
     }
 
@@ -66,9 +66,9 @@ public class BasicResponse extends Message implements Serializable {
     @Override
     public String toString() {
         if (isError()) {
-            return "BasicResponse [requestId=" + getRequestId() + ", error=" + result + "]";
+            return "BasicResponse [messageId=" + getMessageId() + ", error=" + result + "]";
         } else {
-            return "BasicResponse [requestId=" + getRequestId() + ", result=" + result + "]";
+            return "BasicResponse [messageId=" + getMessageId() + ", result=" + result + "]";
         }
     }
 

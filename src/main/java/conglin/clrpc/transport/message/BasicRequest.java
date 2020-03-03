@@ -19,8 +19,8 @@ public class BasicRequest extends Message implements Serializable {
     private String methodName;
     private Object[] parameters;
 
-    public BasicRequest(Long requestId) {
-        super(requestId);
+    public BasicRequest(Long messageId) {
+        super(messageId);
     }
 
     public BasicRequest(BasicRequest request) {
@@ -86,7 +86,7 @@ public class BasicRequest extends Message implements Serializable {
 
     @Override
     public String toString() {
-        return "BasicRequest [requestId=" + getRequestId() + ", serviceName=" + serviceName + ", methodName="
+        return "BasicRequest [messageId=" + getMessageId() + ", serviceName=" + serviceName + ", methodName="
                 + methodName + ", parameters=" + Arrays.toString(parameters) + "]";
     }
 
@@ -108,7 +108,7 @@ public class BasicRequest extends Message implements Serializable {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        BasicRequest r = new BasicRequest(getRequestId());
+        BasicRequest r = new BasicRequest(getMessageId());
         r.setServiceName(serviceName);
         r.setMethodName(methodName);
 

@@ -28,7 +28,7 @@ public class ProviderCacheCheckedChannelHandler<T extends BasicRequest> extends 
 
     @Override
     protected Object cache(T msg) {
-        Long requestId = msg.getRequestId();
-        return new Pair<BasicRequest, BasicResponse>(msg, cacheManager().get(msg).copy(requestId));
+        Long messageId = msg.getMessageId();
+        return new Pair<BasicRequest, BasicResponse>(msg, cacheManager().get(msg).copy(messageId));
     }
 }

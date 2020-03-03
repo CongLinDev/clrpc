@@ -90,7 +90,7 @@ public class DefaultRequestSender implements RequestSender {
                     if (f.isPending() && f.timeout()) {
                         resendRequest(f.request());
                         f.retry();
-                        LOGGER.warn("Service response(requestId={}) is too slow. Retry...", f.identifier());
+                        LOGGER.warn("Service response(messageId={}) is too slow. Retry...", f.identifier());
                     }
                 }
             }

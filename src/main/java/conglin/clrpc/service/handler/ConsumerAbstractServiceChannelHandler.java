@@ -20,14 +20,14 @@ abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleCha
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
         context.getExecutorService().submit(() -> {
-            execute(msg);
+            ctx.fireChannelRead(execute(msg));
         });
     }
 
     /**
      * 执行具体方法
      * 
-     * @param response
+     * @param msg
      */
     abstract protected Object execute(T msg);
 

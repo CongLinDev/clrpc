@@ -23,9 +23,9 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
 
     @Override
     protected Object execute(BasicResponse msg) {
-        Long requestId = msg.getRequestId();
-        LOGGER.debug("Receive response (requestId={})", requestId);
-        RpcFuture future = futuresHolder.removeFuture(requestId);
+        Long messageId = msg.getMessageId();
+        LOGGER.debug("Receive response (messageId={})", messageId);
+        RpcFuture future = futuresHolder.removeFuture(messageId);
 
         if (future != null) {
             future.done(msg);

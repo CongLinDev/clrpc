@@ -9,6 +9,7 @@ import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import conglin.clrpc.transport.message.CacheableResponse;
 import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.SystemMessage;
 import conglin.clrpc.transport.message.TransactionRequest;
 
 /**
@@ -34,7 +35,7 @@ public class GlobalMessageManager {
      * 初始化默认的消息类型
      */
     private void initDefaultMessageType() {
-        setMessageClass(Message.MESSAGE_TYPE, Message.class);
+        setMessageClass(SystemMessage.MESSAGE_TYPE, SystemMessage.class);
         setMessageClass(BasicResponse.MESSAGE_TYPE, BasicResponse.class);
         setMessageClass(BasicRequest.MESSAGE_TYPE, BasicRequest.class);
         setMessageClass(CacheableResponse.MESSAGE_TYPE, CacheableResponse.class);
@@ -61,12 +62,10 @@ public class GlobalMessageManager {
      * @return
      */
     public Class<? extends Message> getMessageClass(int messageType) {
-        if (messageType >= MESSAGE_TYPE_CAPACITY && messageType > -1)
-            throw new IllegalArgumentException("Message type=" + messageType + " is illeagl.");
         @SuppressWarnings("unchecked")
         Class<? extends Message> clazz = (Class<? extends Message>) messageClasses[messageType];
         if (clazz == null)
-            throw new NullPointerException();
+            throw new NullPointerException("Unkonwn message type=" + messageType);
         return clazz;
     }
 
@@ -77,8 +76,6 @@ public class GlobalMessageManager {
      * @param clazz
      */
     public void setMessageClass(int messageType, Class<? extends Message> clazz) {
-        if (messageType >= MESSAGE_TYPE_CAPACITY && messageType > -1)
-            throw new IllegalArgumentException("Message type=" + messageType + " is illeagl.");
         if (messageClasses[messageType] != null)
             throw new IllegalArgumentException("Message type=" + messageType + " has been used.");
         messageClasses[messageType] = clazz;

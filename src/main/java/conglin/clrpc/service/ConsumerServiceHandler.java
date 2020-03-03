@@ -119,7 +119,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     }
 
     /**
-     * 发现服务 共两步 1. 注册消费者 2. 发现服务并进行连接服务提供者
+     * 发现服务
      * 
      * @param serviceName
      * @param updateMethod

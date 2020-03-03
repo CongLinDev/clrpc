@@ -16,21 +16,21 @@ public class TransactionRequest extends BasicRequest {
     /**
      * 构造事务请求
      * 
-     * @param requestId 由两部分组成，高32位为事务ID，低32位为序列ID
+     * @param messageId 由两部分组成，高32位为事务ID，低32位为序列ID
      * @param serial    是否顺序执行
      */
-    public TransactionRequest(Long requestId, Boolean serial) {
-        super(requestId);
+    public TransactionRequest(Long messageId, Boolean serial) {
+        super(messageId);
         this.serial = serial;
     }
 
     /**
      * 构造事务请求，默认非顺序执行
      * 
-     * @param requestId 由两部分组成，高32位为事务ID，低32位为序列ID
+     * @param messageId 由两部分组成，高32位为事务ID，低32位为序列ID
      */
-    public TransactionRequest(Long requestId) {
-        this(requestId, Boolean.FALSE);
+    public TransactionRequest(Long messageId) {
+        this(messageId, Boolean.FALSE);
     }
 
     /**
@@ -70,7 +70,7 @@ public class TransactionRequest extends BasicRequest {
      * @return
      */
     public int getSerialId() {
-        return getRequestId().intValue();
+        return getMessageId().intValue();
     }
 
     /**
@@ -79,7 +79,7 @@ public class TransactionRequest extends BasicRequest {
      * @return
      */
     public long getTransactionId() {
-        return getRequestId().longValue() & 0xFFFFFFFF00000000L;
+        return getMessageId().longValue() & 0xFFFFFFFF00000000L;
     }
 
     /**

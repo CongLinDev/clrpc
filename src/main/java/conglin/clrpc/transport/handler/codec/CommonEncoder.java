@@ -6,6 +6,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
+/**
+ * <pre>
+ *  -----------------------------------
+ *  字节数 |   1   |    4    |    n   |
+ *  解释  | 消息头 | 正文长度 |   正文  |
+ *  -----------------------------------
+ * </pre>
+ */
 public class CommonEncoder extends MessageToByteEncoder<Message> {
 
     private final SerializationHandler serializationHandler;
@@ -17,8 +25,8 @@ public class CommonEncoder extends MessageToByteEncoder<Message> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
-        byte[] data = serializationHandler.serialize(msg);
         int messageHeader = msg.messageType();
+        byte[] data = serializationHandler.serialize(msg);
         out.writeInt(messageHeader);
         out.writeInt(data.length);
         out.writeBytes(data);

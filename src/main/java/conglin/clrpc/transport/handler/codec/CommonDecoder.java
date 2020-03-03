@@ -12,16 +12,17 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
+/**
+ * <pre>
+ *  ----------------------------------
+ *  字节数 |   1   |    4    |    n   |
+ *  解释  | 消息头 | 正文长度 |   正文  |
+ *  ----------------------------------
+ * </pre>
+ */
 public class CommonDecoder extends ByteToMessageDecoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonDecoder.class);
-
-    // ---------------------------------------------------------
-    // 字节数 | 4 | 4 | n |
-    // 解释 | 消息头 | 正文长度 | 正文 |
-    // ---------------------------------------------------------
-    // private static final int MESSAGE_HEADER_LENGTH = 4;
-    // private static final int MESSAGE_BODY_LENGTH_FIELD_LENGTH = 4;
 
     // 配置编码器
     private final SerializationHandler serializationHandler;
@@ -37,11 +38,11 @@ public class CommonDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if (in.readableBytes() <= 8)
+        if (in.readableBytes() <= 5)
             return;
         in.markReaderIndex();
 
-        int messageHeader = in.readInt();
+        byte messageHeader = in.readByte();
         int dataLengh = in.readInt();
 
         if (dataLengh <= 0) {
@@ -54,10 +55,30 @@ public class CommonDecoder extends ByteToMessageDecoder {
             return;
         }
 
-        int messageType = messageHeader & Message.MESSAGE_TYPE_MASK;
+        int messageType = resolveMessageType(messageHeader);
         Class<? extends Message> clazz = manager.getMessageClass(messageType);
         byte[] messageBody = new byte[dataLengh];
         in.readBytes(messageBody);
         out.add(serializationHandler.deserialize(messageBody, clazz));
+    }
+
+    /**
+     * 解析获取消息类型
+     * 
+     * @param header
+     * @return
+     */
+    protected int resolveMessageType(byte header) {
+        return header & Message.MESSAGE_TYPE_MASK;
+    }
+
+    /**
+     * 获取协议类型
+     * 
+     * @param header
+     * @return
+     */
+    protected int resolveMessageProtocol(byte header) {
+        return header >> 4;
     }
 }
