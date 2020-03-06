@@ -4,7 +4,7 @@
 
   <groupId>conglin</groupId>
   <artifactId>clrpc</artifactId>
-  <version>0.11.4-SNAPSHOT</version>
+  <version>0.11.5-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>clrpc</name>
@@ -34,47 +34,40 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.1.42.Final</version>
+      <version>4.1.46.Final</version>
     </dependency>
 
     <!-- zookeeper -->
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
-      <version>3.5.5</version>
+      <version>3.6.0</version>
     </dependency>
 
     <!-- fastjson -->
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.62</version>
+      <version>1.2.66</version>
     </dependency>
 
     <!-- protostuff -->
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-core</artifactId>
-      <version>1.6.0</version>
+      <version>1.6.2</version>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime</artifactId>
-      <version>1.6.0</version>
-    </dependency>
-
-    <!-- caffeine cache -->
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>2.8.0</version>
+      <version>1.6.2</version>
     </dependency>
 
     <!-- slf4j -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.26</version>
+      <version>1.7.30</version>
       <scope>test</scope>
     </dependency>
 

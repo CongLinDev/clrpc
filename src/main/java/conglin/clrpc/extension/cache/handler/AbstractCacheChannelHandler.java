@@ -2,7 +2,6 @@ package conglin.clrpc.extension.cache.handler;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.CacheManager;
-import conglin.clrpc.extension.cache.caffeine.CaffeineCacheManager;
 import conglin.clrpc.service.context.CommonContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.CacheableResponse;
@@ -18,10 +17,6 @@ abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboun
         @SuppressWarnings("unchecked")
         CacheManager<BasicRequest, CacheableResponse> cm = (CacheManager<BasicRequest, CacheableResponse>) configurer
                 .get("extension.cache.cacheManager");
-        if (cm == null) {
-            cm = new CaffeineCacheManager(configurer);
-            configurer.put("extension.cache.cacheManager", cm);
-        }
         this.cacheManager = cm;
     }
 
