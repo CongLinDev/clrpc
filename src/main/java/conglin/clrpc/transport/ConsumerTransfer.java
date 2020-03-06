@@ -208,8 +208,9 @@ public class ConsumerTransfer {
                 try {
                     waitingForAvailableProvider(serviceName);
                 } catch (InterruptedException e) {
-                    LOGGER.error("Waiting for available node is interrupted!", e);
+                    LOGGER.error("Waiting for available provider is interrupted!", e);
                 }
+                LOGGER.warn("Waiting for available provider.");
             }
         }
 
@@ -224,9 +225,10 @@ public class ConsumerTransfer {
                 try {
                     waitingForAvailableProvider(serviceName);
                 } catch (InterruptedException e) {
-                    LOGGER.error("Waiting for available node is interrupted!", e);
+                    LOGGER.error("Waiting for available provider is interrupted!", e);
                 }
                 count++;
+                LOGGER.warn("Waiting for available provider.");
             }
             return null;
         }

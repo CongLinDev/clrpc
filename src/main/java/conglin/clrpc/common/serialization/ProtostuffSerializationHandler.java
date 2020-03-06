@@ -25,8 +25,8 @@ public class ProtostuffSerializationHandler implements SerializationHandler {
     public <T> byte[] serialize(T t) {
         @SuppressWarnings("unchecked")
         Class<T> tClass = (Class<T>) t.getClass();
-        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         Schema<T> schema = getSchema(tClass);
+        LinkedBuffer buffer = getBuffer();
         try {
             return ProtostuffIOUtil.toByteArray(t, schema, buffer);
         } finally {
@@ -34,9 +34,26 @@ public class ProtostuffSerializationHandler implements SerializationHandler {
         }
     }
 
+    /**
+     * 获取缓存的 Schema
+     * @param <T>
+     * @param clazz
+     * @return
+     */
     @SuppressWarnings("unchecked")
-    private <T> Schema<T> getSchema(Class<T> clazz) {
+    protected <T> Schema<T> getSchema(Class<T> clazz) {
         return (Schema<T>) CACHED_SCHEMA.computeIfAbsent(clazz, RuntimeSchema::createFrom);
+    }
+
+    /**
+     * 获取可用的Buffer
+     * 
+     * 这里是创建新的Buffer
+     * 
+     * @return
+     */
+    protected LinkedBuffer getBuffer() {
+        return LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
     }
 
     @Override

@@ -7,7 +7,7 @@ import conglin.clrpc.transport.message.BasicResponse;
 public class BasicFuture extends AbstractFuture {
 
     private final BasicRequest request;
-    protected BasicResponse response;
+    private BasicResponse response;
 
     public BasicFuture(BasicRequest request) {
         super();
@@ -37,6 +37,15 @@ public class BasicFuture extends AbstractFuture {
      */
     public BasicRequest request() {
         return this.request;
+    }
+
+    /**
+     * 获得与该 RpcFuture 相关联的 BasicResponse
+     * 
+     * @return
+     */
+    public BasicResponse response() {
+        return this.response;
     }
 
     @Override
