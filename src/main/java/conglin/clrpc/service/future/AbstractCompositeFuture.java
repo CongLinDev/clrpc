@@ -14,7 +14,6 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     /**
      * 构造一个空的复合Future
-     * 
      */
     public AbstractCompositeFuture() {
         this(null);
@@ -69,8 +68,9 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     @Override
-    public void retry() {
-        futures.parallelStream().filter(RpcFuture::isPending).forEach(RpcFuture::retry);
+    public boolean retry() {
+        futures.forEach(RpcFuture::retry);
+        return true;
     }
 
     /**

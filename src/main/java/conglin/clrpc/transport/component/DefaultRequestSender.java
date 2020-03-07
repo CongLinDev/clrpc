@@ -68,7 +68,7 @@ public class DefaultRequestSender implements RequestSender {
         String serviceName = request.getServiceName();
         threadPool.execute(() -> {
             if (targetAddress == null) {
-                providerChooser.choose(serviceName, request).pipeline().fireChannelRead(request);
+                providerChooser.choose(request).pipeline().fireChannelRead(request);
             } else {
                 providerChooser.choose(serviceName, targetAddress).pipeline().fireChannelRead(request);
             }
@@ -79,7 +79,8 @@ public class DefaultRequestSender implements RequestSender {
      * 轮询线程，检查超时 RpcFuture 超时重试
      */
     private void checkFuture() {
-        final long MAX_DELARY = 3000; // 最大延迟为3000 ms
+        final long MAX_DELARY = BasicFuture.getTimeThreshold(); // 首次延迟
+        final long PERIOD = 3000L; // 执行周期
         new Timer("check-uncomplete-future", true).schedule(new TimerTask() {
 
             @Override
@@ -87,13 +88,13 @@ public class DefaultRequestSender implements RequestSender {
                 Iterator<RpcFuture> iterator = futuresHolder.iterator();
                 while (iterator.hasNext()) {
                     BasicFuture f = (BasicFuture) iterator.next();
-                    if (f.isPending() && f.timeout()) {
+                    if (f.timeout() && f.retry()) {
                         resendRequest(f.request());
-                        f.retry();
-                        LOGGER.warn("Service response(messageId={}) is too slow. Retry...", f.identifier());
+                        LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...", f.identifier(),
+                                f.retryTimes());
                     }
                 }
             }
-        }, MAX_DELARY);
+        }, MAX_DELARY, PERIOD);
     }
 }

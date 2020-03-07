@@ -8,11 +8,16 @@ public class FutureCancelledException extends RpcServiceException {
 
     private final RpcFuture FUTURE;
 
-    public FutureCancelledException(RpcFuture future){
+    public FutureCancelledException(RpcFuture future) {
         this.FUTURE = future;
     }
 
-    public RpcFuture getFuture(){
+    /**
+     * 获取绑定的 {@link RpcFuture}
+     * 
+     * @return
+     */
+    public RpcFuture getFuture() {
         return FUTURE;
     }
 }

@@ -79,7 +79,7 @@ public class RpcConsumerOption {
      */
     public ProviderChooserAdapter getProviderChooserAdapter() {
         if (providerChooserAdapter == null)
-            providerChooserAdapter = request -> request.getMethodName().hashCode();
+            providerChooserAdapter = (requestId, methodName) -> methodName.hashCode();
         return providerChooserAdapter;
     }
 }

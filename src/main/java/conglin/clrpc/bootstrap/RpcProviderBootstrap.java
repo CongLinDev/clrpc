@@ -21,7 +21,7 @@ import io.netty.bootstrap.ServerBootstrap;
  * <pre>
  * 
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
- * bootstrap.publish(ServiceBean1.class).publish("service2", new ServiceBean2()).start();
+ * bootstrap.publish(ServiceBean1.class).publish("service2", new ServiceBean2()).hookStop().start();
  * 
  * </pre>
  * 
@@ -124,6 +124,26 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         SERVICE_HANDLER.stop();
         PROVIDER_TRANSFER.stop();
         super.stop();
+    }
+
+    /**
+     * 虚拟机钩子
+     * 
+     * @param runnable
+     * @return
+     */
+    public RpcProviderBootstrap hook(Runnable runnable) {
+        Runtime.getRuntime().addShutdownHook(new Thread(runnable));
+        return this;
+    }
+
+    /**
+     * 关闭钩子
+     * 
+     * @return this
+     */
+    public RpcProviderBootstrap hookStop() {
+        return hook(this::stop);
     }
 
     /**

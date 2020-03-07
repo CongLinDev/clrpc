@@ -9,8 +9,22 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 
 abstract public class AbstractFuture implements RpcFuture {
-    private static long TIME_THRESHOLD = 5000;
+    private static long TIME_THRESHOLD = 5000L;
 
+    /**
+     * 获取 threshold
+     * 
+     * @return
+     */
+    public static long getTimeThreshold() {
+        return TIME_THRESHOLD;
+    }
+
+    /**
+     * 设置 threshold
+     * 
+     * @param timeThreshold
+     */
     public static void setTimeThreshold(long timeThreshold) {
         TIME_THRESHOLD = timeThreshold;
     }
@@ -102,9 +116,17 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public void retry() {
-        SYNCHRONIZER.retry();
-        resetTime();
+    public boolean retry() {
+        if (SYNCHRONIZER.retry()) {
+            resetTime();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int retryTimes() {
+        return SYNCHRONIZER.retryTimes();
     }
 
     /**
@@ -155,11 +177,11 @@ abstract public class AbstractFuture implements RpcFuture {
     static class FutureSynchronizer extends AbstractQueuedSynchronizer {
 
         private static final long serialVersionUID = -3359796046494665489L;
-
-        private static final int CANCELLED = -1; // 取消
+        // if pending, retry times == Math.abs(getState())
         private static final int PENDING = 0; // 等待
-        private static final int DONE = 1; // 完成
-        private static final int USED = 2; // 占用
+        private static final int CANCELLED = 1; // 取消
+        private static final int DONE = 2; // 完成
+        private static final int USED = 3; // 占用
 
         @Override
         protected boolean tryAcquire(int arg) {
@@ -210,7 +232,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * @return
          */
         protected boolean isPending() {
-            return getState() == PENDING;
+            return getState() <= PENDING;
         }
 
         /**
@@ -222,9 +244,23 @@ abstract public class AbstractFuture implements RpcFuture {
 
         /**
          * 重试
+         * 
+         * @return 是否重试成功
          */
-        protected void retry() {
-            setState(PENDING);
+        protected boolean retry() {
+            int curState = getState();
+            if (curState > PENDING)
+                return false;
+            return compareAndSetState(curState, curState - 1);
+        }
+
+        /**
+         * 已经重试的次数
+         * 
+         * @return
+         */
+        protected int retryTimes() {
+            return Math.max(-getState(), 0);
         }
     }
 }

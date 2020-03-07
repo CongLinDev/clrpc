@@ -7,13 +7,7 @@ public class HelloServiceProviderTest {
 
     public static void main(String[] args) {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
-        try {
-            System.out.println("Provider opening...");
-            bootstrap.publish("HelloService", new HelloServiceImpl()).start();
-
-        } finally {
-            bootstrap.stop();
-            System.out.println("Provider closing...");
-        }
+        System.out.println("Provider opening...");
+        bootstrap.publish("HelloService", new HelloServiceImpl()).hookStop().start();
     }
 }

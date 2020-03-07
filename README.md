@@ -22,9 +22,8 @@ RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 bootstrap.publish(ServiceBean1.class) // 配合 @conglin.clrpc.service.annotation.Service 注解
         .publish(new ServiceBean2())  // 配合 @conglin.clrpc.service.annotation.Service 注解
         .publish("service3", new ServiceBean3())
+        .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start();
-// 关闭服务提供者
-bootstrap.stop();
 ```
 
 ### Service Consumer
@@ -101,8 +100,8 @@ bootstrap.stop();
 |        zookeeper.monitor.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务监视地址                          |
 |       zookeeper.monitor.root-path       |          String           |  YES  |     /clrpc     |                         服务监视根节点                         |
 |  zookeeper.monitor.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|       zookeeper.atomicity.address       |          String           |  YES  | 127.0.0.1:2181 |                         原子性服务地址                         |
-|      zookeeper.atomicity.root-path      |          String           |  YES  |     /clrpc     |                        原子性服务根节点                        |
+|       zookeeper.atomicity.address       |          String           |  YES  | 127.0.0.1:2181 |                         原子服务地址                         |
+|      zookeeper.atomicity.root-path      |          String           |  YES  |     /clrpc     |                        原子服务根节点                        |
 | zookeeper.atomicity.<br>session-timeout |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
 |            meta.provider.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务提供者通用元信息，发布至注册中心              |
 |            meta.consumer.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务消费者通用元信息，发布至注册中心              |

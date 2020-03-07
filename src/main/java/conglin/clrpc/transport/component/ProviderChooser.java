@@ -7,11 +7,10 @@ public interface ProviderChooser {
     /**
      * 随机挑选
      * 
-     * @param serviceName
      * @param request
      * @return
      */
-    Channel choose(String serviceName, BasicRequest request);
+    Channel choose(BasicRequest request);
 
     /**
      * 指定条件挑选

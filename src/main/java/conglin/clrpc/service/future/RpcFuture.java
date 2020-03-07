@@ -23,8 +23,17 @@ public interface RpcFuture extends Future<Object> {
 
     /**
      * 重试
+     * 
+     * @return 是否重试成功
      */
-    void retry();
+    boolean retry();
+
+    /**
+     * 获取重试次数
+     * 
+     * @return
+     */
+    int retryTimes();
 
     /**
      * 确认该 {@code RpcFuture} 完成

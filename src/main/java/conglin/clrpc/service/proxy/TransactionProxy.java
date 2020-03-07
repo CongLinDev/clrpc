@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.transport.message.TransactionRequest;
 
 public interface TransactionProxy {
 
@@ -32,7 +33,7 @@ public interface TransactionProxy {
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(String serviceName, String method, Object... args) throws TransactionException;
+    RpcFuture call(String serviceName, String method, Object... args);
 
     /**
      * 发送事务内部的一条原子性请求
@@ -43,7 +44,18 @@ public interface TransactionProxy {
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(String serviceName, Method method, Object... args) throws TransactionException;
+    default RpcFuture call(String serviceName, Method method, Object... args) {
+        return call(serviceName, method.getName(), args);
+    }
+
+    /**
+     * 发送事务内部的一条原子性请求
+     * 
+     * @param request 请求
+     * @return sub future
+     * @throws TransactionException
+     */
+    RpcFuture call(TransactionRequest request) throws TransactionException;
 
     /**
      * 提交事务

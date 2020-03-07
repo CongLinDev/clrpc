@@ -1,7 +1,5 @@
 package conglin.clrpc.service.proxy;
 
-import java.lang.reflect.Method;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,11 +61,6 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     }
 
     @Override
-    public RpcFuture call(String serviceName, Method method, Object... args) throws TransactionException {
-        return call(serviceName, method.getName(), args);
-    }
-
-    @Override
     public RpcFuture commit() throws TransactionException {
         LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
         helper.commit(currentTransactionId);
@@ -85,13 +78,8 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
         future = null;
     }
 
-    /**
-     * 处理原子请求
-     * 
-     * @param request
-     * @throws TransactionException
-     */
-    protected RpcFuture call(TransactionRequest request) throws TransactionException {
+    @Override
+    public RpcFuture call(TransactionRequest request) throws TransactionException {
         helper.prepare(currentTransactionId, request.getSerialId());
         RpcFuture f = super.call(request);
         if (!future.combine(f)) {

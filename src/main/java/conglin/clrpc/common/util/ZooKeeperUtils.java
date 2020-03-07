@@ -45,7 +45,7 @@ public final class ZooKeeperUtils {
      * @param address
      * @return
      */
-    public static ZooKeeper connectZooKeeper(String address) {
+    public static ZooKeeper connectZooKeeper(final String address) {
         return connectZooKeeper(address, DEFAULT_SESSION_TIMEOUT);
     }
 
@@ -56,14 +56,9 @@ public final class ZooKeeperUtils {
      * @param sessionTimeout
      * @return
      */
-    public static ZooKeeper connectZooKeeper(String address, int sessionTimeout) {
-        ZooKeeper keeper = null;
+    public static ZooKeeper connectZooKeeper(final String address, final int sessionTimeout) {
         String key = address + " " + sessionTimeout;
-        if ((keeper = ZOOKEEPER_CONNECTION_POOL.get(key)) == null) {
-            keeper = connectNewZooKeeper(address, sessionTimeout);
-            ZOOKEEPER_CONNECTION_POOL.put(address, keeper);
-        }
-        return keeper;
+        return ZOOKEEPER_CONNECTION_POOL.computeIfAbsent(key, string -> connectNewZooKeeper(address, sessionTimeout));
     }
 
     /**
@@ -73,12 +68,12 @@ public final class ZooKeeperUtils {
      * @param sessionTimeout 超时时间
      * @return
      */
-    public static ZooKeeper connectNewZooKeeper(String address, int sessionTimeout) {
+    public static ZooKeeper connectNewZooKeeper(final String address, final int sessionTimeout) {
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        ZooKeeper keeper = null;
+        // ZooKeeper keeper = null;
         try {
-            keeper = new ZooKeeper(address, sessionTimeout, event -> {
+            ZooKeeper keeper = new ZooKeeper(address, sessionTimeout, event -> {
                 if (event.getState() == Event.KeeperState.SyncConnected) {
                     countDownLatch.countDown();
                     LOGGER.debug("ZooKeeper address={} is connected.", address);
@@ -86,12 +81,13 @@ public final class ZooKeeperUtils {
             });
             LOGGER.debug("ZooKeeper address={} is connecting...", address);
             countDownLatch.await();
+            return keeper;
         } catch (IOException | InterruptedException e) {
             LOGGER.error("ZooKeeper address={} connected failed. Cause: {}", address, e.getMessage());
             if (countDownLatch.getCount() == 1) // count down
                 countDownLatch.countDown();
         }
-        return keeper;
+        return null;
     }
 
     /**

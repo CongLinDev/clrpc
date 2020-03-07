@@ -7,11 +7,7 @@ import java.util.Collection;
  */
 
 @FunctionalInterface
-public interface Task {
-    /**
-     * 运行任务
-     */
-    void run();
+public interface Task extends Runnable {
 
     /**
      * 顺序执行任务

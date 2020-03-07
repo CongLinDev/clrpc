@@ -15,6 +15,8 @@ import io.protostuff.runtime.RuntimeSchema;
  */
 public class ProtostuffSerializationHandler implements SerializationHandler {
 
+    private final static ThreadLocal<LinkedBuffer> localBuffer = new ThreadLocal<>();
+
     private final Map<Class<?>, Schema<?>> CACHED_SCHEMA;
 
     public ProtostuffSerializationHandler() {
@@ -48,12 +50,17 @@ public class ProtostuffSerializationHandler implements SerializationHandler {
     /**
      * 获取可用的Buffer
      * 
-     * 这里是创建新的Buffer
+     * 使用 {@link java.lang.ThreadLocal} 重用缓存区
      * 
      * @return
      */
     protected LinkedBuffer getBuffer() {
-        return LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+        LinkedBuffer buffer = localBuffer.get();
+        if(buffer == null) {
+            buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+            localBuffer.set(buffer);
+        }
+        return buffer;
     }
 
     @Override
