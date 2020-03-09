@@ -57,9 +57,15 @@ public class CommonDecoder extends ByteToMessageDecoder {
 
         int messageType = resolveMessageType(messageHeader);
         Class<? extends Message> clazz = manager.getMessageClass(messageType);
-        byte[] messageBody = new byte[dataLengh];
-        in.readBytes(messageBody);
-        out.add(serializationHandler.deserialize(messageBody, clazz));
+        if (in.hasArray()) {
+            int contentOffset = in.readerIndex(); // 正文起始偏移量
+            out.add(serializationHandler.deserialize(clazz, in.readerIndex(contentOffset + dataLengh).array(),
+                    contentOffset, dataLengh));
+        } else {
+            byte[] messageBody = new byte[dataLengh];
+            in.readBytes(messageBody);
+            out.add(serializationHandler.deserialize(clazz, messageBody));
+        }
     }
 
     /**

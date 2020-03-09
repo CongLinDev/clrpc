@@ -15,8 +15,7 @@ public class JsonSerializationHandler implements SerializationHandler {
     }
 
     @Override
-    public <T> T deserialize(byte[] data, Class<T> clazz) {
+    public <T> T deserialize(Class<T> clazz, byte[] data) {
         return JSON.parseObject(data, clazz);
     }
-
 }

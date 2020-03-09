@@ -15,13 +15,9 @@ import io.protostuff.runtime.RuntimeSchema;
  */
 public class ProtostuffSerializationHandler implements SerializationHandler {
 
-    private final static ThreadLocal<LinkedBuffer> localBuffer = new ThreadLocal<>();
+    private final static ThreadLocal<LinkedBuffer> LOCAL_BUFFER = new ThreadLocal<>();
 
-    private final Map<Class<?>, Schema<?>> CACHED_SCHEMA;
-
-    public ProtostuffSerializationHandler() {
-        CACHED_SCHEMA = new ConcurrentHashMap<>();
-    }
+    private final static Map<Class<?>, Schema<?>> CACHED_SCHEMA = new ConcurrentHashMap<>();
 
     @Override
     public <T> byte[] serialize(T t) {
@@ -38,6 +34,7 @@ public class ProtostuffSerializationHandler implements SerializationHandler {
 
     /**
      * 获取缓存的 Schema
+     * 
      * @param <T>
      * @param clazz
      * @return
@@ -55,19 +52,27 @@ public class ProtostuffSerializationHandler implements SerializationHandler {
      * @return
      */
     protected LinkedBuffer getBuffer() {
-        LinkedBuffer buffer = localBuffer.get();
-        if(buffer == null) {
+        LinkedBuffer buffer = LOCAL_BUFFER.get();
+        if (buffer == null) {
             buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
-            localBuffer.set(buffer);
+            LOCAL_BUFFER.set(buffer);
         }
         return buffer;
     }
 
     @Override
-    public <T> T deserialize(byte[] data, Class<T> clazz) {
+    public <T> T deserialize(Class<T> clazz, byte[] data) {
         Schema<T> schema = getSchema(clazz);
         T t = schema.newMessage();
         ProtostuffIOUtil.mergeFrom(data, t, schema);
+        return t;
+    }
+
+    @Override
+    public <T> T deserialize(Class<T> clazz, byte[] data, int offset, int length) {
+        Schema<T> schema = getSchema(clazz);
+        T t = schema.newMessage();
+        ProtostuffIOUtil.mergeFrom(data, offset, length, t, schema);
         return t;
     }
 }

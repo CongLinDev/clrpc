@@ -17,9 +17,25 @@ public interface SerializationHandler {
      * 反序列化
      * 
      * @param <T>
-     * @param data
      * @param clazz
+     * @param data
      * @return
      */
-    <T> T deserialize(byte[] data, Class<T> clazz);
+    <T> T deserialize(Class<T> clazz, byte[] data);
+
+    /**
+     * 反序列化
+     * 
+     * @param <T>
+     * @param clazz
+     * @param data 
+     * @param offset 起始位置偏移量
+     * @param length 长度
+     * @return
+     */
+    default <T> T deserialize(Class<T> clazz, byte[] data, int offset, int length) {
+        byte[] array = new byte[length];
+        System.arraycopy(data, offset, array, 0, length);
+        return deserialize(clazz, array);
+    }
 }

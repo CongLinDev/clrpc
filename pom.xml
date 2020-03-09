@@ -19,8 +19,8 @@
 
   <licenses>
     <license>
-        <name>The Apache License</name>
-        <url>http://www.apache.org/licenses/</url>
+      <name>The Apache License</name>
+      <url>http://www.apache.org/licenses/</url>
     </license>
   </licenses>
 
@@ -68,6 +68,26 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
       <version>1.7.30</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- unit test -->
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>1.6.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.6.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.6.0</version>
       <scope>test</scope>
     </dependency>
 
