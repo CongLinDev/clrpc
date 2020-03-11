@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 该注解用于提供服务的 ServiceBean 的类型上
+ * 该注解用于提供服务的接口的类型上
  * 
  * {@link Service#name()} 为 设置的服务名
  * 

@@ -43,7 +43,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      * @return
      */
     public static JsonPropertyConfigurer fromFile(String filename) {
-        try (InputStream inputStream = PropertyConfigurer.class.getClassLoader().getResourceAsStream(filename)) {
+        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename)) {
             return fromContent(new String(inputStream.readAllBytes()));
         } catch (IOException e) {
             LOGGER.error("Resolve File={} failed. Cause: {}", filename, e);

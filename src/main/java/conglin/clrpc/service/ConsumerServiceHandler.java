@@ -2,9 +2,6 @@ package conglin.clrpc.service;
 
 import java.lang.reflect.Proxy;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
@@ -16,18 +13,18 @@ import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.registry.ServiceDiscovery;
 import conglin.clrpc.registry.ZooKeeperServiceDiscovery;
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.future.DefaultFuturesHolder;
 import conglin.clrpc.service.future.FuturesHolder;
-import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
 import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 
-public class ConsumerServiceHandler extends AbstractServiceHandler implements FuturesHolder<Long> {
+public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerServiceHandler.class);
 
-    private final Map<Long, RpcFuture> rpcFutures;
+    private final FuturesHolder<Long> futuresHolder;
 
     private ServiceDiscovery serviceDiscovery;
 
@@ -35,7 +32,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
 
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
-        rpcFutures = new ConcurrentHashMap<>();
+        futuresHolder = new DefaultFuturesHolder();
     }
 
     /**
@@ -48,7 +45,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     @SuppressWarnings("unchecked")
     public <T> T getPrxoy(Class<T> interfaceClass, String serviceName) {
-        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass },
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { interfaceClass },
                 getPrxoy(serviceName));
     }
 
@@ -100,14 +97,14 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
     protected void initContext(ConsumerContext context) {
         context.setExecutorService(getExecutorService());
         context.setServiceRegister(serviceDiscovery);
-        context.setFuturesHolder(this);
+        context.setFuturesHolder(futuresHolder);
     }
 
     /**
      * 停止
      */
     public void stop() {
-        waitForUncompleteFuture();
+        futuresHolder.waitForUncompleteFuture();
 
         if (!super.isDestroyed()) {
             try {
@@ -126,46 +123,5 @@ public class ConsumerServiceHandler extends AbstractServiceHandler implements Fu
      */
     public void findService(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
         serviceDiscovery.discover(serviceName, updateMethod);
-    }
-
-    /**
-     * 对于每个 BasicRequest 请求，都会有一个 RpcFuture 等待一个 BasicResponse 响应 这些未到达客户端的
-     * BasicResponse 响应 换言之即为 RpcFuture 被保存在 ConsumerServiceHandler 中的一个 list 中
-     * 以下代码用于 RpcFuture 的管理和维护
-     */
-
-    @Override
-    public void putFuture(Long key, RpcFuture rpcFuture) {
-        rpcFutures.put(key, rpcFuture);
-    }
-
-    @Override
-    public RpcFuture getFuture(Long key) {
-        return rpcFutures.get(key);
-    }
-
-    @Override
-    public RpcFuture removeFuture(Long key) {
-        return rpcFutures.remove(key);
-    }
-
-    @Override
-    public Iterator<RpcFuture> iterator() {
-        return rpcFutures.values().iterator();
-    }
-
-    /**
-     * 等待所有未完成的 {@link conglin.clrpc.service.future.RpcFuture} 用于优雅的关闭
-     * {@link conglin.clrpc.service.ConsumerServiceHandler}
-     */
-    private void waitForUncompleteFuture() {
-        while (rpcFutures.size() != 0) {
-            try {
-                LOGGER.info("Waiting uncomplete futures for 500 ms.");
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage());
-            }
-        }
     }
 }
