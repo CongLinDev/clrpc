@@ -49,7 +49,7 @@ abstract public class RpcBootstrap {
      */
     protected String getServiceName(Class<?> clazz) {
         Service service = clazz.getAnnotation(Service.class);
-        if (service != null && !service.ignore())
+        if (service != null && service.enable())
             return service.name();
         LOGGER.warn("Unavailable service from {}", clazz.getName());
         return null;

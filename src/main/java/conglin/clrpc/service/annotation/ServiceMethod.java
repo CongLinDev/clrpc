@@ -9,17 +9,17 @@ import java.lang.annotation.Target;
 /**
  * 该注解用于提供服务的 ServiceBean 的方法上
  * 
- * {@link IgnoreMethod#ignore()} 为 true 时不向外界提供该方法的服务调用
+ * {@link ServiceMethod#enable()} 为 {@code false} 时不向外界提供该方法的服务调用
  */
 
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IgnoreMethod {
+public @interface ServiceMethod {
     /**
-     * 是否忽略服务
+     * 是否开启服务
      * 
      * @return
      */
-    boolean ignore() default true;
+    boolean enable() default false;
 }

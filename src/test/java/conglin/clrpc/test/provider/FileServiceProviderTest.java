@@ -7,6 +7,6 @@ public class FileServiceProviderTest {
     public static void main(String[] args) {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         System.out.println("Provider opening...");
-        bootstrap.publish("FileService", new FileServiceImpl()).hookStop().start();
+        bootstrap.publish(new FileServiceImpl()).hookStop().start();
     }
 }

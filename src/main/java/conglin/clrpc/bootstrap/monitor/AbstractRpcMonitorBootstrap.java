@@ -29,14 +29,9 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
     }
 
     @Override
-    public RpcMonitorBootstrap monitor(String serviceName) {
-        serviceMonitor.monitor(serviceName, this::handleProvider, this::handleConsumer);
-        return this;
-    }
-
-    @Override
     public RpcMonitorBootstrap monitor(Class<?> serviceClass) {
-        return monitor(getServiceName(serviceClass));
+        serviceMonitor.monitor(getServiceName(serviceClass), this::handleProvider, this::handleConsumer);
+        return this;
     }
 
     @Override

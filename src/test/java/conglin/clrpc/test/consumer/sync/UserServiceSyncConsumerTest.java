@@ -13,7 +13,7 @@ public class UserServiceSyncConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        UserService userService = bootstrap.refreshAndSubscribe("UserService", UserService.class);
+        UserService userService = bootstrap.refreshAndSubscribe(UserService.class);
         User user = userService.getUser(1256L, "小明");
         System.out.println(user);
         System.out.println("-------------------------");

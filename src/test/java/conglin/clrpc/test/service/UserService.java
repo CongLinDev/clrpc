@@ -1,8 +1,10 @@
 package conglin.clrpc.test.service;
 
+import conglin.clrpc.service.annotation.Service;
 import conglin.clrpc.test.pojo.User;
 import conglin.clrpc.test.pojo.UserInfo;
 
+@Service(name = "UserService")
 public interface UserService {
     /**
      * 返回用户对象

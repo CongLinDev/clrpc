@@ -68,7 +68,7 @@ public class ConsumerTransfer {
      * @param context
      */
     protected void initContext(ConsumerContext context) {
-        context.setRequestSender(new DefaultRequestSender(context.getFuturesHolder(),
+        context.setRequestSender(new DefaultRequestSender(context.getFuturesHolder(), context.getFallbackHolder(),
                 new DefaultProviderChooser(context.getProviderChooserAdapter()), context.getExecutorService()));
     }
 

@@ -1,7 +1,5 @@
 package conglin.clrpc.bootstrap;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +21,7 @@ import io.netty.bootstrap.ServerBootstrap;
  * <pre>
  * 
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
- * bootstrap.publish(ServiceBean1.class).publish("service2", new ServiceBean2()).hookStop().start();
+ * bootstrap.publish(new ServiceBean()).hookStop().start();
  * 
  * </pre>
  * 
@@ -57,45 +55,14 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * 
      * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
      * 
-     * @param serviceBeanClass 该类必须提供一个无参构造方法
-     * @return
-     */
-    public RpcProviderBootstrap publish(Class<?> serviceBeanClass) {
-        try {
-            Object serviceBean = serviceBeanClass.getDeclaredConstructor().newInstance();
-            return publish(serviceBean);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            LOGGER.error("Can not publish service. Cause: {}", e.getMessage());
-        }
-        return this;
-    }
-
-    /**
-     * 保存即将发布的服务
-     * 
-     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
-     * 
      * @param serviceBean 服务实现对象
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        getSuperServiceName(serviceBean.getClass()).forEach(serviceName -> publish(serviceName, serviceBean));
-        return this;
-    }
-
-    /**
-     * 保存即将发布的服务
-     * 
-     * @param serviceName 服务名
-     * @param serviceBean 服务实现对象
-     * @return
-     */
-    public RpcProviderBootstrap publish(String serviceName, Object serviceBean) {
-        if (serviceName == null)
-            throw new NullPointerException();
-        SERVICE_HANDLER.publish(serviceName, serviceBean);
-        LOGGER.info("Publish service named {}.", serviceName);
+        getSuperServiceName(serviceBean.getClass()).forEach(serviceName -> {
+            SERVICE_HANDLER.publish(serviceName, serviceBean);
+            LOGGER.info("Publish service named {}.", serviceName);
+        });
         return this;
     }
 

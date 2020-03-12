@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.service.fallback.FallbackFailedException;
+import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
@@ -22,13 +24,16 @@ public class DefaultRequestSender implements RequestSender {
 
     protected final FuturesHolder<Long> futuresHolder;
 
+    protected final FallbackHolder fallbackHolder;
+
     protected final ProviderChooser providerChooser;
 
     protected final ExecutorService threadPool;
 
-    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, ProviderChooser providerChooser,
-            ExecutorService threadPool) {
+    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, FallbackHolder fallbackHolder,
+            ProviderChooser providerChooser, ExecutorService threadPool) {
         this.futuresHolder = futuresHolder;
+        this.fallbackHolder = fallbackHolder;
         this.providerChooser = providerChooser;
         this.threadPool = threadPool;
         checkFuture();
@@ -89,9 +94,24 @@ public class DefaultRequestSender implements RequestSender {
                 while (iterator.hasNext()) {
                     BasicFuture f = (BasicFuture) iterator.next();
                     if (f.timeout() && f.retry()) {
-                        resendRequest(f.request());
-                        LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...", f.identifier(),
-                                f.retryTimes());
+                        int retryTimes = f.retryTimes();
+                        BasicRequest r = f.request();
+                        if (fallbackHolder.needFallback(retryTimes)) {
+                            iterator.remove();
+                            try {
+                                Object fallbackResult = fallbackHolder.fallback(r.getServiceName(), r.getMethodName(),
+                                        r.getParameters());
+                                f.done(fallbackResult);
+                            } catch (FallbackFailedException e) {
+                                LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.getMessageId(),
+                                        e.getCause());
+                                f.done(e);
+                            }
+                        } else {
+                            resendRequest(r);
+                            LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",
+                                    r.getMessageId(), retryTimes);
+                        }
                     }
                 }
             }

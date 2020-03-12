@@ -5,6 +5,7 @@ import java.util.Random;
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.proxy.ObjectProxy;
+import conglin.clrpc.test.service.UserService;
 
 /**
  * 测试异步调用服务
@@ -15,7 +16,7 @@ public class UserServiceAsyncConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        ObjectProxy objectProxy = bootstrap.refreshAndSubscribe("UserService");
+        ObjectProxy objectProxy = bootstrap.refreshAndSubscribeAsync(UserService.class);
 
         Random random = new Random();
         for (int i = 0; i < 10; i++) {

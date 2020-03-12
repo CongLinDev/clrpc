@@ -2,6 +2,7 @@ package conglin.clrpc.service.context;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.registry.ServiceRegistry;
+import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
@@ -36,6 +37,20 @@ public interface ConsumerContext extends CommonContext {
     void setFuturesHolder(FuturesHolder<Long> futuresHolder);
 
     /**
+     * 获取 fallback object 持有者
+     * 
+     * @return
+     */
+    FallbackHolder getFallbackHolder();
+
+    /**
+     * 设置 fallback object 持有者
+     * 
+     * @param fallbackHolder
+     */
+    void setFallbackHolder(FallbackHolder fallbackHolder);
+
+    /**
      * 获得服务提供者挑选器适配器
      * 
      * @return
@@ -63,21 +78,6 @@ public interface ConsumerContext extends CommonContext {
      */
     void setIdentifierGenerator(IdentifierGenerator identifierGenerator);
 
-    // /**
-    //  * 获得服务提供者刷新器
-    //  * 
-    //  * @return
-    //  */
-    // Consumer<String> getProviderRefresher();
-
-    // /**
-    //  * 设置服务提供者刷新器
-    //  * 
-    //  * @param providerRefresher
-    //  */
-    // void setProviderRefresher(Consumer<String> providerRefresher);
-
-    
     /**
      * 获得服务注册器
      * 

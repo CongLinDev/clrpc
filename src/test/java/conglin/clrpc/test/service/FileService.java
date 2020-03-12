@@ -1,5 +1,8 @@
 package conglin.clrpc.test.service;
 
+import conglin.clrpc.service.annotation.Service;
+
+@Service(name = "FileService")
 public interface FileService {
     /**
      * 接收文件

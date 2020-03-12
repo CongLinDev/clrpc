@@ -34,14 +34,6 @@ public interface RpcMonitorBootstrap {
     /**
      * 监视指定的服务
      * 
-     * @param serviceName
-     * @return
-     */
-    RpcMonitorBootstrap monitor(String serviceName);
-
-    /**
-     * 监视指定的服务
-     * 
      * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
      * 
      * @param serviceClass

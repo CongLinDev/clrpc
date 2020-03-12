@@ -14,7 +14,7 @@ public class FileServiceSyncConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        FileService fileService = bootstrap.refreshAndSubscribe("FileService", FileService.class);
+        FileService fileService = bootstrap.refreshAndSubscribe(FileService.class);
         
         try(InputStream inputStream = new FileInputStream(new File("architecture/architecture.png"))){
             byte[] bytes = inputStream.readAllBytes();

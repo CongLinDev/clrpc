@@ -7,6 +7,6 @@ public class UserServiceProviderTest {
     public static void main(String[] args) {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         System.out.println("Provider opening...");
-        bootstrap.publish("UserService", new UserServiceImpl()).hookStop().start();
+        bootstrap.publish(new UserServiceImpl()).hookStop().start();
     }
 }

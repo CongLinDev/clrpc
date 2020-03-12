@@ -28,9 +28,9 @@ public @interface Service {
     String name();
 
     /**
-     * 是否忽略该服务
+     * 是否开启该服务
      * 
      * @return
      */
-    boolean ignore() default false;
+    boolean enable() default true;
 }

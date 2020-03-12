@@ -6,6 +6,8 @@ import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.TransactionProxy;
+import conglin.clrpc.test.service.HelloService;
+import conglin.clrpc.test.service.UserService;
 
 public class TransactionConsumerTest {
     public static void main(String[] args) {
@@ -13,7 +15,7 @@ public class TransactionConsumerTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
         TransactionProxy proxy = bootstrap.subscribeTransaction();
-        bootstrap.refresh("HelloService").refresh("UserService");
+        bootstrap.refresh(HelloService.class).refresh(UserService.class);
         
         proxy.begin();
         RpcFuture f1 = proxy.call("HelloService", "hello");

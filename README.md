@@ -19,9 +19,7 @@
 RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
 // 发布服务并开启服务
-bootstrap.publish(ServiceBean1.class) // 配合 @conglin.clrpc.service.annotation.Service 注解
-        .publish(new ServiceBean2())  // 配合 @conglin.clrpc.service.annotation.Service 注解
-        .publish("service3", new ServiceBean3())
+bootstrap.publish(new ServiceBean())
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start();
 ```
@@ -33,18 +31,17 @@ bootstrap.publish(ServiceBean1.class) // 配合 @conglin.clrpc.service.annotatio
 RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
-// 提前刷新需要订阅服务，亦可直接调用 refreshAndSubscribe 刷新并获取代理
-bootstrap.refresh("service1").refresh("service2").refresh("service3");
+// 提前刷新需要订阅的服务
+bootstrap.refresh(Interface1.class).refresh(Interface2.class);
 
 // 使用通用的服务
-CommonProxy commonProxy = bootstrap.subscribe();
+CommonProxy commonProxy = bootstrap.subscribeAsync();
 
 // 订阅同步服务
-Interface1 i1 = bootstrap.subscribe("service1", Interface1.class);
-Interface2 i2 = bootstrap.subscribe(Interface2.class); // 配合 @conglin.clrpc.service.annotation.Service 注解
+Interface1 i = bootstrap.subscribe(Interface1.class);
 
 // 订阅异步服务
-ObjectProxy objectProxy = bootstrap.subscribe("service3");
+ObjectProxy proxy = bootstrap.subscribeAsync(Interface2.class);
 
 // 订阅事务服务
 TransactionProxy transactionProxy = bootstrap.subscribeTransaction();
@@ -64,7 +61,7 @@ RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
 
 // 设置监视器的配置以及你需要监视的服务
 // 并开启服务监视器
-bootstrap.monitor("service1").monitor(Interface2.class).start();
+bootstrap.monitor(Interface1.class).monitor(Interface2.class).start();
 
 // 下面是你的业务逻辑代码
 // ......
@@ -85,7 +82,7 @@ bootstrap.stop();
 
 ### Config File
 
-配置文件位置默认在项目 `src/main/resources` 目录下，默认格式为 `json` ，默认文件为 `clrpc-config.json`。
+配置文件位置默认在项目 `resources` 目录下，默认格式为 `json` ，默认文件为 `clrpc-config.json`。
 
 ### Config Items
 
@@ -100,8 +97,8 @@ bootstrap.stop();
 |        zookeeper.monitor.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务监视地址                          |
 |       zookeeper.monitor.root-path       |          String           |  YES  |     /clrpc     |                         服务监视根节点                         |
 |  zookeeper.monitor.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|       zookeeper.atomicity.address       |          String           |  YES  | 127.0.0.1:2181 |                         原子服务地址                         |
-|      zookeeper.atomicity.root-path      |          String           |  YES  |     /clrpc     |                        原子服务根节点                        |
+|       zookeeper.atomicity.address       |          String           |  YES  | 127.0.0.1:2181 |                          原子服务地址                          |
+|      zookeeper.atomicity.root-path      |          String           |  YES  |     /clrpc     |                         原子服务根节点                         |
 | zookeeper.atomicity.<br>session-timeout |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
 |            meta.provider.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务提供者通用元信息，发布至注册中心              |
 |            meta.consumer.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务消费者通用元信息，发布至注册中心              |
@@ -114,6 +111,8 @@ bootstrap.stop();
 |         consumer.thread.worker          |          Integer          |  YES  |       4        |                 服务使用者的workerGroup线程数                  |
 |   consumer.channel-handler<br>.before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
 |   consumer.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
+|         service.fallback.enable         |          Boolean          |  YES  |     False      |                     是否开启 Fallback 机制                     |
+|       service.fallback.max-retry        |          Integer          |  TES  |       5        |             重试最大的次数，此后执行 Fallback 机制             |
 |    service.thread-pool.<br>core-size    |          Integer          |  YES  |       5        |                      业务线程池核心线程数                      |
 |    service.thread-pool.<br>max-size     |          Integer          |  YES  |       10       |                      业务线程池最大线程数                      |
 |   service.thread-pool.<br>keep-alive    |          Integer          |  YES  |      1000      | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |

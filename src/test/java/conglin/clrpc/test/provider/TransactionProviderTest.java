@@ -8,7 +8,7 @@ public class TransactionProviderTest {
     public static void main(String[] args) {
         RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
         System.out.println("Provider opening...");
-        bootstrap.publish("HelloService", new HelloServiceImpl()).publish("UserService", new UserServiceImpl())
+        bootstrap.publish(new HelloServiceImpl()).publish(new UserServiceImpl())
                 .hookStop().start();
     }
 }

@@ -9,7 +9,7 @@ public class HelloServiceSyncConsumerTimeTest {
         System.out.println("Consumer opening...");
         bootstrap.start();
 
-        HelloService helloService = bootstrap.refreshAndSubscribe("HelloService", HelloService.class);
+        HelloService helloService = bootstrap.refreshAndSubscribe(HelloService.class);
 
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {

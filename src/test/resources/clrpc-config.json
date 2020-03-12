@@ -26,6 +26,8 @@
     "consumer.channel-handler.before": [],
     "consumer.channel-handler.after": [],
 
+    "service.fallback.enable": false,
+    "service.fallback.max-retry": 5,
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,
     "service.thread-pool.keep-alive": 1000,

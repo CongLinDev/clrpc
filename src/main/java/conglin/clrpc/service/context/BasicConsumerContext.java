@@ -2,6 +2,7 @@ package conglin.clrpc.service.context;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.registry.ServiceRegistry;
+import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
@@ -25,6 +26,18 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
     @Override
     public FuturesHolder<Long> getFuturesHolder() {
         return futuresHolder;
+    }
+
+    private FallbackHolder fallbackHolder;
+
+    @Override
+    public FallbackHolder getFallbackHolder() {
+        return fallbackHolder;
+    }
+
+    @Override
+    public void setFallbackHolder(FallbackHolder fallbackHolder) {
+        this.fallbackHolder = fallbackHolder;
     }
 
     @Override

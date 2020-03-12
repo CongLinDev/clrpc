@@ -13,6 +13,8 @@ import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.registry.ServiceDiscovery;
 import conglin.clrpc.registry.ZooKeeperServiceDiscovery;
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.fallback.DefaultFallbackHolder;
+import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.DefaultFuturesHolder;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.proxy.BasicObjectProxy;
@@ -26,6 +28,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private final FuturesHolder<Long> futuresHolder;
 
+    private final FallbackHolder fallbackHolder;
+
     private ServiceDiscovery serviceDiscovery;
 
     private ConsumerContext context;
@@ -33,6 +37,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         futuresHolder = new DefaultFuturesHolder();
+        fallbackHolder = new DefaultFallbackHolder(configurer);
     }
 
     /**
@@ -79,6 +84,16 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     }
 
     /**
+     * 准备工作
+     * 
+     * @param serviceName
+     * @param interfaceClass
+     */
+    public void prepare(String serviceName, Class<?> interfaceClass) {
+        fallbackHolder.add(serviceName, interfaceClass);
+    }
+
+    /**
      * 启动 获得请求发送器，用于检查超时Future 重发请求
      * 
      * @param context
@@ -98,6 +113,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         context.setExecutorService(getExecutorService());
         context.setServiceRegister(serviceDiscovery);
         context.setFuturesHolder(futuresHolder);
+        context.setFallbackHolder(fallbackHolder);
     }
 
     /**
