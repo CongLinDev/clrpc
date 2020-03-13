@@ -59,7 +59,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        getSuperServiceName(serviceBean.getClass()).forEach(serviceName -> {
+        resolveSuperServiceName(serviceBean.getClass()).forEach(serviceName -> {
             SERVICE_HANDLER.publish(serviceName, serviceBean);
             LOGGER.info("Publish service named {}.", serviceName);
         });
@@ -96,23 +96,13 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 虚拟机钩子
-     * 
-     * @param runnable
-     * @return
-     */
-    public RpcProviderBootstrap hook(Runnable runnable) {
-        Runtime.getRuntime().addShutdownHook(new Thread(runnable));
-        return this;
-    }
-
-    /**
      * 关闭钩子
      * 
      * @return this
      */
     public RpcProviderBootstrap hookStop() {
-        return hook(this::stop);
+        hook(this::stop);
+        return this;
     }
 
     /**
@@ -127,7 +117,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         // 设置属性配置器
         context.setPropertyConfigurer(configurer());
         // 设置序列化处理器
-        context.setSerializationHandler(option.getSerializationHandler());
+        context.setSerializationHandler(option.serializationHandler());
 
         return context;
     }

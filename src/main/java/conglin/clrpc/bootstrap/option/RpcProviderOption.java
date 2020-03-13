@@ -14,7 +14,7 @@ public class RpcProviderOption {
      * 
      * @return the serializationHandler
      */
-    public SerializationHandler getSerializationHandler() {
+    public SerializationHandler serializationHandler() {
         if (serializationHandler == null)
             serializationHandler = new ProtostuffSerializationHandler();
         return serializationHandler;
@@ -26,7 +26,7 @@ public class RpcProviderOption {
      * @param serializationHandler the serializationHandler to set
      * @return this
      */
-    public RpcProviderOption setSerializationHandler(SerializationHandler serializationHandler) {
+    public RpcProviderOption serializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
         return this;
     }

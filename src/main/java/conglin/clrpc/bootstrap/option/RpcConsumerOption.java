@@ -16,7 +16,7 @@ public class RpcConsumerOption {
      * 
      * @return the serializationHandler
      */
-    public SerializationHandler getSerializationHandler() {
+    public SerializationHandler serializationHandler() {
         if (serializationHandler == null)
             serializationHandler = new ProtostuffSerializationHandler();
         return serializationHandler;
@@ -28,7 +28,7 @@ public class RpcConsumerOption {
      * @param serializationHandler the serializationHandler to set
      * @return this
      */
-    public RpcConsumerOption setSerializationHandler(SerializationHandler serializationHandler) {
+    public RpcConsumerOption serializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
         return this;
     }
@@ -42,7 +42,7 @@ public class RpcConsumerOption {
      * @param identifierGenerator the identifierGenerator to set
      * @return this
      */
-    public RpcConsumerOption setIdentifierGenerator(IdentifierGenerator identifierGenerator) {
+    public RpcConsumerOption identifierGenerator(IdentifierGenerator identifierGenerator) {
         this.identifierGenerator = identifierGenerator;
         return this;
     }
@@ -52,7 +52,7 @@ public class RpcConsumerOption {
      * 
      * @return the identifierGenerator
      */
-    public IdentifierGenerator getIdentifierGenerator() {
+    public IdentifierGenerator identifierGenerator() {
         if (identifierGenerator == null)
             identifierGenerator = new RandomIdentifierGenerator();
         return identifierGenerator;
@@ -65,9 +65,9 @@ public class RpcConsumerOption {
      * 设置 服务提供者挑选适配器
      * 
      * @param providerChooserAdapter the providerChooserAdapter to set
-     * @return
+     * @return this
      */
-    public RpcConsumerOption setProviderChooserAdapter(ProviderChooserAdapter providerChooserAdapter) {
+    public RpcConsumerOption providerChooserAdapter(ProviderChooserAdapter providerChooserAdapter) {
         this.providerChooserAdapter = providerChooserAdapter;
         return this;
     }
@@ -77,7 +77,7 @@ public class RpcConsumerOption {
      * 
      * @return the providerChooserAdapter
      */
-    public ProviderChooserAdapter getProviderChooserAdapter() {
+    public ProviderChooserAdapter providerChooserAdapter() {
         if (providerChooserAdapter == null)
             providerChooserAdapter = (requestId, methodName) -> methodName.hashCode();
         return providerChooserAdapter;

@@ -14,6 +14,7 @@ import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.BasicResponse;
 
 /**
  * 默认的请求发送器，采用异步直接发送请求
@@ -98,15 +99,19 @@ public class DefaultRequestSender implements RequestSender {
                         BasicRequest r = f.request();
                         if (fallbackHolder.needFallback(retryTimes)) {
                             iterator.remove();
+                            
+                            BasicResponse fallbackResponse = new BasicResponse(r.getMessageId());
                             try {
                                 Object fallbackResult = fallbackHolder.fallback(r.getServiceName(), r.getMethodName(),
                                         r.getParameters());
-                                f.done(fallbackResult);
+                                fallbackResponse.setResult(fallbackResult);
                             } catch (FallbackFailedException e) {
                                 LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.getMessageId(),
                                         e.getCause());
-                                f.done(e);
+                                fallbackResponse.setResult(e);
+                                fallbackResponse.signError();
                             }
+                            f.done(fallbackResponse);
                         } else {
                             resendRequest(r);
                             LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",

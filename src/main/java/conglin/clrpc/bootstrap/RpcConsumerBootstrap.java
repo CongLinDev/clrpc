@@ -80,7 +80,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 代理服务对象
      */
     public <T> T subscribe(Class<T> interfaceClass) {
-        String serviceName = getServiceName(interfaceClass);
+        String serviceName = resolveServiceName(interfaceClass);
         LOGGER.info("Subscribe synchronous service named {}.", serviceName);
         return SERVICE_HANDLER.getPrxoy(interfaceClass, serviceName);
     }
@@ -95,7 +95,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return proxy
      */
     public ObjectProxy subscribeAsync(Class<?> interfaceClass) {
-        String serviceName = getServiceName(interfaceClass);
+        String serviceName = resolveServiceName(interfaceClass);
         LOGGER.info("Subscribe asynchronous service named {}.", serviceName);
         return SERVICE_HANDLER.getPrxoy(serviceName);
     }
@@ -109,7 +109,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return this
      */
     public RpcConsumerBootstrap refresh(Class<?> interfaceClass) {
-        String serviceName = getServiceName(interfaceClass);
+        String serviceName = resolveServiceName(interfaceClass);
         if (serviceName == null)
             throw new NullPointerException();
         SERVICE_HANDLER.prepare(serviceName, interfaceClass);
@@ -204,11 +204,11 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.setPropertyConfigurer(configurer());
 
         // 设置序列化处理器
-        context.setSerializationHandler(option.getSerializationHandler());
+        context.setSerializationHandler(option.serializationHandler());
         // 设置ID生成器
-        context.setIdentifierGenerator(option.getIdentifierGenerator());
+        context.setIdentifierGenerator(option.identifierGenerator());
         // 设置服务提供者挑选适配器
-        context.setProviderChooserAdapter(option.getProviderChooserAdapter());
+        context.setProviderChooserAdapter(option.providerChooserAdapter());
         return context;
     }
 }

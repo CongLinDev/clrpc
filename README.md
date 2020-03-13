@@ -61,13 +61,10 @@ RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
 
 // 设置监视器的配置以及你需要监视的服务
 // 并开启服务监视器
-bootstrap.monitor(Interface1.class).monitor(Interface2.class).start();
-
-// 下面是你的业务逻辑代码
-// ......
-
-// 关闭服务监视器
-bootstrap.stop();
+bootstrap.monitor(Interface1.class)
+        .monitor(Interface2.class)
+        .hookStop() // 注册关闭钩子，用于优雅关闭服务监视器
+        .start();
 ```
 
 ## Architecture

@@ -30,7 +30,7 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
 
     @Override
     public RpcMonitorBootstrap monitor(Class<?> serviceClass) {
-        serviceMonitor.monitor(getServiceName(serviceClass), this::handleProvider, this::handleConsumer);
+        serviceMonitor.monitor(resolveServiceName(serviceClass), this::handleProvider, this::handleConsumer);
         return this;
     }
 
@@ -47,6 +47,12 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
     @Override
     public void stop() {
         super.stop();
+    }
+
+    @Override
+    public RpcMonitorBootstrap hookStop() {
+        hook(this::stop);
+        return this;
     }
 
     /**

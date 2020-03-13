@@ -12,8 +12,9 @@ import java.util.Collection;
  * <pre>
  * 
  * RpcMonitorBootstrap bootstrap = ...; // choose you like 
- * bootstrap.monitor("service1")
- *          .monitor("service2")
+ * bootstrap.monitor(Interface1.class)
+ *          .monitor(Interface2.class)
+ *          .hookStop()
  *          .start();
  * 
  * </pre>
@@ -61,4 +62,11 @@ public interface RpcMonitorBootstrap {
      * 关闭监视器
      */
     void stop();
+
+    /**
+     * 关闭钩子
+     * 
+     * @return this
+     */
+    RpcMonitorBootstrap hookStop();
 }

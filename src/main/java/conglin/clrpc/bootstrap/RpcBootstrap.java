@@ -47,7 +47,7 @@ abstract public class RpcBootstrap {
      * @param clazz
      * @return
      */
-    protected String getServiceName(Class<?> clazz) {
+    public String resolveServiceName(Class<?> clazz) {
         Service service = clazz.getAnnotation(Service.class);
         if (service != null && service.enable())
             return service.name();
@@ -61,9 +61,18 @@ abstract public class RpcBootstrap {
      * @param clazz
      * @return
      */
-    protected Collection<String> getSuperServiceName(Class<?> clazz) {
-        return Stream.of(clazz.getInterfaces()).map(this::getServiceName).filter(Objects::nonNull)
+    public Collection<String> resolveSuperServiceName(Class<?> clazz) {
+        return Stream.of(clazz.getInterfaces()).map(this::resolveServiceName).filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 虚拟机钩子
+     * 
+     * @param runnable
+     */
+    public void hook(Runnable runnable) {
+        Runtime.getRuntime().addShutdownHook(new Thread(runnable));
     }
 
     /**
