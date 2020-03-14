@@ -12,7 +12,6 @@ import conglin.clrpc.test.service.UserService;
 public class TransactionConsumerTest {
     public static void main(String[] args) {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-        System.out.println("Consumer opening...");
         bootstrap.start();
         TransactionProxy proxy = bootstrap.subscribeTransaction();
         bootstrap.refresh(HelloService.class).refresh(UserService.class);
@@ -49,6 +48,5 @@ public class TransactionConsumerTest {
             e.printStackTrace();
         }
         bootstrap.stop();
-        System.out.println("Consumer closing...");
     }
 }

@@ -6,7 +6,6 @@ import conglin.clrpc.test.service.HelloService;
 public class HelloServiceSyncConsumerTimeTest {
     public static void main(String[] args) {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-        System.out.println("Consumer opening...");
         bootstrap.start();
 
         HelloService helloService = bootstrap.refreshAndSubscribe(HelloService.class);
@@ -19,7 +18,5 @@ public class HelloServiceSyncConsumerTimeTest {
         System.out.println("Waste time: " + (end - start) + " ms");
 
         bootstrap.stop();
-
-        System.out.println("Consumer closing...");
     }
 }

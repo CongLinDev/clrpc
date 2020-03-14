@@ -15,11 +15,13 @@
 ### Define Service And Implement it
 
 ```java
+// define a service named 'HelloService'
 @conglin.clrpc.service.annotation.Service(name = "HelloService")
 interface HelloService {
     String hello(String text);
 }
 
+// implements interface HelloService
 class HelloServiceImpl implements HelloService {
     @Override
     public String hello(String text) {
@@ -51,11 +53,11 @@ bootstrap.start();
 bootstrap.refresh(HelloService.class);
 
 //使用同步服务
-HelloService syncService = subscribe(HelloService.class);
+HelloService syncService = bootstrap.subscribe(HelloService.class);
 String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
 // 使用异步服务
-HelloService asyncService = subscribeAsync(HelloService.class);
+HelloService asyncService = bootstrap.subscribeAsync(HelloService.class);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
 future.addCallback(new Callback(){ // 使用回调处理结果

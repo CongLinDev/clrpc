@@ -10,7 +10,6 @@ import conglin.clrpc.test.service.UserService;
 public class UserServiceSyncConsumerTest {
     public static void main(String[] args) {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-        System.out.println("Consumer opening...");
         bootstrap.start();
 
         UserService userService = bootstrap.refreshAndSubscribe(UserService.class);
@@ -19,6 +18,5 @@ public class UserServiceSyncConsumerTest {
         System.out.println("-------------------------");
 
         bootstrap.stop();
-        System.out.println("Consumer closing...");
     }
 }

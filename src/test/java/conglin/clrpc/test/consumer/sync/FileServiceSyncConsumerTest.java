@@ -11,7 +11,6 @@ import conglin.clrpc.test.service.FileService;
 public class FileServiceSyncConsumerTest {
     public static void main(String[] args) {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-        System.out.println("Consumer opening...");
         bootstrap.start();
 
         FileService fileService = bootstrap.refreshAndSubscribe(FileService.class);
@@ -24,7 +23,5 @@ public class FileServiceSyncConsumerTest {
         }catch(IOException e){
             e.printStackTrace();
         }
-
-        System.out.println("Consumer closing...");
     }
 }

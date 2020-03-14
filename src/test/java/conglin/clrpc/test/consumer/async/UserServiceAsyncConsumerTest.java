@@ -13,11 +13,8 @@ import conglin.clrpc.test.service.UserService;
 public class UserServiceAsyncConsumerTest {
     public static void main(String[] args) {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
-        System.out.println("Consumer opening...");
         bootstrap.start();
-
         UserService service = bootstrap.refreshAndSubscribeAsync(UserService.class);
-
         Random random = new Random();
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
@@ -41,6 +38,5 @@ public class UserServiceAsyncConsumerTest {
         }
 
         bootstrap.stop();
-        System.out.println("Consumer closing...");
     }
 }
