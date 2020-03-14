@@ -3,15 +3,6 @@ package conglin.clrpc.service.fallback;
 public interface FallbackHolder {
 
     /**
-     * 直接添加 fallback 对象
-     * 
-     * @param key
-     * @param fallback
-     * @return
-     */
-    Object put(String key, Object fallback);
-
-    /**
      * 添加指定的 fallback
      * 
      * @param key
@@ -21,17 +12,9 @@ public interface FallbackHolder {
     boolean add(String key, Class<?> interfaceClass);
 
     /**
-     * 获取 fallback 对象
-     * 
-     * @param key
-     * @return
-     */
-    Object get(String key);
-
-    /**
      * 调用 Fallback
      * 
-     * 使用该方法前应当使用 {@link FallbackHolder#mode()} 确认当前模式
+     * 使用该方法前应当使用 {@link FallbackHolder#enable()} 确认当前是否开启
      * 
      * @param service
      * @param methodName

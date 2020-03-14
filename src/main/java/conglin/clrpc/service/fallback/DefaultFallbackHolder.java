@@ -20,15 +20,14 @@ public class DefaultFallbackHolder implements FallbackHolder {
     private final int MAX_RETRY_TIMES;
 
     public DefaultFallbackHolder(PropertyConfigurer configurer) {
-        boolean enable = configurer.getOrDefault("service.fallback.enable", false);
-        if (enable) {
-            MAX_RETRY_TIMES = configurer.getOrDefault("service.fallback.max-retry", 5);
+        MAX_RETRY_TIMES = configurer.getOrDefault("consumer.fallback.max-retry", -1);
+        if (enable()) {
             holder = new HashMap<>();
+            LOGGER.info("Fallback enabled.");
         } else {
             holder = null;
-            MAX_RETRY_TIMES = -1;
+            LOGGER.info("Fallback disabled.");
         }
-        LOGGER.debug("Fallback enable={}.", enable);
     }
 
     @Override
@@ -42,7 +41,7 @@ public class DefaultFallbackHolder implements FallbackHolder {
 
         try {
             Object fallbackObject = factoryClass.getDeclaredConstructor().newInstance().create(interfaceClass);
-            put(key, fallbackObject);
+            holder.put(key, fallbackObject);
             return true;
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | NoSuchMethodException | SecurityException e) {
@@ -53,20 +52,7 @@ public class DefaultFallbackHolder implements FallbackHolder {
 
     @Override
     public boolean enable() {
-        return MAX_RETRY_TIMES < 0;
-    }
-
-    @Override
-    public Object put(String key, Object fallback) {
-        if (!enable())
-            return null;
-        return holder.put(key, fallback);
-
-    }
-
-    @Override
-    public Object get(String key) {
-        return holder.get(key);
+        return MAX_RETRY_TIMES > -1;
     }
 
     @Override

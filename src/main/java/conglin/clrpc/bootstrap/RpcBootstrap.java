@@ -58,6 +58,8 @@ abstract public class RpcBootstrap {
     /**
      * 获取父接口的注解服务名
      * 
+     * 该方法只返回上一级接口的服务名 而不是所有接口的服务名
+     * 
      * @param clazz
      * @return
      */

@@ -17,8 +17,9 @@ import conglin.clrpc.service.fallback.DefaultFallbackHolder;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.DefaultFuturesHolder;
 import conglin.clrpc.service.future.FuturesHolder;
-import conglin.clrpc.service.proxy.BasicObjectProxy;
+import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.CommonProxy;
+import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
 
@@ -46,22 +47,26 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @param <T>
      * @param interfaceClass
      * @param serviceName
-     * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getPrxoy(Class<T> interfaceClass, String serviceName) {
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { interfaceClass },
-                getPrxoy(serviceName));
+    public <T> T getSyncProxy(Class<T> interfaceClass, String serviceName) {
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class<?>[] { interfaceClass },
+                new SyncObjectProxy(serviceName, context.getRequestSender(), context.getIdentifierGenerator()));
     }
 
     /**
      * 获取异步服务代理
      * 
+     * @param <T>
+     * @param interfaceClass
      * @param serviceName
-     * @return
      */
-    public BasicObjectProxy getPrxoy(String serviceName) {
-        return new BasicObjectProxy(serviceName, context.getRequestSender(), context.getIdentifierGenerator());
+    @SuppressWarnings("unchecked")
+    public <T> T getAsyncProxy(Class<T> interfaceClass, String serviceName) {
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class<?>[] { interfaceClass },
+                new AsyncObjectProxy(serviceName, context.getRequestSender(), context.getIdentifierGenerator()));
     }
 
     /**
@@ -69,7 +74,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 
      * @return
      */
-    public CommonProxy getPrxoy() {
+    public CommonProxy getCommonPrxoy() {
         return new CommonProxy(context.getRequestSender(), context.getIdentifierGenerator());
     }
 

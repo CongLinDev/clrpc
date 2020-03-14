@@ -12,6 +12,22 @@
 
 ## Usage
 
+### Define Service And Implement it
+
+```java
+
+interface HelloService {
+    String hello(String text);
+}
+
+class HelloServiceImpl implements HelloService {
+    @Override
+    public String hello(String text) {
+        return "Hello " + text;
+    }
+}
+```
+
 ### Service Provider
 
 ```java
@@ -19,7 +35,7 @@
 RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
 // 发布服务并开启服务
-bootstrap.publish(new ServiceBean())
+bootstrap.publish(new HelloServiceImpl())
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start();
 ```
@@ -32,22 +48,16 @@ RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
 // 提前刷新需要订阅的服务
-bootstrap.refresh(Interface1.class).refresh(Interface2.class);
+bootstrap.refresh(HelloService.class);
 
-// 使用通用的服务
-CommonProxy commonProxy = bootstrap.subscribeAsync();
+//使用同步服务
+HelloService syncService = subscribe(HelloService.class);
+syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
-// 订阅同步服务
-Interface1 i = bootstrap.subscribe(Interface1.class);
-
-// 订阅异步服务
-ObjectProxy proxy = bootstrap.subscribeAsync(Interface2.class);
-
-// 订阅事务服务
-TransactionProxy transactionProxy = bootstrap.subscribeTransaction();
-
-// 下面是你的业务逻辑代码
-// ......
+// 使用异步服务
+HelloService asyncService = subscribeAsync(HelloService.class);
+asyncService.hello("I am consumer!"); // 直接返回默认值
+RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的future对象
 
 // 关闭服务消费者
 bootstrap.stop();
@@ -61,8 +71,7 @@ RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
 
 // 设置监视器的配置以及你需要监视的服务
 // 并开启服务监视器
-bootstrap.monitor(Interface1.class)
-        .monitor(Interface2.class)
+bootstrap.monitor(HelloService.class)
         .hookStop() // 注册关闭钩子，用于优雅关闭服务监视器
         .start();
 ```
@@ -106,10 +115,9 @@ bootstrap.monitor(Interface1.class)
 |   provider.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
 |           consumer.wait-time            |          Integer          |  YES  |      5000      |             无服务提供者时等待重试时间，单位为毫秒             |
 |         consumer.thread.worker          |          Integer          |  YES  |       4        |                 服务使用者的workerGroup线程数                  |
+|       consumer.fallback.max-retry       |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
 |   consumer.channel-handler<br>.before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
 |   consumer.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
-|         service.fallback.enable         |          Boolean          |  YES  |     False      |                     是否开启 Fallback 机制                     |
-|       service.fallback.max-retry        |          Integer          |  TES  |       5        |             重试最大的次数，此后执行 Fallback 机制             |
 |    service.thread-pool.<br>core-size    |          Integer          |  YES  |       5        |                      业务线程池核心线程数                      |
 |    service.thread-pool.<br>max-size     |          Integer          |  YES  |       10       |                      业务线程池最大线程数                      |
 |   service.thread-pool.<br>keep-alive    |          Integer          |  YES  |      1000      | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
