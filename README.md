@@ -15,7 +15,7 @@
 ### Define Service And Implement it
 
 ```java
-
+@conglin.clrpc.service.annotation.Service(name = "HelloService")
 interface HelloService {
     String hello(String text);
 }
@@ -52,13 +52,18 @@ bootstrap.refresh(HelloService.class);
 
 //使用同步服务
 HelloService syncService = subscribe(HelloService.class);
-syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
+String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
 // 使用异步服务
 HelloService asyncService = subscribeAsync(HelloService.class);
-asyncService.hello("I am consumer!"); // 直接返回默认值
-RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的future对象
-
+String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
+RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
+future.addCallback(new Callback(){ // 使用回调处理结果
+    @Override
+    public void success(Object res) {}
+    @Override
+    public void fail(Exception e) {}
+});
 // 关闭服务消费者
 bootstrap.stop();
 ```
