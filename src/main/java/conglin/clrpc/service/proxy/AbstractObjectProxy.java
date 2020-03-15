@@ -31,7 +31,7 @@ abstract public class AbstractObjectProxy extends BasicProxy implements Invocati
                     return proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
                             + ", with InvocationHandler " + this;
                 default:
-                    throw new IllegalStateException(String.valueOf(method));
+                    throw new IllegalStateException(methodName);
             }
         }
 

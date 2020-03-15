@@ -72,6 +72,7 @@ future.addCallback(new Callback(){ // 使用回调处理结果
     @Override
     public void fail(Exception e) {}
 });
+
 // 关闭服务消费者
 bootstrap.stop();
 ```
@@ -154,7 +155,7 @@ bootstrap.monitor(HelloService.class)
 |   provider.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
 |           consumer.wait-time            |          Integer          |  YES  |      5000      |             无服务提供者时等待重试时间，单位为毫秒             |
 |         consumer.thread.worker          |          Integer          |  YES  |       4        |                 服务使用者的workerGroup线程数                  |
-|       consumer.fallback.max-retry       |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
+|     consumer.fallback<br>.max-retry     |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
 |   consumer.channel-handler<br>.before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
 |   consumer.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
 |    service.thread-pool.<br>core-size    |          Integer          |  YES  |       5        |                      业务线程池核心线程数                      |

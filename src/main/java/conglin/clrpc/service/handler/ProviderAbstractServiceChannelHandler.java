@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.annotation.ServiceMethod;
+import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -108,8 +108,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
             Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
 
             // 服务是否被忽略
-            ServiceMethod serviceMethod = method.getAnnotation(ServiceMethod.class);
-            if (serviceMethod != null && !serviceMethod.enable())
+            if (AnnotationParser.enableServiceMethod(method))
                 throw new ServiceExecutionException(request, new NoSuchMethodException(methodName));
             
             method.setAccessible(true);

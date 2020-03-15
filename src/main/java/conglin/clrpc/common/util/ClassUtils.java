@@ -66,7 +66,9 @@ public final class ClassUtils {
     }
 
     /**
-     * 返回类的基本值
+     * 返回类对象的默认值
+     * 
+     * 除基本类型外(不包括包装类) 均返回 {@code null}
      * 
      * @param clazz
      * @return
@@ -113,27 +115,30 @@ public final class ClassUtils {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { interfaceClass }, (proxy, method, args) -> {
                     String methodName = method.getName();
-                    switch (methodName) {
-                        case "equals":
-                            return proxy == args[0];
-                        case "hashCode":
-                            return System.identityHashCode(proxy);
-                        case "toString":
-                            return proxy.getClass().getName() + "@"
-                                    + Integer.toHexString(System.identityHashCode(proxy))
-                                    + ", with Default InvocationHandler";
-                        default: {
-                            if (!method.isDefault())
-                                return defaultValue(method.getReturnType());
-                            // 执行默认方法
-                            // return MethodHandles.lookup().in(interfaceClass).unreflectSpecial(method,
-                            // interfaceClass).bindTo(proxy).invokeWithArguments(args);
-                            Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
-                            constructor.setAccessible(true);
-                            return constructor.newInstance(interfaceClass).in(interfaceClass)
-                                    .unreflectSpecial(method, interfaceClass).bindTo(proxy).invokeWithArguments(args);
+                    if (Object.class == method.getDeclaringClass()) {
+                        switch (methodName) {
+                            case "equals":
+                                return proxy == args[0];
+                            case "hashCode":
+                                return System.identityHashCode(proxy);
+                            case "toString":
+                                return proxy.getClass().getName() + "@"
+                                        + Integer.toHexString(System.identityHashCode(proxy))
+                                        + ", with Default InvocationHandler";
+                            default:
+                                throw new IllegalStateException(methodName);
                         }
                     }
+
+                    if (!method.isDefault())
+                        return defaultValue(method.getReturnType());
+                    // 执行默认方法
+                    // return MethodHandles.lookup().in(interfaceClass).unreflectSpecial(method,
+                    // interfaceClass).bindTo(proxy).invokeWithArguments(args);
+                    Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+                    constructor.setAccessible(true);
+                    return constructor.newInstance(interfaceClass).in(interfaceClass)
+                            .unreflectSpecial(method, interfaceClass).bindTo(proxy).invokeWithArguments(args);
                 });
     }
 }

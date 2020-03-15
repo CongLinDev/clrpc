@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.annotation.Fallback;
+import conglin.clrpc.service.annotation.AnnotationParser;
 
 public class DefaultFallbackHolder implements FallbackHolder {
 
@@ -34,10 +34,9 @@ public class DefaultFallbackHolder implements FallbackHolder {
     public boolean add(String key, Class<?> interfaceClass) {
         if (!enable())
             return true;
-        Fallback fallback = interfaceClass.getAnnotation(Fallback.class);
-        if (fallback == null)
+        Class<? extends FallbackFactory> factoryClass = AnnotationParser.resolveFallbackFactory(interfaceClass);
+        if (factoryClass == null)
             return false;
-        Class<? extends FallbackFactory> factoryClass = fallback.factory();
 
         try {
             Object fallbackObject = factoryClass.getDeclaredConstructor().newInstance().create(interfaceClass);
