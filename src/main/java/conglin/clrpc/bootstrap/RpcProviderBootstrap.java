@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.bootstrap.option.RpcProviderOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.ProviderServiceHandler;
+import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.context.BasicProviderContext;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.ProviderTransfer;
@@ -59,7 +60,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        resolveSuperServiceName(serviceBean.getClass()).forEach(serviceName -> {
+        AnnotationParser.superServiceNames(serviceBean.getClass()).forEach(serviceName -> {
             SERVICE_HANDLER.publish(serviceName, serviceBean);
             LOGGER.info("Publish service named {}.", serviceName);
         });

@@ -18,14 +18,20 @@
 // define a service named 'HelloService'
 @conglin.clrpc.service.annotation.Service(name = "HelloService")
 interface HelloService {
-    String hello(String text);
+    String hello(String arg);
+    String hi(String arg);
 }
 
 // implements interface HelloService
 class HelloServiceImpl implements HelloService {
     @Override
-    public String hello(String text) {
-        return "Hello " + text;
+    public String hello(String arg) {
+        return "Hello " + arg;
+    }
+
+    @Override
+    public String hi(String arg) {
+        return "Hi " + arg;
     }
 }
 ```
@@ -66,6 +72,32 @@ future.addCallback(new Callback(){ // 使用回调处理结果
     @Override
     public void fail(Exception e) {}
 });
+// 关闭服务消费者
+bootstrap.stop();
+```
+
+### Service Consumer (With Transaction)
+
+```java
+// 创建服务消费者
+RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
+// 开启服务消费者
+bootstrap.start();
+// 提前刷新需要订阅的服务
+bootstrap.refresh(HelloService.class);
+
+TransactionProxy proxy = bootstrap.subscribeTransaction();
+HelloService service = proxy.subscribeAsync(HelloService.class);
+
+proxy.begin(); // 事务开启
+
+service.hello("first request"); // 异步发送第一条请求
+RpcFuture f1 = AsyncObjectProxy.lastFuture(); // 获取第一条请求产生的future对象
+service.hi("second request"); // 异步发送第二条请求
+RpcFuture f2 = AsyncObjectProxy.lastFuture(); // 获取第二条请求产生的future对象
+
+RpcFuture future = proxy.commit(); // 事务提交 返回事务 Future
+
 // 关闭服务消费者
 bootstrap.stop();
 ```

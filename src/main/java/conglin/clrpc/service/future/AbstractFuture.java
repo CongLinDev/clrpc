@@ -34,7 +34,8 @@ abstract public class AbstractFuture implements RpcFuture {
     protected Callback futureCallback; // 回调
 
     private long startTime; // 开始时间
-    private volatile boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
+    private boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
+    private boolean fallback; // 是否是 fallback产生的结果，只有在该future已经完成的情况下，该变量才有效
 
     public AbstractFuture() {
         this.SYNCHRONIZER = new FutureSynchronizer();
@@ -116,6 +117,16 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
+    public boolean isFallback() {
+        return fallback;
+    }
+
+    @Override
+    public void signFallback() {
+        fallback = true;
+    }
+
+    @Override
     public boolean retry() {
         if (SYNCHRONIZER.retry()) {
             resetTime();
@@ -132,7 +143,7 @@ abstract public class AbstractFuture implements RpcFuture {
     /**
      * 设置错误标志位
      */
-    protected void setError() {
+    protected void signError() {
         this.error = true;
     }
 

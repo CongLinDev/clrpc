@@ -1,7 +1,5 @@
 package conglin.clrpc.service.proxy;
 
-import java.lang.reflect.Method;
-
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.TransactionRequest;
@@ -19,6 +17,7 @@ public interface TransactionProxy {
 
     /**
      * 开始一个事务
+     * 
      * @param serial 是否顺序执行
      * @throws TransactionException
      */
@@ -33,20 +32,7 @@ public interface TransactionProxy {
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(String serviceName, String method, Object... args);
-
-    /**
-     * 发送事务内部的一条原子性请求
-     * 
-     * @param serviceName 服务名
-     * @param method      服务方法
-     * @param args        服务参数
-     * @return sub future
-     * @throws TransactionException
-     */
-    default RpcFuture call(String serviceName, Method method, Object... args) {
-        return call(serviceName, method.getName(), args);
-    }
+    RpcFuture call(String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
@@ -71,4 +57,17 @@ public interface TransactionProxy {
      * @throws TransactionException
      */
     void abort() throws TransactionException;
+
+    /**
+     * 获取异步原子请求代理
+     * 
+     * 使用该代理的效果等同于 {@link TransactionProxy#call(String, String, Object...)}
+     * 
+     * 需要注意的是 该方法产生的对象与 {@code TransactionProxy} 对象深度绑定
+     * 
+     * @param <T>
+     * @param interfaceClass
+     * @return
+     */
+    <T> T subscribeAsync(Class<T> interfaceClass);
 }

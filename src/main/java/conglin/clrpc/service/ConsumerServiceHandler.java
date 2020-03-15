@@ -18,7 +18,7 @@ import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.DefaultFuturesHolder;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
-import conglin.clrpc.service.proxy.CommonProxy;
+import conglin.clrpc.service.proxy.BasicProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
@@ -70,12 +70,12 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     }
 
     /**
-     * 获取通用的异步服务代理
+     * 获取基本的异步服务代理
      * 
      * @return
      */
-    public CommonProxy getCommonPrxoy() {
-        return new CommonProxy(context.getRequestSender(), context.getIdentifierGenerator());
+    public BasicProxy getBasicProxy() {
+        return new BasicProxy(context.getRequestSender(), context.getIdentifierGenerator());
     }
 
     /**

@@ -39,12 +39,14 @@ public class ProviderTransactionServiceChannelHandler
         // 标记事务的本条请求被当前服务提供者所占有
         long transactionId = request.getTransactionId();
         int serialId = request.getSerialId();
-        LOGGER.debug("Receive transaction transactionId={}", transactionId);
+        LOGGER.debug("Receive transaction request(transactionId={} serialId={})", transactionId, serialId);
 
         if (!helper.sign(transactionId, serialId)) {
-            LOGGER.debug("Ignore transaction transactionId={}", transactionId);
+            LOGGER.debug("Ignore transaction request(transactionId={} serialId={})", transactionId, serialId);
             return null;
         }
+
+        LOGGER.debug("Transaction request(transactionId={} serialId={}) will be executed.", transactionId, serialId);
 
         try {
             // 若顺序执行，则监视上一个子节点，反之监视事务节点
@@ -56,7 +58,7 @@ public class ProviderTransactionServiceChannelHandler
                         BasicResponse response = ProviderTransactionServiceChannelHandler.super.doExecute(request);
                         helper.commit(transactionId, serialId);
                         next(request, response);
-                        LOGGER.debug("Transaction transactionId={} serialId={} has executed.", transactionId, serialId);
+                        LOGGER.debug("Transaction request(transactionId={} serialId={}) has executed.", transactionId, serialId);
                     } catch (UnsupportedServiceException | ServiceExecutionException e) {
                         LOGGER.error("Request failed: {}", e.getMessage());
 

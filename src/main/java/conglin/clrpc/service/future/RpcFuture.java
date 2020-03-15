@@ -50,12 +50,27 @@ public interface RpcFuture extends Future<Object> {
     boolean isPending();
 
     /**
-     * 该 {@link RpcFuture} 是否出错 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下
-     * 该方法的返回值才可信
+     * 该 {@link RpcFuture} 是否出错
+     * 
+     * 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下 该方法的返回值才可信
      * 
      * @return
      */
     boolean isError();
+
+    /**
+     * 是否是 Fallback 机制产生的结果
+     * 
+     * 只有在{@link RpcFuture#isDone()} 返回值为 true 的情况下 该方法的返回值才可信
+     * 
+     * @return
+     */
+    boolean isFallback();
+
+    /**
+     * 标记该 {@code RpcFuture} 的结果是由 Fallback 机制产生的
+     */
+    void signFallback();
 
     /**
      * 是否超时

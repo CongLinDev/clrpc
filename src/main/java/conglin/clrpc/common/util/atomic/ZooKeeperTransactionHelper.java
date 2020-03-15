@@ -36,7 +36,7 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
     @Override
     public void prepare(String subPath, String serial) throws TransactionException {
         // 创建临时子节点
-        if (ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath + "/" + serial, SIGN,
+        if (ZooKeeperUtils.createNode(keeper, rootPath + "/" + subPath + "/" + serial, PREPARE,
                 CreateMode.EPHEMERAL) == null)
             throw new TransactionException(
                     "Transaction execute failed. (sub_path = " + subPath + ", serial=" + serial + " )");

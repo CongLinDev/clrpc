@@ -1,56 +1,47 @@
 package conglin.clrpc.service.proxy;
 
-import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 
-/**
- * 通用的代理
- * 
- * 适合未知服务名的调用
- */
-public class CommonProxy extends AbstractProxy {
+public class CommonProxy {
 
-    // ID生成器
-    protected final IdentifierGenerator identifierGenerator;
+    // 发送器
+    private final RequestSender sender;
 
-    public CommonProxy(RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender);
-        this.identifierGenerator = identifierGenerator;
+    public CommonProxy(RequestSender sender) {
+        this.sender = sender;
     }
 
     /**
      * 异步调用函数 使用负载均衡策略
      * 
-     * @param serviceName 服务名
-     * @param methodName  方法名
-     * @param args        参数
+     * @param request 请求
      * @return future
      */
-    public RpcFuture call(String serviceName, String methodName, Object... args) {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
-        request.setServiceName(serviceName);
-        request.setMethodName(methodName);
-        request.setParameters(args);
-        return super.call(request);
+    public RpcFuture call(BasicRequest request) {
+        return sender.sendRequest(request);
     }
 
     /**
-     * 异步调用函数 指定服务提供者的地址 建议在 {@link Callback#fail(Exception)} 中使用该方法进行重试或回滚
-     * 而不应该在一般的调用时使用该方法
+     * 异步调用函数 指定服务提供者的地址
      * 
-     * @param remoteAddress 指定远程地址
-     * @param serviceName   服务名
-     * @param methodName    方法名
-     * @param args          参数
+     * 建议在 {@link Callback#fail(Exception)} 中使用该方法进行重试或回滚 而不应该在一般的调用时使用该方法
+     * 
+     * @param remoteAddress 指定服务提供者的地址
+     * @param request       请求
      * @return future
      */
-    public RpcFuture callWith(String remoteAddress, String serviceName, String methodName, Object... args) {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
-        request.setServiceName(serviceName);
-        request.setMethodName(methodName);
-        request.setParameters(args);
-        return super.callWith(remoteAddress, request);
+    public RpcFuture callWith(String remoteAddress, BasicRequest request) {
+        return sender.sendRequest(request, remoteAddress);
+    }
+
+    /**
+     * 请求发送器
+     * 
+     * @return
+     */
+    protected RequestSender requestSender() {
+        return this.sender;
     }
 }

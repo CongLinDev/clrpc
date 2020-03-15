@@ -8,6 +8,7 @@ import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.registry.ServiceMonitor;
 import conglin.clrpc.registry.ZooKeeperServiceMonitor;
+import conglin.clrpc.service.annotation.AnnotationParser;
 
 abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implements RpcMonitorBootstrap {
 
@@ -30,7 +31,7 @@ abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implement
 
     @Override
     public RpcMonitorBootstrap monitor(Class<?> serviceClass) {
-        serviceMonitor.monitor(resolveServiceName(serviceClass), this::handleProvider, this::handleConsumer);
+        serviceMonitor.monitor(AnnotationParser.serviceName(serviceClass), this::handleProvider, this::handleConsumer);
         return this;
     }
 

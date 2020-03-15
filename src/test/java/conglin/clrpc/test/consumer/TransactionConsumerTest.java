@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.test.service.HelloService;
 import conglin.clrpc.test.service.UserService;
@@ -17,12 +18,18 @@ public class TransactionConsumerTest {
         bootstrap.refresh(HelloService.class).refresh(UserService.class);
         
         proxy.begin();
-        RpcFuture f1 = proxy.call("HelloService", "hello");
-        RpcFuture f2 = proxy.call("UserService", "getUser", 1256L, "小明");
+        HelloService helloSerivce = proxy.subscribeAsync(HelloService.class);
+        UserService userService = proxy.subscribeAsync(UserService.class);
+
+        helloSerivce.hello();
+        RpcFuture f1 = AsyncObjectProxy.lastFuture();
+
+        userService.getUser(1256L, "xiaoming");
+        RpcFuture f2 = AsyncObjectProxy.lastFuture();
 
         try {
             System.out.println("sleep...");
-            Thread.sleep(10 * 1000);
+            Thread.sleep(3 * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -19,7 +19,7 @@ public class BasicFuture extends AbstractFuture {
         if (response == null)
             return null;
         if (response.isError()) {
-            setError();
+            signError();
             throw (RpcServiceException) response.getResult();
         }
         return response.getResult();

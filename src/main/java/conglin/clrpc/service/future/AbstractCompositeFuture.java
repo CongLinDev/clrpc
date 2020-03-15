@@ -85,6 +85,8 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
                 return false;
             else if (f.isCancelled())
                 throw new FutureCancelledException(f);
+            if (f.isFallback())
+                this.signFallback();
         }
         return true;
     }

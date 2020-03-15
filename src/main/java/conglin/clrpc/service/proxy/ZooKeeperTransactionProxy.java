@@ -1,5 +1,7 @@
 package conglin.clrpc.service.proxy;
 
+import java.lang.reflect.Proxy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +11,7 @@ import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.atomic.TransactionHelper;
 import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
+import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.future.TransactionFuture;
 import conglin.clrpc.transport.component.RequestSender;
@@ -20,7 +23,7 @@ import conglin.clrpc.transport.message.TransactionRequest;
  * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用
  * {@link ZooKeeperTransactionProxy#isAvailable()} 查看
  */
-public class ZooKeeperTransactionProxy extends AbstractProxy implements TransactionProxy, Available {
+public class ZooKeeperTransactionProxy extends CommonProxy implements TransactionProxy, Available {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
 
@@ -32,7 +35,7 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     protected final TransactionHelper helper;
 
-    protected TransactionFuture future;
+    protected TransactionFuture transactionFuture;
 
     public ZooKeeperTransactionProxy(RequestSender sender, IdentifierGenerator identifierGenerator,
             PropertyConfigurer configurer) {
@@ -45,14 +48,14 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     public void begin(boolean serial) throws TransactionException {
         this.currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
         this.serial = serial;
-        this.future = new TransactionFuture(currentTransactionId);
+        this.transactionFuture = new TransactionFuture(currentTransactionId);
         LOGGER.debug("Transaction id={} will begin.", currentTransactionId);
         helper.begin(currentTransactionId); // 开启事务
     }
 
     @Override
     public RpcFuture call(String serviceName, String method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId, future.size() + 1, serial);
+        TransactionRequest request = new TransactionRequest(currentTransactionId, transactionFuture.size() + 1, serial);
         request.setServiceName(serviceName);
         request.setMethodName(method);
         request.setParameters(args);
@@ -64,25 +67,25 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
     public RpcFuture commit() throws TransactionException {
         LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
         helper.commit(currentTransactionId);
-        RpcFuture f = future;
-        future = null; // 提交后该代理对象可以进行重用
+        RpcFuture f = transactionFuture;
+        transactionFuture = null; // 提交后该代理对象可以进行重用
         return f;
     }
 
     @Override
     public void abort() throws TransactionException {
-        if (future.isDone())
+        if (transactionFuture.isDone())
             throw new TransactionException("Transaction request has commited. Can not abort.");
         LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
         helper.abort(currentTransactionId);
-        future = null;
+        transactionFuture = null;
     }
 
     @Override
     public RpcFuture call(TransactionRequest request) throws TransactionException {
         helper.prepare(currentTransactionId, request.getSerialId());
         RpcFuture f = super.call(request);
-        if (!future.combine(f)) {
+        if (!transactionFuture.combine(f)) {
             throw new TransactionException("Request added failed. " + request);
         }
         return f;
@@ -90,6 +93,29 @@ public class ZooKeeperTransactionProxy extends AbstractProxy implements Transact
 
     @Override
     public boolean isAvailable() {
-        return future == null;
+        return transactionFuture == null;
+    }
+
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T subscribeAsync(Class<T> interfaceClass) {
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class<?>[] { interfaceClass },
+                new InnerAsyncObjectProxy(AnnotationParser.serviceName(interfaceClass)));
+    }
+
+    class InnerAsyncObjectProxy extends AsyncObjectProxy {
+
+        public InnerAsyncObjectProxy(String serviceName) {
+            super(serviceName, ZooKeeperTransactionProxy.this.requestSender(),
+                    ZooKeeperTransactionProxy.this.identifierGenerator);
+        }
+
+        @Override
+        public RpcFuture call(String serviceName, String methodName, Object... args) {
+            return ZooKeeperTransactionProxy.this.call(serviceName, methodName, args);
+        }
+
     }
 }

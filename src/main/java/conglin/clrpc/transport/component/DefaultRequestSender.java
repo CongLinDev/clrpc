@@ -99,7 +99,7 @@ public class DefaultRequestSender implements RequestSender {
                         BasicRequest r = f.request();
                         if (fallbackHolder.needFallback(retryTimes)) {
                             iterator.remove();
-                            
+
                             BasicResponse fallbackResponse = new BasicResponse(r.getMessageId());
                             try {
                                 Object fallbackResult = fallbackHolder.fallback(r.getServiceName(), r.getMethodName(),
@@ -111,6 +111,7 @@ public class DefaultRequestSender implements RequestSender {
                                 fallbackResponse.setResult(e);
                                 fallbackResponse.signError();
                             }
+                            f.signFallback();
                             f.done(fallbackResponse);
                         } else {
                             resendRequest(r);

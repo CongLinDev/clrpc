@@ -46,7 +46,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
             public void fail(Exception e) {
                 // 该方法只有当中止事务时，才会被执行
                 // 而当原子请求执行错误时，不会向服务消费者发送回复
-                setError();
+                signError();
                 LOGGER.error(e.getMessage());
             }
         };

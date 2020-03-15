@@ -6,9 +6,10 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.bootstrap.option.RpcConsumerOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.service.ConsumerServiceHandler;
+import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.context.BasicConsumerContext;
 import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.proxy.CommonProxy;
+import conglin.clrpc.service.proxy.BasicProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
 
@@ -56,15 +57,15 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 获取通用代理
+     * 获取基本代理
      * 
      * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 或
      * {@link RpcConsumerBootstrap#refresh(Class)} 刷新
      * 
      * @return proxy
      */
-    public CommonProxy subscribeAsync() {
-        return SERVICE_HANDLER.getCommonPrxoy();
+    public BasicProxy subscribeAsync() {
+        return SERVICE_HANDLER.getBasicProxy();
     }
 
     /**
@@ -79,7 +80,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 代理服务对象
      */
     public <T> T subscribe(Class<T> interfaceClass) {
-        String serviceName = resolveServiceName(interfaceClass);
+        String serviceName = AnnotationParser.serviceName(interfaceClass);
         LOGGER.info("Subscribe synchronous service named {}.", serviceName);
         return SERVICE_HANDLER.getSyncProxy(interfaceClass, serviceName);
     }
@@ -95,7 +96,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 代理服务对象
      */
     public <T> T subscribeAsync(Class<T> interfaceClass) {
-        String serviceName = resolveServiceName(interfaceClass);
+        String serviceName = AnnotationParser.serviceName(interfaceClass);
         LOGGER.info("Subscribe asynchronous service named {}.", serviceName);
         return SERVICE_HANDLER.getAsyncProxy(interfaceClass, serviceName);
     }
@@ -109,7 +110,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return this
      */
     public RpcConsumerBootstrap refresh(Class<?> interfaceClass) {
-        String serviceName = resolveServiceName(interfaceClass);
+        String serviceName = AnnotationParser.serviceName(interfaceClass);
         if (serviceName == null)
             throw new NullPointerException();
         SERVICE_HANDLER.prepare(serviceName, interfaceClass);

@@ -8,7 +8,7 @@ import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 
-abstract public class AbstractObjectProxy extends CommonProxy implements InvocationHandler {
+abstract public class AbstractObjectProxy extends BasicProxy implements InvocationHandler {
 
     // 代理服务名
     protected final String serviceName;
