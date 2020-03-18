@@ -14,7 +14,7 @@ import conglin.clrpc.transport.component.RequestSender;
  * 
  * 需要注意的 {@code ThreadLocalMap} 只保存调用线程最新的 {@link RpcFuture} 对象
  */
-public class AsyncObjectProxy extends AbstractObjectProxy {
+public class AsyncObjectProxy extends BasicProxy {
 
     private static final ThreadLocal<RpcFuture> threadLocal = new ThreadLocal<>();
 
@@ -27,8 +27,16 @@ public class AsyncObjectProxy extends AbstractObjectProxy {
         return threadLocal.get();
     }
 
+    private final String serviceName;
+
     public AsyncObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(serviceName, sender, identifierGenerator);
+        super(sender, identifierGenerator);
+        this.serviceName = serviceName;
+    }
+
+    @Override
+    protected String getServiceName(Class<?> methodDeclaringClass) {
+        return serviceName;
     }
 
     @Override

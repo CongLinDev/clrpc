@@ -35,8 +35,6 @@ public class DefaultFallbackHolder implements FallbackHolder {
         if (!enable())
             return true;
         Class<? extends FallbackFactory> factoryClass = AnnotationParser.resolveFallbackFactory(interfaceClass);
-        if (factoryClass == null)
-            return false;
 
         try {
             Object fallbackObject = factoryClass.getDeclaredConstructor().newInstance().create(interfaceClass);

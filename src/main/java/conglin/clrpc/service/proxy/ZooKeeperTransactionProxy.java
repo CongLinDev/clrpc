@@ -46,6 +46,9 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public void begin(boolean serial) throws TransactionException {
+        if(isTransaction()) {
+            throw new TransactionException("Transaction has been begined with this proxy");
+        }
         this.currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
         this.serial = serial;
         this.transactionFuture = new TransactionFuture(currentTransactionId);
@@ -65,6 +68,9 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public RpcFuture commit() throws TransactionException {
+        if(!isTransaction()) {
+            throw new TransactionException("Transaction does not begin with this proxy");
+        }
         LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
         helper.commit(currentTransactionId);
         RpcFuture f = transactionFuture;
@@ -74,6 +80,9 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public void abort() throws TransactionException {
+        if(!isTransaction()) {
+            throw new TransactionException("Transaction does not begin with this proxy");
+        }
         if (transactionFuture.isDone())
             throw new TransactionException("Transaction request has commited. Can not abort.");
         LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
@@ -86,7 +95,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         helper.prepare(currentTransactionId, request.getSerialId());
         RpcFuture f = super.call(request);
         if (!transactionFuture.combine(f)) {
-            throw new TransactionException("Request added failed. " + request);
+            throw new TransactionException("Atomic request added failed. " + request);
         }
         return f;
     }
@@ -96,6 +105,14 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         return transactionFuture == null;
     }
 
+    /**
+     * 当前是否在进行着事务
+     * 
+     * @return
+     */
+    protected boolean isTransaction() {
+        return transactionFuture != null;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -114,7 +131,9 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
         @Override
         public RpcFuture call(String serviceName, String methodName, Object... args) {
-            return ZooKeeperTransactionProxy.this.call(serviceName, methodName, args);
+            if(isTransaction())
+                return ZooKeeperTransactionProxy.this.call(serviceName, methodName, args);
+            return super.call(serviceName, methodName, args);
         }
 
     }
