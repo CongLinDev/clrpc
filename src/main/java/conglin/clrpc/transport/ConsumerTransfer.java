@@ -92,6 +92,7 @@ public class ConsumerTransfer {
         signalWaitingConsumer();
 
         nettyBootstrap.config().group().shutdownGracefully();
+        context.getRequestSender().shutdown();
     }
 
     /**

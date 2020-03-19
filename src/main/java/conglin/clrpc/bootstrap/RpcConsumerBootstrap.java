@@ -80,9 +80,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 代理服务对象
      */
     public <T> T subscribe(Class<T> interfaceClass) {
-        String serviceName = AnnotationParser.serviceName(interfaceClass);
-        LOGGER.info("Subscribe synchronous service named {}.", serviceName);
-        return SERVICE_HANDLER.getSyncProxy(interfaceClass, serviceName);
+        return SERVICE_HANDLER.getSyncProxy(interfaceClass);
     }
 
     /**
@@ -96,9 +94,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @return 代理服务对象
      */
     public <T> T subscribeAsync(Class<T> interfaceClass) {
-        String serviceName = AnnotationParser.serviceName(interfaceClass);
-        LOGGER.info("Subscribe asynchronous service named {}.", serviceName);
-        return SERVICE_HANDLER.getAsyncProxy(interfaceClass, serviceName);
+        return SERVICE_HANDLER.getAsyncProxy(interfaceClass);
     }
 
     /**
@@ -115,7 +111,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
             throw new NullPointerException();
         SERVICE_HANDLER.prepare(serviceName, interfaceClass);
         if (CONSUMER_TRANSFER.needRefresh(serviceName)) {
-            LOGGER.debug("Refresh Service=({}) Privider.", serviceName);
+            LOGGER.debug("Refresh service=({}) privider.", serviceName);
             SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
         }
         return this;

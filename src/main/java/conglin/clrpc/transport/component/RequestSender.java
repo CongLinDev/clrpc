@@ -43,4 +43,9 @@ public interface RequestSender {
      * @param remoteAddress 指定服务提供者地址
      */
     void resendRequest(BasicRequest request, String remoteAddress);
+
+    /**
+     * 关闭
+     */
+    void shutdown();
 }

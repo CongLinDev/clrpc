@@ -1,6 +1,7 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 
@@ -27,7 +28,18 @@ public class AsyncObjectProxy extends BasicProxy {
         return threadLocal.get();
     }
 
+    /**
+     * 移除当前线程最新一次操作产生的 future 对象
+     */
+    public static void removeFuture() {
+        threadLocal.remove();
+    }
+
     private final String serviceName;
+
+    public AsyncObjectProxy(Class<?> interfaceClass, RequestSender sender, IdentifierGenerator identifierGenerator) {
+        this(AnnotationParser.serviceName(interfaceClass), sender, identifierGenerator);
+    }
 
     public AsyncObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
         super(sender, identifierGenerator);

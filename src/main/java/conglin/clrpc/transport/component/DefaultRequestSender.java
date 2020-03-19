@@ -31,13 +31,15 @@ public class DefaultRequestSender implements RequestSender {
 
     protected final ExecutorService threadPool;
 
+    private final Timer timer;
+
     public DefaultRequestSender(FuturesHolder<Long> futuresHolder, FallbackHolder fallbackHolder,
             ProviderChooser providerChooser, ExecutorService threadPool) {
         this.futuresHolder = futuresHolder;
         this.fallbackHolder = fallbackHolder;
         this.providerChooser = providerChooser;
         this.threadPool = threadPool;
-        checkFuture();
+        this.timer = checkFuture();
     }
 
     @Override
@@ -50,6 +52,11 @@ public class DefaultRequestSender implements RequestSender {
     @Override
     public void resendRequest(BasicRequest request, String remoteAddress) {
         doSendRequest(request, remoteAddress);
+    }
+
+    @Override
+    public void shutdown() {
+        timer.cancel();
     }
 
     /**
@@ -84,10 +91,11 @@ public class DefaultRequestSender implements RequestSender {
     /**
      * 轮询线程，检查超时 RpcFuture 超时重试
      */
-    private void checkFuture() {
+    private Timer checkFuture() {
         final long MAX_DELARY = BasicFuture.getTimeThreshold(); // 首次延迟
         final long PERIOD = 3000L; // 执行周期
-        new Timer("check-uncomplete-future", true).schedule(new TimerTask() {
+        Timer timer = new Timer("check-uncomplete-future", true);
+        timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
@@ -122,5 +130,6 @@ public class DefaultRequestSender implements RequestSender {
                 }
             }
         }, MAX_DELARY, PERIOD);
+        return timer;
     }
 }

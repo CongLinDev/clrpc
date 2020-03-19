@@ -46,13 +46,12 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 
      * @param <T>
      * @param interfaceClass
-     * @param serviceName
      */
     @SuppressWarnings("unchecked")
-    public <T> T getSyncProxy(Class<T> interfaceClass, String serviceName) {
+    public <T> T getSyncProxy(Class<T> interfaceClass) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { interfaceClass },
-                new SyncObjectProxy(serviceName, context.getRequestSender(), context.getIdentifierGenerator()));
+                new SyncObjectProxy(interfaceClass, context.getRequestSender(), context.getIdentifierGenerator()));
     }
 
     /**
@@ -60,13 +59,12 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 
      * @param <T>
      * @param interfaceClass
-     * @param serviceName
      */
     @SuppressWarnings("unchecked")
-    public <T> T getAsyncProxy(Class<T> interfaceClass, String serviceName) {
+    public <T> T getAsyncProxy(Class<T> interfaceClass) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { interfaceClass },
-                new AsyncObjectProxy(serviceName, context.getRequestSender(), context.getIdentifierGenerator()));
+                new AsyncObjectProxy(interfaceClass, context.getRequestSender(), context.getIdentifierGenerator()));
     }
 
     /**

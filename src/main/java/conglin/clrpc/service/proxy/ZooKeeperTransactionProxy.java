@@ -11,7 +11,6 @@ import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.atomic.TransactionHelper;
 import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
-import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.future.TransactionFuture;
 import conglin.clrpc.transport.component.RequestSender;
@@ -119,13 +118,13 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     public <T> T subscribeAsync(Class<T> interfaceClass) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { interfaceClass },
-                new InnerAsyncObjectProxy(AnnotationParser.serviceName(interfaceClass)));
+                new InnerAsyncObjectProxy(interfaceClass));
     }
 
     class InnerAsyncObjectProxy extends AsyncObjectProxy {
 
-        public InnerAsyncObjectProxy(String serviceName) {
-            super(serviceName, ZooKeeperTransactionProxy.this.requestSender(),
+        public InnerAsyncObjectProxy(Class<?> interfaceClass) {
+            super(interfaceClass, ZooKeeperTransactionProxy.this.requestSender(),
                     ZooKeeperTransactionProxy.this.identifierGenerator);
         }
 
