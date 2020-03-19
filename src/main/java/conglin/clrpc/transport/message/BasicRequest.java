@@ -1,14 +1,13 @@
 package conglin.clrpc.transport.message;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class BasicRequest extends Message implements Serializable {
+public class BasicRequest extends Message {
 
     private static final long serialVersionUID = 8095197377322231798L;
 
-    transient public static final int MESSAGE_TYPE = 2;
+    transient public static final int MESSAGE_TYPE = 1;
 
     @Override
     public int messageType() {

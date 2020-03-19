@@ -4,6 +4,7 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.registry.ServiceRegistry;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.transport.component.ProviderChooser;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
 
@@ -49,6 +50,20 @@ public interface ConsumerContext extends CommonContext {
      * @param fallbackHolder
      */
     void setFallbackHolder(FallbackHolder fallbackHolder);
+
+    /**
+     * 获得服务提供者挑选器适配器
+     * 
+     * @return
+     */
+    ProviderChooser getProviderChooser();
+
+    /**
+     * 设置服务提供者挑选器适配器
+     * 
+     * @param providerChooser
+     */
+    void setProviderChooser(ProviderChooser providerChooser);
 
     /**
      * 获得服务提供者挑选器适配器

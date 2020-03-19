@@ -23,6 +23,8 @@
 
     "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
+    "consumer.retry.check-period" : 3000,
+    "consumer.retry.initial-threshold" : 3000,
     "consumer.fallback.max-retry": -1,
     "consumer.channel-handler.before": [],
     "consumer.channel-handler.after": [],

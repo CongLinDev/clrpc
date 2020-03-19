@@ -1,12 +1,18 @@
 package conglin.clrpc.transport.message;
 
+import java.io.Serializable;
+
 /**
  * 消息类
  * 
- * 具体的消息类必须覆盖 {@link Message#messageType()} 方法 以及 实现静态属性 MESSAGE_TYPE
+ * 具体的消息类必须覆盖 {@link Message#messageType()} 方法
  * 
+ * 若将具体消息用于传输通信，则可以调用
+ * {@link conglin.clrpc.global.GlobalMessageManager#setMessageClass(int, Class)}
  */
-abstract public class Message {
+abstract public class Message implements Serializable {
+
+    private static final long serialVersionUID = -7949510479931399141L;
 
     /**
      * 继承该类的子类，必须设定一个消息类型码 默认为4个比特位

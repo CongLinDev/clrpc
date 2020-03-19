@@ -4,6 +4,7 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.registry.ServiceRegistry;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.transport.component.ProviderChooser;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
 
@@ -43,6 +44,18 @@ public class BasicConsumerContext extends BasicCommonContext implements Consumer
     @Override
     public void setFuturesHolder(FuturesHolder<Long> futuresHolder) {
         this.futuresHolder = futuresHolder;
+    }
+
+    private ProviderChooser providerChooser;
+
+    @Override
+    public ProviderChooser getProviderChooser() {
+        return providerChooser;
+    }
+
+    @Override
+    public void setProviderChooser(ProviderChooser providerChooser) {
+        this.providerChooser = providerChooser;
     }
 
     private ProviderChooserAdapter providerChooserAdapter;

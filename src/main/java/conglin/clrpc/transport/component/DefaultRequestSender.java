@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.fallback.FallbackFailedException;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.BasicFuture;
@@ -33,12 +34,18 @@ public class DefaultRequestSender implements RequestSender {
 
     private final Timer timer;
 
-    public DefaultRequestSender(FuturesHolder<Long> futuresHolder, FallbackHolder fallbackHolder,
-            ProviderChooser providerChooser, ExecutorService threadPool) {
-        this.futuresHolder = futuresHolder;
-        this.fallbackHolder = fallbackHolder;
-        this.providerChooser = providerChooser;
-        this.threadPool = threadPool;
+    // 初始重试后的 threshold
+    private final long INITIAL_THRESHOLD;
+    // 检查周期
+    private final long CHECK_PERIOD;
+
+    public DefaultRequestSender(ConsumerContext context) {
+        this.futuresHolder = context.getFuturesHolder();
+        this.fallbackHolder = context.getFallbackHolder();
+        this.providerChooser = context.getProviderChooser();
+        this.threadPool = context.getExecutorService();
+        this.CHECK_PERIOD = context.getPropertyConfigurer().getOrDefault("consumer.retry.check-period", 3000L);
+        this.INITIAL_THRESHOLD = context.getPropertyConfigurer().getOrDefault("consumer.retry.initial-threshold", 3000L);
         this.timer = checkFuture();
     }
 
@@ -92,18 +99,16 @@ public class DefaultRequestSender implements RequestSender {
      * 轮询线程，检查超时 RpcFuture 超时重试
      */
     private Timer checkFuture() {
-        final long MAX_DELARY = BasicFuture.getTimeThreshold(); // 首次延迟
-        final long PERIOD = 3000L; // 执行周期
         Timer timer = new Timer("check-uncomplete-future", true);
         timer.schedule(new TimerTask() {
-
             @Override
             public void run() {
                 Iterator<RpcFuture> iterator = futuresHolder.iterator();
                 while (iterator.hasNext()) {
                     BasicFuture f = (BasicFuture) iterator.next();
-                    if (f.timeout() && f.retry()) {
-                        int retryTimes = f.retryTimes();
+
+                    int retryTimes = f.retryTimes();
+                    if (f.timeout(INITIAL_THRESHOLD << retryTimes) && f.retry()) {
                         BasicRequest r = f.request();
                         if (fallbackHolder.needFallback(retryTimes)) {
                             iterator.remove();
@@ -129,7 +134,7 @@ public class DefaultRequestSender implements RequestSender {
                     }
                 }
             }
-        }, MAX_DELARY, PERIOD);
+        }, INITIAL_THRESHOLD, CHECK_PERIOD);
         return timer;
     }
 }

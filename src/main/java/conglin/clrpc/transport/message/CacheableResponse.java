@@ -4,7 +4,7 @@ public class CacheableResponse extends BasicResponse {
 
     private static final long serialVersionUID = 8675701922448321682L;
 
-    transient public static final int MESSAGE_TYPE = 3;
+    transient public static final int MESSAGE_TYPE = 4;
 
     @Override
     public int messageType() {

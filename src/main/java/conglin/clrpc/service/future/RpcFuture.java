@@ -75,7 +75,8 @@ public interface RpcFuture extends Future<Object> {
     /**
      * 是否超时
      * 
+     * @param timeThreshold ms
      * @return
      */
-    boolean timeout();
+    boolean timeout(long timeThreshold);
 }

@@ -43,7 +43,7 @@ public class DefaultFuturesHolder implements FuturesHolder<Long> {
 
     @Override
     public void waitForUncompleteFuture() {
-        while (rpcFutures.size() != 0) {
+        while (!rpcFutures.isEmpty()) {
             try {
                 LOGGER.info("Waiting uncomplete futures for 500 ms.");
                 Thread.sleep(500);

@@ -58,7 +58,7 @@ public class ConsumerTransfer {
         initContext(context);
 
         PropertyConfigurer configurer = context.getPropertyConfigurer();
-        timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
+        timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000L);
         initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
     }
 
@@ -68,8 +68,8 @@ public class ConsumerTransfer {
      * @param context
      */
     protected void initContext(ConsumerContext context) {
-        context.setRequestSender(new DefaultRequestSender(context.getFuturesHolder(), context.getFallbackHolder(),
-                new DefaultProviderChooser(context.getProviderChooserAdapter()), context.getExecutorService()));
+        context.setProviderChooser(new DefaultProviderChooser(context.getProviderChooserAdapter()));
+        context.setRequestSender(new DefaultRequestSender(context));
     }
 
     /**
@@ -161,7 +161,7 @@ public class ConsumerTransfer {
     private boolean waitingForAvailableProvider(String serviceName) throws InterruptedException {
         lock.lock();
         try {
-            LOGGER.debug("Wait for Available Provider {} ms ...", timeoutForWait);
+            LOGGER.debug("Wait for available service=({}) provider {} ms ...", serviceName, timeoutForWait);
             return connected.await(timeoutForWait, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();

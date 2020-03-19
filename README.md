@@ -151,13 +151,15 @@ bootstrap.monitor(HelloService.class)
 |              provider.port              |          Integer          |  YES  |       0        |                        服务提供者端口号                        |
 |          provider.thread.boss           |          Integer          |  YES  |       1        |                  服务提供者的bossGroup线程数                   |
 |         provider.thread.worker          |          Integer          |  YES  |       4        |                 服务提供者的workerGroup线程数                  |
-|   provider.channel-handler<br>.before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
-|   provider.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
-|           consumer.wait-time            |          Integer          |  YES  |      5000      |             无服务提供者时等待重试时间，单位为毫秒             |
+|   provider.channel-handler.<br>before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
+|   provider.channel-handler.<br>after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
+|           consumer.wait-time            |           Long            |  YES  |      5000      |             无服务提供者时等待重试时间，单位为毫秒             |
 |         consumer.thread.worker          |          Integer          |  YES  |       4        |                 服务使用者的workerGroup线程数                  |
-|     consumer.fallback<br>.max-retry     |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
-|   consumer.channel-handler<br>.before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
-|   consumer.channel-handler<br>.after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
+|     consumer.retry.<br>check-period     |           Long            |  YES  |      3000      |                        重试机制执行周期                        |
+|  consumer.retry.<br>initial-threshold   |           Long            |  YES  |      3000      |                        初始重试时间门槛                        |
+|     consumer.fallback.<br>max-retry     |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
+|   consumer.channel-handler.<br>before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
+|   consumer.channel-handler.<br>after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
 |    service.thread-pool.<br>core-size    |          Integer          |  YES  |       5        |                      业务线程池核心线程数                      |
 |    service.thread-pool.<br>max-size     |          Integer          |  YES  |       10       |                      业务线程池最大线程数                      |
 |   service.thread-pool.<br>keep-alive    |          Integer          |  YES  |      1000      | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
@@ -177,8 +179,8 @@ bootstrap.monitor(HelloService.class)
 
 使用 [默认配置文件](https://github.com/CongLinDev/clrpc/blob/master/src/main/resources/clrpc-config.json) 进行本机模拟RPC测试。
 
-+ OS：Manjaro 19.0 Kyria
-+ Kernel: x86_64 Linux 5.4.18-1-MANJARO
++ OS：Manjaro 19.0.2 Kyria
++ Kernel: x86_64 Linux 5.4.24-1-MANJARO
 + CPU：Intel Core i5-6300HQ @ 4x 2.30GHz
 + RAM: 11873 MB
 + JDK: openjdk-13.0.2

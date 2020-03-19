@@ -4,7 +4,7 @@ public class TransactionRequest extends BasicRequest {
 
     private static final long serialVersionUID = -7860287729080523289L;
 
-    transient public static final int MESSAGE_TYPE = 4;
+    transient public static final int MESSAGE_TYPE = 3;
 
     @Override
     public int messageType() {

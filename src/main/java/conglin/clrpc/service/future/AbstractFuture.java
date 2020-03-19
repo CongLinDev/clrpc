@@ -9,25 +9,6 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 
 abstract public class AbstractFuture implements RpcFuture {
-    private static long TIME_THRESHOLD = 5000L;
-
-    /**
-     * 获取 threshold
-     * 
-     * @return
-     */
-    public static long getTimeThreshold() {
-        return TIME_THRESHOLD;
-    }
-
-    /**
-     * 设置 threshold
-     * 
-     * @param timeThreshold
-     */
-    public static void setTimeThreshold(long timeThreshold) {
-        TIME_THRESHOLD = timeThreshold;
-    }
 
     private final FutureSynchronizer SYNCHRONIZER; // 同步器
 
@@ -148,8 +129,8 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public boolean timeout() {
-        return TIME_THRESHOLD + startTime > System.currentTimeMillis();
+    public boolean timeout(long timeThreshold) {
+        return timeThreshold + startTime > System.currentTimeMillis();
     }
 
     @Override
@@ -178,7 +159,7 @@ abstract public class AbstractFuture implements RpcFuture {
     /**
      * 重置开始时间
      */
-    protected void resetTime() {
+    private void resetTime() {
         this.startTime = System.currentTimeMillis();
     }
 

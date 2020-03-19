@@ -5,6 +5,8 @@ package conglin.clrpc.transport.message;
  */
 public class SystemMessage extends Message {
 
+    private static final long serialVersionUID = 1163465887291972266L;
+
     transient public static final int MESSAGE_TYPE = 0;
 
     private String command; // 指令

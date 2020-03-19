@@ -19,11 +19,8 @@ public class GlobalMessageManager {
 
     private final Class<?> messageClasses[];
 
-    private final int MESSAGE_TYPE_CAPACITY;
-
     private GlobalMessageManager(int capacity) {
-        MESSAGE_TYPE_CAPACITY = capacity;
-        messageClasses = new Class[MESSAGE_TYPE_CAPACITY];
+        messageClasses = new Class[capacity];
         initDefaultMessageType();
     }
 
@@ -82,17 +79,20 @@ public class GlobalMessageManager {
     }
 
     /**
-     * 设置消息类对象
+     * 获取消息类型码
      * 
      * @param clazz
+     * @return
      */
-    public void setMessageClass(Class<? extends Message> clazz) {
-        try {
-            int messageType = clazz.getDeclaredField("MESSAGE_TYPE").getInt(null);
-            setMessageClass(messageType, clazz);
-        } catch (IllegalAccessException | NoSuchFieldException | SecurityException e) {
-            new IllegalArgumentException("Consider adding a field 'MESSAGE_TYPE' in class " + clazz);
+    public int getMessageType(Class<? extends Message> clazz) {
+        if (clazz == null)
+            throw new NullPointerException("Class is null");
+        for (int index = 0; index < messageClasses.length; index++) {
+            if (clazz.equals(messageClasses[index])) {
+                return index;
+            }
         }
+        return -1;
     }
 
     /**
@@ -101,7 +101,7 @@ public class GlobalMessageManager {
      * @return
      */
     public int availableMessageType() {
-        for (int index = 0; index < MESSAGE_TYPE_CAPACITY; index++) {
+        for (int index = 0; index < messageClasses.length; index++) {
             if (messageClasses[index] == null)
                 return index;
         }
@@ -113,7 +113,7 @@ public class GlobalMessageManager {
      * 
      * @return
      */
-    public Collection<Class<?>> messageTypes() {
+    public Collection<Class<?>> listMessageClasses() {
         return Stream.of(messageClasses).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
@@ -123,6 +123,6 @@ public class GlobalMessageManager {
      * @return
      */
     public int capacity() {
-        return MESSAGE_TYPE_CAPACITY;
+        return messageClasses.length;
     }
 }

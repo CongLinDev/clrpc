@@ -1,13 +1,21 @@
 package conglin.clrpc.transport.handler;
 
 import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
 abstract public class AbstractChannelInitializer extends ChannelInitializer<SocketChannel> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractChannelInitializer.class);
 
     private ChannelPipeline pipeline;
 
@@ -15,6 +23,35 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     protected void initChannel(SocketChannel ch) throws Exception {
         this.pipeline = ch.pipeline();
         doInitChannel(ch);
+        LOGGER.info("Here are ChannelHandlers in ChannelPipeline as follows.");
+        pipeline.forEach(this::logChannelHandler);
+    }
+
+    /**
+     * 记录 {@link ChannelHandler}
+     * 
+     * @param entry
+     */
+    private void logChannelHandler(Map.Entry<String, ChannelHandler> entry) {
+        ChannelHandler handler = entry.getValue();
+        LOGGER.info("Name={}\tChannelHandler={}\tType={}", entry.getKey(), handler.getClass().getName(),
+                getChannelHandlerType(handler));
+    }
+
+    /**
+     * 获取 {@link ChannelHandler} 类型
+     * 
+     * @param handler
+     * @return
+     */
+    private String getChannelHandlerType(ChannelHandler handler) {
+        if (handler instanceof ChannelInboundHandler) {
+            return "Inbound";
+        } else if (handler instanceof ChannelOutboundHandler) {
+            return "Outbound";
+        } else {
+            return "Unkonwn";
+        }
     }
 
     /**
