@@ -5,6 +5,11 @@ import java.util.function.Function;
 
 public class BasicProviderContext extends BasicCommonContext implements ProviderContext {
 
+    @Override
+    public String role() {
+        return "provider";
+    }
+
     private Function<String, Object> objectHolder;
 
     @Override

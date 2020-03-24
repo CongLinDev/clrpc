@@ -1,4 +1,4 @@
-package conglin.clrpc.common.util.atomic;
+package conglin.clrpc.zookeeper.util;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
@@ -8,12 +8,13 @@ import org.apache.zookeeper.Watcher.WatcherType;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.TransactionException;
-import conglin.clrpc.common.util.ZooKeeperUtils;
+import conglin.clrpc.common.util.TransactionHelper;
+import conglin.clrpc.zookeeper.AbstractZooKeeperService;
 
-public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implements TransactionHelper {
+public class ZooKeeperTransactionHelper extends AbstractZooKeeperService implements TransactionHelper {
 
     public ZooKeeperTransactionHelper(PropertyConfigurer configurer) {
-        super(configurer, "/transaction");
+        super("atomicity", configurer, "transaction");
     }
 
     @Override
@@ -101,6 +102,8 @@ public class ZooKeeperTransactionHelper extends ZooKeeperAtomicService implement
             ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
             callback.success(null);
         } else if (ABORT.equals(curState)) { // 请求状态已经更改为 ABORT
+            // 直接移除watch即可
+            ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
             callback.fail(null);
         }
     }

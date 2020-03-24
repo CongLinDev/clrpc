@@ -8,6 +8,13 @@ import conglin.clrpc.common.serialization.SerializationHandler;
 public interface CommonContext {
 
     /**
+     * 返回当前角色
+     * 
+     * @return
+     */
+    String role();
+
+    /**
      * 获取线程池
      * 
      * @return

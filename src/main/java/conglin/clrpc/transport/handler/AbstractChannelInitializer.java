@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.context.CommonContext;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInitializer;
@@ -20,7 +22,7 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     private ChannelPipeline pipeline;
 
     @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
+    final protected void initChannel(SocketChannel ch) throws Exception {
         this.pipeline = ch.pipeline();
         doInitChannel(ch);
         LOGGER.info("Here are ChannelHandlers in ChannelPipeline as follows.");
@@ -78,15 +80,11 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
      * @param handlerClassnames
      */
     protected void addChannelHandlers(List<String> handlerClassnames) {
-        handlerClassnames.stream().map(this::getChannelHandlerObject).forEach(pipeline::addLast);
+        handlerClassnames.stream().map(
+                qualifiedClassName -> ClassUtils.loadClassObject(qualifiedClassName, ChannelHandler.class, context()))
+                .forEach(pipeline::addLast);
     }
 
-    /**
-     * 构造 {@link io.netty.channel.ChannelHandler}
-     * 
-     * @param qualifiedClassName
-     * @return
-     */
-    abstract protected ChannelHandler getChannelHandlerObject(String qualifiedClassName);
+    abstract protected CommonContext context();
 
 }

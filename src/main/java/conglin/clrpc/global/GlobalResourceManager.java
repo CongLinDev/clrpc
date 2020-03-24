@@ -2,7 +2,7 @@ package conglin.clrpc.global;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import conglin.clrpc.common.util.ZooKeeperUtils;
+import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
 /**
  * clrpc 为了性能选择复用部分资源 全局资源管理器使用计数标记的方法管理资源

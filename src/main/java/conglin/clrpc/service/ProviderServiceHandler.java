@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.registry.ServiceRegistry;
-import conglin.clrpc.registry.ZooKeeperServiceRegistry;
+import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.zookeeper.registry.ZooKeeperServiceRegistry;
 
 public class ProviderServiceHandler extends AbstractServiceHandler {
 

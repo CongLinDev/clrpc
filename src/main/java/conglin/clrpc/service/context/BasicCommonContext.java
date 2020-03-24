@@ -7,6 +7,11 @@ import conglin.clrpc.common.serialization.SerializationHandler;
 
 public class BasicCommonContext implements CommonContext {
 
+    @Override
+    public String role() {
+        return "unknown";
+    }
+
     private ExecutorService executorService;
 
     @Override

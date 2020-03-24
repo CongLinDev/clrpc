@@ -9,12 +9,12 @@ import conglin.clrpc.common.Available;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.util.atomic.TransactionHelper;
-import conglin.clrpc.common.util.atomic.ZooKeeperTransactionHelper;
+import conglin.clrpc.common.util.TransactionHelper;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.future.TransactionFuture;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.TransactionRequest;
+import conglin.clrpc.zookeeper.util.ZooKeeperTransactionHelper;
 
 /**
  * 使用 ZooKeeper 控制分布式事务 注意，该类是线程不安全的

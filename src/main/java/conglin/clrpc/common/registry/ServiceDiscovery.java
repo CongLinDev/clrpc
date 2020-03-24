@@ -1,4 +1,4 @@
-package conglin.clrpc.registry;
+package conglin.clrpc.common.registry;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;

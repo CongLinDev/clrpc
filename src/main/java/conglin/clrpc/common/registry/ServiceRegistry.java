@@ -1,4 +1,4 @@
-package conglin.clrpc.registry;
+package conglin.clrpc.common.registry;
 
 /**
  * 服务注册

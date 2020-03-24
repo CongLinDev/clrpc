@@ -1,7 +1,7 @@
 package conglin.clrpc.service.context;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.registry.ServiceRegistry;
+import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.transport.component.ProviderChooser;
@@ -9,6 +9,11 @@ import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
 
 public class BasicConsumerContext extends BasicCommonContext implements ConsumerContext {
+
+    @Override
+    public String role() {
+        return "consumer";
+    }
 
     private RequestSender requestSender;
 

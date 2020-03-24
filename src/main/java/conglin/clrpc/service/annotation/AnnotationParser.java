@@ -11,7 +11,7 @@ import conglin.clrpc.service.fallback.FallbackFactory;
 public class AnnotationParser {
 
     private AnnotationParser() {
-        // unuse
+        // unused
     }
 
     /**

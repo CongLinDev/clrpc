@@ -134,12 +134,12 @@ bootstrap.monitor(HelloService.class)
 
 |                  Field                  |           Type            | Null  |    Default     |                             Remark                             |
 | :-------------------------------------: | :-----------------------: | :---: | :------------: | :------------------------------------------------------------: |
-|       zookeeper.registry.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务注册地址                          |
-|      zookeeper.registry.root-path       |          String           |  YES  |     /clrpc     |                         服务注册根节点                         |
-| zookeeper.registry.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|       zookeeper.discovery.address       |          String           |  YES  | 127.0.0.1:2181 |                          服务搜索地址                          |
-|      zookeeper.discovery.root-path      |          String           |  YES  |     /clrpc     |                         服务搜索根节点                         |
-| zookeeper.discovery.<br>session-timeout |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
+|       zookeeper.provider.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务注册地址                          |
+|      zookeeper.provider.root-path       |          String           |  YES  |     /clrpc     |                         服务注册根节点                         |
+| zookeeper.provider.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
+|       zookeeper.consumer.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务搜索地址                          |
+|      zookeeper.consumer.root-path       |          String           |  YES  |     /clrpc     |                         服务搜索根节点                         |
+| zookeeper.consumer.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
 |        zookeeper.monitor.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务监视地址                          |
 |       zookeeper.monitor.root-path       |          String           |  YES  |     /clrpc     |                         服务监视根节点                         |
 |  zookeeper.monitor.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |

@@ -1,14 +1,16 @@
-package conglin.clrpc.common.identifier;
+package conglin.clrpc.zookeeper.identifier;
 
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.ZooKeeperUtils;
-import conglin.clrpc.common.util.atomic.ZooKeeperAtomicService;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
+import conglin.clrpc.zookeeper.AbstractZooKeeperService;
+import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
-public class SequetialIdentifierGenerator extends ZooKeeperAtomicService implements IdentifierGenerator {
+public class SequetialIdentifierGenerator extends AbstractZooKeeperService implements IdentifierGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SequetialIdentifierGenerator.class);
 
@@ -17,7 +19,7 @@ public class SequetialIdentifierGenerator extends ZooKeeperAtomicService impleme
     protected IdentifierGenerator downgradeGenerator;
 
     public SequetialIdentifierGenerator(PropertyConfigurer configurer) {
-        super(configurer, "/request/id");
+        super("atomicity", configurer, "request/id");
         downgradeGenerator = new RandomIdentifierGenerator();
     }
 

@@ -1,11 +1,11 @@
-package conglin.clrpc.common.identifier;
+package conglin.clrpc.zookeeper.identifier;
 
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.ZooKeeperUtils;
+import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
 public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGenerator {
 
@@ -23,7 +23,7 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
     @Override
     public long generate(String key) {
         if (super.keeper != null) {
-            String sequetialNode = rootPath + "/service/" + key + "/request/id";
+            String sequetialNode = rootPath + key + "/request/id";
             String nodeSequetialId = ZooKeeperUtils.createNode(keeper, sequetialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
             String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
             return Long.parseLong(id);

@@ -6,9 +6,9 @@ import conglin.clrpc.bootstrap.RpcBootstrap;
 import conglin.clrpc.bootstrap.RpcMonitorBootstrap;
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.registry.ServiceMonitor;
-import conglin.clrpc.registry.ZooKeeperServiceMonitor;
+import conglin.clrpc.common.registry.ServiceMonitor;
 import conglin.clrpc.service.annotation.AnnotationParser;
+import conglin.clrpc.zookeeper.registry.ZooKeeperServiceMonitor;
 
 abstract public class AbstractRpcMonitorBootstrap extends RpcBootstrap implements RpcMonitorBootstrap {
 

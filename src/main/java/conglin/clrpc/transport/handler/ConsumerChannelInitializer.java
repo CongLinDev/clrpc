@@ -3,13 +3,11 @@ package conglin.clrpc.transport.handler;
 import java.util.Collections;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
 import conglin.clrpc.transport.handler.codec.CommonDecoder;
 import conglin.clrpc.transport.handler.codec.CommonEncoder;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 
@@ -69,6 +67,11 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
     }
 
     @Override
+    protected ConsumerContext context() {
+        return context;
+    }
+
+    @Override
     protected void doInitChannel(SocketChannel ch) throws Exception {
         SerializationHandler serializationHandler = context.getSerializationHandler();
         pipeline().addLast("Common Encoder", new CommonEncoder(serializationHandler)).addLast("Common Decoder",
@@ -83,10 +86,5 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
         // after handle request
         addChannelHandlers(context.getPropertyConfigurer().getOrDefault("consumer.channel-handler.after",
                 Collections.emptyList()));
-    }
-
-    @Override
-    protected ChannelHandler getChannelHandlerObject(String qualifiedClassName) {
-        return ClassUtils.loadClassObject(qualifiedClassName, ChannelHandler.class, context);
     }
 }

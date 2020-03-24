@@ -1,4 +1,4 @@
-package conglin.clrpc.common.util.atomic;
+package conglin.clrpc.common.util;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.TransactionException;

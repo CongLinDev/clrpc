@@ -1,7 +1,7 @@
 package conglin.clrpc.service.context;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.registry.ServiceRegistry;
+import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.FuturesHolder;
 import conglin.clrpc.transport.component.ProviderChooser;

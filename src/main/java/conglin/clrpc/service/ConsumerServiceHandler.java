@@ -10,8 +10,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.registry.ServiceDiscovery;
-import conglin.clrpc.registry.ZooKeeperServiceDiscovery;
+import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.fallback.DefaultFallbackHolder;
 import conglin.clrpc.service.fallback.FallbackHolder;
@@ -22,6 +21,7 @@ import conglin.clrpc.service.proxy.BasicProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.proxy.ZooKeeperTransactionProxy;
+import conglin.clrpc.zookeeper.registry.ZooKeeperServiceDiscovery;
 
 public class ConsumerServiceHandler extends AbstractServiceHandler {
 
