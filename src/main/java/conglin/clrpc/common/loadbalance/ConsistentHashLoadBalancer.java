@@ -1,14 +1,20 @@
 package conglin.clrpc.common.loadbalance;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,10 +92,52 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         int next = head;
         while (next <= tail) {
             Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
+            if (entry == null)
+                break;
             V v = entry.getValue().getValue();
-            consumer.accept(v);
+            if (v != null)
+                consumer.accept(v);
             next = entry.getKey() + 1;
         }
+    }
+
+    @Override
+    public <R> Collection<R> apply(Function<V, R> function) {
+        if (function == null)
+            return Collections.emptyList();
+        return circle.values().stream().map(Node::getValue).filter(Objects::nonNull).map(function)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public <R> Collection<R> apply(T type, Function<V, R> function) {
+        if (function == null)
+            return Collections.emptyList();
+
+        AtomicInteger regionAndEpoch = descriptions.get(type);
+        if (regionAndEpoch == null)
+            return Collections.emptyList();
+        // 获取当前区域范围 [head, tail]
+        int head = regionHead(regionAndEpoch);
+        int tail = regionTail(head);// 区域编号不得超过最大编号
+
+        int next = head;
+        List<R> resultList = new ArrayList<>();
+        while (next <= tail) {
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
+            if (entry == null)
+                break;
+            V v = entry.getValue().getValue();
+            if (v != null)
+                resultList.add(function.apply(v));
+            next = entry.getKey() + 1;
+        }
+        return resultList;
+    }
+
+    @Override
+    public Collection<T> allTypes() {
+        return descriptions.keySet();
     }
 
     @Override

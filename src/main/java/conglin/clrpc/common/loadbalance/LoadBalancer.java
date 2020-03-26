@@ -2,6 +2,7 @@ package conglin.clrpc.common.loadbalance;
 
 import java.util.Collection;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import conglin.clrpc.common.Pair;
@@ -61,6 +62,13 @@ public interface LoadBalancer<T, K, V> {
     V get(T type, Predicate<V> predicate);
 
     /**
+     * 获取所有类型
+     * 
+     * @return
+     */
+    Collection<T> allTypes();
+
+    /**
      * 是否存在该类型
      * 
      * @param type
@@ -86,12 +94,30 @@ public interface LoadBalancer<T, K, V> {
     void forEach(Consumer<V> consumer);
 
     /**
+     * 对所有节点做出某个操作
+     * 
+     * @param <R>
+     * @param function
+     * @return
+     */
+    <R> Collection<R> apply(Function<V, R> function);
+
+    /**
      * 对某个类型的所有节点做出某个操作
      * 
      * @param type
      * @param consumer
      */
     void forEach(T type, Consumer<V> consumer);
+
+    /**
+     * 对所有节点做出某个操作
+     * 
+     * @param <R>
+     * @param function
+     * @return
+     */
+    <R> Collection<R> apply(T type, Function<V, R> function);
 
     /**
      * 清空容器内所有数据

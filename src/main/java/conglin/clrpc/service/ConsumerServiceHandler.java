@@ -113,7 +113,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @param context
      */
     protected void initContext(ConsumerContext context) {
-        context.setExecutorService(getExecutorService());
+        super.initContext(context);
         context.setServiceRegister(serviceDiscovery);
         context.setFuturesHolder(futuresHolder);
         context.setFallbackHolder(fallbackHolder);

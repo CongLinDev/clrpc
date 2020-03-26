@@ -1,13 +1,15 @@
 package conglin.clrpc.transport.handler;
 
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.transport.handler.codec.CommonDecoder;
+import conglin.clrpc.transport.handler.codec.CommonEncoder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInitializer;
@@ -24,20 +26,10 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     @Override
     final protected void initChannel(SocketChannel ch) throws Exception {
         this.pipeline = ch.pipeline();
+        addCodecHandler();
         doInitChannel(ch);
-        LOGGER.info("Here are ChannelHandlers in ChannelPipeline as follows.");
-        pipeline.forEach(this::logChannelHandler);
-    }
-
-    /**
-     * 记录 {@link ChannelHandler}
-     * 
-     * @param entry
-     */
-    private void logChannelHandler(Map.Entry<String, ChannelHandler> entry) {
-        ChannelHandler handler = entry.getValue();
-        LOGGER.info("Name={}\tChannelHandler={}\tType={}", entry.getKey(), handler.getClass().getName(),
-                getChannelHandlerType(handler));
+        LOGGER.info("Here are ChannelHandlers in Channel(id={}) as follows.", ch.id().asLongText());
+        pipeline.forEach(entry -> LOGGER.info("Name={}\tType={}", entry.getKey(), getChannelHandlerType(entry.getValue())));
     }
 
     /**
@@ -47,9 +39,14 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
      * @return
      */
     private String getChannelHandlerType(ChannelHandler handler) {
-        if (handler instanceof ChannelInboundHandler) {
+        boolean isInbound = handler instanceof ChannelInboundHandler;
+        boolean isOutbound = handler instanceof ChannelOutboundHandler;
+
+        if (isInbound && isOutbound) {
+            return "Inbound & Outbound";
+        } else if (isInbound) {
             return "Inbound";
-        } else if (handler instanceof ChannelOutboundHandler) {
+        } else if (isOutbound) {
             return "Outbound";
         } else {
             return "Unkonwn";
@@ -85,6 +82,19 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
                 .forEach(pipeline::addLast);
     }
 
-    abstract protected CommonContext context();
+    /**
+     * 向 {@link io.netty.channel.ChannelPipeline} 中添加默认的编解码处理器
+     */
+    protected void addCodecHandler() {
+        SerializationHandler serializationHandler = context().getSerializationHandler();
+        pipeline().addLast("CommonEncoder", new CommonEncoder(serializationHandler)).addLast("CommonDecoder",
+                new CommonDecoder(serializationHandler));
+    }
 
+    /**
+     * 返回关联的上下文
+     * 
+     * @return
+     */
+    abstract protected CommonContext context();
 }

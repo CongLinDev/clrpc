@@ -70,8 +70,6 @@ public final class ZooKeeperUtils {
      */
     public static ZooKeeper connectNewZooKeeper(final String address, final int sessionTimeout) {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        // ZooKeeper keeper = null;
         try {
             ZooKeeper keeper = new ZooKeeper(address, sessionTimeout, event -> {
                 if (event.getState() == Event.KeeperState.SyncConnected) {

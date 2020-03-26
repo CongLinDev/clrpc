@@ -75,12 +75,11 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param context
      */
     protected void initContext(ProviderContext context) {
+        super.initContext(context);
         // 设置服务注册器
         context.setServiceRegister(this::registerService);
         // 设置服务对象持有器
         context.setObjectsHolder(this::getService);
-        // 设置线程池
-        context.setExecutorService(getExecutorService());
     }
 
     /**

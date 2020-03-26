@@ -14,14 +14,19 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
+import conglin.clrpc.service.context.CommonContext;
 
 abstract public class AbstractServiceHandler implements Destroyable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
     private final ExecutorService businessTheardExecutorService;
 
+    public AbstractServiceHandler(PropertyConfigurer configurer, boolean enable) {
+        businessTheardExecutorService = enable ? threadPool(configurer) : null;
+    }
+
     public AbstractServiceHandler(PropertyConfigurer configurer) {
-        businessTheardExecutorService = threadPool(configurer);
+        this(configurer, true);
     }
 
     /**
@@ -81,12 +86,16 @@ abstract public class AbstractServiceHandler implements Destroyable {
 
     @Override
     public void destroy() throws DestroyFailedException {
+        if (businessTheardExecutorService == null)
+            return;
         businessTheardExecutorService.shutdown();
         LOGGER.debug("Theard Executor shuts down.");
     }
 
     @Override
     public boolean isDestroyed() {
+        if (businessTheardExecutorService == null)
+            return true;
         return businessTheardExecutorService.isShutdown();
     }
 
@@ -97,5 +106,14 @@ abstract public class AbstractServiceHandler implements Destroyable {
      */
     public ExecutorService getExecutorService() {
         return businessTheardExecutorService;
+    }
+
+    /**
+     * 初始化上下文
+     * 
+     * @param context
+     */
+    protected void initContext(CommonContext context) {
+        context.setExecutorService(getExecutorService());
     }
 }
