@@ -72,9 +72,12 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        boolean canCancel = !SYNCHRONIZER.isDone();
-        SYNCHRONIZER.cancel();
-        return canCancel;
+        if(SYNCHRONIZER.cancel()) {
+            SYNCHRONIZER.release(0);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -147,7 +150,7 @@ abstract public class AbstractFuture implements RpcFuture {
      * 执行回调函数
      */
     protected void runCallback() {
-        if (!isCancelled())
+        if (!isCancelled() && futureCallback != null)
             doRunCallback();
     }
 
@@ -171,7 +174,7 @@ abstract public class AbstractFuture implements RpcFuture {
         private static final long serialVersionUID = -3359796046494665489L;
         // if pending, retry times == Math.abs(getState())
         private static final int PENDING = 0; // 等待
-        private static final int CANCELLED = 1; // 取消
+        private static final int CANCELED = 1; // 取消
         private static final int DONE = 2; // 完成
         private static final int USED = 3; // 占用
 
@@ -183,11 +186,10 @@ abstract public class AbstractFuture implements RpcFuture {
         }
 
         @Override
-        protected boolean tryRelease(int arg) {
-            if (isUsed())
-                return compareAndSetState(USED, DONE);
-            if (isPending())
-                return compareAndSetState(PENDING, DONE);
+        protected boolean tryRelease(int arg) {               
+            if (!isCancelled()) {
+                 setState(DONE);
+            }
             return true;
         }
 
@@ -206,7 +208,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * @return
          */
         protected boolean isCancelled() {
-            return getState() == CANCELLED;
+            return getState() == CANCELED;
         }
 
         /**
@@ -224,14 +226,15 @@ abstract public class AbstractFuture implements RpcFuture {
          * @return
          */
         protected boolean isPending() {
-            return getState() <= PENDING;
+            return getState() < CANCELED;
         }
 
         /**
          * 取消
          */
-        protected void cancel() {
-            setState(CANCELLED);
+        protected boolean cancel() {
+            int curState = getState();
+            return curState < DONE && compareAndSetState(curState, CANCELED);
         }
 
         /**
