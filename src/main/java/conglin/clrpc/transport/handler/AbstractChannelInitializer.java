@@ -1,15 +1,11 @@
 package conglin.clrpc.transport.handler;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.CommonContext;
-import conglin.clrpc.transport.handler.codec.CommonDecoder;
-import conglin.clrpc.transport.handler.codec.CommonEncoder;
+import conglin.clrpc.transport.handler.codec.RpcProtocolCodec;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInitializer;
@@ -28,8 +24,9 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
         this.pipeline = ch.pipeline();
         addCodecHandler();
         doInitChannel(ch);
-        LOGGER.info("Here are ChannelHandlers in Channel(id={}) as follows.", ch.id().asLongText());
-        pipeline.forEach(entry -> LOGGER.info("Name={}\tType={}", entry.getKey(), getChannelHandlerType(entry.getValue())));
+        LOGGER.info("Here are ChannelHandlers in Channel(id={}) as follows.", ch.id().asShortText());
+        pipeline.forEach(
+                entry -> LOGGER.info("Type={}\tName={}", getChannelHandlerType(entry.getValue()), entry.getKey()));
     }
 
     /**
@@ -43,7 +40,7 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
         boolean isOutbound = handler instanceof ChannelOutboundHandler;
 
         if (isInbound && isOutbound) {
-            return "Inbound & Outbound";
+            return "Duplex";
         } else if (isInbound) {
             return "Inbound";
         } else if (isOutbound) {
@@ -71,24 +68,11 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     }
 
     /**
-     * 在 {@link AbstractChannelInitializer#pipeline()} 后添加指定的
-     * {@link io.netty.channel.ChannelHandler}
-     * 
-     * @param handlerClassnames
-     */
-    protected void addChannelHandlers(List<String> handlerClassnames) {
-        handlerClassnames.stream().map(
-                qualifiedClassName -> ClassUtils.loadClassObject(qualifiedClassName, ChannelHandler.class, context()))
-                .forEach(pipeline::addLast);
-    }
-
-    /**
      * 向 {@link io.netty.channel.ChannelPipeline} 中添加默认的编解码处理器
      */
     protected void addCodecHandler() {
         SerializationHandler serializationHandler = context().getSerializationHandler();
-        pipeline().addLast("CommonEncoder", new CommonEncoder(serializationHandler)).addLast("CommonDecoder",
-                new CommonDecoder(serializationHandler));
+        pipeline().addLast("RpcProtocolCodec", new RpcProtocolCodec(serializationHandler));
     }
 
     /**

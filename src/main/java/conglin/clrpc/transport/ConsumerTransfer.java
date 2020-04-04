@@ -111,6 +111,7 @@ public class ConsumerTransfer {
      */
     private void disconnectAllProviderNode() {
         loadBalancer.forEach(Channel::close);
+        loadBalancer.clear();
     }
 
     /**

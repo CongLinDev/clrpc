@@ -151,15 +151,13 @@ bootstrap.monitor(HelloService.class)
 |              provider.port              |          Integer          |  YES  |       0        |                        服务提供者端口号                        |
 |          provider.thread.boss           |          Integer          |  YES  |       1        |                  服务提供者的bossGroup线程数                   |
 |         provider.thread.worker          |          Integer          |  YES  |       4        |                 服务提供者的workerGroup线程数                  |
-|   provider.channel-handler.<br>before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
-|   provider.channel-handler.<br>after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
+|  provider.channel.<br>handler-factory   |          String           |  YES  |     `null`     |         实现ChannelHandlerFactory，可自定义添加处理器          |
 |           consumer.wait-time            |           Long            |  YES  |      5000      |             无服务提供者时等待重试时间，单位为毫秒             |
 |         consumer.thread.worker          |          Integer          |  YES  |       4        |                 服务使用者的workerGroup线程数                  |
 |     consumer.retry.<br>check-period     |           Long            |  YES  |      3000      |                        重试机制执行周期                        |
 |  consumer.retry.<br>initial-threshold   |           Long            |  YES  |      3000      |                        初始重试时间门槛                        |
 |     consumer.fallback.<br>max-retry     |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
-|   consumer.channel-handler.<br>before   |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之前的自定义ChannelHandler               |
-|   consumer.channel-handler.<br>after    |    List&lt;String&gt;     |  YES  |   Empty List   |               处理请求之后的自定义ChannelHandler               |
+|  provider.channel.<br>handler-factory   |          String           |  YES  |     `null`     |         实现ChannelHandlerFactory，可自定义添加处理器          |
 |    service.thread-pool.<br>core-size    |          Integer          |  YES  |       5        |                      业务线程池核心线程数                      |
 |    service.thread-pool.<br>max-size     |          Integer          |  YES  |       10       |                      业务线程池最大线程数                      |
 |   service.thread-pool.<br>keep-alive    |          Integer          |  YES  |      1000      | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
@@ -217,7 +215,9 @@ Conclusion:
 
 **clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
 
-使用者只需要提供实现接口 `io.netty.channel.ChannelHandler` 的类且存在一个参数（类型如下表）的构造方法，并在配置文件中告知 **clrpc** 该类作用的时机即可完成对消息处理的扩展。
+使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，并声明在配置文件中，即可完成对消息处理的扩展。
+
+在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，会向构造方法其中传入一个参数，其参数类型如下：
 
 |   Role   |                     Type                      | Remark |
 | :------: | :-------------------------------------------: | :----: |

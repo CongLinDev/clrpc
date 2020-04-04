@@ -262,6 +262,9 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
                 } else if (node.match(key) && node.setEpoch(currentEpoch)) { // 更新epoch
                     node.setMetaInfomation(pair);
                     LOGGER.debug("Update old node = {}", key);
+                    if(node.getValue() == null) {
+                        node.setValue(convertor.apply(type, key));
+                    }
                     break;
                 } else { // 发生冲撞
                     LOGGER.warn("Hash collision. Consider to replace a hash algorithm for load balancer.");
@@ -414,6 +417,15 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
          */
         public V getValue() {
             return value;
+        }
+
+        /**
+         * 设置存储的值
+         * 
+         * @param value
+         */
+        public void setValue(V value) {
+            this.value = value;
         }
 
         /**

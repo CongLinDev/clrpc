@@ -18,16 +18,16 @@
     "provider.port": 0,
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
-    "provider.channel-handler.before": [],
-    "provider.channel-handler.after": [],
+    "provider.channel.handler-factory": null,
 
     "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
     "consumer.retry.check-period" : 3000,
     "consumer.retry.initial-threshold" : 3000,
     "consumer.fallback.max-retry": -1,
-    "consumer.channel-handler.before": [],
-    "consumer.channel-handler.after": [],
+    "consumer.channel.handler-factory": null,
+
+    "monitor.port": 0,
 
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,
