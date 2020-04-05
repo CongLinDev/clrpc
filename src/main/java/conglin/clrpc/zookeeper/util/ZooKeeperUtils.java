@@ -465,6 +465,17 @@ public final class ZooKeeperUtils {
      * 
      * @param keeper
      * @param path
+     * @return
+     */
+    public static Collection<String> listChildrenData(final ZooKeeper keeper, String path) {
+        return listChildrenData(keeper, path, listChildrenNode(keeper, path, null));
+    }
+
+    /**
+     * 获取指定路径下所有子节点的数据
+     * 
+     * @param keeper
+     * @param path
      * @param nodeList
      * @return
      */

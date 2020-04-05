@@ -3,6 +3,7 @@ package conglin.clrpc.common.util;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import org.slf4j.Logger;
@@ -47,6 +48,29 @@ public final class ClassUtils {
             LOGGER.error("Load class {} error. Cause: {}", qualifiedClassName, e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * 反射调用对象方法
+     * 
+     * @param object
+     * @param methodName
+     * @param parameters
+     * @return
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     */
+    public static Object reflectInvoke(Object object, String methodName, Object... parameters)
+            throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
+        Class<?> clazz = object.getClass();
+        LOGGER.debug("Invoking class={} method={}", clazz.getName(), methodName);
+        Method method = clazz.getMethod(methodName, getClasses(parameters));
+        method.setAccessible(true);
+        return method.invoke(object, parameters);
     }
 
     /**

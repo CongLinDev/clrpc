@@ -106,6 +106,10 @@ public class DefaultRequestSender implements RequestSender {
                 Iterator<RpcFuture> iterator = futuresHolder.iterator();
                 while (iterator.hasNext()) {
                     BasicFuture f = (BasicFuture) iterator.next();
+                    if(f.isCancelled()) {
+                        iterator.remove();
+                        continue;
+                    }
 
                     int retryTimes = f.retryTimes();
                     if (f.timeout(INITIAL_THRESHOLD << retryTimes) && f.retry()) {

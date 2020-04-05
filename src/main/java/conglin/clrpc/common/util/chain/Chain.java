@@ -1,6 +1,7 @@
 package conglin.clrpc.common.util.chain;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public interface Chain<T> {
 
@@ -203,6 +204,43 @@ public interface Chain<T> {
         while (node != null) {
             consumer.accept(node.value());
             node = node.next();
+        }
+    }
+
+    /**
+     * 从当前链节点开始，寻找所有匹配的值进行处理
+     * 
+     * @param consumer
+     */
+    default void matchAndAccept(Predicate<T> predicate, Consumer<T> consumer) {
+        if (predicate == null || consumer == null)
+            return;
+        T value = value();
+        if (predicate.test(value))
+            consumer.accept(value);
+
+        Chain<T> node = next();
+        if (node != null)
+            node.matchAndAccept(predicate, consumer);
+
+    }
+
+    /**
+     * 从当前链节点开始，寻找第一个匹配的值进行处理
+     * 
+     * @param predicate
+     * @param consumer
+     */
+    default void firstMatchAndAccept(Predicate<T> predicate, Consumer<T> consumer) {
+        if (predicate == null || consumer == null)
+            return;
+        T value = value();
+        if (predicate.test(value)) {
+            consumer.accept(value);
+        } else {
+            Chain<T> node = next();
+            if (node != null)
+                node.firstMatchAndAccept(predicate, consumer);
         }
     }
 

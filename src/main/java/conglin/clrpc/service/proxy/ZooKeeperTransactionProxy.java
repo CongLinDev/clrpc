@@ -19,8 +19,7 @@ import conglin.clrpc.zookeeper.util.ZooKeeperTransactionHelper;
 /**
  * 使用 ZooKeeper 控制分布式事务 注意，该类是线程不安全的
  * 
- * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用
- * {@link ZooKeeperTransactionProxy#isAvailable()} 查看
+ * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用 {@link #isAvailable()} 查看
  */
 public class ZooKeeperTransactionProxy extends CommonProxy implements TransactionProxy, Available {
 
@@ -45,7 +44,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public void begin(boolean serial) throws TransactionException {
-        if(isTransaction()) {
+        if (isTransaction()) {
             throw new TransactionException("Transaction has been begined with this proxy");
         }
         this.currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
@@ -67,26 +66,35 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public RpcFuture commit() throws TransactionException {
-        if(!isTransaction()) {
+        if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
-        LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
-        helper.commit(currentTransactionId);
+        if (helper.check(currentTransactionId)) { // 如果可以进行提交
+            helper.commit(currentTransactionId);
+            LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
+        } else {
+            helper.abort(currentTransactionId);
+            LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
+        }
+
         RpcFuture f = transactionFuture;
         transactionFuture = null; // 提交后该代理对象可以进行重用
         return f;
     }
 
     @Override
-    public void abort() throws TransactionException {
-        if(!isTransaction()) {
+    public RpcFuture abort() throws TransactionException {
+        if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
         if (transactionFuture.isDone())
             throw new TransactionException("Transaction request has commited. Can not abort.");
         LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
         helper.abort(currentTransactionId);
-        transactionFuture = null;
+
+        RpcFuture f = transactionFuture;
+        transactionFuture = null; // 提交后该代理对象可以进行重用
+        return f;
     }
 
     @Override
@@ -117,8 +125,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     @SuppressWarnings("unchecked")
     public <T> T subscribeAsync(Class<T> interfaceClass) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[] { interfaceClass },
-                new InnerAsyncObjectProxy(interfaceClass));
+                new Class<?>[] { interfaceClass }, new InnerAsyncObjectProxy(interfaceClass));
     }
 
     class InnerAsyncObjectProxy extends AsyncObjectProxy {
@@ -130,7 +137,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
         @Override
         public RpcFuture call(String serviceName, String methodName, Object... args) {
-            if(isTransaction())
+            if (isTransaction())
                 return ZooKeeperTransactionProxy.this.call(serviceName, methodName, args);
             return super.call(serviceName, methodName, args);
         }

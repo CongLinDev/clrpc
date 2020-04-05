@@ -18,8 +18,7 @@ public class BasicFuture extends AbstractFuture {
     protected Object doGet() throws RpcServiceException {
         if (response == null)
             return null;
-        if (response.isError()) {
-            signError();
+        if (isError()) {
             throw (RpcServiceException) response.getResult();
         }
         return response.getResult();
@@ -51,6 +50,8 @@ public class BasicFuture extends AbstractFuture {
     @Override
     protected void beforeDone(Object result) {
         this.response = (BasicResponse) result;
+        if(response.isError())
+            signError();
     }
 
     /**

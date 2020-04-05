@@ -54,9 +54,10 @@ public interface TransactionProxy {
     /**
      * 中止事务
      * 
+     * @return transaction future
      * @throws TransactionException
      */
-    void abort() throws TransactionException;
+    RpcFuture abort() throws TransactionException;
 
     /**
      * 获取异步原子请求代理

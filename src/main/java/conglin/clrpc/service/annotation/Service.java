@@ -31,4 +31,13 @@ public @interface Service {
      * @return
      */
     boolean enable() default true;
+
+    /**
+     * 服务版本号
+     * 
+     * {@see <a href="https://semver.org/">https://semver.org/</a>}
+     * 
+     * @return
+     */
+    String version() default "0.0.1-SNAPSHOT";
 }

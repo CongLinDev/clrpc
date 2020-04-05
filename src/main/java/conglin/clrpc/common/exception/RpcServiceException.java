@@ -20,4 +20,8 @@ public class RpcServiceException extends ExecutionException {
     public RpcServiceException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public RpcServiceException(Throwable cause) {
+        super(cause);
+    }
 }
