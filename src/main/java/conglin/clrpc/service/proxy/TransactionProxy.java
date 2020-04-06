@@ -1,5 +1,7 @@
 package conglin.clrpc.service.proxy;
 
+import java.util.concurrent.TimeUnit;
+
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.TransactionRequest;
@@ -50,6 +52,16 @@ public interface TransactionProxy {
      * @throws TransactionException
      */
     RpcFuture commit() throws TransactionException;
+
+    /**
+     * 提交事务
+     * 
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws TransactionException
+     */
+    RpcFuture commit(long timeout, TimeUnit unit) throws TransactionException;
 
     /**
      * 中止事务

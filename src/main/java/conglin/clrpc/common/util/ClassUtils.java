@@ -42,7 +42,9 @@ public final class ClassUtils {
             return null;
         try {
             Class<? extends T> clazz = Class.forName(qualifiedClassName).asSubclass(superClass);
-            return clazz.getConstructor(getClasses(args)).newInstance(args);
+            Constructor<? extends T> constructor = clazz.getConstructor(getClasses(args));
+            constructor.setAccessible(true);
+            return constructor.newInstance(args);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             LOGGER.error("Load class {} error. Cause: {}", qualifiedClassName, e.getMessage());

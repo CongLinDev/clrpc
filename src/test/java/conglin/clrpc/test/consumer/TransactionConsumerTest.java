@@ -33,7 +33,6 @@ public class TransactionConsumerTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(System.currentTimeMillis());
         RpcFuture future = proxy.commit();
 
         future.addCallback(new Callback() {

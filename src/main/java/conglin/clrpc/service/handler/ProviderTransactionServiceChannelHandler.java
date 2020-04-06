@@ -99,7 +99,7 @@ public class ProviderTransactionServiceChannelHandler
                         LOGGER.error(e.getMessage());
                     }
                     helper.abort(transactionId, serialId);
-                    LOGGER.debug("Transaction request(transactionId={} serialId={}) has been canceled.", transactionId,
+                    LOGGER.debug("Transaction request(transactionId={} serialId={}) has been cancelled.", transactionId,
                             serialId);
 
                     BasicResponse response = new BasicResponse(msg.getMessageId(), true);

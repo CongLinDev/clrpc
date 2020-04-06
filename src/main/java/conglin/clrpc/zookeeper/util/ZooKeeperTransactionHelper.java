@@ -1,6 +1,7 @@
 package conglin.clrpc.zookeeper.util;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
@@ -24,7 +25,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     public void begin(String path) throws TransactionException {
         String nodePath = rootPath + "/" + path;
         // 创建节点
-        if (ZooKeeperUtils.createNode(keeper, nodePath, PREPARE, CreateMode.PERSISTENT) == null)
+        if (ZooKeeperUtils.createNode(keeper, nodePath, PREPARE) == null)
             throw new TransactionException("Transaction begin failed. (path = " + nodePath + ")");
     }
 
@@ -32,20 +33,20 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     public void prepare(String path) throws TransactionException {
         String nodePath = rootPath + "/" + path;
         // 创建临时子节点
-        if (ZooKeeperUtils.createNode(keeper, nodePath, PREPARE, CreateMode.EPHEMERAL) == null)
+        if (ZooKeeperUtils.createNode(keeper, nodePath, PREPARE) == null)
             throw new TransactionException("Transaction execute failed. (sub_path = " + nodePath + " )");
     }
 
     @Override
     public boolean sign(String path) {
-        return casUpateState(path, PREPARE, SIGN);
+        String lockPath = rootPath + "/" + path + "/lock";
+        return ZooKeeperUtils.createNode(keeper, lockPath, CreateMode.EPHEMERAL) != null;
     }
 
     @Override
     public void reprepare(String path) throws TransactionException {
-        if (updateState(path, PREPARE) == null) {
-            throw new TransactionException("Reprepare failed. (sub_path = " + path + ") ");
-        }
+        String lockPath = rootPath + "/" + path + "/lock";
+        ZooKeeperUtils.deleteNode(keeper, lockPath);
     }
 
     @Override
@@ -86,36 +87,59 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
 
     @Override
     public boolean check(String path) throws TransactionException {
-        String nodePath = rootPath  + "/" + path;
-        Collection<String> children = ZooKeeperUtils.listChildrenNode(keeper, nodePath, null);
-        CountLatch latch = new CountLatch(children.size());
+        CountLatch latch = doCheck(path);
         try {
-            children.forEach(node -> {
-                String subnodePath = nodePath + "/" + node;//121
-                Watcher watcher = event -> {
-                    String newState = ZooKeeperUtils.watchNode(keeper, subnodePath, null);
-                    if (Event.EventType.NodeDataChanged == event.getType()) {
-                        if (PRECOMMIT.equals(newState)) {
-                            latch.countDown();
-                        } else if (ABORT.equals(newState)) {
-                            latch.clear();
-                        }
-                    }
-                };
-                String curState = ZooKeeperUtils.watchNode(keeper, subnodePath, watcher);
-                if (PRECOMMIT.equals(curState)) {
-                    latch.countDown();
-                    ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
-                } else if (ABORT.equals(curState)) {
-                    latch.clear();
-                    ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
-                }
-            });
             latch.await();
         } catch (InterruptedException e) {
             throw new TransactionException("Check failed." + e.getMessage());
         }
         return !latch.isClear();
+    }
+
+    @Override
+    public boolean check(String path, long timeout, TimeUnit unit) throws TransactionException {
+        CountLatch latch = doCheck(path);
+        try {
+            latch.await(timeout, unit);
+        } catch (InterruptedException e) {
+            latch.clear();
+        }
+        return !latch.isClear();
+    }
+
+    /**
+     * 检查的实际工作
+     * 
+     * @param path
+     * @return
+     * @throws TransactionException
+     */
+    protected CountLatch doCheck(String path) throws TransactionException {
+        String nodePath = rootPath + "/" + path;
+        Collection<String> children = ZooKeeperUtils.listChildrenNode(keeper, nodePath, null);
+        CountLatch latch = new CountLatch(children.size());
+        children.forEach(node -> {
+            String subnodePath = nodePath + "/" + node;
+            Watcher watcher = event -> {
+                String newState = ZooKeeperUtils.watchNode(keeper, subnodePath, null);
+                if (Event.EventType.NodeDataChanged == event.getType()) {
+                    if (PRECOMMIT.equals(newState)) {
+                        latch.countDown();
+                    } else if (ABORT.equals(newState)) {
+                        latch.clear();
+                    }
+                }
+            };
+            String curState = ZooKeeperUtils.watchNode(keeper, subnodePath, watcher);
+            if (PRECOMMIT.equals(curState)) {
+                latch.countDown();
+                ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
+            } else if (ABORT.equals(curState)) {
+                latch.clear();
+                ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
+            }
+        });
+        return latch;
     }
 
     @Override
@@ -140,17 +164,5 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
      */
     protected String updateState(String subPath, String state) {
         return ZooKeeperUtils.setNodeData(keeper, rootPath + "/" + subPath, state);
-    }
-
-    /**
-     * 使用CAS更新原子服务节点状态
-     * 
-     * @param subPath
-     * @param oldState
-     * @param newState
-     * @return
-     */
-    protected boolean casUpateState(String subPath, String oldState, String newState) {
-        return ZooKeeperUtils.compareAndSetNodeData(keeper, rootPath + "/" + subPath, oldState, newState);
     }
 }

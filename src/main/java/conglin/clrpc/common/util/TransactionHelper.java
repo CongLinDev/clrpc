@@ -1,12 +1,13 @@
 package conglin.clrpc.common.util;
 
+import java.util.concurrent.TimeUnit;
+
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.TransactionException;
 
 public interface TransactionHelper {
     // 事务状态
     String PREPARE = "PREPARE"; // 准备
-    String SIGN = "SIGN"; // 占用
     String PRECOMMIT = "PRECOMMIT"; // 预提交
     String COMMIT = "COMMIT"; // 提交
     String ABORT = "ABORT"; // 中止
@@ -30,9 +31,9 @@ public interface TransactionHelper {
     void begin(String path) throws TransactionException;
 
     /**
-     * 在原子服务上的 事务ID 的节点上创建 临时子节点
+     * 在原子服务上的 事务ID 的节点上创建 子节点
      * 
-     * 该节点的值设为 {@link #SIGN}
+     * 该节点的值设为 {@link #PREPARE}
      * 
      * @param transactionId
      * @param serialId
@@ -43,7 +44,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 该节点的值为 {@link #SIGN}
+     * 该节点的值为 {@link #PREPARE}
      * 
      * @param path
      * @throws TransactionException
@@ -51,28 +52,44 @@ public interface TransactionHelper {
     void prepare(String path) throws TransactionException;
 
     /**
-     * 修改原子服务上的 事务ID 的节点 子节点值
+     * 原子服务上的 事务ID 的节点的子节点下创建一个临时的分布式锁
      * 
-     * 使用CAS将子节点的值由 {@link #PREPARE} 修改为 {@link #SIGN}
+     * 路径为
+     * 
+     * <pre>
+     * $ROOT-PATH$/`transactionId`/`serialId`/lock
+     * </pre>
      * 
      * @param transactionId
      * @param serialId
-     * @return
+     * @return 是否创建成功
      */
     default boolean sign(long transactionId, int serialId) {
         return sign(transactionId + "/" + serialId);
     }
 
     /**
-     * 使用CAS将子节点的值由 {@link #PREPARE} 修改为 {@link #SIGN}
+     * 原子服务节点下创建一个临时的分布式锁
+     * 
+     * 路径为
+     * 
+     * <pre>
+     * $ROOT-PATH$/`path`/lock
+     * </pre>
      * 
      * @param path
-     * @return
+     * @return 是否创建成功
      */
     boolean sign(String path);
 
     /**
-     * 修改原子服务上的 事务ID 的节点上 子节点 的值修改为 {@link #SIGN}
+     * 移除原子服务上的 事务ID 的节点的子节点下的临时的分布式锁
+     * 
+     * 路径为
+     * 
+     * <pre>
+     * $ROOT-PATH$/`transactionId`/`serialId`/lock
+     * </pre>
      * 
      * @param transactionId
      * @param serialId
@@ -83,7 +100,13 @@ public interface TransactionHelper {
     }
 
     /**
-     * 修改原子服务上的 事务ID 的节点上 子节点 的值修改为 {@link #SIGN}
+     * 移除原子服务节点下临时的分布式锁
+     * 
+     * 路径为
+     * 
+     * <pre>
+     * $ROOT-PATH$/`path`/lock
+     * </pre>
      * 
      * @param path
      * @throws TransactionException
@@ -212,6 +235,38 @@ public interface TransactionHelper {
      * @throws TransactionException
      */
     boolean check(String path) throws TransactionException;
+
+    /**
+     * 检查子节点是否准备好
+     * 
+     * 若均为 {@link #PRECOMMIT} 则返回 {@code true} 若存在 {@link #ABORT} 则返回 {@code false}
+     * 
+     * 若不满足上述两种情况，则一直阻塞直到超时
+     * 
+     * @param path
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws TransactionException
+     */
+    default boolean check(long transactionId, long timeout, TimeUnit unit) throws TransactionException {
+        return check(String.valueOf(transactionId), timeout, unit);
+    }
+
+    /**
+     * 检查子节点是否准备好
+     * 
+     * 若均为 {@link #PRECOMMIT} 则返回 {@code true} 若存在 {@link #ABORT} 则返回 {@code false}
+     * 
+     * 若不满足上述两种情况，则一直阻塞直到超时
+     * 
+     * @param path
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws TransactionException
+     */
+    boolean check(String path, long timeout, TimeUnit unit) throws TransactionException;
 
     /**
      * 提交 修改原子服务上的 事务ID 的节点值修改为 {@link #COMMIT}

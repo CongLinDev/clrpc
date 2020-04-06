@@ -174,7 +174,7 @@ abstract public class AbstractFuture implements RpcFuture {
         private static final long serialVersionUID = -3359796046494665489L;
         // if pending, retry times == Math.abs(getState())
         private static final int PENDING = 0; // 等待
-        private static final int CANCELED = 1; // 取消
+        private static final int CANCELLED = 1; // 取消
         private static final int DONE = 2; // 完成
         private static final int USED = 3; // 占用
 
@@ -208,7 +208,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * @return
          */
         protected boolean isCancelled() {
-            return getState() == CANCELED;
+            return getState() == CANCELLED;
         }
 
         /**
@@ -226,7 +226,7 @@ abstract public class AbstractFuture implements RpcFuture {
          * @return
          */
         protected boolean isPending() {
-            return getState() < CANCELED;
+            return getState() < CANCELLED;
         }
 
         /**
@@ -234,7 +234,7 @@ abstract public class AbstractFuture implements RpcFuture {
          */
         protected boolean cancel() {
             int curState = getState();
-            return curState < DONE && compareAndSetState(curState, CANCELED);
+            return curState < DONE && compareAndSetState(curState, CANCELLED);
         }
 
         /**

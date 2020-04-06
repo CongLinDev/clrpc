@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import conglin.clrpc.common.exception.RpcServiceException;
-
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     private final List<RpcFuture> futures;
@@ -77,14 +75,12 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      * 用于检查当前已经完成的子Future是否完成
      * 
      * @return
-     * @throws FutureCancelledException 若有{@code RpcFuture} 取消，抛出异常
      */
-    protected boolean checkCompleteFuture() throws FutureCancelledException {
+    protected boolean checkCompleteFuture() {
+        // 忽略集合中已经取消的 Future 默认为执行完成
         for (RpcFuture f : futures) {
             if (f.isPending())
                 return false;
-            else if (f.isCancelled())
-                throw new FutureCancelledException(f);
             if (f.isFallback())
                 this.signFallback();
         }
@@ -92,7 +88,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     @Override
-    protected Object doGet() throws RpcServiceException {
+    protected Object doGet() {
         // return results as list
         return futures.stream().map(t -> {
             try {
@@ -101,5 +97,10 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
                 return e;
             }
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        throw new UnsupportedOperationException();
     }
 }

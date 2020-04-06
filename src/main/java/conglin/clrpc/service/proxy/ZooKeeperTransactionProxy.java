@@ -1,6 +1,7 @@
 package conglin.clrpc.service.proxy;
 
 import java.lang.reflect.Proxy;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,24 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
             throw new TransactionException("Transaction does not begin with this proxy");
         }
         if (helper.check(currentTransactionId)) { // 如果可以进行提交
+            helper.commit(currentTransactionId);
+            LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
+        } else {
+            helper.abort(currentTransactionId);
+            LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
+        }
+
+        RpcFuture f = transactionFuture;
+        transactionFuture = null; // 提交后该代理对象可以进行重用
+        return f;
+    }
+
+    @Override
+    public RpcFuture commit(long timeout, TimeUnit unit) throws TransactionException {
+        if (!isTransaction()) {
+            throw new TransactionException("Transaction does not begin with this proxy");
+        }
+        if (helper.check(currentTransactionId, timeout, unit)) { // 如果可以进行提交
             helper.commit(currentTransactionId);
             LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
         } else {
