@@ -3,11 +3,13 @@ package conglin.clrpc.service.context;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import conglin.clrpc.global.role.Role;
+
 public class BasicProviderContext extends BasicCommonContext implements ProviderContext {
 
     @Override
-    public String role() {
-        return "provider";
+    public Role role() {
+        return Role.PROVIDER;
     }
 
     private Function<String, Object> objectHolder;

@@ -103,19 +103,6 @@ RpcFuture future = proxy.commit(); // 事务提交 返回事务 Future
 bootstrap.stop();
 ```
 
-### Service Monitor
-
-```java
-// 由监视器工厂创建监视器
-RpcMonitorBootstrap bootstrap = new ConsoleRpcMonitorBootstrap();
-
-// 设置监视器的配置以及你需要监视的服务
-// 并开启服务监视器
-bootstrap.monitor(HelloService.class)
-        .hookStop() // 注册关闭钩子，用于优雅关闭服务监视器
-        .start();
-```
-
 ## Architecture
 
 ![architecture.png](https://i.loli.net/2020/01/21/63Ea7nbxez5Hkmd.png)
@@ -140,12 +127,12 @@ bootstrap.monitor(HelloService.class)
 |       zookeeper.consumer.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务搜索地址                          |
 |      zookeeper.consumer.root-path       |          String           |  YES  |     /clrpc     |                         服务搜索根节点                         |
 | zookeeper.consumer.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|        zookeeper.monitor.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务监视地址                          |
-|       zookeeper.monitor.root-path       |          String           |  YES  |     /clrpc     |                         服务监视根节点                         |
-|  zookeeper.monitor.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
 |       zookeeper.atomicity.address       |          String           |  YES  | 127.0.0.1:2181 |                          原子服务地址                          |
 |      zookeeper.atomicity.root-path      |          String           |  YES  |     /clrpc     |                         原子服务根节点                         |
 | zookeeper.atomicity.<br>session-timeout |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
+|        zookeeper.logger.address         |          String           |  YES  | 127.0.0.1:2181 |                          日志服务地址                          |
+|       zookeeper.logger.root-path        |          String           |  YES  |     /clrpc     |                         日志服务根节点                         |
+|  zookeeper.logger.<br>session-timeout   |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
 |            meta.provider.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务提供者通用元信息，发布至注册中心              |
 |            meta.consumer.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务消费者通用元信息，发布至注册中心              |
 |              provider.port              |          Integer          |  YES  |       0        |                        服务提供者端口号                        |

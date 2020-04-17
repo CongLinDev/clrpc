@@ -8,6 +8,14 @@ package conglin.clrpc.common.registry;
 public interface ServiceRegistry {
 
     /**
+     * 发布服务
+     * 
+     * @param type
+     * @param value
+     */
+    void publish(String type, String value);
+
+    /**
      * 注册
      * 
      * @param type

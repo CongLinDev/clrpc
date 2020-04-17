@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.DataCallback;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
@@ -55,53 +56,47 @@ public class ProviderTransactionServiceChannelHandler
         }
 
         try {
-            final Object result = jdkReflectInvoke(serviceBean, msg); // 预提交
-            // 预提交成功后，标记预提交成功并监视上一个节点
+            // 预提交
+            final Object result = jdkReflectInvoke(serviceBean, msg);
             helper.precommit(transactionId, serialId);
 
             Class<?> clazz = serviceBean.getClass();
+            Method method = clazz.getMethod(msg.getMethodName(), ClassUtils.getClasses(msg.getParameters()));
+            boolean isTrans = AnnotationParser.isTransactionMethod(method) && (result instanceof DataCallback);
+
+            if (!isTrans) {
+                BasicResponse response = new BasicResponse(msg.getMessageId());
+                response.setResult(result);
+                helper.commit(transactionId, serialId);
+                LOGGER.debug("Transaction request(transactionId={} serialId={}) has been commited.", transactionId,
+                        serialId);
+                next(msg, response);
+                return null;
+            }
+
+            DataCallback dataCallback = (DataCallback) result;
+
+            // 预提交成功后，标记预提交成功并监视上一个节点
             // 若顺序执行，则监视上一个子节点，反之监视事务节点
             helper.watch(transactionId, (msg.isSerial() ? serialId - 1 : 0), new Callback() {
                 @Override
-                public void success(Object res) { // 执行提交操作
-                    Object commitResult = null;
-                    try {
-                        Method method = clazz.getMethod(msg.getMethodName(),
-                                ClassUtils.getClasses(msg.getParameters()));
-                        String commit = AnnotationParser.resolveTransactionCommit(method);
-
-                        if (commit != null)
-                            commitResult = ClassUtils.reflectInvoke(clazz, commit, result);
-                    } catch (Exception e) {
-                        LOGGER.error(e.getMessage());
-                    }
-
+                public void success(Object r) {
+                    dataCallback.success(null);
                     helper.commit(transactionId, serialId);
                     LOGGER.debug("Transaction request(transactionId={} serialId={}) has been commited.", transactionId,
                             serialId);
-
+                    Object res = dataCallback.data();
                     BasicResponse response = new BasicResponse(msg.getMessageId());
-                    response.setResult(commitResult == null ? result : commitResult);
+                    response.setResult(res);
                     next(msg, response);
                 }
 
                 @Override
-                public void fail(Exception exception) { // 执行回滚操作
-                    // 返回错误回复
-                    try {
-                        Method method = clazz.getMethod(msg.getMethodName(),
-                                ClassUtils.getClasses(msg.getParameters()));
-                        String rollback = AnnotationParser.resolveTransactionRollback(method);
-
-                        if (rollback != null)
-                            ClassUtils.reflectInvoke(clazz, rollback, result);
-                    } catch (Exception e) {
-                        LOGGER.error(e.getMessage());
-                    }
+                public void fail(Exception exception) {
+                    dataCallback.fail(null);
                     helper.abort(transactionId, serialId);
                     LOGGER.debug("Transaction request(transactionId={} serialId={}) has been cancelled.", transactionId,
                             serialId);
-
                     BasicResponse response = new BasicResponse(msg.getMessageId(), true);
                     response.setResult(new ServiceExecutionException("Transaction has been cancelled."));
                     next(msg, response);
@@ -115,6 +110,8 @@ public class ProviderTransactionServiceChannelHandler
             BasicResponse response = new BasicResponse(msg.getMessageId(), true);
             response.setResult(e);
             next(msg, response);
+        } catch (NoSuchMethodException | SecurityException e) {
+            // will not happen
         }
         return null;
     }

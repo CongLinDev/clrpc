@@ -3,13 +3,15 @@ package conglin.clrpc.service.context;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.common.serialization.SerializationHandler;
+import conglin.clrpc.global.role.Role;
 
 public class BasicCommonContext implements CommonContext {
 
     @Override
-    public String role() {
-        return "unknown";
+    public Role role() {
+        return Role.UNKNOWN;
     }
 
     private ExecutorService executorService;
@@ -46,5 +48,17 @@ public class BasicCommonContext implements CommonContext {
     @Override
     public void setSerializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
+    }
+
+    private ServiceLogger serviceLogger;
+
+    @Override
+    public ServiceLogger getSerivceLogger() {
+        return serviceLogger;
+    }
+
+    @Override
+    public void setServiceLogger(ServiceLogger serviceLogger) {
+        this.serviceLogger = serviceLogger;
     }
 }

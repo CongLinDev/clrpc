@@ -11,7 +11,7 @@ public class JsonSerializationHandler implements SerializationHandler {
 
     @Override
     public <T> byte[] serialize(T t) {
-        return JSON.toJSONString(t).getBytes();
+        return JSON.toJSONBytes(t);
     }
 
     @Override

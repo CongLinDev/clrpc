@@ -112,6 +112,22 @@ public final class ZooKeeperUtils {
     }
 
     /**
+     * 是否存在Node
+     * 
+     * @param keeper
+     * @param path
+     * @return
+     */
+    public static boolean isExistNode(final ZooKeeper keeper, String path) {
+        try {
+            return keeper.exists(path, false) != null;
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.error(e.getMessage());
+        }
+        return false;
+    }
+
+    /**
      * 递归创建通用的持久节点 该节点不存储任何信息 采用 OPEN_ACL_UNSAFE 策略
      * 
      * @param keeper

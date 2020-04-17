@@ -4,7 +4,10 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,41 @@ public final class ClassUtils {
 
     private ClassUtils() {
         // Unused.
+    }
+
+    /**
+     * 解析 {@link java.lang.Class} 对象的公共方法
+     * 
+     * @param clazz
+     * @return
+     */
+    public static Map<String, Object> resolveClass(Class<?> clazz) {
+        Map<String, Object> clazzMap = new HashMap<>();
+        clazzMap.put("name", clazz.getName());
+
+        int count = 0;
+        for (Method method : clazz.getMethods()) {
+            if (Modifier.isPublic(method.getModifiers())) {
+                clazzMap.put("method" + count, resloveMethod(method));
+                count++;
+            }
+        }
+        return clazzMap;
+    }
+
+    /**
+     * 解析 {@link java.lang.reflect.Method} 对象方法类型
+     * 
+     * @param method
+     * @return
+     */
+    public static Map<String, Object> resloveMethod(Method method) {
+        Map<String, Object> methodMap = new HashMap<>();
+        methodMap.put("method", method.getName());
+        methodMap.put("parameter", method.getParameterTypes());
+        methodMap.put("return", method.getReturnType());
+        methodMap.put("exception", method.getExceptionTypes());
+        return methodMap;
     }
 
     /**

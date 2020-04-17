@@ -6,9 +6,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.zookeeper.registry.ZooKeeperServiceRegistry;
 
@@ -22,11 +24,12 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     // String保存服务名 Object保存服务实现类
     private final Map<String, Object> serviceObjects;
 
-    private ServiceRegistry serviceRegistry;
+    private final ServiceRegistry serviceRegistry;
 
     public ProviderServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         serviceObjects = new HashMap<>();
+        serviceRegistry = new ZooKeeperServiceRegistry(configurer);
     }
 
     /**
@@ -37,6 +40,17 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      */
     public void publish(String serviceName, Object serviceBean) {
         serviceObjects.put(serviceName, serviceBean);
+    }
+
+    /**
+     * 发布服务元信息
+     * 
+     * @param serviceName
+     * @param interfaceClass
+     */
+    public void publishServiceMetaInfo(String serviceName, Class<?> interfaceClass) {
+        PropertyConfigurer c = JsonPropertyConfigurer.fromMap(ClassUtils.resolveClass(interfaceClass));
+        serviceRegistry.publish(serviceName, c.toString());
     }
 
     /**
@@ -51,6 +65,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     /**
      * 将数据注册到注册中心
+     * 
+     * @param address 本机地址
      */
     protected void registerService(String address) {
         PropertyConfigurer configurer = context.getPropertyConfigurer();
@@ -64,8 +80,11 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
      * @param context
      */
     public void start(ProviderContext context) {
-        serviceRegistry = new ZooKeeperServiceRegistry(context.getPropertyConfigurer());
         this.context = context;
+        serviceObjects.forEach((name, bean) -> {
+            PropertyConfigurer c = JsonPropertyConfigurer.fromMap(ClassUtils.resolveClass(bean.getClass()));
+            serviceRegistry.publish(name, c.toString());
+        });
         initContext(context);
     }
 

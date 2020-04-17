@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.global.role.Role;
 import conglin.clrpc.zookeeper.AbstractZooKeeperService;
 import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
@@ -20,7 +21,15 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService implement
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceRegistry.class);
 
     public ZooKeeperServiceRegistry(PropertyConfigurer configurer) {
-        super("provider", configurer);
+        super(Role.PROVIDER, configurer);
+    }
+
+    @Override
+    public void publish(String type, String value) {
+        String path = rootPath + "/" + type;
+        if(!ZooKeeperUtils.isExistNode(keeper, path)) {
+            ZooKeeperUtils.createNode(keeper, path, value);
+        }
     }
 
     @Override

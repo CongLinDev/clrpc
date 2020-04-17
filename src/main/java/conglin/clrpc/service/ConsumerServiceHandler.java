@@ -31,7 +31,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private final FallbackHolder fallbackHolder;
 
-    private ServiceDiscovery serviceDiscovery;
+    private final ServiceDiscovery serviceDiscovery;
 
     private ConsumerContext context;
 
@@ -39,6 +39,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         super(configurer);
         futuresHolder = new DefaultFuturesHolder();
         fallbackHolder = new DefaultFallbackHolder(configurer);
+        serviceDiscovery = new ZooKeeperServiceDiscovery(configurer);
     }
 
     /**
@@ -103,7 +104,6 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     public void start(ConsumerContext context) {
         this.context = context;
-        serviceDiscovery = new ZooKeeperServiceDiscovery(context.getPropertyConfigurer());
         initContext(context);
     }
 

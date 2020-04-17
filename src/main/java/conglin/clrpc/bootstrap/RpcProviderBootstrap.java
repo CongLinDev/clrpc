@@ -60,7 +60,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        AnnotationParser.superServiceNames(serviceBean.getClass()).forEach(serviceName -> {
+        AnnotationParser.superServiceNames(serviceBean.getClass(), SERVICE_HANDLER::publishServiceMetaInfo).forEach(serviceName -> {
             SERVICE_HANDLER.publish(serviceName, serviceBean);
             LOGGER.info("Publish service named {}.", serviceName);
         });

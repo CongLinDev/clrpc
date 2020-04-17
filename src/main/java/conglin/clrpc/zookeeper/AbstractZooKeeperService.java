@@ -3,12 +3,17 @@ package conglin.clrpc.zookeeper;
 import org.apache.zookeeper.ZooKeeper;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.global.role.Role;
 import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
 abstract public class AbstractZooKeeperService {
 
     protected final String rootPath; // zookeeper根地址
     protected final ZooKeeper keeper;
+
+    public AbstractZooKeeperService(Role role, PropertyConfigurer configurer) {
+        this(role.toString(), configurer);
+    }
 
     public AbstractZooKeeperService(String role, PropertyConfigurer configurer) {
         this(role, configurer, "service");
