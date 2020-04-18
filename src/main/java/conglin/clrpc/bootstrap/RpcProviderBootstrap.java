@@ -1,5 +1,7 @@
 package conglin.clrpc.bootstrap;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +62,12 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        AnnotationParser.superServiceNames(serviceBean.getClass(), SERVICE_HANDLER::publishServiceMetaInfo).forEach(serviceName -> {
+        Collection<String> superServiceNames = AnnotationParser.superServiceNames(serviceBean.getClass(), SERVICE_HANDLER::publishServiceMetaInfo);
+        if(superServiceNames.isEmpty()) {
+            LOGGER.error("Please Add a service name for {} by @Service.", serviceBean.getClass());
+            throw new UnsupportedOperationException();
+        } 
+        superServiceNames.forEach(serviceName -> {
             SERVICE_HANDLER.publish(serviceName, serviceBean);
             LOGGER.info("Publish service named {}.", serviceName);
         });

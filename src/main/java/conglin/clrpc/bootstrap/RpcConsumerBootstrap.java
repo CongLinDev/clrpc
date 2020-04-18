@@ -107,8 +107,11 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      */
     public RpcConsumerBootstrap refresh(Class<?> interfaceClass) {
         String serviceName = AnnotationParser.serviceName(interfaceClass);
-        if (serviceName == null)
-            throw new NullPointerException();
+        if (serviceName == null) {
+            LOGGER.error("Please Add a service name for {} by @Service.", interfaceClass);
+            throw new UnsupportedOperationException();
+        }
+            
         SERVICE_HANDLER.prepare(serviceName, interfaceClass);
         if (CONSUMER_TRANSFER.needRefresh(serviceName)) {
             LOGGER.debug("Refresh service=({}) privider.", serviceName);

@@ -1,11 +1,11 @@
 package conglin.clrpc.test.pojo;
 
-public class User{
+public class User {
 
     private Long userId;
     private String username;
 
-    public User(Long userId, String username){
+    public User(Long userId, String username) {
         this.userId = userId;
         this.username = username;
     }

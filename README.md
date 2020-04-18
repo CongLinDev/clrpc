@@ -174,9 +174,9 @@ bootstrap.stop();
 
 在同步测试中，**尽量了排除业务逻辑占用时间的干扰**。
 
-[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/provider/HelloServiceProviderTest.java)
+[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ProviderTest.java)
 
-[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/consumer/sync/HelloServiceSyncConsumerTimeTest.java)
+[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ConsumerTest.java)
 
 Conclusion:
 
@@ -188,9 +188,9 @@ Conclusion:
 
 在异步测试中，**尽量了排除业务逻辑占用时间的干扰**。
 
-[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/provider/HelloServiceProviderTest.java)
+[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ProviderTest.java)
 
-[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/consumer/sync/HelloServiceAsyncConsumerTimeTest.java)
+[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ConsumerTest.java)
 
 Conclusion:
 

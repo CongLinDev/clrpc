@@ -138,7 +138,7 @@ public final class ClassUtils {
      * @return
      */
     public static Object defaultValue(Class<?> clazz) {
-        if (!clazz.isPrimitive()) {
+        if (!clazz.isPrimitive() || clazz == void.class) {
             return null;
         }
         // 处理基本类型
