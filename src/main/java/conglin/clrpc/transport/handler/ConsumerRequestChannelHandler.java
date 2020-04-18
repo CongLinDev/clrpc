@@ -16,7 +16,7 @@ public class ConsumerRequestChannelHandler extends ChannelInboundHandlerAdapter 
         if (msg instanceof BasicRequest) {
             BasicRequest request = (BasicRequest) msg;
             ctx.writeAndFlush(request);
-            LOGGER.debug("Send request for messageId={}", request.getMessageId());
+            LOGGER.debug("Send request for messageId={}", request.messageId());
         } else {
             super.channelRead(ctx, msg);
         }

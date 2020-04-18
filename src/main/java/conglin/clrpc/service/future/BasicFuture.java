@@ -19,14 +19,14 @@ public class BasicFuture extends AbstractFuture {
         if (response == null)
             return null;
         if (isError()) {
-            throw (RpcServiceException) response.getResult();
+            throw (RpcServiceException) response.result();
         }
-        return response.getResult();
+        return response.result();
     }
 
     @Override
     public long identifier() {
-        return request.getMessageId();
+        return request.messageId();
     }
 
     /**
@@ -50,7 +50,7 @@ public class BasicFuture extends AbstractFuture {
     @Override
     protected void beforeDone(Object result) {
         this.response = (BasicResponse) result;
-        if(response.isError())
+        if (response.isError())
             signError();
     }
 
@@ -62,9 +62,9 @@ public class BasicFuture extends AbstractFuture {
     @Override
     protected void doRunCallback() {
         if (!isError()) {
-            this.futureCallback.success(response.getResult());
+            this.futureCallback.success(response.result());
         } else {
-            this.futureCallback.fail((RpcServiceException) response.getResult());
+            this.futureCallback.fail((RpcServiceException) response.result());
         }
     }
 }

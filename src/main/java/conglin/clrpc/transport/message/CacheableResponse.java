@@ -13,12 +13,8 @@ public class CacheableResponse extends BasicResponse {
 
     private int flag;
 
-    public CacheableResponse(Long messageId) {
-        super(messageId);
-    }
-
-    public CacheableResponse(Long messageId, Boolean error) {
-        super(messageId, error);
+    public CacheableResponse(Long messageId, boolean error, Object result) {
+        super(messageId, error, result);
     }
 
     public CacheableResponse(BasicResponse response) {
@@ -38,12 +34,8 @@ public class CacheableResponse extends BasicResponse {
      * @return
      */
     public CacheableResponse copy(Long messageId) {
-        CacheableResponse response = new CacheableResponse(messageId);
+        CacheableResponse response = new CacheableResponse(messageId, isError(), result());
         response.setFlag(this.flag);
-        response.setResult(this.getResult());
-        if (this.isError()) {
-            response.signError();
-        }
         return response;
     }
 

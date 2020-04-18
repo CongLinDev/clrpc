@@ -201,8 +201,8 @@ public class ConsumerTransfer {
 
         @Override
         public Channel choose(BasicRequest request) {
-            int random = adapter.apply(request.getMessageId(), request.getMethodName());
-            String serviceName = request.getServiceName();
+            int random = adapter.apply(request.messageId(), request.methodName());
+            String serviceName = request.serviceName();
             // 不断尝试
             while (true) {
                 Channel channel = loadBalancer.get(serviceName, random);

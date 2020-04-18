@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.context.CommonContext;
-import conglin.clrpc.service.handler.traffic.ChannelTrafficHandler;
+import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.transport.handler.codec.RpcProtocolCodec;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandler;
@@ -24,12 +24,13 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     final protected void initChannel(SocketChannel ch) throws Exception {
         this.pipeline = ch.pipeline();
 
-        if(context().getSerivceLogger().isEnable()) {
-            pipeline().addLast(new ChannelTrafficHandler(context()));
-        }
-
+        String factoryClass = (String)context().getPropertyConfigurer().get(context().role().item(".channel.handler-factory"));
+        ChannelHandlerFactory factory = ChannelHandlerFactory.newFactory(factoryClass, context());
+        factory.beforeCodec().forEach(pipeline::addLast);
         addCodecHandler();
+        factory.beforeHandle().forEach(pipeline::addLast);
         doInitChannel(ch);
+        factory.afterHandle().forEach(pipeline::addLast);
         LOGGER.info("Here are ChannelHandlers in Channel(id={}) as follows.", ch.id().asShortText());
         pipeline.forEach(
                 entry -> LOGGER.info("Type={}\tName={}", getChannelHandlerType(entry.getValue()), entry.getKey()));

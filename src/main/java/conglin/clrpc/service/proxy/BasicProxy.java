@@ -82,10 +82,7 @@ public class BasicProxy extends CommonProxy implements InvocationHandler {
      * @return future
      */
     public RpcFuture call(String serviceName, String methodName, Object... args) {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
-        request.setServiceName(serviceName);
-        request.setMethodName(methodName);
-        request.setParameters(args);
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName), serviceName, methodName, args);
         return super.call(request);
     }
 
@@ -100,10 +97,7 @@ public class BasicProxy extends CommonProxy implements InvocationHandler {
      * @return future
      */
     public RpcFuture callWith(String remoteAddress, String serviceName, String methodName, Object... args) {
-        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName));
-        request.setServiceName(serviceName);
-        request.setMethodName(methodName);
-        request.setParameters(args);
+        BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName), serviceName, methodName, args);
         return super.callWith(remoteAddress, request);
     }
 

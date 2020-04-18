@@ -39,7 +39,7 @@ abstract public class Message implements Serializable {
     }
 
     public Message(Message message) {
-        this(message.getMessageId());
+        this(message.messageId());
     }
 
     /**
@@ -47,7 +47,7 @@ abstract public class Message implements Serializable {
      * 
      * @return the messageId
      */
-    public Long getMessageId() {
+    public Long messageId() {
         return messageId;
     }
 

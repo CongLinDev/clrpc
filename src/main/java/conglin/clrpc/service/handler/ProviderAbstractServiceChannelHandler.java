@@ -93,7 +93,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
     protected Object jdkReflectInvoke(Object serviceBean, BasicRequest request)
             throws ServiceExecutionException {
         try {
-            return ClassUtils.reflectInvoke(serviceBean, request.getMethodName(), request.getParameters());
+            return ClassUtils.reflectInvoke(serviceBean, request.methodName(), request.parameters());
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new ServiceExecutionException(e);

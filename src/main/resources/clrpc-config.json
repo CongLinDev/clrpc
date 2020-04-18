@@ -19,7 +19,6 @@
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
     "provider.channel.handler-factory": null,
-    "provider.logger.traffic.enable": false,
 
     "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
@@ -27,7 +26,6 @@
     "consumer.retry.initial-threshold" : 3000,
     "consumer.fallback.max-retry": -1,
     "consumer.channel.handler-factory": null,
-    "consumer.logger.traffic.enable": false,
 
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,

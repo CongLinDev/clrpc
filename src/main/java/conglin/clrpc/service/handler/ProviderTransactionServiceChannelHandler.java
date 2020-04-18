@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.DataCallback;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
@@ -47,7 +46,7 @@ public class ProviderTransactionServiceChannelHandler
         // 查询服务对象
         Object serviceBean = null;
         try {
-            serviceBean = findServiceBean(msg.getServiceName());
+            serviceBean = findServiceBean(msg.serviceName());
         } catch (UnsupportedServiceException e) {
             LOGGER.error("UnsupportedService: {}", e.getMessage());
             // 重新标记，由服务消费者在下次定时轮询时重新请求
@@ -61,20 +60,18 @@ public class ProviderTransactionServiceChannelHandler
             helper.precommit(transactionId, serialId);
 
             Class<?> clazz = serviceBean.getClass();
-            Method method = clazz.getMethod(msg.getMethodName(), ClassUtils.getClasses(msg.getParameters()));
-            boolean isTrans = AnnotationParser.isTransactionMethod(method) && (result instanceof DataCallback);
+            Method method = clazz.getMethod(msg.methodName(), ClassUtils.getClasses(msg.parameters()));
+            boolean isTrans = AnnotationParser.isTransactionMethod(method) && (result instanceof Callback);
 
             if (!isTrans) {
-                BasicResponse response = new BasicResponse(msg.getMessageId());
-                response.setResult(result);
                 helper.commit(transactionId, serialId);
                 LOGGER.debug("Transaction request(transactionId={} serialId={}) has been commited.", transactionId,
                         serialId);
-                next(msg, response);
+                next(msg, new BasicResponse(msg.messageId(), result));
                 return null;
             }
 
-            DataCallback dataCallback = (DataCallback) result;
+            Callback dataCallback = (Callback) result;
 
             // 预提交成功后，标记预提交成功并监视上一个节点
             // 若顺序执行，则监视上一个子节点，反之监视事务节点
@@ -85,10 +82,7 @@ public class ProviderTransactionServiceChannelHandler
                     helper.commit(transactionId, serialId);
                     LOGGER.debug("Transaction request(transactionId={} serialId={}) has been commited.", transactionId,
                             serialId);
-                    Object res = dataCallback.data();
-                    BasicResponse response = new BasicResponse(msg.getMessageId());
-                    response.setResult(res);
-                    next(msg, response);
+                    next(msg,  new BasicResponse(msg.messageId(), result));
                 }
 
                 @Override
@@ -97,9 +91,7 @@ public class ProviderTransactionServiceChannelHandler
                     helper.abort(transactionId, serialId);
                     LOGGER.debug("Transaction request(transactionId={} serialId={}) has been cancelled.", transactionId,
                             serialId);
-                    BasicResponse response = new BasicResponse(msg.getMessageId(), true);
-                    response.setResult(new ServiceExecutionException("Transaction has been cancelled."));
-                    next(msg, response);
+                    next(msg, new BasicResponse(msg.messageId(), true, new ServiceExecutionException("Transaction has been cancelled.")));
                 }
             });
         } catch (ServiceExecutionException e) {
@@ -107,9 +99,7 @@ public class ProviderTransactionServiceChannelHandler
             helper.abort(transactionId, serialId);
             LOGGER.error("Precommit failed. Transaction request(transactionId={} serialId={}). Cause: {}",
                     transactionId, serialId, e.getMessage());
-            BasicResponse response = new BasicResponse(msg.getMessageId(), true);
-            response.setResult(e);
-            next(msg, response);
+            next(msg, new BasicResponse(msg.messageId(), true, e));
         } catch (NoSuchMethodException | SecurityException e) {
             // will not happen
         }

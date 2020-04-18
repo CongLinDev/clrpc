@@ -19,6 +19,6 @@ public class ProviderResponseChannelHandler
             throws Exception {
         BasicResponse response = msg.getSecond();
         ctx.writeAndFlush(response);
-        LOGGER.debug("Send response which messageId={}", response.getMessageId());
+        LOGGER.debug("Send response which messageId={}", response.messageId());
     }
 }

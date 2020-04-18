@@ -1,4 +1,4 @@
-package conglin.clrpc.service.handler.traffic.counter;
+package conglin.clrpc.extension.traffic.counter;
 
 public interface TrafficCounter {
 

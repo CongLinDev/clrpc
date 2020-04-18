@@ -2,7 +2,6 @@ package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
-import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
@@ -69,19 +68,9 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
 
     @Override
     protected void doInitChannel(SocketChannel ch) throws Exception {
-        ChannelHandlerFactory factory = ChannelHandlerFactory.newFactory(
-            context().getPropertyConfigurer().getOrDefault("consumer.channel.handler-factory", null),
-            context());
-
-        // before handle request
-        factory.before().forEach(pipeline()::addLast);
-                
         // ansyc handle request
         pipeline().addLast("ConsumerBasicServiceChannelHandler", new ConsumerBasicServiceChannelHandler(context))
                 // ansyc handle response
                 .addLast("ConsumerRequestChannelHandler", new ConsumerRequestChannelHandler());
-
-        // after handle request
-        factory.after().forEach(pipeline()::addLast);
     }
 }

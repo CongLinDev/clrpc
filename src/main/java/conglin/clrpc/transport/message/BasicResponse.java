@@ -11,21 +11,23 @@ public class BasicResponse extends Message {
         return MESSAGE_TYPE;
     }
 
-    private Object result;
-    private Boolean error;
+    private final Object result;
+    private boolean error;
 
-    public BasicResponse(Long messageId) {
-        this(messageId, Boolean.FALSE);
-    }
-
-    public BasicResponse(Long messageId, Boolean error) {
+    public BasicResponse(Long messageId, boolean error, Object result) {
         super(messageId);
         this.error = error;
+        this.result = result;
+    }
+
+    public BasicResponse(Long messageId, Object result) {
+        super(messageId);
+        this.result = result;
     }
 
     public BasicResponse(BasicResponse response) {
         super(response);
-        this.result = response.getResult();
+        this.result = response.result();
         this.error = response.isError();
     }
 
@@ -34,39 +36,30 @@ public class BasicResponse extends Message {
      * 
      * @return the result
      */
-    public Object getResult() {
+    final public Object result() {
         return result;
-    }
-
-    /**
-     * 设置结果
-     * 
-     * @param result the result to set
-     */
-    public void setResult(Object result) {
-        this.result = result;
     }
 
     /**
      * @return the error
      */
-    public Boolean isError() {
+    final public boolean isError() {
         return error;
     }
 
     /**
      * 设为错误
      */
-    public void signError() {
-        this.error = Boolean.TRUE;
+    final public void signError() {
+        this.error = true;
     }
 
     @Override
     public String toString() {
         if (isError()) {
-            return "BasicResponse [messageId=" + getMessageId() + ", error=" + result + "]";
+            return "BasicResponse [messageId=" + messageId() + ", error=" + result + "]";
         } else {
-            return "BasicResponse [messageId=" + getMessageId() + ", result=" + result + "]";
+            return "BasicResponse [messageId=" + messageId() + ", result=" + result + "]";
         }
     }
 

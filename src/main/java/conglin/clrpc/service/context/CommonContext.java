@@ -3,7 +3,6 @@ package conglin.clrpc.service.context;
 import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.global.role.Role;
 
@@ -57,18 +56,4 @@ public interface CommonContext {
      * @param serializationHandler
      */
     void setSerializationHandler(SerializationHandler serializationHandler);
-
-    /**
-     * 获取服务记录器
-     * 
-     * @return
-     */
-    ServiceLogger getSerivceLogger();
-
-    /**
-     * 设置服务记录器
-     * 
-     * @param serviceLogger
-     */
-    void setServiceLogger(ServiceLogger serviceLogger);
 }

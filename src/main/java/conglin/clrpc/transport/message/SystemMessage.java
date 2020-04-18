@@ -9,10 +9,11 @@ public class SystemMessage extends Message {
 
     transient public static final int MESSAGE_TYPE = 0;
 
-    private String command; // 指令
+    private final String command; // 指令
 
-    public SystemMessage(Long messageId) {
+    public SystemMessage(Long messageId, String command) {
         super(messageId);
+        this.command = command;
     }
 
     public SystemMessage(SystemMessage message) {
@@ -25,17 +26,8 @@ public class SystemMessage extends Message {
      * 
      * @return command
      */
-    public String getCommand() {
+    final public String getCommand() {
         return command;
-    }
-
-    /**
-     * 设置指令
-     * 
-     * @param command the command to set
-     */
-    public void setCommand(String command) {
-        this.command = command;
     }
 
     @Override
@@ -45,6 +37,6 @@ public class SystemMessage extends Message {
 
     @Override
     public String toString() {
-        return "SystemMessage [messageId=" + getMessageId() + ", command=" + command + "]";
+        return "SystemMessage [messageId=" + messageId() + ", command=" + command + "]";
     }
 }

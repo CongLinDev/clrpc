@@ -11,26 +11,18 @@ public class TransactionRequest extends BasicRequest {
         return MESSAGE_TYPE;
     }
 
-    protected Boolean serial;
+    protected boolean serial = false;
 
     /**
      * 构造事务请求
      * 
-     * @param messageId 由两部分组成，高32位为事务ID，低32位为序列ID
-     * @param serial    是否顺序执行
+     * @param messageId   由两部分组成，高32位为事务ID，低32位为序列ID
+     * @param serviceName
+     * @param methodName
+     * @param parameters
      */
-    public TransactionRequest(Long messageId, Boolean serial) {
-        super(messageId);
-        this.serial = serial;
-    }
-
-    /**
-     * 构造事务请求，默认非顺序执行
-     * 
-     * @param messageId 由两部分组成，高32位为事务ID，低32位为序列ID
-     */
-    public TransactionRequest(Long messageId) {
-        this(messageId, Boolean.FALSE);
+    public TransactionRequest(Long messageId, String serviceName, String methodName, Object[] parameters) {
+        super(messageId, serviceName, methodName, parameters);
     }
 
     /**
@@ -38,24 +30,17 @@ public class TransactionRequest extends BasicRequest {
      * 
      * @param transactionId 事务ID
      * @param serialId      序列ID
-     * @param serial        是否顺序执行
+     * @param serviceName
+     * @param methodName
+     * @param parameters
      */
-    public TransactionRequest(long transactionId, int serialId, Boolean serial) {
-        this(transactionId | serialId, serial);
+    public TransactionRequest(long transactionId, int serialId, String serviceName, String methodName,
+            Object[] parameters) {
+        this(transactionId | serialId, serviceName, methodName, parameters);
     }
 
     /**
-     * 构造事务请求，默认非顺序执行
-     * 
-     * @param transactionId 事务ID
-     * @param serialId      序列ID
-     */
-    public TransactionRequest(long transactionId, int serialId) {
-        this(transactionId | serialId);
-    }
-
-    /**
-     * 构造事务请求，深度复制。
+     * 构造事务请求
      * 
      * @param request
      */
@@ -69,8 +54,8 @@ public class TransactionRequest extends BasicRequest {
      * 
      * @return
      */
-    public int getSerialId() {
-        return getMessageId().intValue();
+    final public int getSerialId() {
+        return messageId().intValue();
     }
 
     /**
@@ -78,8 +63,15 @@ public class TransactionRequest extends BasicRequest {
      * 
      * @return
      */
-    public long getTransactionId() {
-        return getMessageId().longValue() & 0xFFFFFFFF00000000L;
+    final public long getTransactionId() {
+        return messageId().longValue() & 0xFFFFFFFF00000000L;
+    }
+
+    /**
+     * 设为顺序执行
+     */
+    final public void signSerial() {
+        serial = true;
     }
 
     /**
@@ -87,7 +79,7 @@ public class TransactionRequest extends BasicRequest {
      * 
      * @return the serial
      */
-    public Boolean isSerial() {
+    final public boolean isSerial() {
         return serial;
     }
 }

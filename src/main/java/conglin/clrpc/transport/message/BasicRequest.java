@@ -14,19 +14,22 @@ public class BasicRequest extends Message {
         return MESSAGE_TYPE;
     }
 
-    private String serviceName;
-    private String methodName;
-    private Object[] parameters;
-
-    public BasicRequest(Long messageId) {
-        super(messageId);
-    }
+    private final String serviceName;
+    private final String methodName;
+    private final Object[] parameters;
 
     public BasicRequest(BasicRequest request) {
         super(request);
-        this.serviceName = request.getServiceName();
-        this.methodName = request.getMethodName();
-        this.parameters = request.getParameters();
+        this.serviceName = request.serviceName();
+        this.methodName = request.methodName();
+        this.parameters = request.parameters();
+    }
+
+    public BasicRequest(Long messageId, String serviceName, String methodName, Object[] parameters) {
+        super(messageId);
+        this.serviceName = serviceName;
+        this.methodName = methodName;
+        this.parameters = parameters;
     }
 
     /**
@@ -34,17 +37,8 @@ public class BasicRequest extends Message {
      * 
      * @return the serviceName
      */
-    public String getServiceName() {
+    final public String serviceName() {
         return serviceName;
-    }
-
-    /**
-     * 设置服务名
-     * 
-     * @param serviceName the serviceName to set
-     */
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
     }
 
     /**
@@ -52,17 +46,8 @@ public class BasicRequest extends Message {
      * 
      * @return the methodName
      */
-    public String getMethodName() {
+    final public String methodName() {
         return methodName;
-    }
-
-    /**
-     * 设置方法名
-     * 
-     * @param methodName the methodName to set
-     */
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
     }
 
     /**
@@ -70,22 +55,13 @@ public class BasicRequest extends Message {
      * 
      * @return the parameters
      */
-    public Object[] getParameters() {
+    final public Object[] parameters() {
         return parameters;
-    }
-
-    /**
-     * 设置参数
-     * 
-     * @param parameters the parameters to set
-     */
-    public void setParameters(Object[] parameters) {
-        this.parameters = parameters;
     }
 
     @Override
     public String toString() {
-        return "BasicRequest [messageId=" + getMessageId() + ", serviceName=" + serviceName + ", methodName="
+        return "BasicRequest [messageId=" + messageId() + ", serviceName=" + serviceName + ", methodName="
                 + methodName + ", parameters=" + Arrays.toString(parameters) + "]";
     }
 
@@ -101,21 +77,15 @@ public class BasicRequest extends Message {
         if (!(obj instanceof BasicRequest))
             return false;
         BasicRequest r = (BasicRequest) obj;
-        return this.serviceName.equals(r.getServiceName()) && this.methodName.equals(r.getMethodName())
-                && Objects.deepEquals(parameters, r.getParameters());
+        return this.serviceName.equals(r.serviceName()) && this.methodName.equals(r.methodName())
+                && Objects.deepEquals(parameters, r.parameters());
     }
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        BasicRequest r = new BasicRequest(getMessageId());
-        r.setServiceName(serviceName);
-        r.setMethodName(methodName);
-
         Object[] p = new Object[parameters.length];
         System.arraycopy(parameters, 0, p, 0, parameters.length);
-        r.setParameters(p);
-
-        return r;
+        return new BasicRequest(messageId(), serviceName, methodName, p);
     }
 
 }

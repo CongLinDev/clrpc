@@ -31,7 +31,7 @@ public class ConsumerCacheCheckedChannelHandler<T extends BasicRequest> extends 
 
     @Override
     protected Object cache(T msg) {
-        Long messageId = msg.getMessageId();
+        Long messageId = msg.messageId();
         RpcFuture future = futuresHolder.removeFuture(messageId);
 
         if (future != null) {

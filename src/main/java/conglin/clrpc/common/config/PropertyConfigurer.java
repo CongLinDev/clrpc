@@ -32,7 +32,7 @@ public interface PropertyConfigurer {
      * 
      * @param <T>
      * @param key 键值
-     * @param t   默认值
+     * @param t   默认值 not null
      * @return
      */
     @SuppressWarnings("unchecked")
@@ -43,7 +43,7 @@ public interface PropertyConfigurer {
 
         try {
             return (T) t.getClass().cast(obj);
-        } catch (ClassCastException exception) {
+        } catch (NullPointerException | ClassCastException exception) {
             return t;
         }
     }

@@ -15,7 +15,6 @@ import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.service.context.CommonContext;
-import conglin.clrpc.zookeeper.registry.ZooKeeperServiceLogger;
 
 abstract public class AbstractServiceHandler implements Destroyable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceHandler.class);
@@ -116,6 +115,5 @@ abstract public class AbstractServiceHandler implements Destroyable {
      */
     protected void initContext(CommonContext context) {
         context.setExecutorService(getExecutorService());
-        context.setServiceLogger(new ZooKeeperServiceLogger(context.role(), context.getPropertyConfigurer()));
     }
 }

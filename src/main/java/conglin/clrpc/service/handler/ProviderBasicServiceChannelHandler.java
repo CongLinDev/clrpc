@@ -19,17 +19,14 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
 
     @Override
     protected Object execute(BasicRequest msg) {
-        BasicResponse response = new BasicResponse(msg.getMessageId());
         try {
-            LOGGER.debug("Receive basic request messageId={}", msg.getMessageId());
-            Object serviceBean = findServiceBean(msg.getServiceName());
+            LOGGER.debug("Receive basic request messageId={}", msg.messageId());
+            Object serviceBean = findServiceBean(msg.serviceName());
             Object result = jdkReflectInvoke(serviceBean, msg);
-            response.setResult(result);
+            return new BasicResponse(msg.messageId(), result);
         } catch (UnsupportedServiceException | ServiceExecutionException e) {
             LOGGER.error("Request failed: {}", e.getMessage());
-            response.signError();
-            response.setResult(e);
+            return new BasicResponse(msg.messageId(), true, e);
         }
-        return response;
     }
 }

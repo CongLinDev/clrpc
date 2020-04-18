@@ -37,10 +37,10 @@ public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest,
     protected Object cache(T msg) {
         BasicRequest request = msg.getFirst();
         // 一定能找到服务对象
-        Object serviceBean = objectHolder.apply(request.getServiceName());
+        Object serviceBean = objectHolder.apply(request.serviceName());
         try {
-            Method method = serviceBean.getClass().getMethod(request.getMethodName(),
-                    ClassUtils.getClasses(request.getParameters()));
+            Method method = serviceBean.getClass().getMethod(request.methodName(),
+                    ClassUtils.getClasses(request.parameters()));
             CacheableResponse response = new CacheableResponse(msg.getSecond());
 
             // 幂等性方法

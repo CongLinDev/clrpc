@@ -45,7 +45,8 @@ public class DefaultRequestSender implements RequestSender {
         this.providerChooser = context.getProviderChooser();
         this.threadPool = context.getExecutorService();
         this.CHECK_PERIOD = context.getPropertyConfigurer().getOrDefault("consumer.retry.check-period", 3000L);
-        this.INITIAL_THRESHOLD = context.getPropertyConfigurer().getOrDefault("consumer.retry.initial-threshold", 3000L);
+        this.INITIAL_THRESHOLD = context.getPropertyConfigurer().getOrDefault("consumer.retry.initial-threshold",
+                3000L);
         this.timer = checkFuture();
     }
 
@@ -85,7 +86,7 @@ public class DefaultRequestSender implements RequestSender {
      * @param targetAddress
      */
     protected void doSendRequest(BasicRequest request, String targetAddress) {
-        String serviceName = request.getServiceName();
+        String serviceName = request.serviceName();
         threadPool.execute(() -> {
             if (targetAddress == null) {
                 providerChooser.choose(request).pipeline().fireChannelRead(request);
@@ -106,7 +107,7 @@ public class DefaultRequestSender implements RequestSender {
                 Iterator<RpcFuture> iterator = futuresHolder.iterator();
                 while (iterator.hasNext()) {
                     BasicFuture f = (BasicFuture) iterator.next();
-                    if(f.isCancelled()) {
+                    if (f.isCancelled()) {
                         iterator.remove();
                         continue;
                     }
@@ -117,23 +118,21 @@ public class DefaultRequestSender implements RequestSender {
                         if (fallbackHolder.needFallback(retryTimes)) {
                             iterator.remove();
 
-                            BasicResponse fallbackResponse = new BasicResponse(r.getMessageId());
+                            BasicResponse fallbackResponse = null;
                             try {
-                                Object fallbackResult = fallbackHolder.fallback(r.getServiceName(), r.getMethodName(),
-                                        r.getParameters());
-                                fallbackResponse.setResult(fallbackResult);
+                                Object fallbackResult = fallbackHolder.fallback(r.serviceName(), r.methodName(),
+                                        r.parameters());
+                                fallbackResponse = new BasicResponse(r.messageId(), fallbackResult);
                             } catch (FallbackFailedException e) {
-                                LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.getMessageId(),
-                                        e.getCause());
-                                fallbackResponse.setResult(e);
-                                fallbackResponse.signError();
+                                LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.messageId(), e.getCause());
+                                fallbackResponse = new BasicResponse(r.messageId(), true, e);
                             }
                             f.signFallback();
                             f.done(fallbackResponse);
                         } else {
                             resendRequest(r);
                             LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",
-                                    r.getMessageId(), retryTimes);
+                                    r.messageId(), retryTimes);
                         }
                     }
                 }

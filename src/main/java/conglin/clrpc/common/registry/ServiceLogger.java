@@ -5,13 +5,6 @@ import conglin.clrpc.common.Calculatable;
 public interface ServiceLogger {
 
     /**
-     * 是否开启Logger
-     * 
-     * @return
-     */
-    boolean isEnable();
-
-    /**
      * 添加记录的对象
      * 
      * @param key

@@ -57,11 +57,9 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public RpcFuture call(String serviceName, String method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId, transactionFuture.size() + 1, serial);
-        request.setServiceName(serviceName);
-        request.setMethodName(method);
-        request.setParameters(args);
-
+        TransactionRequest request = new TransactionRequest(currentTransactionId, transactionFuture.size() + 1, serviceName, method, args);
+        if(serial)
+            request.signSerial();
         return call(request);
     }
 

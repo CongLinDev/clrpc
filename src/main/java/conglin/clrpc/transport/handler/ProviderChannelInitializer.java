@@ -3,7 +3,6 @@ package conglin.clrpc.transport.handler;
 import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.service.handler.ProviderTransactionServiceChannelHandler;
-import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 
@@ -73,22 +72,12 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
     }
 
     @Override
-    protected void doInitChannel(SocketChannel ch) throws Exception {        
-        ChannelHandlerFactory factory = ChannelHandlerFactory.newFactory(
-            context().getPropertyConfigurer().getOrDefault("provider.channel.handler-factory", null),
-            context());
-
-        // before handle request
-        factory.before().forEach(pipeline()::addLast);
-
+    protected void doInitChannel(SocketChannel ch) throws Exception {
         // handle request
         pipeline()
                 .addLast("ProviderTransactionServiceChannelHandler",
                         new ProviderTransactionServiceChannelHandler(context))
                 .addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context));
-
-        // after handle request
-        factory.after().forEach(pipeline()::addLast);
 
         // send response
         pipeline().addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());
