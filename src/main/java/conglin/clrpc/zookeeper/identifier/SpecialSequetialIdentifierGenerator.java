@@ -23,7 +23,7 @@ public class SpecialSequetialIdentifierGenerator extends SequetialIdentifierGene
     @Override
     public long generate(String key) {
         if (super.keeper != null) {
-            String sequetialNode = rootPath + key + "/request/id";
+            String sequetialNode = rootPath + "/" + key;
             String nodeSequetialId = ZooKeeperUtils.createNode(keeper, sequetialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
             String id = nodeSequetialId.substring(nodeSequetialId.lastIndexOf('/') + 3, nodeSequetialId.length());
             return Long.parseLong(id);

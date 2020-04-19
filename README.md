@@ -119,36 +119,27 @@ bootstrap.stop();
 
 ### Config Items
 
-|                  Field                  |           Type            | Null  |    Default     |                             Remark                             |
-| :-------------------------------------: | :-----------------------: | :---: | :------------: | :------------------------------------------------------------: |
-|       zookeeper.provider.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务注册地址                          |
-|      zookeeper.provider.root-path       |          String           |  YES  |     /clrpc     |                         服务注册根节点                         |
-| zookeeper.provider.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|       zookeeper.consumer.address        |          String           |  YES  | 127.0.0.1:2181 |                          服务搜索地址                          |
-|      zookeeper.consumer.root-path       |          String           |  YES  |     /clrpc     |                         服务搜索根节点                         |
-| zookeeper.consumer.<br>session-timeout  |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|       zookeeper.atomicity.address       |          String           |  YES  | 127.0.0.1:2181 |                          原子服务地址                          |
-|      zookeeper.atomicity.root-path      |          String           |  YES  |     /clrpc     |                         原子服务根节点                         |
-| zookeeper.atomicity.<br>session-timeout |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|        zookeeper.logger.address         |          String           |  YES  | 127.0.0.1:2181 |                          日志服务地址                          |
-|       zookeeper.logger.root-path        |          String           |  YES  |     /clrpc     |                         日志服务根节点                         |
-|  zookeeper.logger.<br>session-timeout   |          Integer          |  YES  |      5000      |                      超时时间，单位为毫秒                      |
-|            meta.provider.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务提供者通用元信息，发布至注册中心              |
-|            meta.consumer.\*             | Map&lt;String, Object&gt; |  YES  |   Empty Map    |              服务消费者通用元信息，发布至注册中心              |
-|              provider.port              |          Integer          |  YES  |       0        |                        服务提供者端口号                        |
-|          provider.thread.boss           |          Integer          |  YES  |       1        |                  服务提供者的bossGroup线程数                   |
-|         provider.thread.worker          |          Integer          |  YES  |       4        |                 服务提供者的workerGroup线程数                  |
-|  provider.channel.<br>handler-factory   |          String           |  YES  |     `null`     |         实现ChannelHandlerFactory，可自定义添加处理器          |
-|           consumer.wait-time            |           Long            |  YES  |      5000      |             无服务提供者时等待重试时间，单位为毫秒             |
-|         consumer.thread.worker          |          Integer          |  YES  |       4        |                 服务使用者的workerGroup线程数                  |
-|     consumer.retry.<br>check-period     |           Long            |  YES  |      3000      |                        重试机制执行周期                        |
-|  consumer.retry.<br>initial-threshold   |           Long            |  YES  |      3000      |                        初始重试时间门槛                        |
-|     consumer.fallback.<br>max-retry     |          Integer          |  TES  |       -1       |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
-|  provider.channel.<br>handler-factory   |          String           |  YES  |     `null`     |         实现ChannelHandlerFactory，可自定义添加处理器          |
-|    service.thread-pool.<br>core-size    |          Integer          |  YES  |       5        |                      业务线程池核心线程数                      |
-|    service.thread-pool.<br>max-size     |          Integer          |  YES  |       10       |                      业务线程池最大线程数                      |
-|   service.thread-pool.<br>keep-alive    |          Integer          |  YES  |      1000      | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
-|      service.thread-pool.<br>queue      |          Integer          |  YES  |       10       |                        业务线程池队列数                        |
+|                Field                 |           Type            | Null  |                         Default                         |                             Remark                             |
+| :----------------------------------: | :-----------------------: | :---: | :-----------------------------------------------------: | :------------------------------------------------------------: |
+|               registry               |          String           |  YES  | `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000` |                          注册中心地址                          |
+|              atomicity               |          String           |  YES  | `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000` |                          原子服务地址                          |
+|                logger                |          String           |  YES  | `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000` |                          日志中心地址                          |
+|           meta.provider.\*           | Map&lt;String, Object&gt; |  YES  |                        Empty Map                        |                      服务提供者通用元信息                      |
+|           meta.consumer.\*           | Map&lt;String, Object&gt; |  YES  |                        Empty Map                        |                      服务消费者通用元信息                      |
+|            provider.port             |          Integer          |  YES  |                            0                            |                        服务提供者端口号                        |
+|         provider.thread.boss         |          Integer          |  YES  |                            1                            |                  服务提供者的bossGroup线程数                   |
+|        provider.thread.worker        |          Integer          |  YES  |                            4                            |                 服务提供者的workerGroup线程数                  |
+| provider.channel.<br>handler-factory |          String           |  YES  |                         `null`                          |         实现ChannelHandlerFactory，可自定义添加处理器          |
+|          consumer.wait-time          |           Long            |  YES  |                          5000                           |             无服务提供者时等待重试时间，单位为毫秒             |
+|        consumer.thread.worker        |          Integer          |  YES  |                            4                            |                 服务使用者的workerGroup线程数                  |
+|   consumer.retry.<br>check-period    |           Long            |  YES  |                          3000                           |                        重试机制执行周期                        |
+| consumer.retry.<br>initial-threshold |           Long            |  YES  |                          3000                           |                        初始重试时间门槛                        |
+|   consumer.fallback.<br>max-retry    |          Integer          |  TES  |                           -1                            |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
+| provider.channel.<br>handler-factory |          String           |  YES  |                         `null`                          |         实现ChannelHandlerFactory，可自定义添加处理器          |
+|  service.thread-pool.<br>core-size   |          Integer          |  YES  |                            5                            |                      业务线程池核心线程数                      |
+|   service.thread-pool.<br>max-size   |          Integer          |  YES  |                           10                            |                      业务线程池最大线程数                      |
+|  service.thread-pool.<br>keep-alive  |          Integer          |  YES  |                          1000                           | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
+|    service.thread-pool.<br>queue     |          Integer          |  YES  |                           10                            |                        业务线程池队列数                        |
 
 #### About customized meta infomation
 

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.registry.ServiceDiscovery;
@@ -39,7 +40,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         super(configurer);
         futuresHolder = new DefaultFuturesHolder();
         fallbackHolder = new DefaultFallbackHolder(configurer);
-        serviceDiscovery = new ZooKeeperServiceDiscovery(configurer);
+        String urlString = configurer.getOrDefault("registry", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        serviceDiscovery = new ZooKeeperServiceDiscovery(new Url(urlString));
     }
 
     /**

@@ -10,19 +10,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Calculatable;
-import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.zookeeper.AbstractZooKeeperService;
 import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
+/**
+ * 日志记录
+ * 
+ * 地址默认为 {@code /clrpc/traffic/}
+ */
 public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements ServiceLogger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceLogger.class);
 
     private final Map<String, Calculatable<?>> holder;
 
-    public ZooKeeperServiceLogger(PropertyConfigurer configurer) {
-        super("logger", configurer, "address");
+    public ZooKeeperServiceLogger(Url url) {
+        super(url, "traffic");
         holder = new HashMap<>();
         init();
     }
@@ -45,7 +50,7 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
 
     @Override
     public void put(String key, Calculatable<?> calculatable) {
-        holder.put(rootPath + "/traffic/" + key + "/log", calculatable);
+        holder.put(rootPath + "/" + key + "/log", calculatable);
     }
 
     @Override

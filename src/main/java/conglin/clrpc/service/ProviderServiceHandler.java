@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
@@ -29,7 +30,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     public ProviderServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         serviceObjects = new HashMap<>();
-        serviceRegistry = new ZooKeeperServiceRegistry(configurer);
+        String urlString = configurer.getOrDefault("registry", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        serviceRegistry = new ZooKeeperServiceRegistry(new Url(urlString));
     }
 
     /**

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Available;
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
@@ -40,7 +41,8 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
             PropertyConfigurer configurer) {
         super(sender);
         this.identifierGenerator = identifierGenerator;
-        helper = new ZooKeeperTransactionHelper(configurer);
+        String urlString = configurer.getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        helper = new ZooKeeperTransactionHelper(new Url(urlString));
     }
 
     @Override

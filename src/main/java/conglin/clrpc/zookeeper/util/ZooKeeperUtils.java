@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Pair;
+import conglin.clrpc.common.Url;
 
 /**
  * ZooKeeper 工具类
@@ -47,6 +48,16 @@ public final class ZooKeeperUtils {
      */
     public static ZooKeeper connectZooKeeper(final String address) {
         return connectZooKeeper(address, DEFAULT_SESSION_TIMEOUT);
+    }
+
+    /**
+     * 复用ZooKeeper连接
+     * 
+     * @param address
+     * @return
+     */
+    public static ZooKeeper connectZooKeeper(final Url url) {
+        return connectZooKeeper(url.getAddress(), Integer.parseInt(url.getParameterOrDefault("session-timeout", "5000")));
     }
 
     /**
@@ -94,10 +105,9 @@ public final class ZooKeeperUtils {
      * @param keeper
      */
     public static void disconnectZooKeeper(final ZooKeeper keeper) {
-        if (keeper != null && keeper.getState().isAlive()) {
+        if (keeper != null) {
             try {
-                keeper.close();
-                LOGGER.debug("ZooKeeper session(id={}) close success.", keeper.getSessionId());
+                keeper.close(1000);
             } catch (InterruptedException e) {
                 LOGGER.error("ZooKeeper session close failed. Cause: {}", e.getMessage());
             }

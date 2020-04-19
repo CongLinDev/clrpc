@@ -9,7 +9,7 @@ import org.apache.zookeeper.Watcher.Event;
 import org.apache.zookeeper.Watcher.WatcherType;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.common.util.TransactionHelper;
 import conglin.clrpc.common.util.concurrent.CountLatch;
@@ -17,8 +17,8 @@ import conglin.clrpc.zookeeper.AbstractZooKeeperService;
 
 public class ZooKeeperTransactionHelper extends AbstractZooKeeperService implements TransactionHelper {
 
-    public ZooKeeperTransactionHelper(PropertyConfigurer configurer) {
-        super("atomicity", configurer, "transaction");
+    public ZooKeeperTransactionHelper(Url url) {
+        super(url, "transaction");
     }
 
     @Override

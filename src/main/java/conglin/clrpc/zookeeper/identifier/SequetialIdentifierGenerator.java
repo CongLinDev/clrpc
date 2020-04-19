@@ -4,6 +4,7 @@ import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
@@ -19,7 +20,7 @@ public class SequetialIdentifierGenerator extends AbstractZooKeeperService imple
     protected IdentifierGenerator downgradeGenerator;
 
     public SequetialIdentifierGenerator(PropertyConfigurer configurer) {
-        super("atomicity", configurer, "request/id");
+        super(new Url(configurer.getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000")), "id");
         downgradeGenerator = new RandomIdentifierGenerator();
     }
 

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.Url;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
@@ -25,7 +26,8 @@ public class ProviderTransactionServiceChannelHandler
 
     public ProviderTransactionServiceChannelHandler(ProviderContext context) {
         super(context);
-        helper = new ZooKeeperTransactionHelper(context.getPropertyConfigurer());
+        String urlString = context.getPropertyConfigurer().getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        helper = new ZooKeeperTransactionHelper(new Url(urlString));
     }
 
     @Override
