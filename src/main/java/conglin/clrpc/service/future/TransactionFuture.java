@@ -53,15 +53,15 @@ public class TransactionFuture extends AbstractCompositeFuture {
 
     @Override
     protected void beforeCombine(RpcFuture future) {
-        future.addCallback(subFutureCallback);
+        future.callback(subFutureCallback);
     }
 
     @Override
-    protected void doRunCallback() {
+    protected void doRunCallback(Callback callback) {
         if (!isError()) {
-            this.futureCallback.success(doGet());
+            callback.success(doGet());
         } else {
-            this.futureCallback.fail(new RpcServiceException("Transaction has been cancelled."));
+            callback.fail(new RpcServiceException("Transaction has been cancelled."));
         }
     }
 

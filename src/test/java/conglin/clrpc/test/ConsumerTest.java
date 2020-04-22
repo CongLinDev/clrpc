@@ -27,14 +27,32 @@ public class ConsumerTest {
         RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
         bootstrap.start();
         EchoService echoService = bootstrap.refreshAndSubscribeAsync(EchoService.class);
-        long begin = System.currentTimeMillis();
+        final long begin = System.currentTimeMillis();
         System.out.println("begin:" + begin);
         for (int i = 0; i < 10000; i++) {
             echoService.echoNull();
         }
+
+        AsyncObjectProxy.lastFuture().callback(new Callback() {
+            @Override
+            public void success(Object result) {
+                long end = System.currentTimeMillis();
+                System.out.println(end - begin);
+                System.out.println("success");
+            }
+
+            @Override
+            public void fail(Exception exception) {
+                long end = System.currentTimeMillis();
+                System.out.println(end - begin);
+                System.out.println("fail");
+            }
+        });
+
+        bootstrap.stop();
+
         long end = System.currentTimeMillis();
         System.out.println("Waste time: " + (end - begin) + " ms");
-        bootstrap.stop();
     }
 
     protected static void helloServiceSyncTest() {
@@ -92,7 +110,7 @@ public class ConsumerTest {
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
                 service.getUser(1024L, "小明");
-                AsyncObjectProxy.lastFuture().addCallback(new Callback() {
+                AsyncObjectProxy.lastFuture().callback(new Callback() {
 
                     @Override
                     public void success(Object result) {
@@ -148,9 +166,8 @@ public class ConsumerTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        RpcFuture future = proxy.commit();
 
-        future.addCallback(new Callback() {
+        RpcFuture future = proxy.commit().callback(new Callback() {
             @Override
             public void success(Object result) {
                 System.out.println("success...");

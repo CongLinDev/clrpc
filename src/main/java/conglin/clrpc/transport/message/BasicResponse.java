@@ -62,10 +62,4 @@ public class BasicResponse extends Message {
             return "BasicResponse [messageId=" + messageId() + ", result=" + result + "]";
         }
     }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return new BasicResponse(this);
-    }
-
 }

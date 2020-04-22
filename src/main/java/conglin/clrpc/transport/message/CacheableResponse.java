@@ -39,11 +39,6 @@ public class CacheableResponse extends BasicResponse {
         return response;
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return new CacheableResponse(this);
-    }
-
     /**
      * 以下方法均为设置或获取 {@link conglin.clrpc.transport.message.CacheableResponse#flag} 的方法
      * 

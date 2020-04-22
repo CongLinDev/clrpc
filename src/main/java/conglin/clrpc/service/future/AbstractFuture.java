@@ -12,7 +12,7 @@ abstract public class AbstractFuture implements RpcFuture {
 
     private final FutureSynchronizer SYNCHRONIZER; // 同步器
 
-    protected Callback futureCallback; // 回调
+    private Callback futureCallback; // 回调
 
     private long startTime; // 开始时间
     private boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
@@ -72,7 +72,7 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if(SYNCHRONIZER.cancel()) {
+        if (SYNCHRONIZER.cancel()) {
             SYNCHRONIZER.release(0);
             return true;
         } else {
@@ -137,27 +137,35 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public boolean addCallback(Callback callback) {
-        if (futureCallback != null)
-            return false;
-        this.futureCallback = callback;
-        if (isDone())
-            runCallback();
-        return true;
+    public RpcFuture callback(Callback callback) {
+        if (isDone()) {
+            runCallback(callback);
+        } else {
+            futureCallback = (futureCallback == null) ? callback : futureCallback.andThen(callback);
+        }
+        return this;
+    }
+
+    protected void runCallback(Callback callback) {
+        if (callback != null)
+            doRunCallback(callback);
     }
 
     /**
      * 执行回调函数
+     * 
+     * @param callback
      */
     protected void runCallback() {
-        if (!isCancelled() && futureCallback != null)
-            doRunCallback();
+        runCallback(this.futureCallback);
     }
 
     /**
-     * 回调函数具体实现函数
+     * 回调函数具体实现方法
+     * 
+     * @param callback
      */
-    abstract protected void doRunCallback();
+    abstract protected void doRunCallback(Callback callback);
 
     /**
      * 重置开始时间
@@ -186,9 +194,9 @@ abstract public class AbstractFuture implements RpcFuture {
         }
 
         @Override
-        protected boolean tryRelease(int arg) {               
+        protected boolean tryRelease(int arg) {
             if (!isCancelled()) {
-                 setState(DONE);
+                setState(DONE);
             }
             return true;
         }

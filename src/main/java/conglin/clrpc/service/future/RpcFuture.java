@@ -7,12 +7,12 @@ import conglin.clrpc.common.Callback;
 public interface RpcFuture extends Future<Object> {
 
     /**
-     * 添加回调函数
+     * 添加回调
      * 
      * @param callback
-     * @return
+     * @return this
      */
-    boolean addCallback(Callback callback);
+    RpcFuture callback(Callback callback);
 
     /**
      * 该 {@code RpcFuture} 的标识符

@@ -1,5 +1,6 @@
 package conglin.clrpc.service.future;
 
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -54,17 +55,12 @@ public class BasicFuture extends AbstractFuture {
             signError();
     }
 
-    /**
-     * 运行回调函数
-     * 
-     * @param callback
-     */
     @Override
-    protected void doRunCallback() {
+    protected void doRunCallback(Callback callback) {
         if (!isError()) {
-            this.futureCallback.success(response.result());
+            callback.success(response.result());
         } else {
-            this.futureCallback.fail((RpcServiceException) response.result());
+            callback.fail((RpcServiceException) response.result());
         }
     }
 }

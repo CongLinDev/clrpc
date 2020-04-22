@@ -80,12 +80,4 @@ public class BasicRequest extends Message {
         return this.serviceName.equals(r.serviceName()) && this.methodName.equals(r.methodName())
                 && Objects.deepEquals(parameters, r.parameters());
     }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        Object[] p = new Object[parameters.length];
-        System.arraycopy(parameters, 0, p, 0, parameters.length);
-        return new BasicRequest(messageId(), serviceName, methodName, p);
-    }
-
 }

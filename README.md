@@ -66,7 +66,7 @@ String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返
 HelloService asyncService = bootstrap.subscribeAsync(HelloService.class);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
-future.addCallback(new Callback(){ // 使用回调处理结果
+future.callback(new Callback(){ // 使用回调处理结果
     @Override
     public void success(Object res) {}
     @Override
