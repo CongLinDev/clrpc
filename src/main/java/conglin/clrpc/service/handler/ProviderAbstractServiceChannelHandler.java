@@ -9,7 +9,7 @@ import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,11 +20,11 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
-    protected final ProviderContext context;
+    protected final ProviderChannelContext context;
 
     private ChannelPipeline pipeline;
 
-    public ProviderAbstractServiceChannelHandler(ProviderContext context) {
+    public ProviderAbstractServiceChannelHandler(ProviderChannelContext context) {
         this.context = context;
     }
 
@@ -36,7 +36,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        context.getExecutorService().submit(() -> {
+        context.executorService().submit(() -> {
             next(msg, execute(msg));
         });
     }
@@ -74,7 +74,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      */
     protected Object findServiceBean(String serviceName) throws UnsupportedServiceException {
         // 获取服务实现类
-        Object serviceBean = context.getObjectsHolder().apply(serviceName);
+        Object serviceBean = context.objectHolder().apply(serviceName);
         // 如果服务实现类没有注册，抛出异常
         if (serviceBean == null) {
             throw new UnsupportedServiceException(serviceName);

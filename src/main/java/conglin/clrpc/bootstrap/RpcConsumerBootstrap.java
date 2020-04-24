@@ -86,7 +86,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 订阅异步服务，获取异步服务代理
      * 
-     *  使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 或
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 或
      * {@link RpcConsumerBootstrap#refresh(Class)} 刷新
      * 
      * @param <T>
@@ -111,7 +111,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
             LOGGER.error("Please Add a service name for {} by @Service.", interfaceClass);
             throw new UnsupportedOperationException();
         }
-            
+
         SERVICE_HANDLER.prepare(serviceName, interfaceClass);
         if (CONSUMER_TRANSFER.needRefresh(serviceName)) {
             LOGGER.debug("Refresh service=({}) privider.", serviceName);
@@ -191,6 +191,16 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         SERVICE_HANDLER.stop();
         CONSUMER_TRANSFER.stop();
         super.stop();
+    }
+
+    /**
+     * 关闭钩子
+     * 
+     * @return this
+     */
+    public RpcConsumerBootstrap hookStop() {
+        hook(this::stop);
+        return this;
     }
 
     /**

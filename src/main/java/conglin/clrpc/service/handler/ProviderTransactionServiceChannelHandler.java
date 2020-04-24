@@ -12,7 +12,7 @@ import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.TransactionHelper;
 import conglin.clrpc.service.annotation.AnnotationParser;
-import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicResponse;
 import conglin.clrpc.transport.message.TransactionRequest;
 import conglin.clrpc.zookeeper.util.ZooKeeperTransactionHelper;
@@ -24,9 +24,9 @@ public class ProviderTransactionServiceChannelHandler
 
     protected final TransactionHelper helper;
 
-    public ProviderTransactionServiceChannelHandler(ProviderContext context) {
+    public ProviderTransactionServiceChannelHandler(ProviderChannelContext context) {
         super(context);
-        String urlString = context.getPropertyConfigurer().getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        String urlString = context.propertyConfigurer().getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
         helper = new ZooKeeperTransactionHelper(new Url(urlString));
     }
 

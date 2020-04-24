@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultFuturesHolder implements FuturesHolder<Long> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFuturesHolder.class);
+public class DefaultFutureHolder implements FutureHolder<Long> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFutureHolder.class);
 
     private final Map<Long, RpcFuture> rpcFutures;
     /**
@@ -17,7 +17,7 @@ public class DefaultFuturesHolder implements FuturesHolder<Long> {
      * 以下代码用于 RpcFuture 的管理和维护
      */
 
-    public DefaultFuturesHolder() {
+    public DefaultFutureHolder() {
         rpcFutures = new ConcurrentHashMap<>();
     }
 

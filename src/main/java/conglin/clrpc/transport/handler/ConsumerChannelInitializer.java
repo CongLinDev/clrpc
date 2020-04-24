@@ -1,6 +1,8 @@
 package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.context.channel.CommonChannelContext;
+import conglin.clrpc.service.context.channel.ConsumerChannelContext;
 import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -62,12 +64,13 @@ public class ConsumerChannelInitializer extends AbstractChannelInitializer {
     }
 
     @Override
-    protected ConsumerContext context() {
-        return context;
+    protected ConsumerChannelContext channelContext() {
+        return new ConsumerChannelContext(context);
     }
 
     @Override
-    protected void doInitChannel(SocketChannel ch) throws Exception {
+    protected void doInitChannel(SocketChannel ch, CommonChannelContext channelContext) throws Exception {
+        ConsumerChannelContext context = (ConsumerChannelContext) channelContext;
         // ansyc handle request
         pipeline().addLast("ConsumerBasicServiceChannelHandler", new ConsumerBasicServiceChannelHandler(context))
                 // ansyc handle response

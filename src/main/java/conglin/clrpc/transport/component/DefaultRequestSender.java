@@ -12,7 +12,7 @@ import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.fallback.FallbackFailedException;
 import conglin.clrpc.service.fallback.FallbackHolder;
 import conglin.clrpc.service.future.BasicFuture;
-import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -24,7 +24,7 @@ public class DefaultRequestSender implements RequestSender {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestSender.class);
 
-    protected final FuturesHolder<Long> futuresHolder;
+    protected final FutureHolder<Long> futureHolder;
 
     protected final FallbackHolder fallbackHolder;
 
@@ -40,7 +40,7 @@ public class DefaultRequestSender implements RequestSender {
     private final long CHECK_PERIOD;
 
     public DefaultRequestSender(ConsumerContext context) {
-        this.futuresHolder = context.getFuturesHolder();
+        this.futureHolder = context.getFuturesHolder();
         this.fallbackHolder = context.getFallbackHolder();
         this.providerChooser = context.getProviderChooser();
         this.threadPool = context.getExecutorService();
@@ -75,7 +75,7 @@ public class DefaultRequestSender implements RequestSender {
      */
     protected RpcFuture putFuture(BasicRequest request) {
         RpcFuture future = new BasicFuture(request);
-        futuresHolder.putFuture(future.identifier(), future);
+        futureHolder.putFuture(future.identifier(), future);
         return future;
     }
 
@@ -104,7 +104,7 @@ public class DefaultRequestSender implements RequestSender {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Iterator<RpcFuture> iterator = futuresHolder.iterator();
+                Iterator<RpcFuture> iterator = futureHolder.iterator();
                 while (iterator.hasNext()) {
                     BasicFuture f = (BasicFuture) iterator.next();
                     if (f.isCancelled()) {

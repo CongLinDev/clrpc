@@ -151,44 +151,6 @@ bootstrap.stop();
 
 [Click me](#Extension).
 
-## Test
-
-使用 [默认配置文件](https://github.com/CongLinDev/clrpc/blob/master/src/main/resources/clrpc-config.json) 进行本机模拟RPC测试。
-
-+ OS：Manjaro 19.0.2 Kyria
-+ Kernel: x86_64 Linux 5.4.24-1-MANJARO
-+ CPU：Intel Core i5-6300HQ @ 4x 2.30GHz
-+ RAM: 11873 MB
-+ JDK: openjdk-13.0.2
-
-### Synchronous Test (without cache)
-
-在同步测试中，**尽量了排除业务逻辑占用时间的干扰**。
-
-[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ProviderTest.java)
-
-[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ConsumerTest.java)
-
-Conclusion:
-
-1. 本机基础上，且只有一台服务器的情况下，1000次的*同步请求*大约在 **500毫秒** 内完成。
-2. 本机基础上，且只有一台服务器的情况下，10000次的*同步请求*大约在 **2000毫秒** 内完成。
-3. 本机基础上，且只有一台服务器的情况下，100000次的*同步请求*大约在 **10000毫秒** 内完成。
-
-### Asynchronous Test (without cache)
-
-在异步测试中，**尽量了排除业务逻辑占用时间的干扰**。
-
-[服务端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ProviderTest.java)
-
-[客户端](https://github.com/CongLinDev/clrpc/blob/master/src/test/java/conglin/clrpc/test/ConsumerTest.java)
-
-Conclusion:
-
-1. 本机基础上，且只有一台服务器的情况下，1000次的*异步请求*大约在 **680毫秒** 内完成。（请求调用完成后每500毫秒检查一次）
-2. 本机基础上，且只有一台服务器的情况下，10000次的*异步请求*大约在 **1400毫秒** 内完成。（请求调用完成后每500毫秒检查一次）
-3. 本机基础上，且只有一台服务器的情况下，100000次的*异步请求*大约在 **3000毫秒** 内完成。（请求调用完成后每500毫秒检查一次）
-
 ## Extension
 
 **clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
@@ -199,8 +161,8 @@ Conclusion:
 
 |   Role   |                     Type                      | Remark |
 | :------: | :-------------------------------------------: | :----: |
-| Provider | conglin.clrpc.service.context.ProviderContext | 上下文 |
-| Consumer | conglin.clrpc.service.context.ConsumerContext | 上下文 |
+| Provider | conglin.clrpc.service.context.channel.ProviderChannelContext | 上下文 |
+| Consumer | conglin.clrpc.service.context.channel.ConsumerChannelContext | 上下文 |
 
 ## License
 

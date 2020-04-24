@@ -1,5 +1,7 @@
 package conglin.clrpc.transport.component;
 
+import conglin.clrpc.transport.message.BasicRequest;
+
 /**
  * 服务提供者选择适配器
  *
@@ -9,11 +11,10 @@ public interface ProviderChooserAdapter {
     /**
      * 自定义策略
      * 
-     * @param requestId
-     * @param methodName
+     * @param request
      * @return
      */
-    int apply(Long requestId, String methodName);
+    int apply(BasicRequest request);
 
     /**
      * Hash 算法

@@ -6,16 +6,15 @@ import java.util.Collection;
 import java.util.Collections;
 
 import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.service.context.channel.CommonChannelContext;
 import io.netty.channel.ChannelHandler;
 
 /**
  * {@link ChannelHandlerFactory} 的实现类应当提供一个有参构造方法
  * 
- * 其中参数应当为 {@link conglin.clrpc.service.context.CommonContext}
+ * 其中参数应当为 {@link conglin.clrpc.service.context.channel.CommonChannelContext}
  */
 public interface ChannelHandlerFactory {
-
-    static ChannelHandler[] EMPTY_HANDLER = new ChannelHandler[0];
 
     /**
      * 反射创建 {ChannelHandlerFactory}
@@ -24,7 +23,7 @@ public interface ChannelHandlerFactory {
      * @param args
      * @return
      */
-    static ChannelHandlerFactory newFactory(String qualifiedClassName, CommonContext context) {
+    static ChannelHandlerFactory newFactory(String qualifiedClassName, CommonChannelContext context) {
         if (qualifiedClassName == null)
             return new ChannelHandlerFactory(){};
 

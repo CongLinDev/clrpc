@@ -3,7 +3,7 @@ package conglin.clrpc.service.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.context.channel.ConsumerChannelContext;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -11,15 +11,15 @@ abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleCha
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerAbstractServiceChannelHandler.class);
 
-    protected final ConsumerContext context;
+    protected final ConsumerChannelContext context;
 
-    public ConsumerAbstractServiceChannelHandler(ConsumerContext context) {
+    public ConsumerAbstractServiceChannelHandler(ConsumerChannelContext context) {
         this.context = context;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        context.getExecutorService().submit(() -> {
+        context.executorService().submit(() -> {
             Object result = execute(msg);
             if(result != null)
                 ctx.fireChannelRead(result);

@@ -1,7 +1,8 @@
 package conglin.clrpc.service.context;
 
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import conglin.clrpc.global.role.Role;
 
@@ -12,16 +13,28 @@ public class BasicProviderContext extends BasicCommonContext implements Provider
         return Role.PROVIDER;
     }
 
-    private Function<String, Object> objectHolder;
+    private Map<String, Object> objectBean;
 
     @Override
-    public Function<String, Object> getObjectsHolder() {
-        return objectHolder;
+    public Map<String, Object> getObjectBeans() {
+        return objectBean;
     }
 
     @Override
-    public void setObjectsHolder(Function<String, Object> objectHolder) {
-        this.objectHolder = objectHolder;
+    public void setObjectBeans(Map<String, Object> objectBean) {
+        this.objectBean = objectBean;
+    }
+
+    private Map<String, Supplier<?>> objectFactories;
+
+    @Override
+    public Map<String, Supplier<?>> getObjectFactories() {
+        return objectFactories;
+    }
+
+    @Override
+    public void setObjectFactories(Map<String, Supplier<?>> objectFactories) {
+        this.objectFactories = objectFactories;
     }
 
     private Consumer<String> serviceRegister;

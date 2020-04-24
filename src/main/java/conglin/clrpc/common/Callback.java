@@ -28,6 +28,8 @@ public interface Callback {
      * @return
      */
     default Callback andThen(Callback after) {
+        if(after == null)
+            return this;
         Callback current = this;
         return new Callback() {
 
@@ -41,6 +43,26 @@ public interface Callback {
             public void fail(Exception exception) {
                 current.fail(exception);
                 after.fail(exception);
+            }
+        };
+    }
+
+    /**
+     * 转换对象
+     * 
+     * @param task
+     * @return
+     */
+    static Callback convert(Runnable task) {
+        return new Callback() {
+            @Override
+            public void success(Object result) {
+                task.run();
+            }
+
+            @Override
+            public void fail(Exception exception) {
+                task.run();
             }
         };
     }

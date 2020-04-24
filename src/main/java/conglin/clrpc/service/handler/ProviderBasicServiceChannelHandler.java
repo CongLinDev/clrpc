@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
-import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 
@@ -13,7 +13,7 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBasicServiceChannelHandler.class);
 
-    public ProviderBasicServiceChannelHandler(ProviderContext context) {
+    public ProviderBasicServiceChannelHandler(ProviderChannelContext context) {
         super(context);
     }
 

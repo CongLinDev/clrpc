@@ -2,7 +2,7 @@ package conglin.clrpc.service.future;
 
 import java.util.Iterator;
 
-public interface FuturesHolder<K> {
+public interface FutureHolder<K> {
     /**
      * 加入 Future
      * 

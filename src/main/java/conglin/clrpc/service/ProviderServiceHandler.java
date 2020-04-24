@@ -2,6 +2,7 @@ package conglin.clrpc.service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +26,14 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     // String保存服务名 Object保存服务实现类
     private final Map<String, Object> serviceObjects;
 
+    private final Map<String, Supplier<?>> serviceObjectFactories;
+
     private final ServiceRegistry serviceRegistry;
 
     public ProviderServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         serviceObjects = new HashMap<>();
+        serviceObjectFactories = new HashMap<>();
         String urlString = configurer.getOrDefault("registry", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
         serviceRegistry = new ZooKeeperServiceRegistry(new Url(urlString));
     }
@@ -45,6 +49,18 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     }
 
     /**
+     * 手动添加服务 此时服务并未注册 且若服务名相同，后添加的服务会覆盖前添加的服务
+     * 
+     * 该方法的优先级大于 {@link #publish(String, Object)}
+     * 
+     * @param serviceName
+     * @param factory
+     */
+    public void publishFactory(String serviceName, Supplier<?> factory) {
+        serviceObjectFactories.put(serviceName, factory);
+    }
+
+    /**
      * 发布服务元信息
      * 
      * @param serviceName
@@ -56,16 +72,6 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     }
 
     /**
-     * 查找 提供服务的Bean
-     * 
-     * @param serviceName
-     * @return
-     */
-    public Object getService(String serviceName) {
-        return serviceObjects.get(serviceName);
-    }
-
-    /**
      * 将数据注册到注册中心
      * 
      * @param address 本机地址
@@ -73,6 +79,8 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     protected void registerService(String address) {
         PropertyConfigurer configurer = context.getPropertyConfigurer();
         serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, address,
+                configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
+        serviceObjectFactories.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, address,
                 configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
     }
 
@@ -100,7 +108,9 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         // 设置服务注册器
         context.setServiceRegister(this::registerService);
         // 设置服务对象持有器
-        context.setObjectsHolder(this::getService);
+        context.setObjectBeans(this.serviceObjects);
+        // 设置服务对象工厂持有器
+        context.setObjectFactories(this.serviceObjectFactories);
     }
 
     /**

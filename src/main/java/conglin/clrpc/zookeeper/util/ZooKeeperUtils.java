@@ -107,7 +107,7 @@ public final class ZooKeeperUtils {
     public static void disconnectZooKeeper(final ZooKeeper keeper) {
         if (keeper != null) {
             try {
-                keeper.close(1000);
+                keeper.close(500);
             } catch (InterruptedException e) {
                 LOGGER.error("ZooKeeper session close failed. Cause: {}", e.getMessage());
             }

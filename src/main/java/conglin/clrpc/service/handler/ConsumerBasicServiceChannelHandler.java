@@ -3,8 +3,8 @@ package conglin.clrpc.service.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.service.context.channel.ConsumerChannelContext;
+import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicResponse;
 
@@ -12,18 +12,18 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBasicServiceChannelHandler.class);
 
-    protected final FuturesHolder<Long> futuresHolder;
+    protected final FutureHolder<Long> futureHolder;
 
-    public ConsumerBasicServiceChannelHandler(ConsumerContext context) {
+    public ConsumerBasicServiceChannelHandler(ConsumerChannelContext context) {
         super(context);
-        this.futuresHolder = context.getFuturesHolder();
+        this.futureHolder = context.futureHolder();
     }
 
     @Override
     protected Object execute(BasicResponse msg) {
         Long messageId = msg.messageId();
         LOGGER.debug("Receive response (messageId={})", messageId);
-        RpcFuture future = futuresHolder.removeFuture(messageId);
+        RpcFuture future = futureHolder.removeFuture(messageId);
 
         if (future != null) {
             future.done(msg);

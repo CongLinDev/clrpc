@@ -15,8 +15,8 @@ import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.service.fallback.DefaultFallbackHolder;
 import conglin.clrpc.service.fallback.FallbackHolder;
-import conglin.clrpc.service.future.DefaultFuturesHolder;
-import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.service.future.DefaultFutureHolder;
+import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.BasicProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
@@ -28,7 +28,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerServiceHandler.class);
 
-    private final FuturesHolder<Long> futuresHolder;
+    private final FutureHolder<Long> futureHolder;
 
     private final FallbackHolder fallbackHolder;
 
@@ -38,7 +38,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
-        futuresHolder = new DefaultFuturesHolder();
+        futureHolder = new DefaultFutureHolder();
         fallbackHolder = new DefaultFallbackHolder(configurer);
         String urlString = configurer.getOrDefault("registry", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
         serviceDiscovery = new ZooKeeperServiceDiscovery(new Url(urlString));
@@ -117,7 +117,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     protected void initContext(ConsumerContext context) {
         super.initContext(context);
         context.setServiceRegister(serviceDiscovery);
-        context.setFuturesHolder(futuresHolder);
+        context.setFuturesHolder(futureHolder);
         context.setFallbackHolder(fallbackHolder);
     }
 
@@ -125,7 +125,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * 停止
      */
     public void stop() {
-        futuresHolder.waitForUncompleteFuture();
+        futureHolder.waitForUncompleteFuture();
 
         if (!super.isDestroyed()) {
             try {

@@ -3,7 +3,7 @@ package conglin.clrpc.extension.traffic.channel;
 import conglin.clrpc.common.Url;
 import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.global.role.Role;
-import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.service.context.channel.CommonChannelContext;
 import conglin.clrpc.zookeeper.registry.ZooKeeperServiceLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -15,11 +15,11 @@ public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
 
     private final ServiceLogger serviceLogger;
 
-    private final CommonContext context;
+    private final CommonChannelContext context;
 
-    public GlobalTrafficChannelHandler(CommonContext context) {
+    public GlobalTrafficChannelHandler(CommonChannelContext context) {
         this.context = context;
-        String urlString = context.getPropertyConfigurer().getOrDefault("logger", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        String urlString = context.propertyConfigurer().getOrDefault("logger", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
         serviceLogger = new ZooKeeperServiceLogger(new Url(urlString));
     }
 

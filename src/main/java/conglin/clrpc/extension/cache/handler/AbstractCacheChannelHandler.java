@@ -2,7 +2,7 @@ package conglin.clrpc.extension.cache.handler;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.CacheManager;
-import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.service.context.channel.CommonChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,8 +12,8 @@ abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboun
 
     private final CacheManager<BasicRequest, CacheableResponse> cacheManager;
 
-    public AbstractCacheChannelHandler(CommonContext context) {
-        PropertyConfigurer configurer = context.getPropertyConfigurer();
+    public AbstractCacheChannelHandler(CommonChannelContext context) {
+        PropertyConfigurer configurer = context.propertyConfigurer();
         @SuppressWarnings("unchecked")
         CacheManager<BasicRequest, CacheableResponse> cm = (CacheManager<BasicRequest, CacheableResponse>) configurer
                 .get("extension.cache.cacheManager");

@@ -1,6 +1,7 @@
 package conglin.clrpc.bootstrap;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 保存即将发布的服务
+     * 发布单例服务
      * 
      * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
      * 
@@ -62,14 +63,38 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        Collection<String> superServiceNames = AnnotationParser.superServiceNames(serviceBean.getClass(), SERVICE_HANDLER::publishServiceMetaInfo);
-        if(superServiceNames.isEmpty()) {
+        Collection<String> superServiceNames = AnnotationParser.superServiceNames(serviceBean.getClass(),
+                SERVICE_HANDLER::publishServiceMetaInfo);
+        if (superServiceNames.isEmpty()) {
             LOGGER.error("Please Add a service name for {} by @Service.", serviceBean.getClass());
             throw new UnsupportedOperationException();
-        } 
+        }
         superServiceNames.forEach(serviceName -> {
             SERVICE_HANDLER.publish(serviceName, serviceBean);
-            LOGGER.info("Publish service named {}.", serviceName);
+            LOGGER.info("Publish service named {} with bean.", serviceName);
+        });
+        return this;
+    }
+
+    /**
+     * 发布服务
+     * 
+     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
+     * 
+     * @param serviceFactory 服务工厂对象
+     * @return
+     */
+    public RpcProviderBootstrap publishFactory(Supplier<?> serviceFactory) {
+        Class<?> clazz = serviceFactory.get().getClass();
+        Collection<String> superServiceNames = AnnotationParser.superServiceNames(clazz,
+                SERVICE_HANDLER::publishServiceMetaInfo);
+        if (superServiceNames.isEmpty()) {
+            LOGGER.error("Please Add a service name for {} by @Service.", clazz);
+            throw new UnsupportedOperationException();
+        }
+        superServiceNames.forEach(serviceName -> {
+            SERVICE_HANDLER.publishFactory(serviceName, serviceFactory);
+            LOGGER.info("Publish service named {} with factory.", serviceName);
         });
         return this;
     }

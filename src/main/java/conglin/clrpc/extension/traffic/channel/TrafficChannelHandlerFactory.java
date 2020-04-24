@@ -3,7 +3,7 @@ package conglin.clrpc.extension.traffic.channel;
 import java.util.Arrays;
 import java.util.Collection;
 
-import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.service.context.channel.CommonChannelContext;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import io.netty.channel.ChannelHandler;
 
@@ -14,9 +14,9 @@ import io.netty.channel.ChannelHandler;
  */
 public class TrafficChannelHandlerFactory implements ChannelHandlerFactory {
 
-    private final CommonContext context;
+    private final CommonChannelContext context;
 
-    public TrafficChannelHandlerFactory(CommonContext context) {
+    public TrafficChannelHandlerFactory(CommonChannelContext context) {
         this.context = context;
     }
 

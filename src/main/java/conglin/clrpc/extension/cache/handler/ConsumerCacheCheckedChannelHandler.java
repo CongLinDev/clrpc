@@ -1,7 +1,7 @@
 package conglin.clrpc.extension.cache.handler;
 
-import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.future.FuturesHolder;
+import conglin.clrpc.service.context.channel.ConsumerChannelContext;
+import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
 
@@ -17,11 +17,11 @@ import conglin.clrpc.transport.message.BasicRequest;
  */
 public class ConsumerCacheCheckedChannelHandler<T extends BasicRequest> extends AbstractCacheChannelHandler<T> {
 
-    private final FuturesHolder<Long> futuresHolder;
+    private final FutureHolder<Long> futureHolder;
 
-    public ConsumerCacheCheckedChannelHandler(ConsumerContext context) {
+    public ConsumerCacheCheckedChannelHandler(ConsumerChannelContext context) {
         super(context);
-        this.futuresHolder = context.getFuturesHolder();
+        this.futureHolder = context.futureHolder();
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ConsumerCacheCheckedChannelHandler<T extends BasicRequest> extends 
     @Override
     protected Object cache(T msg) {
         Long messageId = msg.messageId();
-        RpcFuture future = futuresHolder.removeFuture(messageId);
+        RpcFuture future = futureHolder.removeFuture(messageId);
 
         if (future != null) {
             future.done(cacheManager().get(msg).copy(messageId));

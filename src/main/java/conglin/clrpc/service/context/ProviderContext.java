@@ -1,23 +1,38 @@
 package conglin.clrpc.service.context;
 
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface ProviderContext extends CommonContext {
 
     /**
-     * 获取服务对象持有者
+     * 获取单例服务对象 {@link java.util.Map}
      * 
      * @return
      */
-    Function<String, Object> getObjectsHolder();
+    Map<String, Object> getObjectBeans();
 
     /**
-     * 设置服务对象持有者
+     * 设置单例服务对象 {@link java.util.Map}
      * 
-     * @param objectHolder
+     * @param objectsHolder
      */
-    void setObjectsHolder(Function<String, Object> objectHolder);
+    void setObjectBeans(Map<String, Object> objectHolder);
+
+    /**
+     * 返回服务对象工厂 {@link java.util.Map}
+     * 
+     * @return
+     */
+    Map<String, Supplier<?>> getObjectFactories();
+
+    /**
+     * 设置服务对象工厂 {@link java.util.Map}
+     * 
+     * @param objectFactory
+     */
+    void setObjectFactories(Map<String, Supplier<?>> objectFactory);
 
     /**
      * 获得服务注册器

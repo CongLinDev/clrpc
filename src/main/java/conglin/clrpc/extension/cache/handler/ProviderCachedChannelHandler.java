@@ -10,7 +10,7 @@ import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.extension.annotation.CacheableService;
 import conglin.clrpc.extension.annotation.IdempotentService;
-import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import conglin.clrpc.transport.message.CacheableResponse;
@@ -22,9 +22,9 @@ public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest,
 
     private final Function<String, Object> objectHolder;
 
-    public ProviderCachedChannelHandler(ProviderContext context) {
+    public ProviderCachedChannelHandler(ProviderChannelContext context) {
         super(context);
-        this.objectHolder = context.getObjectsHolder();
+        this.objectHolder = context.objectHolder();
     }
 
     @Override

@@ -33,21 +33,10 @@ public class ConsumerTest {
             echoService.echoNull();
         }
 
-        AsyncObjectProxy.lastFuture().callback(new Callback() {
-            @Override
-            public void success(Object result) {
-                long end = System.currentTimeMillis();
-                System.out.println(end - begin);
-                System.out.println("success");
-            }
-
-            @Override
-            public void fail(Exception exception) {
-                long end = System.currentTimeMillis();
-                System.out.println(end - begin);
-                System.out.println("fail");
-            }
-        });
+        AsyncObjectProxy.lastFuture().callback(Callback.convert(()->{
+            long end = System.currentTimeMillis();
+            System.out.println(end - begin);
+        }));
 
         bootstrap.stop();
 

@@ -1,6 +1,8 @@
 package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.context.channel.CommonChannelContext;
+import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.service.handler.ProviderTransactionServiceChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -67,12 +69,13 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
     }
 
     @Override
-    protected ProviderContext context() {
-        return context;
+    protected ProviderChannelContext channelContext() {
+        return new ProviderChannelContext(context);
     }
 
     @Override
-    protected void doInitChannel(SocketChannel ch) throws Exception {
+    protected void doInitChannel(SocketChannel ch, CommonChannelContext channelContext) throws Exception {
+        ProviderChannelContext context = (ProviderChannelContext)channelContext;
         // handle request
         pipeline()
                 .addLast("ProviderTransactionServiceChannelHandler",
