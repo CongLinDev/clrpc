@@ -35,19 +35,18 @@ public class DefaultRequestSender implements RequestSender {
     private final Timer timer;
 
     // 初始重试后的 threshold
-    private final long INITIAL_THRESHOLD;
+    private final int INITIAL_THRESHOLD;
     // 检查周期
-    private final long CHECK_PERIOD;
+    private final int CHECK_PERIOD;
 
     public DefaultRequestSender(ConsumerContext context) {
         this.futureHolder = context.getFuturesHolder();
         this.fallbackHolder = context.getFallbackHolder();
         this.providerChooser = context.getProviderChooser();
         this.threadPool = context.getExecutorService();
-        this.CHECK_PERIOD = context.getPropertyConfigurer().getOrDefault("consumer.retry.check-period", 3000L);
-        this.INITIAL_THRESHOLD = context.getPropertyConfigurer().getOrDefault("consumer.retry.initial-threshold",
-                3000L);
-        this.timer = checkFuture();
+        this.CHECK_PERIOD = context.getPropertyConfigurer().getOrDefault("consumer.retry.check-period", 3000);
+        this.INITIAL_THRESHOLD = context.getPropertyConfigurer().getOrDefault("consumer.retry.initial-threshold", 3000);
+        this.timer = CHECK_PERIOD > 0 ? checkFuture() : null;
     }
 
     @Override
@@ -64,7 +63,9 @@ public class DefaultRequestSender implements RequestSender {
 
     @Override
     public void shutdown() {
-        timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
     /**

@@ -132,8 +132,8 @@ bootstrap.stop();
 | provider.channel.<br>handler-factory |          String           |  YES  |                         `null`                          |         实现ChannelHandlerFactory，可自定义添加处理器          |
 |          consumer.wait-time          |           Long            |  YES  |                          5000                           |             无服务提供者时等待重试时间，单位为毫秒             |
 |        consumer.thread.worker        |          Integer          |  YES  |                            4                            |                 服务使用者的workerGroup线程数                  |
-|   consumer.retry.<br>check-period    |           Long            |  YES  |                          3000                           |                        重试机制执行周期                        |
-| consumer.retry.<br>initial-threshold |           Long            |  YES  |                          3000                           |                        初始重试时间门槛                        |
+|   consumer.retry.<br>check-period    |          Integer          |  YES  |                          3000                           |               重试机制执行周期(非正数代表不开启)               |
+| consumer.retry.<br>initial-threshold |          Integer          |  YES  |                          3000                           |                        初始重试时间门槛                        |
 |   consumer.fallback.<br>max-retry    |          Integer          |  TES  |                           -1                            |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
 | provider.channel.<br>handler-factory |          String           |  YES  |                         `null`                          |         实现ChannelHandlerFactory，可自定义添加处理器          |
 |  service.thread-pool.<br>core-size   |          Integer          |  YES  |                            5                            |                      业务线程池核心线程数                      |
@@ -159,8 +159,8 @@ bootstrap.stop();
 
 在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，会向构造方法其中传入一个参数，其参数类型如下：
 
-|   Role   |                     Type                      | Remark |
-| :------: | :-------------------------------------------: | :----: |
+|   Role   |                             Type                             | Remark |
+| :------: | :----------------------------------------------------------: | :----: |
 | Provider | conglin.clrpc.service.context.channel.ProviderChannelContext | 上下文 |
 | Consumer | conglin.clrpc.service.context.channel.ConsumerChannelContext | 上下文 |
 
