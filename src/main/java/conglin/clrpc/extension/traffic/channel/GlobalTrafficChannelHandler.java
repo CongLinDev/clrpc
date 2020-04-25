@@ -34,9 +34,9 @@ public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
      */
     protected String id(Role role, Channel channel) {
         if (role.isConsumer()) {
-            return role.toString() + "/" + channel.localAddress().toString();
+            return role.toString() + channel.localAddress().toString();
         } else if (role.isProvider()) {
-            return role.toString() + "/" + channel.remoteAddress().toString();
+            return role.toString() + channel.remoteAddress().toString();
         }
         return role.toString();
     }

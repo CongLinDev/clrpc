@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 
-import conglin.clrpc.service.context.CommonContext;
 import conglin.clrpc.service.context.channel.CommonChannelContext;
 import io.netty.channel.ChannelHandler;
 
@@ -30,7 +29,7 @@ public interface ChannelHandlerFactory {
         try {
             Class<? extends ChannelHandlerFactory> clazz = Class.forName(qualifiedClassName)
                 .asSubclass(ChannelHandlerFactory.class);
-            Constructor<? extends ChannelHandlerFactory> constructor = clazz.getConstructor(CommonContext.class);
+            Constructor<? extends ChannelHandlerFactory> constructor = clazz.getConstructor(CommonChannelContext.class);
             constructor.setAccessible(true);
             return constructor.newInstance(context);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import conglin.clrpc.bootstrap.RpcConsumerBootstrap;
-import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.test.service.EchoService;
 
@@ -29,10 +28,10 @@ public class ConsumerThreadTest {
                 // echoService.echoPOJO(new User(Long.MAX_VALUE, "conglin"));
                 // echoService.echoBytes(new byte[1000]);
             }
-            AsyncObjectProxy.lastFuture().callback(Callback.convert(()->{
+            AsyncObjectProxy.lastFuture().callback(()->{
                 long end = System.currentTimeMillis();
                 result.add(end-begin);
-            }));
+            });
             latch.countDown();
         };
 

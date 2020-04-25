@@ -42,7 +42,7 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
                 holder.entrySet().forEach(entry -> {
                     String data = entry.getValue().calculate().toString();
                     ZooKeeperUtils.createNode(keeper, entry.getKey(), data, CreateMode.PERSISTENT_SEQUENTIAL);
-                    LOGGER.info("Traffic counts: {}", data);
+                    LOGGER.info("Traffic(key={}) counts: {}", entry.getKey(), data);
                 });
             }
         }, 1000, 500);

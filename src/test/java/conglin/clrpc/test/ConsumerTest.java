@@ -28,20 +28,20 @@ public class ConsumerTest {
         bootstrap.start();
         EchoService echoService = bootstrap.refreshAndSubscribeAsync(EchoService.class);
         final long begin = System.currentTimeMillis();
-        System.out.println("begin:" + begin);
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 100000; i++) {
             echoService.echoNull();
+            // echoService.echoPOJO(new User(Long.MAX_VALUE, "conglin"));
+            // echoService.echoBytes(new byte[1000]);
         }
 
-        AsyncObjectProxy.lastFuture().callback(Callback.convert(()->{
-            long end = System.currentTimeMillis();
-            System.out.println(end - begin);
-        }));
+        AsyncObjectProxy.lastFuture().callback(()->{
+            final long end = System.currentTimeMillis();
+            final long time = end - begin;
+            System.out.println("waste time: " + time);
+            System.out.println("requests per second: " + 1_0000_0000.0 / time);
+        });
 
         bootstrap.stop();
-
-        long end = System.currentTimeMillis();
-        System.out.println("Waste time: " + (end - begin) + " ms");
     }
 
     protected static void helloServiceSyncTest() {

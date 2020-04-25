@@ -238,7 +238,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         // 获取当前区域范围 [head, tail]
         int head = regionHead(regionAndEpoch);
         int tail = regionTail(head);// 区域编号不得超过最大编号
-        LOGGER.debug("Update Region[head={}, tail={}], Epoch={}", head, tail, currentEpoch);
+        LOGGER.info("Update Region[head={}, tail={}], Epoch={}", head, tail, currentEpoch);
 
         // 遍历更新的数据，对给定的数据进行更新
         for (Pair<K, String> pair : data) {
@@ -252,7 +252,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
                     if (currentEpoch == (regionAndEpoch.get() & _16_BIT_MASK)) {
                         V v = convertor.apply(type, key);
                         if (v != null) {
-                            LOGGER.debug("Add new node = {}", key);
+                            LOGGER.info("Add new node(position={}, key={})", position, key);
                             circle.put(position, new Node<K, V>(currentEpoch, v, pair));
                         } else {
                             LOGGER.error("Null Object from {}", key);
@@ -261,8 +261,8 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
                     }
                 } else if (node.match(key) && node.setEpoch(currentEpoch)) { // 更新epoch
                     node.setMetaInfomation(pair);
-                    LOGGER.debug("Update old node = {}", key);
-                    if(node.getValue() == null) {
+                    LOGGER.info("Update old node(position={}, key={})", position, key);
+                    if (node.getValue() == null) {
                         node.setValue(convertor.apply(type, key));
                     }
                     break;
@@ -283,7 +283,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
             Node<K, V> node = entry.getValue();
             if (node.getEpoch() + 1 == currentEpoch) { // 只移除上一代未更新的节点
                 circle.remove(position);
-                LOGGER.debug("Remove valid node.");
+                LOGGER.debug("Remove valid node(position={}, key={})", position, node.getMetaInfomation().getFirst());
                 destructor.accept(type, node.getValue());
             }
         }

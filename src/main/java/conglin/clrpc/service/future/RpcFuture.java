@@ -15,6 +15,16 @@ public interface RpcFuture extends Future<Object> {
     RpcFuture callback(Callback callback);
 
     /**
+     * 添加通用的回调
+     * 
+     * @param task
+     * @return this
+     */
+    default RpcFuture callback(Runnable task) {
+        return callback(Callback.convert(task));
+    }
+
+    /**
      * 该 {@code RpcFuture} 的标识符
      * 
      * @return
