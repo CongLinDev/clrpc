@@ -35,7 +35,7 @@ public class ConsumerTransfer {
 
     private final ReentrantLock lock;
     private final Condition connected;
-    private long timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
+    private int timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
     private ConsumerContext context;
 
@@ -58,7 +58,7 @@ public class ConsumerTransfer {
         initContext(context);
 
         PropertyConfigurer configurer = context.getPropertyConfigurer();
-        timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000L);
+        timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
         initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
     }
 

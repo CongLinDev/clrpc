@@ -26,17 +26,20 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
 
     private final Map<String, Calculatable<?>> holder;
 
+    private final Timer timer;
+
     public ZooKeeperServiceLogger(Url url) {
         super(url, "traffic");
         holder = new HashMap<>();
-        init();
+        timer = init();
     }
 
     /**
      * 初始化
      */
-    protected void init() {
-        new Timer("zookeeper logger", true).schedule(new TimerTask() {
+    protected Timer init() {
+        Timer timer = new Timer("zookeeper logger", true);
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 holder.entrySet().forEach(entry -> {
@@ -46,6 +49,7 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
                 });
             }
         }, 1000, 500);
+        return timer;
     }
 
     @Override
@@ -56,5 +60,8 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
     @Override
     public void remove(String key) {
         holder.remove(rootPath + "/" + key);
+        if(holder.isEmpty()) {
+            timer.cancel();
+        }
     }
 }

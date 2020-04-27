@@ -40,8 +40,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         super(configurer);
         futureHolder = new DefaultFutureHolder();
         fallbackHolder = new DefaultFallbackHolder(configurer);
-        String urlString = configurer.getOrDefault("registry", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
-        serviceDiscovery = new ZooKeeperServiceDiscovery(new Url(urlString));
+        serviceDiscovery = new ZooKeeperServiceDiscovery(new Url(configurer.get("registry", String.class)));
     }
 
     /**

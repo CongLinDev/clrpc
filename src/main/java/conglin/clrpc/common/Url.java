@@ -25,6 +25,10 @@ final public class Url {
     private final Map<String, String> parameters;
 
     public Url(String url) {
+        if(url == null) {
+            throw new IllegalArgumentException("Url can not be null");
+        }
+
         Matcher matcher = pattern.matcher(url);
         if (!matcher.find()) {
             throw new IllegalArgumentException("cannot match url pattern");

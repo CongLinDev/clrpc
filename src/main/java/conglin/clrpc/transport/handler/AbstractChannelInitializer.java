@@ -26,8 +26,8 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
 
         CommonChannelContext channelContext = channelContext();
 
-        String factoryClass = (String) channelContext.propertyConfigurer()
-                .get(channelContext.role().item(".channel.handler-factory"));
+        String factoryClass = channelContext.propertyConfigurer()
+                .get(channelContext.role().item(".channel.handler-factory"), String.class);
         ChannelHandlerFactory factory = ChannelHandlerFactory.newFactory(factoryClass, channelContext);
         factory.beforeCodec().forEach(pipeline::addLast);
         addCodecHandler(channelContext);

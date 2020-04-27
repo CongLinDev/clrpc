@@ -26,7 +26,7 @@ public class ProviderTransactionServiceChannelHandler
 
     public ProviderTransactionServiceChannelHandler(ProviderChannelContext context) {
         super(context);
-        String urlString = context.propertyConfigurer().getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        String urlString = context.propertyConfigurer().get("atomicity", String.class);
         helper = new ZooKeeperTransactionHelper(new Url(urlString));
     }
 

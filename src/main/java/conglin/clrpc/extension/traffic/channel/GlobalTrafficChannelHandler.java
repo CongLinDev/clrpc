@@ -19,7 +19,7 @@ public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
 
     public GlobalTrafficChannelHandler(CommonChannelContext context) {
         this.context = context;
-        String urlString = context.propertyConfigurer().getOrDefault("logger", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
+        String urlString = context.propertyConfigurer().get("logger", String.class);
         serviceLogger = new ZooKeeperServiceLogger(new Url(urlString));
     }
 

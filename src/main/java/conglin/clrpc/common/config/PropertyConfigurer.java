@@ -8,7 +8,7 @@ public interface PropertyConfigurer {
     String DEFAULT_CONFIG_FILENAME = "clrpc-config";
 
     /**
-     * 获取属性值 若不存在返回null
+     * 获取属性值 若不存在返回 {@code null}
      * 
      * @param key 键值
      * @return
@@ -16,7 +16,7 @@ public interface PropertyConfigurer {
     Object get(String key);
 
     /**
-     * 获取属性值 若不存在返回null
+     * 获取属性值 若不存在返回 {@code null}
      * 
      * @param <T>
      * @param key
@@ -24,7 +24,11 @@ public interface PropertyConfigurer {
      * @return
      */
     default <T> T get(String key, Class<T> clazz) {
-        return (T) clazz.cast(get(key));
+        try {
+            return (T) clazz.cast(get(key));
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 
     /**

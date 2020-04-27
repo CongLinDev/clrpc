@@ -34,8 +34,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
         super(configurer);
         serviceObjects = new HashMap<>();
         serviceObjectFactories = new HashMap<>();
-        String urlString = configurer.getOrDefault("registry", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
-        serviceRegistry = new ZooKeeperServiceRegistry(new Url(urlString));
+        serviceRegistry = new ZooKeeperServiceRegistry(new Url(configurer.get("registry", String.class)));
     }
 
     /**

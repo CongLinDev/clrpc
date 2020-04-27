@@ -41,8 +41,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
             PropertyConfigurer configurer) {
         super(sender);
         this.identifierGenerator = identifierGenerator;
-        String urlString = configurer.getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000");
-        helper = new ZooKeeperTransactionHelper(new Url(urlString));
+        helper = new ZooKeeperTransactionHelper(new Url(configurer.get("atomicity", String.class)));
     }
 
     @Override

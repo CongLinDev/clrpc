@@ -20,7 +20,7 @@ public class SequetialIdentifierGenerator extends AbstractZooKeeperService imple
     protected IdentifierGenerator downgradeGenerator;
 
     public SequetialIdentifierGenerator(PropertyConfigurer configurer) {
-        super(new Url(configurer.getOrDefault("atomicity", "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000")), "id");
+        super(new Url(configurer.get("atomicity", String.class)), "id");
         downgradeGenerator = new RandomIdentifierGenerator();
     }
 
