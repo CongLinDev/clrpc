@@ -32,6 +32,7 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * // 订阅异步服务
  * Interface2 i2 = bootstrap.subscribeAsync(Interface2.class);
  *
+ * bootstrap.stop();
  * </pre>
  * 
  * </blockquote>
