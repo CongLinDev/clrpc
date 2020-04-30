@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.CallbackFunction;
 import conglin.clrpc.common.Url;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
@@ -58,42 +59,43 @@ public class ProviderTransactionServiceChannelHandler
 
         try {
             // 预提交
-            final Object result = jdkReflectInvoke(serviceBean, msg);
-            helper.precommit(transactionId, serialId);
-
             Class<?> clazz = serviceBean.getClass();
             Method method = clazz.getMethod(msg.methodName(), ClassUtils.getClasses(msg.parameters()));
-            boolean isTrans = AnnotationParser.isTransactionMethod(method) && (result instanceof Callback);
+            Method precommitMethod = AnnotationParser.precommitMethod(method);
 
-            if (!isTrans) {
-                helper.commit(transactionId, serialId);
-                LOGGER.debug("Transaction request(transactionId={} serialId={}) has been commited.", transactionId,
-                        serialId);
-                next(msg, new BasicResponse(msg.messageId(), result));
-                return null;
-            }
+            final boolean isTrans = precommitMethod != null;
 
-            Callback dataCallback = (Callback) result;
+            Object result = isTrans ? jdkReflectInvoke(serviceBean, precommitMethod, msg.parameters())
+                    : jdkReflectInvoke(serviceBean, method, msg.parameters());
+            helper.precommit(transactionId, serialId);
 
             // 预提交成功后，标记预提交成功并监视上一个节点
             // 若顺序执行，则监视上一个子节点，反之监视事务节点
             helper.watch(transactionId, (msg.isSerial() ? serialId - 1 : 0), new Callback() {
                 @Override
                 public void success(Object r) {
-                    dataCallback.success(null);
+                    if (isTrans) {
+                        CallbackFunction callback = (CallbackFunction) result;
+                        next(msg, new BasicResponse(msg.messageId(), callback.apply(Boolean.TRUE)));
+                    } else {
+                        next(msg, new BasicResponse(msg.messageId(), result));
+                    }
                     helper.commit(transactionId, serialId);
                     LOGGER.debug("Transaction request(transactionId={} serialId={}) has been commited.", transactionId,
                             serialId);
-                    next(msg,  new BasicResponse(msg.messageId(), result));
                 }
 
                 @Override
                 public void fail(Exception exception) {
-                    dataCallback.fail(null);
+                    if (isTrans) {
+                        CallbackFunction callback = (CallbackFunction) result;
+                        callback.apply(Boolean.FALSE);
+                    }
+                    next(msg, new BasicResponse(msg.messageId(), true,
+                            new ServiceExecutionException("Transaction has been cancelled.")));
                     helper.abort(transactionId, serialId);
                     LOGGER.debug("Transaction request(transactionId={} serialId={}) has been cancelled.", transactionId,
                             serialId);
-                    next(msg, new BasicResponse(msg.messageId(), true, new ServiceExecutionException("Transaction has been cancelled.")));
                 }
             });
         } catch (ServiceExecutionException e) {

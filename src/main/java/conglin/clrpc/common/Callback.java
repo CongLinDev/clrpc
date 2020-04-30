@@ -28,7 +28,7 @@ public interface Callback {
      * @return
      */
     default Callback andThen(Callback after) {
-        if(after == null)
+        if (after == null)
             return this;
         Callback current = this;
         return new Callback() {

@@ -1,6 +1,7 @@
 package conglin.clrpc.service.handler;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,10 +91,42 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      * @return
      * @throws ServiceExecutionException
      */
-    protected Object jdkReflectInvoke(Object serviceBean, BasicRequest request)
+    protected Object jdkReflectInvoke(Object serviceBean, BasicRequest request) throws ServiceExecutionException {
+        return jdkReflectInvoke(serviceBean, request.methodName(), request.parameters());
+    }
+
+    /**
+     * 使用jdk反射来调用方法
+     * 
+     * @param serviceBean
+     * @param methodName
+     * @param parameters
+     * @return
+     * @throws ServiceExecutionException
+     */
+    protected Object jdkReflectInvoke(Object serviceBean, String methodName, Object[] parameters)
             throws ServiceExecutionException {
         try {
-            return ClassUtils.reflectInvoke(serviceBean, request.methodName(), request.parameters());
+            return ClassUtils.reflectInvoke(serviceBean, methodName, parameters);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new ServiceExecutionException(e);
+        }
+    }
+
+    /**
+     * 使用jdk反射来调用方法
+     * 
+     * @param serviceBean
+     * @param method
+     * @param parameters
+     * @return
+     * @throws ServiceExecutionException
+     */
+    protected Object jdkReflectInvoke(Object serviceBean, Method method, Object[] parameters)
+            throws ServiceExecutionException {
+        try {
+            return ClassUtils.reflectInvoke(serviceBean, method, parameters);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new ServiceExecutionException(e);

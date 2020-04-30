@@ -87,4 +87,24 @@ public class AnnotationParser {
         Transaction transaction = method.getAnnotation(Transaction.class);
         return transaction != null;
     }
+
+    /**
+     * 寻找事务预提交方法
+     * 
+     * @param method
+     * @return
+     */
+    public static Method precommitMethod(Method method) {
+        Transaction transaction = method.getAnnotation(Transaction.class);
+
+        try {
+            if (transaction != null) {
+                Class<?> clazz = method.getClass();
+                return clazz.getMethod(transaction.precommit(), method.getParameterTypes());
+            }
+        } catch (NoSuchMethodException e) {
+            // do nothing
+        }
+        return null;
+    }
 }

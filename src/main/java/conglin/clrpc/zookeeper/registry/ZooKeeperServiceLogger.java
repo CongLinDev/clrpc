@@ -2,6 +2,7 @@ package conglin.clrpc.zookeeper.registry;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,30 +27,32 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
 
     private final Map<String, Calculatable<?>> holder;
 
-    private final Timer timer;
-
     public ZooKeeperServiceLogger(Url url) {
         super(url, "traffic");
         holder = new HashMap<>();
-        timer = init();
+        init();
     }
 
     /**
      * 初始化
      */
-    protected Timer init() {
-        Timer timer = new Timer("zookeeper logger", true);
+    protected void init() {
+        final Timer timer = new Timer("zookeeper logger", true);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                holder.entrySet().forEach(entry -> {
+                for(Entry<String, Calculatable<?>> entry : holder.entrySet()) {
                     String data = entry.getValue().calculate().toString();
-                    ZooKeeperUtils.createNode(keeper, entry.getKey(), data, CreateMode.PERSISTENT_SEQUENTIAL);
-                    LOGGER.info("Traffic(key={}) counts: {}", entry.getKey(), data);
-                });
+                    if(keeper.getState().isAlive()) {
+                        ZooKeeperUtils.createNode(keeper, entry.getKey(), data, CreateMode.PERSISTENT_SEQUENTIAL);
+                        LOGGER.info("Traffic(key={}) counts: {}", entry.getKey(), data);
+                    } else {
+                        timer.cancel();
+                        break;
+                    }
+                }
             }
         }, 1000, 500);
-        return timer;
     }
 
     @Override
@@ -60,8 +63,5 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
     @Override
     public void remove(String key) {
         holder.remove(rootPath + "/" + key);
-        if(holder.isEmpty()) {
-            timer.cancel();
-        }
     }
 }

@@ -114,6 +114,26 @@ public final class ClassUtils {
     }
 
     /**
+     * 反射调用对象方法
+     * 
+     * @param object
+     * @param methodName
+     * @param parameters
+     * @return
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     */
+    public static Object reflectInvoke(Object object, Method method, Object... parameters) throws NoSuchMethodException,
+            SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        LOGGER.debug("Invoking class={} method={}", object.getClass().getName(), method.getName());
+        method.setAccessible(true);
+        return method.invoke(object, parameters);
+    }
+
+    /**
      * 获取对象数组对应的类型
      * 
      * @param objects
