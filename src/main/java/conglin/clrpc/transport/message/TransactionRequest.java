@@ -17,9 +17,9 @@ public class TransactionRequest extends BasicRequest {
      * 构造事务请求
      * 
      * @param messageId   由两部分组成，高32位为事务ID，低32位为序列ID
-     * @param serviceName
-     * @param methodName
-     * @param parameters
+     * @param serviceName 服务名
+     * @param methodName  方法名
+     * @param parameters  参数
      */
     public TransactionRequest(Long messageId, String serviceName, String methodName, Object[] parameters) {
         super(messageId, serviceName, methodName, parameters);
@@ -30,9 +30,11 @@ public class TransactionRequest extends BasicRequest {
      * 
      * @param transactionId 事务ID
      * @param serialId      序列ID
-     * @param serviceName
-     * @param methodName
-     * @param parameters
+     * @param serviceName   服务名
+     * @param methodName    方法名
+     * @param parameters    参数
+     * 
+     * @see #TransactionRequest(Long, String, String, Object[])
      */
     public TransactionRequest(long transactionId, int serialId, String serviceName, String methodName,
             Object[] parameters) {

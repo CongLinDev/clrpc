@@ -13,15 +13,32 @@ public class CacheableResponse extends BasicResponse {
 
     private int flag;
 
+    /**
+     * 构造一个缓存回复对象
+     * 
+     * @param messageId 消息ID
+     * @param error     是否错误
+     * @param result    结果对象
+     */
     public CacheableResponse(Long messageId, boolean error, Object result) {
         super(messageId, error, result);
     }
 
+    /**
+     * 构造一个缓存回复对象
+     * 
+     * @param response
+     */
     public CacheableResponse(BasicResponse response) {
         super(response);
         this.flag = 0;
     }
 
+    /**
+     * 构造一个缓存回复对象
+     * 
+     * @param response
+     */
     public CacheableResponse(CacheableResponse response) {
         super(response);
         this.flag = response.getFlag();
@@ -40,7 +57,8 @@ public class CacheableResponse extends BasicResponse {
     }
 
     /**
-     * 以下方法均为设置或获取 {@link conglin.clrpc.transport.message.CacheableResponse#flag} 的方法
+     * 以下方法均为设置或获取 {@link conglin.clrpc.transport.message.CacheableResponse#flag}
+     * 的方法
      * 
      * {@link CacheableResponse#flag} 共 32 位 从低到高为 [0 - 31] 各比特位的含义如下：
      * 

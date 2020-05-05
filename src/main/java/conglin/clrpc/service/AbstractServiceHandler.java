@@ -21,12 +21,15 @@ abstract public class AbstractServiceHandler implements Destroyable {
     // 业务线程池
     private final ExecutorService businessTheardExecutorService;
 
-    public AbstractServiceHandler(PropertyConfigurer configurer, boolean enable) {
-        businessTheardExecutorService = enable ? threadPool(configurer) : null;
-    }
-
+    /**
+     * 构造 {@link AbstractServiceHandler}
+     * 
+     * 本质上即是构造线程池
+     * 
+     * @param configurer
+     */
     public AbstractServiceHandler(PropertyConfigurer configurer) {
-        this(configurer, true);
+        businessTheardExecutorService = threadPool(configurer);
     }
 
     /**

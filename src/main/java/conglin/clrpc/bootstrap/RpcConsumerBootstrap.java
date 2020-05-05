@@ -47,10 +47,18 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private final ConsumerTransfer CONSUMER_TRANSFER;
     private final ConsumerServiceHandler SERVICE_HANDLER;
 
+    /**
+     * @see #RpcConsumerBootstrap(PropertyConfigurer)
+     */
     public RpcConsumerBootstrap() {
         this(null);
     }
 
+    /**
+     * 创建 服务消费者 启动对象
+     * 
+     * @param configurer 配置器
+     */
     public RpcConsumerBootstrap(PropertyConfigurer configurer) {
         super(configurer);
         SERVICE_HANDLER = new ConsumerServiceHandler(configurer());

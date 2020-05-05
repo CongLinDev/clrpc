@@ -96,7 +96,7 @@ public interface StateSync {
      */
     default boolean cancel() {
         int curState = state();
-        return curState < DONE && casState(curState, CANCELLED);
+        return !isDone() && casState(curState, CANCELLED);
     }
 
     /**
@@ -106,7 +106,7 @@ public interface StateSync {
      */
     default boolean retry() {
         int curState = state();
-        if (curState > PENDING)
+        if (curState > PENDING) // pending
             return false;
         return casState(curState, curState - 1);
     }

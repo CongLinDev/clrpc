@@ -104,6 +104,8 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
 
     /**
      * 获取一个空的配置器
+     * 
+     * @see #JsonPropertyConfigurer(JSONObject)
      */
     protected JsonPropertyConfigurer() {
         this(new JSONObject());
@@ -113,6 +115,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      * 使用 {@link java.util.Map} 初始化配置器
      * 
      * @param map
+     * @see #JsonPropertyConfigurer(JSONObject)
      */
     protected JsonPropertyConfigurer(Map<String, Object> map) {
         this(new JSONObject(map));
@@ -122,6 +125,7 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
      * 使用文本内容初始化配置器
      * 
      * @param content
+     * @see #JsonPropertyConfigurer(JSONObject)
      */
     protected JsonPropertyConfigurer(String content) {
         this(JSONObject.parseObject(content));

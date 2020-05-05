@@ -30,20 +30,23 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
     public ZooKeeperServiceLogger(Url url) {
         super(url, "traffic");
         holder = new HashMap<>();
-        init();
+        init(1000, Integer.parseInt(url.getParameter("period")));
     }
 
     /**
      * 初始化
+     * 
+     * @param delay
+     * @param period
      */
-    protected void init() {
+    protected void init(long delay, long period) {
         final Timer timer = new Timer("zookeeper logger", true);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                for(Entry<String, Calculatable<?>> entry : holder.entrySet()) {
+                for (Entry<String, Calculatable<?>> entry : holder.entrySet()) {
                     String data = entry.getValue().calculate().toString();
-                    if(keeper.getState().isAlive()) {
+                    if (keeper.getState().isAlive()) {
                         ZooKeeperUtils.createNode(keeper, entry.getKey(), data, CreateMode.PERSISTENT_SEQUENTIAL);
                         LOGGER.info("Traffic(key={}) counts: {}", entry.getKey(), data);
                     } else {
@@ -52,7 +55,7 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
                     }
                 }
             }
-        }, 1000, 500);
+        }, delay, period);
     }
 
     @Override

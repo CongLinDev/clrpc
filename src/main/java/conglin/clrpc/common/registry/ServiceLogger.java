@@ -2,6 +2,9 @@ package conglin.clrpc.common.registry;
 
 import conglin.clrpc.common.Calculatable;
 
+/**
+ * 服务日志
+ */
 public interface ServiceLogger {
 
     /**

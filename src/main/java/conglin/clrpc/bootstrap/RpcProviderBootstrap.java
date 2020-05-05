@@ -44,10 +44,18 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     // 管理服务
     private final ProviderServiceHandler SERVICE_HANDLER;
 
+    /**
+     * @see #RpcProviderBootstrap(PropertyConfigurer)
+     */
     public RpcProviderBootstrap() {
         this(null);
     }
 
+    /**
+     * 创建 服务提供者 启动对象
+     * 
+     * @param configurer 配置器
+     */
     public RpcProviderBootstrap(PropertyConfigurer configurer) {
         super(configurer);
         SERVICE_HANDLER = new ProviderServiceHandler(configurer());
@@ -63,13 +71,8 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(Object serviceBean) {
-        Collection<String> superServiceNames = AnnotationParser.superServiceNames(serviceBean.getClass(),
-                SERVICE_HANDLER::publishServiceMetaInfo);
-        if (superServiceNames.isEmpty()) {
-            LOGGER.error("Please Add a service name for {} by @Service.", serviceBean.getClass());
-            throw new UnsupportedOperationException();
-        }
-        superServiceNames.forEach(serviceName -> {
+        Class<?> clazz = serviceBean.getClass();
+        doPublish(clazz).forEach(serviceName -> {
             SERVICE_HANDLER.publish(serviceName, serviceBean);
             LOGGER.info("Publish service named {} with bean.", serviceName);
         });
@@ -86,17 +89,27 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      */
     public RpcProviderBootstrap publishFactory(Supplier<?> serviceFactory) {
         Class<?> clazz = serviceFactory.get().getClass();
+        doPublish(clazz).forEach(serviceName -> {
+            SERVICE_HANDLER.publishFactory(serviceName, serviceFactory);
+            LOGGER.info("Publish service named {} with factory.", serviceName);
+        });
+        return this;
+    }
+
+    /**
+     * 发布服务具体方法
+     * 
+     * @param clazz
+     * @return 服务名列表
+     */
+    protected Collection<String> doPublish(Class<?> clazz) {
         Collection<String> superServiceNames = AnnotationParser.superServiceNames(clazz,
                 SERVICE_HANDLER::publishServiceMetaInfo);
         if (superServiceNames.isEmpty()) {
             LOGGER.error("Please Add a service name for {} by @Service.", clazz);
             throw new UnsupportedOperationException();
         }
-        superServiceNames.forEach(serviceName -> {
-            SERVICE_HANDLER.publishFactory(serviceName, serviceFactory);
-            LOGGER.info("Publish service named {} with factory.", serviceName);
-        });
-        return this;
+        return superServiceNames;
     }
 
     /**

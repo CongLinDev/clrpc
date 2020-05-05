@@ -7,6 +7,7 @@ import conglin.clrpc.transport.message.BasicRequest;
  *
  * 用于对负载均衡器的随机选择算法补充
  */
+@FunctionalInterface
 public interface ProviderChooserAdapter {
     /**
      * 自定义策略

@@ -14,21 +14,40 @@ public class BasicResponse extends Message {
     private final Object result;
     private boolean error;
 
+    /**
+     * 构造一个基本回复对象
+     * 
+     * @param messageId 消息ID
+     * @param error     是否错误
+     * @param result    结果对象
+     */
     public BasicResponse(Long messageId, boolean error, Object result) {
         super(messageId);
         this.error = error;
         this.result = result;
     }
 
+    /**
+     * 构造一个基本回复对象
+     * 
+     * @param messageId 消息ID
+     * @param result    结果对象
+     * 
+     * @see #BasicResponse(Long, boolean, Object)
+     */
     public BasicResponse(Long messageId, Object result) {
-        super(messageId);
-        this.result = result;
+        this(messageId, false, result);
     }
 
+    /**
+     * 构造一个基本回复对象
+     * 
+     * @param response
+     * 
+     * @see #BasicResponse(Long, boolean, Object)
+     */
     public BasicResponse(BasicResponse response) {
-        super(response);
-        this.result = response.result();
-        this.error = response.isError();
+        this(response.messageId(), response.isError(), response.result());
     }
 
     /**

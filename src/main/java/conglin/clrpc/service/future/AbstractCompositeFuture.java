@@ -81,8 +81,6 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
         for (RpcFuture f : futures) {
             if (f.isPending())
                 return false;
-            if (f.isFallback())
-                this.signFallback();
         }
         return true;
     }

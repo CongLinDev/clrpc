@@ -25,7 +25,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     public void begin(String path) throws TransactionException {
         String nodePath = rootPath + "/" + path;
         // 创建节点
-        if (ZooKeeperUtils.createNode(keeper, nodePath, PREPARE) == null)
+        if (ZooKeeperUtils.createNode(keeper, nodePath, TransactionState.PREPARE.toString()) == null)
             throw new TransactionException("Transaction begin failed. (path = " + nodePath + ")");
     }
 
@@ -33,7 +33,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     public void prepare(String path) throws TransactionException {
         String nodePath = rootPath + "/" + path;
         // 创建临时子节点
-        if (ZooKeeperUtils.createNode(keeper, nodePath, PREPARE) == null)
+        if (ZooKeeperUtils.createNode(keeper, nodePath, TransactionState.PREPARE.toString()) == null)
             throw new TransactionException("Transaction execute failed. (sub_path = " + nodePath + " )");
     }
 
@@ -56,22 +56,24 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
             String newState = ZooKeeperUtils.watchNode(keeper, subnodePath, null);
 
             if (Event.EventType.NodeDataChanged == event.getType()) {
-                if (COMMIT.equals(newState)) {
+                TransactionState state = TransactionState.valueOf(newState);
+                if (state == TransactionState.COMMIT) {
                     callback.success(null);
-                } else if (ABORT.equals(newState)) {
+                } else if (state == TransactionState.ABORT) {
                     callback.fail(null);
                 }
             }
         };
 
         String curState = ZooKeeperUtils.watchNode(keeper, subnodePath, watcher);
+        TransactionState state = TransactionState.valueOf(curState);
         if (curState == null)
             throw new TransactionException("Watch failed. (sub_path = " + path + ") ");
-        if (COMMIT.equals(curState)) { // 请求状态已经更改为 COMMIT
+        if (state == TransactionState.COMMIT) { // 请求状态已经更改为 COMMIT
             // 直接移除watch即可
             ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
             callback.success(null);
-        } else if (ABORT.equals(curState)) { // 请求状态已经更改为 ABORT
+        } else if (state == TransactionState.ABORT) { // 请求状态已经更改为 ABORT
             // 直接移除watch即可
             ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
             callback.fail(null);
@@ -80,7 +82,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
 
     @Override
     public void precommit(String path) throws TransactionException {
-        if (updateState(path, PRECOMMIT) == null) {
+        if (updateState(path, TransactionState.PRECOMMIT) == null) {
             throw new TransactionException("Precommit failed. (sub_path = " + path + ") ");
         }
     }
@@ -123,18 +125,21 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
             Watcher watcher = event -> {
                 String newState = ZooKeeperUtils.watchNode(keeper, subnodePath, null);
                 if (Event.EventType.NodeDataChanged == event.getType()) {
-                    if (PRECOMMIT.equals(newState)) {
+                    TransactionState state = TransactionState.valueOf(newState);
+                    if (state == TransactionState.PRECOMMIT) {
                         latch.countDown();
-                    } else if (ABORT.equals(newState)) {
+                    } else if (state == TransactionState.ABORT) {
                         latch.clear();
                     }
                 }
             };
+
             String curState = ZooKeeperUtils.watchNode(keeper, subnodePath, watcher);
-            if (PRECOMMIT.equals(curState)) {
+            TransactionState state = TransactionState.valueOf(curState);
+            if (state == TransactionState.PRECOMMIT) {
                 latch.countDown();
                 ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
-            } else if (ABORT.equals(curState)) {
+            } else if (state == TransactionState.ABORT) {
                 latch.clear();
                 ZooKeeperUtils.removeWatcher(keeper, subnodePath, watcher, WatcherType.Data);
             }
@@ -144,14 +149,14 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
 
     @Override
     public void abort(String path) throws TransactionException {
-        if (updateState(path, ABORT) == null) {
+        if (updateState(path, TransactionState.ABORT) == null) {
             throw new TransactionException("Abort failed. (sub_path = " + path + ") ");
         }
     }
 
     @Override
     public void commit(String path) throws TransactionException {
-        if (updateState(path, COMMIT) == null) {
+        if (updateState(path, TransactionState.COMMIT) == null) {
             throw new TransactionException("Commit failed. (sub_path = " + path + ") ");
         }
     }
@@ -162,7 +167,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
      * @param subPath
      * @param state
      */
-    protected String updateState(String subPath, String state) {
-        return ZooKeeperUtils.setNodeData(keeper, rootPath + "/" + subPath, state);
+    protected String updateState(String subPath, TransactionState state) {
+        return ZooKeeperUtils.setNodeData(keeper, rootPath + "/" + subPath, state.toString());
     }
 }

@@ -34,10 +34,22 @@ abstract public class Message implements Serializable {
 
     private final Long messageId;
 
+    /**
+     * 构造一个 Message 对象
+     * 
+     * @param messageId
+     */
     public Message(Long messageId) {
         this.messageId = messageId;
     }
 
+    /**
+     * 构造一个 Message 对象
+     * 
+     * @param message
+     * 
+     * @see #Message(Long)
+     */
     public Message(Message message) {
         this(message.messageId());
     }
@@ -47,7 +59,7 @@ abstract public class Message implements Serializable {
      * 
      * @return the messageId
      */
-    public Long messageId() {
+    final public Long messageId() {
         return messageId;
     }
 

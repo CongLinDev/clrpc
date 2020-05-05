@@ -18,6 +18,13 @@ public class BasicRequest extends Message {
     private final String methodName;
     private final Object[] parameters;
 
+    /**
+     * 构造基本请求对象
+     * 
+     * @param request
+     * 
+     * @see #BasicRequest(Long, String, String, Object[])
+     */
     public BasicRequest(BasicRequest request) {
         super(request);
         this.serviceName = request.serviceName();
@@ -25,6 +32,14 @@ public class BasicRequest extends Message {
         this.parameters = request.parameters();
     }
 
+    /**
+     * 构造基本请求对象
+     * 
+     * @param messageId   消息ID
+     * @param serviceName 服务名
+     * @param methodName  方法名
+     * @param parameters  参数
+     */
     public BasicRequest(Long messageId, String serviceName, String methodName, Object[] parameters) {
         super(messageId);
         this.serviceName = serviceName;
@@ -61,8 +76,8 @@ public class BasicRequest extends Message {
 
     @Override
     public String toString() {
-        return "BasicRequest [messageId=" + messageId() + ", serviceName=" + serviceName + ", methodName="
-                + methodName + ", parameters=" + Arrays.toString(parameters) + "]";
+        return "BasicRequest [messageId=" + messageId() + ", serviceName=" + serviceName + ", methodName=" + methodName
+                + ", parameters=" + Arrays.toString(parameters) + "]";
     }
 
     @Override

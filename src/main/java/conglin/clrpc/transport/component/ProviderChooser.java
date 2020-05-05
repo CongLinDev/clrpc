@@ -16,7 +16,7 @@ public interface ProviderChooser {
      * 指定条件挑选
      * 
      * @param serviceName
-     * @param key         指定的挑选条件
+     * @param addition         指定的挑选条件
      * @return
      */
     Channel choose(String serviceName, String addition);

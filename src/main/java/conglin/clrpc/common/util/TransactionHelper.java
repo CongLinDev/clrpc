@@ -6,14 +6,19 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.TransactionException;
 
 public interface TransactionHelper {
-    // 事务状态
-    String PREPARE = "PREPARE"; // 准备
-    String PRECOMMIT = "PRECOMMIT"; // 预提交
-    String COMMIT = "COMMIT"; // 提交
-    String ABORT = "ABORT"; // 中止
 
     /**
-     * 在原子服务上注册一个 事务ID 的节点 该节点的值设为 {@link #PREPARE}
+     * 事务状态
+     */
+    enum TransactionState {
+        PREPARE, // 准备
+        PRECOMMIT, // 预提交
+        COMMIT, // 提交
+        ABORT; // 中止
+    }
+
+    /**
+     * 在原子服务上注册一个 事务ID 的节点 该节点的值设为 {@link TransactionState#PREPARE}
      * 
      * @param transactionId
      * @throws TransactionException
@@ -23,7 +28,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 在原子服务上注册一个 {@code subPath} 的节点 该节点的值设为 {@link #PREPARE}
+     * 在原子服务上注册一个 {@code subPath} 的节点 该节点的值设为 {@link TransactionState#PREPARE}
      * 
      * @param path
      * @throws TransactionException
@@ -33,7 +38,7 @@ public interface TransactionHelper {
     /**
      * 在原子服务上的 事务ID 的节点上创建 子节点
      * 
-     * 该节点的值设为 {@link #PREPARE}
+     * 该节点的值设为 {@link TransactionState#PREPARE}
      * 
      * @param transactionId
      * @param serialId
@@ -44,7 +49,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 该节点的值为 {@link #PREPARE}
+     * 该节点的值为 {@link TransactionState#PREPARE}
      * 
      * @param path
      * @throws TransactionException
@@ -116,8 +121,8 @@ public interface TransactionHelper {
     /**
      * 监视提交（非阻塞方法） 监视原子服务的 事务ID 的节点上的值
      * 
-     * 若改变为 {@link #COMMIT} 则执行 {@link Callback#success(Object)} 方法 若改变为
-     * {@link #ABORT} 则执行 {@link Callback#fail(Exception)} 方法
+     * 若改变为 {@link TransactionState#COMMIT} 则执行 {@link Callback#success(Object)} 方法
+     * 若改变为 {@link TransactionState#ABORT} 则执行 {@link Callback#fail(Exception)} 方法
      * 
      * @param transactionId
      * @param callback      回调对象
@@ -130,8 +135,8 @@ public interface TransactionHelper {
     /**
      * 监视提交（非阻塞方法） 监视原子服务的 事务ID 节点上 临时子节点的值
      * 
-     * 若改变为 {@link #COMMIT} 则执行 {@link Callback#success(Object)} 方法 若改变为
-     * {@link #ABORT} 则执行 {@link Callback#fail(Exception)} 方法
+     * 若改变为 {@link TransactionState#COMMIT} 则执行 {@link Callback#success(Object)} 方法
+     * 若改变为 {@link TransactionState#ABORT} 则执行 {@link Callback#fail(Exception)} 方法
      * 
      * 若 {@code serialId} 为 0 则调用 {@link #watch(long, Callback)} 方法
      * 
@@ -151,8 +156,8 @@ public interface TransactionHelper {
     /**
      * 监视提交（非阻塞方法） 监视原子服务的 {@code path} 的节点上的值
      * 
-     * 若改变为 {@link #COMMIT} 则执行 {@link Callback#success(Object)} 方法 若改变为
-     * {@link #ABORT} 则执行 {@link Callback#fail(Exception)} 方法
+     * 若改变为 {@link TransactionState#COMMIT} 则执行 {@link Callback#success(Object)} 方法
+     * 若改变为 {@link TransactionState#ABORT} 则执行 {@link Callback#fail(Exception)} 方法
      * 
      * @param path
      * @param callback 回调对象
@@ -161,7 +166,7 @@ public interface TransactionHelper {
     void watch(String path, Callback callback) throws TransactionException;
 
     /**
-     * 中止 修改原子服务上的 事务ID 的节点值修改为 {@link #ABORT}
+     * 中止 修改原子服务上的 事务ID 的节点值修改为 {@link TransactionState#ABORT}
      * 
      * @param transactionId
      * @throws TransactionException
@@ -171,7 +176,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 中止 修改原子服务上的 事务ID 的临时子节点值修改为 {@link #ABORT}
+     * 中止 修改原子服务上的 事务ID 的临时子节点值修改为 {@link TransactionState#ABORT}
      * 
      * @param transactionId
      * @param serialId
@@ -182,7 +187,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 中止 修改原子服务上的 {@code path} 的节点值修改为 {@link #ABORT}
+     * 中止 修改原子服务上的 {@code path} 的节点值修改为 {@link TransactionState#ABORT}
      * 
      * @param path
      * @throws TransactionException
@@ -190,7 +195,7 @@ public interface TransactionHelper {
     void abort(String path) throws TransactionException;
 
     /**
-     * 预提交 修改原子服务上的 {@code path} 的节点值修改为 {@link #PRECOMMIT}
+     * 预提交 修改原子服务上的 {@code path} 的节点值修改为 {@link TransactionState#PRECOMMIT}
      * 
      * @param transactionId
      * @param serialId
@@ -201,7 +206,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 预提交 修改原子服务上的 {@code path} 的节点值修改为 {@link #PRECOMMIT}
+     * 预提交 修改原子服务上的 {@code path} 的节点值修改为 {@link TransactionState#PRECOMMIT}
      * 
      * @param path
      * @throws TransactionException
@@ -211,7 +216,8 @@ public interface TransactionHelper {
     /**
      * 检查子节点是否准备好
      * 
-     * 若均为 {@link #PRECOMMIT} 则返回 {@code true} 若存在 {@link #ABORT} 则返回 {@code false}
+     * 若均为 {@link TransactionState#PRECOMMIT} 则返回 {@code true} 若存在
+     * {@link TransactionState#ABORT} 则返回 {@code false}
      * 
      * 若不满足上述两种情况，则一直阻塞
      * 
@@ -226,7 +232,8 @@ public interface TransactionHelper {
     /**
      * 检查子节点是否准备好
      * 
-     * 若均为 {@link #PRECOMMIT} 则返回 {@code true} 若存在 {@link #ABORT} 则返回 {@code false}
+     * 若均为 {@link TransactionState#PRECOMMIT} 则返回 {@code true} 若存在
+     * {@link TransactionState#ABORT} 则返回 {@code false}
      * 
      * 若不满足上述两种情况，则一直阻塞
      * 
@@ -239,7 +246,8 @@ public interface TransactionHelper {
     /**
      * 检查子节点是否准备好
      * 
-     * 若均为 {@link #PRECOMMIT} 则返回 {@code true} 若存在 {@link #ABORT} 则返回 {@code false}
+     * 若均为 {@link TransactionState#PRECOMMIT} 则返回 {@code true} 若存在
+     * {@link TransactionState#ABORT} 则返回 {@code false}
      * 
      * 若不满足上述两种情况，则一直阻塞直到超时
      * 
@@ -256,7 +264,8 @@ public interface TransactionHelper {
     /**
      * 检查子节点是否准备好
      * 
-     * 若均为 {@link #PRECOMMIT} 则返回 {@code true} 若存在 {@link #ABORT} 则返回 {@code false}
+     * 若均为 {@link TransactionState#PRECOMMIT} 则返回 {@code true} 若存在
+     * {@link TransactionState#ABORT} 则返回 {@code false}
      * 
      * 若不满足上述两种情况，则一直阻塞直到超时
      * 
@@ -269,7 +278,7 @@ public interface TransactionHelper {
     boolean check(String path, long timeout, TimeUnit unit) throws TransactionException;
 
     /**
-     * 提交 修改原子服务上的 事务ID 的节点值修改为 {@link #COMMIT}
+     * 提交 修改原子服务上的 事务ID 的节点值修改为 {@link TransactionState#COMMIT}
      * 
      * @param transactionId
      * @throws TransactionException
@@ -279,7 +288,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 提交 修改原子服务上的 事务ID 的临时子节点值修改为 {@link #COMMIT}
+     * 提交 修改原子服务上的 事务ID 的临时子节点值修改为 {@link TransactionState#COMMIT}
      * 
      * @param transactionId
      * @param serialId
@@ -290,7 +299,7 @@ public interface TransactionHelper {
     }
 
     /**
-     * 提交 修改原子服务上的 {@code subPath} 的节点值修改为 {@link #DONE}
+     * 提交 修改原子服务上的 {@code subPath} 的节点值修改为 {@link TransactionState#COMMIT}
      * 
      * @param subPath
      * @throws TransactionException

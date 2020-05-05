@@ -13,6 +13,8 @@ import conglin.clrpc.transport.message.SystemMessage;
 import conglin.clrpc.transport.message.TransactionRequest;
 
 /**
+ * 全局的消息类型管理器
+ * 
  * 使用数组的下标和数组来控制消息的类型
  */
 public class GlobalMessageManager {

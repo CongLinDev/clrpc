@@ -13,7 +13,7 @@ import conglin.clrpc.common.CallbackFunction;
  * 
  * 对于事务需要提交或回滚时，调用 {@link CallbackFunction#apply(Boolean)}
  * 
- * 提交的参数为 {@code ture} 回滚的参数为 {@code false}
+ * 提交的参数为 {@code true} 回滚的参数为 {@code false}
  */
 
 @Documented

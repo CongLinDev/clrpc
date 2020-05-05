@@ -7,12 +7,14 @@ public interface IdentifierGenerator {
 
     /**
      * 生成一个标识符
+     * 
      * @return
      */
     long generate();
 
     /**
-     * 根据key生成一个标识符
+     * 根据 {@code key} 生成一个标识符
+     * 
      * @param key
      * @return
      */

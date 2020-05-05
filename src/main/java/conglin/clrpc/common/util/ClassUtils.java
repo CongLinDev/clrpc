@@ -61,6 +61,8 @@ public final class ClassUtils {
      * @param qualifiedClassName
      * @param args
      * @return
+     * 
+     * @see #loadClassObject(String, Class, Object...)
      */
     public static Object loadClassObject(String qualifiedClassName, Object... args) {
         return loadClassObject(qualifiedClassName, Object.class, args);
@@ -192,7 +194,7 @@ public final class ClassUtils {
      * 
      * @param <T>
      * @param interfaceClass
-     * @return
+     * @return proxy
      */
     @SuppressWarnings("unchecked")
     public static <T> T defaultObject(Class<T> interfaceClass) {

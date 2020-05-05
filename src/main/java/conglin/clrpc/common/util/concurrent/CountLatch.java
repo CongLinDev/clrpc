@@ -3,6 +3,9 @@ package conglin.clrpc.common.util.concurrent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
+/**
+ * {@link java.util.concurrent.CountDownLatch} 的增强实现
+ */
 public class CountLatch {
 
     private static final class Sync extends AbstractQueuedSynchronizer {
@@ -70,14 +73,16 @@ public class CountLatch {
     }
 
     /**
-     * 减一
+     * 减 {@code 1}
+     * 
+     * @see #countDown(int)
      */
     public void countDown() {
         countDown(1);
     }
 
     /**
-     * 减
+     * 减 {@code count}
      * 
      * @param count
      */
@@ -86,14 +91,16 @@ public class CountLatch {
     }
 
     /**
-     * 加一
+     * 加 {@code 1}
+     * 
+     * @see #countUp(int)
      */
     public void countUp() {
         countUp(1);
     }
 
     /**
-     * 加
+     * 加 {@code count}
      * 
      * @param count
      */
@@ -110,7 +117,7 @@ public class CountLatch {
         return sync.getCount();
     }
 
-    private boolean isClear;
+    private boolean isClear; // 记录是否是被强制清空
 
     /**
      * 清空数字

@@ -18,7 +18,7 @@ public class AnnotationParser {
     }
 
     /**
-     * 解析注解 {@code Service} 返回服务类的注解服务名
+     * 解析注解 {@link Service} 返回服务类的注解服务名
      * 
      * @param clazz
      * @return
@@ -31,7 +31,7 @@ public class AnnotationParser {
     }
 
     /**
-     * 解析注解 {@code Service} 获取父接口的注解服务名
+     * 解析注解 {@link Service} 获取父接口的注解服务名
      * 
      * 该方法只返回上一级接口的服务名 而不是所有接口的服务名
      * 
@@ -44,7 +44,7 @@ public class AnnotationParser {
     }
 
     /**
-     * 解析注解 {@code Service} 获取父接口的注解服务名
+     * 解析注解 {@link Service} 获取父接口的注解服务名
      * 
      * 该方法只返回上一级接口的服务名 而不是所有接口的服务名
      * 
@@ -65,7 +65,7 @@ public class AnnotationParser {
     }
 
     /**
-     * 解析注解 {@code Fallback} 标记的工厂
+     * 解析注解 {@link Fallback} 标记的工厂
      * 
      * @param clazz
      * @return
@@ -78,7 +78,7 @@ public class AnnotationParser {
     }
 
     /**
-     * 是否是事务方法
+     * 解析注解 {@link Transaction} 是否是事务方法
      * 
      * @param method
      * @return
@@ -89,7 +89,7 @@ public class AnnotationParser {
     }
 
     /**
-     * 寻找事务预提交方法
+     * 解析注解 {@link Transaction} 寻找事务预提交方法
      * 
      * @param method
      * @return

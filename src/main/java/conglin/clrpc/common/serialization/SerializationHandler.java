@@ -28,7 +28,7 @@ public interface SerializationHandler {
      * 
      * @param <T>
      * @param clazz
-     * @param data 
+     * @param data
      * @param offset 起始位置偏移量
      * @param length 长度
      * @return

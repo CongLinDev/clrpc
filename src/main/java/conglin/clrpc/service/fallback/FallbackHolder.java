@@ -1,5 +1,8 @@
 package conglin.clrpc.service.fallback;
 
+/**
+ * Fallback 对象的持有器
+ */
 public interface FallbackHolder {
 
     /**

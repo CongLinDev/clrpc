@@ -6,6 +6,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * url 对象
+ * 
+ * 用于解析 url 各种参数，但不加以判断是否对错
+ */
 final public class Url {
 
     private static final Pattern pattern = Pattern.compile("(\\S+)://(\\S+):(\\d+)(\\S*)(?:\\?)(\\S+)");
@@ -25,7 +30,7 @@ final public class Url {
     private final Map<String, String> parameters;
 
     public Url(String url) {
-        if(url == null) {
+        if (url == null) {
             throw new IllegalArgumentException("Url can not be null");
         }
 

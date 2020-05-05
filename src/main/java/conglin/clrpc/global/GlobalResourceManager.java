@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import conglin.clrpc.zookeeper.util.ZooKeeperUtils;
 
 /**
+ * 全局的资源管理器
+ * 
  * clrpc 为了性能选择复用部分资源 全局资源管理器使用计数标记的方法管理资源
  * 
  * 若你想使用这些资源，请在使用前调用 {@link GlobalResourceManager#acquire()} 方法

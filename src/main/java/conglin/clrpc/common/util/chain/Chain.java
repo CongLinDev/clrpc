@@ -3,6 +3,9 @@ package conglin.clrpc.common.util.chain;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * 用于替代 {@link java.util.LinkedList} 的简单单向链表
+ */
 public interface Chain<T> {
 
     /**

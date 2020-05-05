@@ -1,5 +1,8 @@
 package conglin.clrpc.global.role;
 
+/**
+ * rpc的角色
+ */
 public enum Role {
     CONSUMER("consumer"), PROVIDER("provider"), UNKNOWN("unknown");
 

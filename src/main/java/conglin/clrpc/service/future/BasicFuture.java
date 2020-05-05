@@ -10,6 +10,8 @@ public class BasicFuture extends AbstractFuture {
     private final BasicRequest request;
     private BasicResponse response;
 
+    private boolean fallback; // 是否是 fallback产生的结果，只有在该future已经完成的情况下，该变量才有效
+
     public BasicFuture(BasicRequest request) {
         super();
         this.request = request;
@@ -29,13 +31,34 @@ public class BasicFuture extends AbstractFuture {
     public long identifier() {
         return request.messageId();
     }
+    
+    /**
+     * 是否是 Fallback 机制产生的结果
+     * 
+     * 如果返回值为 {@code true} 则调用 {@link RpcFuture#isDone()} 返回值一定为 {@code true} 
+     * 
+     * @return
+     */
+    public final boolean isFallback() {
+        return fallback;
+    }
+
+    /**
+     * 确认该 {@code RpcFuture} 由fallback机制完成
+     * 
+     * @param result
+     */
+    public void fallback(Object result) {
+        fallback = true;
+        done(result);
+    }
 
     /**
      * 获得与该 RpcFuture 相关联的 BasicRequest
      * 
      * @return
      */
-    public BasicRequest request() {
+    public final BasicRequest request() {
         return this.request;
     }
 
@@ -44,7 +67,7 @@ public class BasicFuture extends AbstractFuture {
      * 
      * @return
      */
-    public BasicResponse response() {
+    public final BasicResponse response() {
         return this.response;
     }
 

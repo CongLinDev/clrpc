@@ -128,8 +128,7 @@ public class DefaultRequestSender implements RequestSender {
                                 LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.messageId(), e.getCause());
                                 fallbackResponse = new BasicResponse(r.messageId(), true, e);
                             }
-                            f.signFallback();
-                            f.done(fallbackResponse);
+                            f.fallback(fallbackResponse);
                         } else {
                             resendRequest(r);
                             LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",

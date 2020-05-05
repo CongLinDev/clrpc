@@ -1,5 +1,11 @@
 package conglin.clrpc.common;
 
+/**
+ * 对象对
+ * 
+ * @param <P>
+ * @param <Q>
+ */
 public class Pair<P, Q> {
     private final P p;
     private final Q q;

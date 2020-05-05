@@ -1,7 +1,7 @@
 {
     "registry": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
     "atomicity": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
-    "logger": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
+    "logger": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000&period=1000",
 
     "meta.provider.*": {},
     "meta.consumer.*": {},

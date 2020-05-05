@@ -24,17 +24,33 @@ public interface ChannelHandlerFactory {
      */
     static ChannelHandlerFactory newFactory(String qualifiedClassName, CommonChannelContext context) {
         if (qualifiedClassName == null)
-            return new ChannelHandlerFactory(){};
+            return new ChannelHandlerFactory() {
+            };
 
         try {
             Class<? extends ChannelHandlerFactory> clazz = Class.forName(qualifiedClassName)
-                .asSubclass(ChannelHandlerFactory.class);
-            Constructor<? extends ChannelHandlerFactory> constructor = clazz.getConstructor(CommonChannelContext.class);
-            constructor.setAccessible(true);
-            return constructor.newInstance(context);
+                    .asSubclass(ChannelHandlerFactory.class);
+
+            Constructor<?> constructor = null, baseConstructor = null;
+
+            for (Constructor<?> c : clazz.getConstructors()) {
+                Class<?>[] types = c.getParameterTypes();
+                if (types.length == 1) {
+                    if (types[0] == context.getClass()) {
+                        constructor = c;
+                    } else if (types[0] == CommonChannelContext.class) {
+                        baseConstructor = c;
+                    }
+                }
+            }
+
+            return (ChannelHandlerFactory) (constructor != null ? constructor.newInstance(context)
+                    : baseConstructor.newInstance(context));
+
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            return new ChannelHandlerFactory(){};
+                | InvocationTargetException | SecurityException | NullPointerException e) {
+            return new ChannelHandlerFactory() {
+            };
         }
     }
 

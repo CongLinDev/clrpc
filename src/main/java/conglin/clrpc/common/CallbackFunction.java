@@ -2,6 +2,10 @@ package conglin.clrpc.common;
 
 import java.util.function.Function;
 
+/**
+ * 回调函数对象
+ */
+@FunctionalInterface
 public interface CallbackFunction extends Function<Boolean, Object> {
 
     /**

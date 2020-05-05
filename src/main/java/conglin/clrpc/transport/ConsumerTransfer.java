@@ -39,7 +39,7 @@ public class ConsumerTransfer {
 
     private ConsumerContext context;
 
-    private LoadBalancer<String, String, Channel> loadBalancer;
+    private final LoadBalancer<String, String, Channel> loadBalancer;
 
     public ConsumerTransfer() {
         loadBalancer = new ConsistentHashLoadBalancer<>(this::connectProviderNode, this::disconnectProviderNode);
@@ -127,9 +127,9 @@ public class ConsumerTransfer {
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
                 String localAddress = IPAddressUtils
                         .addressString((InetSocketAddress) channelFuture.channel().localAddress());
-                LOGGER.info("Consumer starts on {}", localAddress);
                 context.getServiceRegister().register(serviceName, localAddress, context.getPropertyConfigurer()
                         .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString());
+                LOGGER.info("Consumer starts on {}", localAddress);
                 return channelFuture.channel();
             } else {
                 LOGGER.error("Provider starts failed");

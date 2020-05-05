@@ -22,7 +22,7 @@ public class TrafficChannelHandlerFactory implements ChannelHandlerFactory {
 
     @Override
     public Collection<ChannelHandler> beforeCodec() {
-        return Arrays.asList( new GlobalTrafficChannelHandler(context));
+        return Arrays.asList(new GlobalTrafficChannelHandler(context));
     }
 
 }

@@ -1,5 +1,8 @@
 package conglin.clrpc.common.util.chain;
 
+/**
+ * {@link conglin.clrpc.common.util.chain.Chain} 的简单实现
+ */
 public class CommonChain<T> implements Chain<T> {
 
     private T value;

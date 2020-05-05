@@ -5,7 +5,7 @@ import java.util.Map;
 public final class EmptyPropertyConfigurer implements PropertyConfigurer {
 
     /**
-     * 一个空的属性配置器
+     * 一个空的不可变的属性配置器
      * 
      * @return
      */

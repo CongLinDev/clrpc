@@ -20,7 +20,7 @@ import conglin.clrpc.test.service.UserService;
 public class ConsumerTest {
 
     public static void main(String[] args) {
-        echoServiceAsyncTimeTest();
+        echoServiceDemoTest();
     }
 
     protected static void echoServiceAsyncTimeTest() {
@@ -28,13 +28,13 @@ public class ConsumerTest {
         bootstrap.start();
         EchoService echoService = bootstrap.refreshAndSubscribeAsync(EchoService.class);
         final long begin = System.currentTimeMillis();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10_0000; i++) {
             echoService.echoNull();
             // echoService.echoPOJO(new User(Long.MAX_VALUE, "conglin"));
             // echoService.echoBytes(new byte[1000]);
         }
 
-        AsyncObjectProxy.lastFuture().callback(()->{
+        AsyncObjectProxy.lastFuture().callback(() -> {
             final long end = System.currentTimeMillis();
             final long time = end - begin;
             System.out.println("waste time: " + time);
@@ -42,6 +42,24 @@ public class ConsumerTest {
         });
 
         bootstrap.stop();
+    }
+
+    protected static void echoServiceDemoTest() {
+        RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
+        bootstrap.hookStop().start();
+        EchoService echoService = bootstrap.refreshAndSubscribeAsync(EchoService.class);
+
+        while(true) {
+            for (int i = 0; i < 1_0000; i++) {
+                echoService.echoNull();
+            }
+
+            try {
+                Thread.sleep(2000);
+            }catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     protected static void helloServiceSyncTest() {
