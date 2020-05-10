@@ -1,6 +1,7 @@
 package conglin.clrpc.service.future;
 
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import conglin.clrpc.common.Callback;
 
@@ -27,6 +28,16 @@ public interface RpcFuture extends Future<Object> {
      */
     default RpcFuture callback(Runnable task) {
         return callback(Callback.convert(task));
+    }
+
+    /**
+     * 添加通用的回调
+     * 
+     * @param any
+     * @return this
+     */
+    default RpcFuture callback(Consumer<Object> any) {
+        return callback(Callback.convert(any));
     }
 
     /**

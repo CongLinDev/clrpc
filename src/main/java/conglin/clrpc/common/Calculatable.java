@@ -1,4 +1,4 @@
-﻿package conglin.clrpc.common;
+package conglin.clrpc.common;
 
 @FunctionalInterface
 public interface Calculatable<R> {

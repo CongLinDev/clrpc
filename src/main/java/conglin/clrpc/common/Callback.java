@@ -92,6 +92,26 @@ public interface Callback {
     /**
      * 转换对象
      * 
+     * @param any
+     * @return
+     */
+    static Callback convert(Consumer<Object> any) {
+        return new Callback() {
+            @Override
+            public void success(Object result) {
+                any.accept(result);
+            }
+
+            @Override
+            public void fail(Exception exception) {
+                any.accept(exception);
+            }
+        };
+    }
+
+    /**
+     * 转换对象
+     * 
      * @param success
      * @return
      */
