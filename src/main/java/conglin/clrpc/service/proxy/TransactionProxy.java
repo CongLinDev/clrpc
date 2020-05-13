@@ -6,7 +6,7 @@ import conglin.clrpc.common.exception.TransactionException;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.TransactionRequest;
 
-public interface TransactionProxy {
+public interface TransactionProxy extends RpcProxy {
 
     /**
      * 开始一个事务，默认非顺序执行

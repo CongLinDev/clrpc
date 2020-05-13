@@ -4,7 +4,7 @@ import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 
-public class CommonProxy {
+public class CommonProxy implements RpcProxy {
 
     // 发送器
     private final RequestSender sender;
