@@ -99,8 +99,8 @@ public class AnnotationParser {
 
         try {
             if (transaction != null) {
-                Class<?> clazz = method.getClass();
-                return clazz.getMethod(transaction.precommit(), method.getParameterTypes());
+                Class<?> clazz = method.getDeclaringClass();
+                return clazz.getDeclaredMethod(transaction.precommit(), method.getParameterTypes());
             }
         } catch (NoSuchMethodException e) {
             // do nothing

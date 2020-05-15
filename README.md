@@ -8,7 +8,7 @@
 
 当前阶段均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
 
-你可以使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地进行使用。
+你可以进入 [Release页面](https://github.com/CongLinDev/clrpc/releases/latest) 下载jar包使用，或是使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地。
 
 ## Usage
 
