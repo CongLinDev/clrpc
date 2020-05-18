@@ -43,7 +43,8 @@ class HelloServiceImpl implements HelloService {
 RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
 // 发布服务并开启服务
-bootstrap.publish(new HelloServiceImpl())
+bootstrap.publish(new HelloServiceImpl()) // 发布享元模式的服务对象
+//      .publishFactory(HelloServiceImpl::new) // 发布原型模式的服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start();
 ```

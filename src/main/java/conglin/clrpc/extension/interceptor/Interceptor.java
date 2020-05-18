@@ -21,7 +21,7 @@ abstract public class Interceptor extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (match(msg)) {
-
+            outbound(msg);
         } else {
             super.write(ctx, msg, promise);
         }

@@ -25,7 +25,9 @@ import io.netty.bootstrap.ServerBootstrap;
  * <pre>
  * 
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
- * bootstrap.publish(new ServiceBean()).hookStop().start();
+ * bootstrap.publish(new ServiceImpl1())
+ *          .publishFactory(ServiceImpl2::new)
+ *          .hookStop().start();
  * 
  * </pre>
  * 
