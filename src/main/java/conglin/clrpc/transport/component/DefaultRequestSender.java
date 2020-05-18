@@ -113,8 +113,8 @@ public class DefaultRequestSender implements RequestSender {
                         continue;
                     }
 
-                    int retryTimes = f.retryTimes();
-                    if (f.timeout(INITIAL_THRESHOLD << retryTimes) && f.retry()) {
+                    int retryTimes = f.retryTimes() + 1;
+                    if (f.timeout(INITIAL_THRESHOLD << (retryTimes - 1)) && f.retry()) {
                         BasicRequest r = f.request();
                         if (fallbackHolder.needFallback(retryTimes)) {
                             iterator.remove();

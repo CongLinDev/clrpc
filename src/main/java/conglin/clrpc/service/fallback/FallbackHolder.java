@@ -10,9 +10,8 @@ public interface FallbackHolder {
      * 
      * @param key
      * @param interfaceClass
-     * @return
      */
-    boolean add(String key, Class<?> interfaceClass);
+    void add(String key, Class<?> interfaceClass);
 
     /**
      * 调用 Fallback

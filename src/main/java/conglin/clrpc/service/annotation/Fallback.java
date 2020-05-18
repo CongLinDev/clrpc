@@ -6,14 +6,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import conglin.clrpc.service.fallback.DefaultFallbackFactory;
-import conglin.clrpc.service.fallback.FallbackFactory;
-
 /**
  * 该注解标记于服务接口上 用于声明 fallback 功能
  * 
- * {@link Fallback#factory()} 标记产生 Fallback 对象的工厂类，该类应当实现
- * {@link conglin.clrpc.service.fallback.FallbackFactory} 接口，并提供一个无参构造方法
+ * {@link Fallback#value()} Fallback 的 class 全限定名，要求该 class 需要提供一个无参构造方法
  */
 
 @Documented
@@ -22,9 +18,9 @@ import conglin.clrpc.service.fallback.FallbackFactory;
 public @interface Fallback {
 
     /**
-     * 创建 fallback 的工厂类
+     * Fallback 的 class 全限定名
      * 
-     * @return
+     * 要求该 class 需要提供一个无参构造方法
      */
-    Class<? extends FallbackFactory> factory() default DefaultFallbackFactory.class;
+    String value();
 }

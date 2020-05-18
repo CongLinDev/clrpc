@@ -1,6 +1,5 @@
 package conglin.clrpc.service.fallback;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,19 +30,19 @@ public class DefaultFallbackHolder implements FallbackHolder {
     }
 
     @Override
-    public boolean add(String key, Class<?> interfaceClass) {
+    public void add(String key, Class<?> interfaceClass) {
         if (!enable())
-            return true;
-        Class<? extends FallbackFactory> factoryClass = AnnotationParser.resolveFallbackFactory(interfaceClass);
+            return;
 
-        try {
-            Object fallbackObject = factoryClass.getDeclaredConstructor().newInstance().create(interfaceClass);
-            holder.put(key, fallbackObject);
-            return true;
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            LOGGER.error("Add fallback {} failed. Cause: {}", key, e);
-            return false;
+        String fallbackClassName = AnnotationParser.resolveFallback(interfaceClass);
+        Object fallback = ClassUtils.loadClassObjectByType(fallbackClassName, interfaceClass);
+
+        if(fallback == null) {
+            LOGGER.warn("Find service={} class={} fallback's no-param constructor failed.", key, fallbackClassName);
+            holder.put(key, ClassUtils.defaultObject(interfaceClass));
+        } else {
+            LOGGER.warn("Add service={} class={} fallback.", key, fallbackClassName);
+            holder.put(key, fallback);
         }
     }
 

@@ -65,7 +65,7 @@ public final class ClassUtils {
      * @see #loadClassObject(String, Class, Object...)
      */
     public static Object loadClassObject(String qualifiedClassName, Object... args) {
-        return loadClassObject(qualifiedClassName, Object.class, args);
+        return loadClassObjectByType(qualifiedClassName, Object.class, args);
     }
 
     /**
@@ -77,7 +77,7 @@ public final class ClassUtils {
      * @param args
      * @return
      */
-    public static <T> T loadClassObject(String qualifiedClassName, Class<T> superClass, Object... args) {
+    public static <T> T loadClassObjectByType(String qualifiedClassName, Class<T> superClass, Object... args) {
         if (qualifiedClassName == null)
             return null;
         try {

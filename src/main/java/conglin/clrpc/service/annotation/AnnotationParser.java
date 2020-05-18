@@ -9,8 +9,6 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import conglin.clrpc.service.fallback.FallbackFactory;
-
 public class AnnotationParser {
 
     private AnnotationParser() {
@@ -65,16 +63,16 @@ public class AnnotationParser {
     }
 
     /**
-     * 解析注解 {@link Fallback} 标记的工厂
+     * 解析注解 {@link Fallback} 标记
      * 
      * @param clazz
      * @return
      */
-    public static Class<? extends FallbackFactory> resolveFallbackFactory(Class<?> clazz) {
+    public static String resolveFallback(Class<?> clazz) {
         Fallback fallback = clazz.getAnnotation(Fallback.class);
         if (fallback == null)
             return null;
-        return fallback.factory();
+        return fallback.value();
     }
 
     /**
