@@ -62,10 +62,23 @@ public final class ClassUtils {
      * @param args
      * @return
      * 
-     * @see #loadClassObject(String, Class, Object...)
+     * @see #loadObject(String, Class, Object...)
      */
-    public static Object loadClassObject(String qualifiedClassName, Object... args) {
-        return loadClassObjectByType(qualifiedClassName, Object.class, args);
+    public static Object loadObject(String qualifiedClassName, Object... args) {
+        return loadObjectByType(qualifiedClassName, Object.class, args);
+    }
+
+    /**
+     * 反射加载给定全限定类名下的类
+     * 
+     * @param qualifiedClassName
+     * @param args
+     * @return
+     * 
+     * @see #loadObject(Class, Class, Object...)
+     */
+    public static Object loadObject(Class<?> targetClass, Object... args) {
+        return loadObjectByType(targetClass, Object.class, args);
     }
 
     /**
@@ -77,17 +90,37 @@ public final class ClassUtils {
      * @param args
      * @return
      */
-    public static <T> T loadClassObjectByType(String qualifiedClassName, Class<T> superClass, Object... args) {
+    public static <T> T loadObjectByType(String qualifiedClassName, Class<T> superClass, Object... args) {
         if (qualifiedClassName == null)
             return null;
         try {
-            Class<? extends T> clazz = Class.forName(qualifiedClassName).asSubclass(superClass);
-            Constructor<? extends T> constructor = clazz.getConstructor(getClasses(args));
+            return loadObjectByType(Class.forName(qualifiedClassName), superClass, args);
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("Load class {} error. Cause: {}", qualifiedClassName, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * 反射加载指定类型的全限定类名下的类
+     * 
+     * @param <T>
+     * @param targetClass
+     * @param superClass
+     * @param args
+     * @return
+     */
+    public static <T> T loadObjectByType(Class<?> targetClass, Class<T> superClass, Object... args) {
+        try {
+            Class<? extends T> clazz = targetClass.asSubclass(superClass);
+            Constructor<? extends T> constructor = clazz.getDeclaredConstructor(getClasses(args));
             constructor.setAccessible(true);
             return constructor.newInstance(args);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            LOGGER.error("Load class {} error. Cause: {}", qualifiedClassName, e.getMessage());
+            LOGGER.error("Load class {} error. Cause: {}", targetClass, e.getMessage());
+        } catch (ClassCastException e) {
+            LOGGER.error("Class({}) is not match class({})", targetClass, superClass);
         }
         return null;
     }

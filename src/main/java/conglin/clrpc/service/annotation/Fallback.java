@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * 该注解标记于服务接口上 用于声明 fallback 功能
  * 
- * {@link Fallback#value()} Fallback 的 class 全限定名，要求该 class 需要提供一个无参构造方法
+ * {@link Fallback#value()} Fallback 的 class，要求该 class 需要提供一个无参构造方法
  */
 
 @Documented
@@ -18,9 +18,9 @@ import java.lang.annotation.Target;
 public @interface Fallback {
 
     /**
-     * Fallback 的 class 全限定名
+     * Fallback 的 class
      * 
      * 要求该 class 需要提供一个无参构造方法
      */
-    String value();
+    Class<?> value();
 }

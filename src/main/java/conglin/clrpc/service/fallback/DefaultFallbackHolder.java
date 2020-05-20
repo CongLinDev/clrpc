@@ -34,14 +34,14 @@ public class DefaultFallbackHolder implements FallbackHolder {
         if (!enable())
             return;
 
-        String fallbackClassName = AnnotationParser.resolveFallback(interfaceClass);
-        Object fallback = ClassUtils.loadClassObjectByType(fallbackClassName, interfaceClass);
+        Class<?> fallbackClass = AnnotationParser.resolveFallback(interfaceClass);
+        Object fallback = ClassUtils.loadObjectByType(fallbackClass, interfaceClass);
 
         if(fallback == null) {
-            LOGGER.warn("Find service={} class={} fallback's no-param constructor failed.", key, fallbackClassName);
+            LOGGER.warn("Construct fallback for {} failed. Use default fallback.", key);
             holder.put(key, ClassUtils.defaultObject(interfaceClass));
         } else {
-            LOGGER.warn("Add service={} class={} fallback.", key, fallbackClassName);
+            LOGGER.warn("Add fallback({}) for {}.", fallbackClass, key);
             holder.put(key, fallback);
         }
     }

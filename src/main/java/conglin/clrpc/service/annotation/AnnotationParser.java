@@ -68,11 +68,9 @@ public class AnnotationParser {
      * @param clazz
      * @return
      */
-    public static String resolveFallback(Class<?> clazz) {
+    public static Class<?> resolveFallback(Class<?> clazz) {
         Fallback fallback = clazz.getAnnotation(Fallback.class);
-        if (fallback == null)
-            return null;
-        return fallback.value();
+        return fallback == null ? null : fallback.value();
     }
 
     /**
