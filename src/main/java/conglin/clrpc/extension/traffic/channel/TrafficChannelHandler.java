@@ -9,7 +9,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-class TrafficChannelHandler extends ChannelDuplexHandler implements Calculatable<TrafficCounter> {
+public class TrafficChannelHandler extends ChannelDuplexHandler implements Calculatable<TrafficCounter> {
 
     private final TrafficCounter counter;
 

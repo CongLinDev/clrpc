@@ -1,5 +1,6 @@
 package conglin.clrpc.service.fallback;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,7 +62,9 @@ public class DefaultFallbackHolder implements FallbackHolder {
     public Object fallback(String service, String methodName, Object[] args) throws FallbackFailedException {
         try {
             Object fallback = holder.get(service);
-            return fallback.getClass().getMethod(methodName, ClassUtils.getClasses(args)).invoke(fallback, args);
+            Method method = fallback.getClass().getMethod(methodName, ClassUtils.getClasses(args));
+            method.setAccessible(true);
+            return method.invoke(fallback, args);
         } catch (Exception e) {
             throw new FallbackFailedException(e);
         }
