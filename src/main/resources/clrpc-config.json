@@ -1,7 +1,6 @@
 {
     "registry": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
     "atomicity": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
-    "logger": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000&period=1000",
 
     "meta.provider.*": {},
     "meta.consumer.*": {},
@@ -21,5 +20,7 @@
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,
     "service.thread-pool.keep-alive": 1000,
-    "service.thread-pool.queue": 10
+    "service.thread-pool.queue": 10,
+
+    "extension.logger": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000&period=1000"
 }

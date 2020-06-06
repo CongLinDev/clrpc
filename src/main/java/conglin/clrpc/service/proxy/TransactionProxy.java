@@ -82,5 +82,5 @@ public interface TransactionProxy extends RpcProxy {
      * @param interfaceClass
      * @return
      */
-    <T> T subscribeAsync(Class<T> interfaceClass);
+    <T> T proxy(Class<T> interfaceClass);
 }

@@ -19,7 +19,7 @@ public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
 
     public GlobalTrafficChannelHandler(CommonChannelContext context) {
         this.context = context;
-        String urlString = context.propertyConfigurer().get("logger", String.class);
+        String urlString = context.propertyConfigurer().get("extension.logger", String.class);
         serviceLogger = new ZooKeeperServiceLogger(new Url(urlString));
     }
 

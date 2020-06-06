@@ -141,7 +141,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T subscribeAsync(Class<T> interfaceClass) {
+    public <T> T proxy(Class<T> interfaceClass) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { interfaceClass }, new InnerAsyncObjectProxy(interfaceClass));
     }

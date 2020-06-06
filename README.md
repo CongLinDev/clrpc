@@ -57,14 +57,14 @@ RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
 // 提前刷新需要订阅的服务
-bootstrap.refresh(HelloService.class);
+bootstrap.subscribe(HelloService.class);
 
 //使用同步服务
-HelloService syncService = bootstrap.subscribe(HelloService.class);
+HelloService syncService = bootstrap.proxy(HelloService.class, false);
 String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
 // 使用异步服务
-HelloService asyncService = bootstrap.subscribeAsync(HelloService.class);
+HelloService asyncService = bootstrap.proxy(HelloService.class, true);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
 RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
@@ -87,10 +87,10 @@ RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
 // 提前刷新需要订阅的服务
-bootstrap.refresh(HelloService.class);
+bootstrap.subscribe(HelloService.class);
 
-TransactionProxy proxy = bootstrap.subscribeTransaction();
-HelloService service = proxy.subscribeAsync(HelloService.class);
+TransactionProxy proxy = bootstrap.transaction();
+HelloService service = proxy.proxy(HelloService.class);
 
 proxy.begin(); // 事务开启
 
@@ -121,31 +121,36 @@ bootstrap.stop();
 
 ### Config Items
 
-|                Field                 |           Type            | Required |  Default  |                             Remark                             |
-| :----------------------------------: | :-----------------------: | :------: | :-------: | :------------------------------------------------------------: |
-|               registry               |          String           |   True   |           |                          注册中心地址                          |
-|              atomicity               |          String           |   True   |           |                          原子服务地址                          |
-|                logger                |          String           |   True   |           |                          日志中心地址                          |
-|           meta.provider.\*           | Map&lt;String, Object&gt; |  False   | Empty Map |                      服务提供者通用元信息                      |
-|           meta.consumer.\*           | Map&lt;String, Object&gt; |  False   | Empty Map |                      服务消费者通用元信息                      |
-|            provider.port             |          Integer          |  False   |     0     |                        服务提供者端口号                        |
-|         provider.thread.boss         |          Integer          |  False   |     1     |                  服务提供者的bossGroup线程数                   |
-|        provider.thread.worker        |          Integer          |  False   |     4     |                 服务提供者的workerGroup线程数                  |
-| provider.channel.<br>handler-factory |          String           |  False   |  `null`   |         实现ChannelHandlerFactory，可自定义添加处理器          |
-|          consumer.wait-time          |          Integer          |  False   |   5000    |             无服务提供者时等待重试时间，单位为毫秒             |
-|        consumer.thread.worker        |          Integer          |  False   |     4     |                 服务使用者的workerGroup线程数                  |
-|   consumer.retry.<br>check-period    |          Integer          |  False   |   3000    |               重试机制执行周期(非正数代表不开启)               |
-| consumer.retry.<br>initial-threshold |          Integer          |  False   |   3000    |                        初始重试时间门槛                        |
-|   consumer.fallback.<br>max-retry    |          Integer          |  False   |    -1     |  Fallback 机制允许重试最大的次数(负数代表不开启，0代表不重试)  |
-| provider.channel.<br>handler-factory |          String           |  False   |  `null`   |         实现ChannelHandlerFactory，可自定义添加处理器          |
-|  service.thread-pool.<br>core-size   |          Integer          |  False   |     5     |                      业务线程池核心线程数                      |
-|   service.thread-pool.<br>max-size   |          Integer          |  False   |    10     |                      业务线程池最大线程数                      |
-|  service.thread-pool.<br>keep-alive  |          Integer          |  False   |   1000    | 当线程数大于核心时，多余空闲线程在终止之前等待新任务的最长时间 |
-|    service.thread-pool.<br>queue     |          Integer          |  False   |    10     |                        业务线程池队列数                        |
+|              Field               |           Type            | Required |  Default  |                         Remark                          |
+| :------------------------------: | :-----------------------: | :------: | :-------: | :-----------------------------------------------------: |
+|             registry             |          String           |   True   |           |                      注册中心地址                       |
+|            atomicity             |          String           |   True   |           |                      原子服务地址                       |
+|         meta.provider.\*         | Map&lt;String, Object&gt; |  False   | Empty Map |                  服务提供者通用元信息                   |
+|         meta.consumer.\*         | Map&lt;String, Object&gt; |  False   | Empty Map |                  服务消费者通用元信息                   |
+|          provider.port           |          Integer          |  False   |     0     |                    服务提供者端口号                     |
+|       provider.thread.boss       |          Integer          |  False   |     1     |               服务提供者的bossGroup线程数               |
+|      provider.thread.worker      |          Integer          |  False   |     4     |              服务提供者的workerGroup线程数              |
+| provider.channel.handler-factory |          String           |  False   |  `null`   |      实现ChannelHandlerFactory，可自定义添加处理器      |
+|        consumer.wait-time        |          Integer          |  False   |   5000    |         无服务提供者时等待重试时间，单位为毫秒          |
+|      consumer.thread.worker      |          Integer          |  False   |     4     |              服务使用者的workerGroup线程数              |
+|   consumer.retry.check-period    |          Integer          |  False   |   3000    |           重试机制执行周期(非正数代表不开启)            |
+| consumer.retry.initial-threshold |          Integer          |  False   |   3000    |                    初始重试时间门槛                     |
+|   consumer.fallback.max-retry    |          Integer          |  False   |    -1     | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
+| provider.channel.handler-factory |          String           |  False   |  `null`   |      实现ChannelHandlerFactory，可自定义添加处理器      |
+|  service.thread-pool.core-size   |          Integer          |  False   |     5     |                  业务线程池核心线程数                   |
+|   service.thread-pool.max-size   |          Integer          |  False   |    10     |                  业务线程池最大线程数                   |
+|  service.thread-pool.keep-alive  |          Integer          |  False   |   1000    |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
+|    service.thread-pool.queue     |          Integer          |  False   |    10     |                    业务线程池队列数                     |
+
+### Extendsion config Items
+
+|      Field       |  Type  | Required | Default |    Remark    |
+| :--------------: | :----: | :------: | :-----: | :----------: |
+| extension.logger | String |   True   |         | 日志中心地址 |
 
 #### About customized address url
 
-配置项中的 `registry` `atomicity` `logger` 为必填项，其url解析规则如下：
+配置项中的 `registry` `atomicity` 为必填项，其url解析规则如下：
 
 `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000`
 

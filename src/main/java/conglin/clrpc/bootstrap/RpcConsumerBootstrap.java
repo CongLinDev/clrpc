@@ -24,13 +24,13 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
  * bootstrap.start();
  * // 刷新
- * bootstrap.refresh(Interface1.class).refresh(Interface2.class);
+ * bootstrap.subscribe(Interface1.class).subscribe(Interface2.class);
  * 
  * // 订阅同步服务
- * Interface1 i1 = bootstrap.subscribe(Interface1.class);
+ * Interface1 i1 = bootstrap.proxy(Interface1.class);
  * 
  * // 订阅异步服务
- * Interface2 i2 = bootstrap.subscribeAsync(Interface2.class);
+ * Interface2 i2 = bootstrap.proxy(Interface2.class, true);
  *
  * bootstrap.stop();
  * </pre>
@@ -68,42 +68,43 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 获取基本代理
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 或
-     * {@link RpcConsumerBootstrap#refresh(Class)} 刷新
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
      * 
      * @return proxy
      */
-    public BasicProxy subscribeAsync() {
+    public BasicProxy proxy() {
         return SERVICE_HANDLER.getBasicProxy();
     }
 
     /**
-     * 订阅同步服务，获取同步服务代理
+     * 获取异步服务代理
      * 
      * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(Class)} 刷新
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
+     * 
+     * @see #proxy(Class, boolean)
      * 
      * @param <T>
      * @param interfaceClass 接口类
      * @return 代理服务对象
      */
-    public <T> T subscribe(Class<T> interfaceClass) {
-        return SERVICE_HANDLER.getSyncProxy(interfaceClass);
+    public <T> T proxy(Class<T> interfaceClass) {
+        return proxy(interfaceClass, true);
     }
 
     /**
-     * 订阅异步服务，获取异步服务代理
+     * 获取服务代理
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(String)} 或
-     * {@link RpcConsumerBootstrap#refresh(Class)} 刷新
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
      * 
      * @param <T>
      * @param interfaceClass
+     * @param async          是否是异步代理
      * @return 代理服务对象
      */
-    public <T> T subscribeAsync(Class<T> interfaceClass) {
-        return SERVICE_HANDLER.getAsyncProxy(interfaceClass);
+    public <T> T proxy(Class<T> interfaceClass, boolean async) {
+        return async ? SERVICE_HANDLER.getAsyncProxy(interfaceClass) : SERVICE_HANDLER.getSyncProxy(interfaceClass);
     }
 
     /**
@@ -114,7 +115,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @param interfaceClass
      * @return this
      */
-    public RpcConsumerBootstrap refresh(Class<?> interfaceClass) {
+    public RpcConsumerBootstrap subscribe(Class<?> interfaceClass) {
         String serviceName = AnnotationParser.serviceName(interfaceClass);
         if (serviceName == null) {
             LOGGER.error("Please Add a service name for {} by @Service.", interfaceClass);
@@ -130,44 +131,13 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 刷新并订阅同步服务，获取同步服务代理
-     * 
-     * 该方法相当于调用 {@link RpcConsumerBootstrap#refresh(Class)} 和
-     * {@link RpcConsumerBootstrap#subscribe(Class)}
-     * 
-     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
-     * 
-     * @param <T>
-     * @param interfaceClass 接口类
-     * @return 代理服务对象
-     */
-    public <T> T refreshAndSubscribe(Class<T> interfaceClass) {
-        return refresh(interfaceClass).subscribe(interfaceClass);
-    }
-
-    /**
-     * 订阅异步服务，获取异步服务代理
-     * 
-     * 该方法相当于调用 {@link RpcConsumerBootstrap#refresh(Class)} 和
-     * {@link RpcConsumerBootstrap#subscribeAsync(Class)}
-     * 
-     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
-     * 
-     * @param interfaceClass
-     * @return 代理服务对象
-     */
-    public <T> T refreshAndSubscribeAsync(Class<T> interfaceClass) {
-        return refresh(interfaceClass).subscribeAsync(interfaceClass);
-    }
-
-    /**
      * 订阅事务服务
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#refresh(Class)} 刷新
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
      * 
      * @return proxy
      */
-    public TransactionProxy subscribeTransaction() {
+    public TransactionProxy transaction() {
         return SERVICE_HANDLER.getTransactionProxy();
     }
 
