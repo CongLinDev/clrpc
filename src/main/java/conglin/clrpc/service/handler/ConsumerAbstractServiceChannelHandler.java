@@ -36,7 +36,7 @@ abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error("ExceptionCaught : {}", cause);
+        LOGGER.error("ExceptionCaught : {}", cause.getMessage());
         ctx.close();
     }
 }

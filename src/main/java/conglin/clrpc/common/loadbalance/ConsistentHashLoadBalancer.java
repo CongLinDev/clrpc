@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Pair;
 
 /**
  * 该类用作一致性哈希负载均衡 适合一个 type 对应多个 key-value 的负载均衡
@@ -155,28 +154,6 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     @Override
-    public V get(T type, Predicate<V> predicate) {
-        // 遍历查找，寻找满足条件的 V
-        AtomicInteger regionAndEpoch = descriptions.get(type);
-        if (regionAndEpoch == null)
-            return null;
-        // 获取当前区域范围 [head, tail]
-        int head = regionHead(regionAndEpoch);
-        int tail = regionTail(head);// 区域编号不得超过最大编号
-
-        int next = head;
-        while (next <= tail) {
-            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
-            V v = entry.getValue().getValue();
-            if (predicate.test(v))
-                return v;
-            next = entry.getKey() + 1;
-        }
-
-        return null;
-    }
-
-    @Override
     public V get(T type, int random) {
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
@@ -199,30 +176,48 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     @Override
-    public V get(T type, K key) {
+    public V getKey(T type, Predicate<K> predicate) {
+        Node<K, V> n = getNode(type, node -> predicate.test(node.getKey()));
+        if (n == null) return null;
+        return n.getValue();
+    }
+
+    @Override
+    public V getValue(T type, Predicate<V> predicate) {
+        Node<K, V> n = getNode(type, node -> predicate.test(node.getValue()));
+        if (n == null) return null;
+        return n.getValue();
+    }
+
+    /**
+     * 获取满足条件的节点
+     *
+     * @param type
+     * @param predicate
+     * @return
+     */
+    protected Node<K, V> getNode(T type, Predicate<Node<K, V>> predicate) {
+        // 遍历查找，寻找满足条件的 V
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
             return null;
-
         // 获取当前区域范围 [head, tail]
         int head = regionHead(regionAndEpoch);
         int tail = regionTail(head);// 区域编号不得超过最大编号
-        int randomHash = hash(key);
-        int next = head | (randomHash & _16_BIT_MASK);
 
-        Node<K, V> node = null;
-        while ((node = circle.get(next)) != null) {
-            if (node.match(key))
-                return node.getValue();
-
-            if (++next > tail)
-                next = head + 1;
+        int next = head;
+        while (next <= tail) {
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
+            if (predicate.test(entry.getValue()))
+                return entry.getValue();
+            next = entry.getKey() + 1;
         }
+
         return null;
     }
 
     @Override
-    public void update(T type, Collection<Pair<K, String>> data) {
+    public void update(T type, Collection<K> data) {
         AtomicInteger regionAndEpoch = null;
         int currentEpoch = 0;
 
@@ -241,8 +236,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         LOGGER.info("Update Region[head={}, tail={}], Epoch={}", head, tail, currentEpoch);
 
         // 遍历更新的数据，对给定的数据进行更新
-        for (Pair<K, String> pair : data) {
-            K key = pair.getFirst();
+        for (K key : data) {
             int position = hash(key) & _16_BIT_MASK | head;// 获取区域内部编号
 
             do {
@@ -253,14 +247,14 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
                         V v = convertor.apply(type, key);
                         if (v != null) {
                             LOGGER.info("Add new node(position={}, key={})", position, key);
-                            circle.put(position, new Node<K, V>(currentEpoch, v, pair));
+                            circle.put(position, new Node<K, V>(currentEpoch, key, v));
                         } else {
                             LOGGER.error("Null Object from {}", key);
                         }
                         break;
                     }
                 } else if (node.match(key) && node.setEpoch(currentEpoch)) { // 更新epoch
-                    node.setMetaInfomation(pair);
+                    node.setKey(key);
                     LOGGER.info("Update old node(position={}, key={})", position, key);
                     if (node.getValue() == null) {
                         node.setValue(convertor.apply(type, key));
@@ -283,7 +277,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
             Node<K, V> node = entry.getValue();
             if (node.getEpoch() + 1 == currentEpoch) { // 只移除上一代未更新的节点
                 circle.remove(position);
-                LOGGER.debug("Remove valid node(position={}, key={})", position, node.getMetaInfomation().getFirst());
+                LOGGER.debug("Remove valid node(position={}, key={})", position, node.getKey());
                 destructor.accept(type, node.getValue());
             }
         }
@@ -369,26 +363,18 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
         protected AtomicInteger epoch;
 
+        protected K key;
+
         protected V value;
 
-        protected Pair<K, String> metaInfomation;
-
         public Node() {
-            this(0, null);
+            this(0, null, null);
         }
 
-        public Node(V value) {
-            this(0, value);
-        }
-
-        public Node(int epoch, V value) {
-            this(epoch, value, null);
-        }
-
-        public Node(int epoch, V value, Pair<K, String> metaInfomation) {
+        public Node(int epoch, K key, V value) {
             this.epoch = new AtomicInteger(epoch);
+            this.key = key;
             this.value = value;
-            this.metaInfomation = metaInfomation;
         }
 
         /**
@@ -428,22 +414,12 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
             this.value = value;
         }
 
-        /**
-         * 获取元信息
-         * 
-         * @return the metaInfomation
-         */
-        public Pair<K, String> getMetaInfomation() {
-            return metaInfomation;
+        public K getKey() {
+            return key;
         }
 
-        /**
-         * 设置元信息
-         * 
-         * @param metaInfomation the metaInfomation to set
-         */
-        public void setMetaInfomation(Pair<K, String> metaInfomation) {
-            this.metaInfomation = metaInfomation;
+        public void setKey(K key) {
+            this.key = key;
         }
 
         /**
@@ -453,7 +429,8 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
          * @return
          */
         public boolean match(K key) {
-            return metaInfomation.getFirst().equals(key);
+            if(this.key == null) return false; // empty node
+            return this.key.equals(key);
         }
     }
 }

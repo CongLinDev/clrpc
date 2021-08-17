@@ -5,8 +5,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import conglin.clrpc.common.Pair;
-
 /**
  * 该接口用作负载均衡 适合 {一个 type 对应多个 key-value 对} 组的负载均衡
  * 
@@ -22,10 +20,10 @@ public interface LoadBalancer<T, K, V> {
      * @param type
      * @param data 其中key为连接的ip地址，value为 服务器的元信息
      */
-    void update(T type, Collection<Pair<K, String>> data);
+    void update(T type, Collection<K> data);
 
     /**
-     * 根据寻找第一个可用对象
+     * 根据type寻找第一个可用对象
      * 
      * @param type
      * @return
@@ -50,7 +48,19 @@ public interface LoadBalancer<T, K, V> {
      * @param key
      * @return
      */
-    V get(T type, K key);
+    default V getKey(T type, K key) {
+        if(key == null) return get(type);
+        return getKey(type, key::equals);
+    }
+
+    /**
+     * 根据条件返回指定对象
+     *
+     * @param type
+     * @param predicate
+     * @return
+     */
+    V getKey(T type, Predicate<K> predicate);
 
     /**
      * 根据条件返回指定对象
@@ -59,7 +69,7 @@ public interface LoadBalancer<T, K, V> {
      * @param predicate
      * @return
      */
-    V get(T type, Predicate<V> predicate);
+    V getValue(T type, Predicate<V> predicate);
 
     /**
      * 获取所有类型

@@ -1,10 +1,5 @@
 package conglin.clrpc.common.registry;
 
-import java.util.Collection;
-import java.util.function.BiConsumer;
-
-import conglin.clrpc.common.Pair;
-
 /**
  * 服务发现
  * 
@@ -18,5 +13,5 @@ public interface ServiceDiscovery extends ServiceRegistry {
      * @param updater
      * @return
      */
-    void discover(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updater);
+    void discover(String serviceName, DiscoveryCallback updater);
 }

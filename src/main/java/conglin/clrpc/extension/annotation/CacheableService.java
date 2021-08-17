@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * 
  * {@link CacheableService#provider()} 为 true 代表 支持在服务提供者处缓存
  * {@link CacheableService#consumer()} 为 true 代表 支持在服务消费者处缓存
- * {@link CacheableService#exprie()} 取值为 [0~(2^20-1)] 代表 最大缓存时间（0 为
+ * {@link CacheableService#expire()} 取值为 [0~(2^20-1)] 代表 最大缓存时间（0 为
  * 最大缓存时间即无限期），单位为毫秒
  */
 
@@ -38,5 +38,5 @@ public @interface CacheableService {
      * 
      * @return
      */
-    int exprie() default 0; // 默认为无限期，单位为毫秒
+    int expire() default 0; // 默认为无限期，单位为毫秒
 }

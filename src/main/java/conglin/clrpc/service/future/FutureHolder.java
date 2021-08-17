@@ -37,5 +37,5 @@ public interface FutureHolder<K> {
     /**
      * 等待所有未完成的 {@link conglin.clrpc.service.future.RpcFuture} 用于优雅的关闭
      */
-    void waitForUncompleteFuture();
+    void waitForUncompletedFuture();
 }

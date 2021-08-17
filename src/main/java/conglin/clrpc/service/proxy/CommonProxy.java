@@ -1,5 +1,7 @@
 package conglin.clrpc.service.proxy;
 
+import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.Fallback;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
@@ -19,8 +21,9 @@ public class CommonProxy implements RpcProxy {
      * @param request 请求
      * @return future
      */
+    @Override
     public RpcFuture call(BasicRequest request) {
-        return sender.sendRequest(request);
+        return sender.sendRequest(request, fallback());
     }
 
     /**
@@ -32,8 +35,9 @@ public class CommonProxy implements RpcProxy {
      * @param request       请求
      * @return future
      */
+    @Override
     public RpcFuture callWith(String remoteAddress, BasicRequest request) {
-        return sender.sendRequest(request, remoteAddress);
+        return sender.sendRequest(request, fallback(), remoteAddress);
     }
 
     /**
@@ -43,5 +47,14 @@ public class CommonProxy implements RpcProxy {
      */
     protected RequestSender requestSender() {
         return this.sender;
+    }
+
+    /**
+     * fallback
+     *
+     * @return
+     */
+    protected Fallback fallback() {
+        return null;
     }
 }

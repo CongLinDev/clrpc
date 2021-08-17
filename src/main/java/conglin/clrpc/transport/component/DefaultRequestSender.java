@@ -5,12 +5,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 
+import conglin.clrpc.common.Fallback;
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.fallback.FallbackFailedException;
-import conglin.clrpc.service.fallback.FallbackHolder;
+import conglin.clrpc.common.exception.FallbackFailedException;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
@@ -26,8 +29,6 @@ public class DefaultRequestSender implements RequestSender {
 
     protected final FutureHolder<Long> futureHolder;
 
-    protected final FallbackHolder fallbackHolder;
-
     protected final ProviderChooser providerChooser;
 
     protected final ExecutorService threadPool;
@@ -39,19 +40,20 @@ public class DefaultRequestSender implements RequestSender {
     // 检查周期
     private final int CHECK_PERIOD;
 
-    public DefaultRequestSender(ConsumerContext context) {
-        this.futureHolder = context.getFuturesHolder();
-        this.fallbackHolder = context.getFallbackHolder();
-        this.providerChooser = context.getProviderChooser();
-        this.threadPool = context.getExecutorService();
-        this.CHECK_PERIOD = context.getPropertyConfigurer().getOrDefault("consumer.retry.check-period", 3000);
-        this.INITIAL_THRESHOLD = context.getPropertyConfigurer().getOrDefault("consumer.retry.initial-threshold", 3000);
+    public DefaultRequestSender(RpcContext context) {
+        this.futureHolder = context.getWith(RpcContextEnum.FUTURE_HOLDER);
+        this.providerChooser = context.getWith(RpcContextEnum.PROVIDER_CHOOSER);
+        this.threadPool = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
+        PropertyConfigurer c = context.getWith(RpcContextEnum.PROPERTY_CONFIGURER);
+        this.CHECK_PERIOD = c.getOrDefault("consumer.retry.check-period", 3000);
+        this.INITIAL_THRESHOLD = c.getOrDefault("consumer.retry.initial-threshold", 3000);
         this.timer = CHECK_PERIOD > 0 ? checkFuture() : null;
     }
 
     @Override
-    public RpcFuture sendRequest(BasicRequest request, String remoteAddress) {
+    public RpcFuture sendRequest(BasicRequest request, Fallback fallbackObject, String remoteAddress) {
         RpcFuture future = putFuture(request);
+        future.fallback(fallbackObject);
         doSendRequest(request, remoteAddress);
         return future;
     }
@@ -92,7 +94,7 @@ public class DefaultRequestSender implements RequestSender {
             if (targetAddress == null) {
                 providerChooser.choose(request).pipeline().fireChannelRead(request);
             } else {
-                providerChooser.choose(serviceName, targetAddress).pipeline().fireChannelRead(request);
+                providerChooser.choose(serviceName, serviceInstance -> targetAddress.equals(serviceInstance.address())).pipeline().fireChannelRead(request);
             }
         });
     }
@@ -116,19 +118,18 @@ public class DefaultRequestSender implements RequestSender {
                     int retryTimes = f.retryTimes() + 1;
                     if (f.timeout(INITIAL_THRESHOLD << (retryTimes - 1)) && f.retry()) {
                         BasicRequest r = f.request();
-                        if (fallbackHolder.needFallback(retryTimes)) {
+                        Fallback fallback = f.fallback();
+                        if(fallback.needFallback(retryTimes)) {
                             iterator.remove();
-
                             BasicResponse fallbackResponse = null;
                             try {
-                                Object fallbackResult = fallbackHolder.fallback(r.serviceName(), r.methodName(),
-                                        r.parameters());
+                                Object fallbackResult = fallback.fallback(r.methodName(), r.parameters());
                                 fallbackResponse = new BasicResponse(r.messageId(), fallbackResult);
                             } catch (FallbackFailedException e) {
                                 LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.messageId(), e.getCause());
                                 fallbackResponse = new BasicResponse(r.messageId(), true, e);
                             }
-                            f.fallback(fallbackResponse);
+                            f.fallbackDone(fallbackResponse);
                         } else {
                             resendRequest(r);
                             LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",

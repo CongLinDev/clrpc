@@ -4,6 +4,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.Fallback;
 
 /**
  * future 对象 用于同步或异步地获取任务的执行结果
@@ -39,6 +40,21 @@ public interface RpcFuture extends Future<Object> {
     default RpcFuture callback(Consumer<Object> any) {
         return callback(Callback.convert(any));
     }
+
+    /**
+     * fallback
+     *
+     * @return
+     */
+    Fallback fallback();
+
+    /**
+     * set fallback
+     *
+     * @param fallback
+     * @return
+     */
+    RpcFuture fallback(Fallback fallback);
 
     /**
      * 该 {@code RpcFuture} 的标识符

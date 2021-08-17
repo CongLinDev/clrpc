@@ -88,14 +88,14 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
             in.markReaderIndex();
 
             byte messageHeader = in.readByte();
-            int dataLengh = in.readInt();
+            int dataLength = in.readInt();
 
-            if (dataLengh <= 0) {
+            if (dataLength <= 0) {
                 LOGGER.error("Error format message whose length is negative.");
                 return;
             }
 
-            if (in.readableBytes() < dataLengh) {
+            if (in.readableBytes() < dataLength) {
                 in.resetReaderIndex();
                 return;
             }
@@ -104,10 +104,10 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
             Class<? extends Message> clazz = manager.getMessageClass(messageType);
             if (in.hasArray()) {
                 int contentOffset = in.readerIndex(); // 正文起始偏移量
-                out.add(serializationHandler.deserialize(clazz, in.readerIndex(contentOffset + dataLengh).array(),
-                        contentOffset, dataLengh));
+                out.add(serializationHandler.deserialize(clazz, in.readerIndex(contentOffset + dataLength).array(),
+                        contentOffset, dataLength));
             } else {
-                byte[] messageBody = new byte[dataLengh];
+                byte[] messageBody = new byte[dataLength];
                 in.readBytes(messageBody);
                 out.add(serializationHandler.deserialize(clazz, messageBody));
             }

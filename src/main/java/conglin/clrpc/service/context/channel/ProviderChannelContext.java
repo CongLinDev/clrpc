@@ -1,29 +1,21 @@
 package conglin.clrpc.service.context.channel;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
-import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 
 final public class ProviderChannelContext extends CommonChannelContext {
 
-    public ProviderChannelContext(ProviderContext context) {
-        super(context);
+    protected final Map<String, ServiceObject> serviceObjectHolder;
 
-        Map<String, Object> map = new HashMap<>(context.getObjectBeans());
-        context.getObjectFactories().forEach((key, value) -> map.put(key, value.get()));
-        objectHolder = map::get;
+    public ProviderChannelContext(RpcContext context) {
+        super(context);
+        serviceObjectHolder = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
     }
 
-    private final Function<String, Object> objectHolder;
-
-    /**
-     * 获取服务对象持有者
-     * 
-     * @return
-     */
-    public Function<String, Object> objectHolder() {
-        return objectHolder;
+    public Map<String, ServiceObject> getServiceObjectHolder() {
+        return serviceObjectHolder;
     }
 }

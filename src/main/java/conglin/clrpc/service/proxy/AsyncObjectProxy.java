@@ -1,7 +1,8 @@
 package conglin.clrpc.service.proxy;
 
+import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.annotation.AnnotationParser;
+import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 
@@ -35,20 +36,21 @@ public class AsyncObjectProxy extends BasicProxy {
         threadLocal.remove();
     }
 
-    private final String serviceName;
+    private final ServiceInterface<?> serviceInterface;
 
-    public AsyncObjectProxy(Class<?> interfaceClass, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        this(AnnotationParser.serviceName(interfaceClass), sender, identifierGenerator);
-    }
-
-    public AsyncObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
+    public AsyncObjectProxy(ServiceInterface<?> serviceInterface, RequestSender sender, IdentifierGenerator identifierGenerator) {
         super(sender, identifierGenerator);
-        this.serviceName = serviceName;
+        this.serviceInterface = serviceInterface;
     }
 
     @Override
     protected String getServiceName(Class<?> methodDeclaringClass) {
-        return serviceName;
+        return serviceInterface.name();
+    }
+
+    @Override
+    protected Fallback fallback() {
+        return serviceInterface.fallback();
     }
 
     @Override

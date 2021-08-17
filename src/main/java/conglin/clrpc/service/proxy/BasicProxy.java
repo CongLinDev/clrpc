@@ -3,6 +3,7 @@ package conglin.clrpc.service.proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.annotation.AnnotationParser;

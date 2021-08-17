@@ -14,12 +14,15 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 
 abstract public class AbstractServiceHandler implements Destroyable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceHandler.class);
     // 业务线程池
-    private final ExecutorService businessTheardExecutorService;
+    private final ExecutorService businessThreadExecutorService;
+
+    private RpcContext context;
 
     /**
      * 构造 {@link AbstractServiceHandler}
@@ -29,7 +32,7 @@ abstract public class AbstractServiceHandler implements Destroyable {
      * @param configurer
      */
     public AbstractServiceHandler(PropertyConfigurer configurer) {
-        businessTheardExecutorService = threadPool(configurer);
+        businessThreadExecutorService = threadPool(configurer);
     }
 
     /**
@@ -66,7 +69,7 @@ abstract public class AbstractServiceHandler implements Destroyable {
      * 
      * 当任务因线程池满了被拒绝后，首先在指定时间内再次尝试加入线程池。若失败，则创建临时线程运行该任务。若临时线程创建失败，则抛出异常。
      */
-    private static RejectedExecutionHandler REJECT_HANDLER = (runnable, executor) -> {
+    private static final RejectedExecutionHandler REJECT_HANDLER = (runnable, executor) -> {
 
         boolean offered = false;
         try {
@@ -77,7 +80,7 @@ abstract public class AbstractServiceHandler implements Destroyable {
         }
 
         if (!offered) {
-            LOGGER.debug("Readd task failed");
+            LOGGER.debug("Read task failed");
             try {
                 // 直接创建临时线程运行任务
                 new Thread(runnable, "Temporary task executor").start();
@@ -89,17 +92,17 @@ abstract public class AbstractServiceHandler implements Destroyable {
 
     @Override
     public void destroy() throws DestroyFailedException {
-        if (businessTheardExecutorService == null)
+        if (businessThreadExecutorService == null)
             return;
-        businessTheardExecutorService.shutdown();
-        LOGGER.debug("Theard Executor shuts down.");
+        businessThreadExecutorService.shutdown();
+        LOGGER.debug("Thread Executor shuts down.");
     }
 
     @Override
     public boolean isDestroyed() {
-        if (businessTheardExecutorService == null)
+        if (businessThreadExecutorService == null)
             return true;
-        return businessTheardExecutorService.isShutdown();
+        return businessThreadExecutorService.isShutdown();
     }
 
     /**
@@ -108,15 +111,30 @@ abstract public class AbstractServiceHandler implements Destroyable {
      * @return
      */
     public ExecutorService getExecutorService() {
-        return businessTheardExecutorService;
+        return businessThreadExecutorService;
     }
 
     /**
-     * 初始化上下文
-     * 
+     * 启动
+     *
      * @param context
      */
-    protected void initContext(CommonContext context) {
-        context.setExecutorService(getExecutorService());
+    void start(RpcContext context) {
+        this.context = context;
+        context.put(RpcContextEnum.EXECUTOR_SERVICE, getExecutorService());
+    }
+
+    /**
+     * 停止
+     */
+    abstract void stop();
+
+    /**
+     * 获取 context
+     *
+     * @return
+     */
+    protected RpcContext context() {
+        return context;
     }
 }

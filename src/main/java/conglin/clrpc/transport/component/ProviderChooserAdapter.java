@@ -26,4 +26,13 @@ public interface ProviderChooserAdapter {
     default int hash(Object object) {
         return System.identityHashCode(object);
     }
+
+    /**
+     * 默认的适配器
+     * 
+     * @return
+     */
+    static ProviderChooserAdapter defaultAdapter() {
+        return request -> request.methodName().hashCode();
+    }
 }

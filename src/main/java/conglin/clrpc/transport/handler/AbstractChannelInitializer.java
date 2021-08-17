@@ -57,7 +57,7 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
         } else if (isOutbound) {
             return "Outbound";
         } else {
-            return "Unkonwn";
+            return "Unknown";
         }
     }
 

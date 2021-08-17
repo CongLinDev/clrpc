@@ -10,3 +10,4 @@ logs/
 .project
 Dockerfile
 src/main/resources/log4j.properties
+*.iml

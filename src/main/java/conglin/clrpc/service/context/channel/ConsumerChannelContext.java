@@ -1,13 +1,14 @@
 package conglin.clrpc.service.context.channel;
 
-import conglin.clrpc.service.context.ConsumerContext;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.FutureHolder;
 
 final public class ConsumerChannelContext extends CommonChannelContext {
 
-    public ConsumerChannelContext(ConsumerContext context) {
+    public ConsumerChannelContext(RpcContext context) {
         super(context);
-        futureHolder = context.getFuturesHolder();
+        futureHolder = context.getWith(RpcContextEnum.FUTURE_HOLDER);
     }
 
 

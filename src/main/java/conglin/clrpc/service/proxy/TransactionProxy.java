@@ -3,6 +3,7 @@ package conglin.clrpc.service.proxy;
 import java.util.concurrent.TimeUnit;
 
 import conglin.clrpc.common.exception.TransactionException;
+import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.TransactionRequest;
 
@@ -79,8 +80,8 @@ public interface TransactionProxy extends RpcProxy {
      * 需要注意的是 该方法产生的对象与 {@code TransactionProxy} 对象深度绑定
      * 
      * @param <T>
-     * @param interfaceClass
+     * @param serviceInterface
      * @return
      */
-    <T> T proxy(Class<T> interfaceClass);
+    <T> T proxy(ServiceInterface<T> serviceInterface);
 }

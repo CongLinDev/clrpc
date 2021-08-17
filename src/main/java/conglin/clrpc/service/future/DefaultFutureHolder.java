@@ -42,7 +42,7 @@ public class DefaultFutureHolder implements FutureHolder<Long> {
     }
 
     @Override
-    public void waitForUncompleteFuture() {
+    public void waitForUncompletedFuture() {
         while (!rpcFutures.isEmpty()) {
             try {
                 LOGGER.info("Waiting uncomplete futures for 500 ms.");

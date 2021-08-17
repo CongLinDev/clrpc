@@ -1,5 +1,6 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.service.ServiceObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +22,8 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
     protected Object execute(BasicRequest msg) {
         try {
             LOGGER.debug("Receive basic request messageId={}", msg.messageId());
-            Object serviceBean = findServiceBean(msg.serviceName());
-            Object result = jdkReflectInvoke(serviceBean, msg);
+            ServiceObject serviceObject = findServiceBean(msg.serviceName());
+            Object result = jdkReflectInvoke(serviceObject.object(), msg);
             return new BasicResponse(msg.messageId(), result);
         } catch (UnsupportedServiceException | ServiceExecutionException e) {
             LOGGER.error("Request failed: {}", e.getMessage());

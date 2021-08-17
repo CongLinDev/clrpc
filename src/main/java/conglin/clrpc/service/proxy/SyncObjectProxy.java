@@ -1,7 +1,8 @@
 package conglin.clrpc.service.proxy;
 
+import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.annotation.AnnotationParser;
+import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.transport.component.RequestSender;
 
 /**
@@ -11,19 +12,20 @@ import conglin.clrpc.transport.component.RequestSender;
  */
 public class SyncObjectProxy extends BasicProxy {
 
-    private final String serviceName;
+    private final ServiceInterface<?> serviceInterface;
 
-    public SyncObjectProxy(Class<?> interfaceClass, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        this(AnnotationParser.serviceName(interfaceClass), sender, identifierGenerator);
+    public SyncObjectProxy(ServiceInterface<?> serviceInterface, RequestSender sender, IdentifierGenerator identifierGenerator) {
+        super(sender, identifierGenerator);
+        this.serviceInterface = serviceInterface;
     }
 
-    public SyncObjectProxy(String serviceName, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender, identifierGenerator);
-        this.serviceName = serviceName;
+    @Override
+    protected Fallback fallback() {
+        return serviceInterface.fallback();
     }
 
     @Override
     protected String getServiceName(Class<?> methodDeclaringClass) {
-        return serviceName;
+        return serviceInterface.name();
     }
 }

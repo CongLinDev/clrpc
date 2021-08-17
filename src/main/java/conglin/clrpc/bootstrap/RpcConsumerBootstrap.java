@@ -1,15 +1,18 @@
 package conglin.clrpc.bootstrap;
 
+import conglin.clrpc.common.util.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.bootstrap.option.RpcConsumerOption;
+import conglin.clrpc.bootstrap.option.RpcOption;
+import conglin.clrpc.bootstrap.option.RpcOptionEnum;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.ConsumerServiceHandler;
-import conglin.clrpc.service.annotation.AnnotationParser;
-import conglin.clrpc.service.context.BasicConsumerContext;
-import conglin.clrpc.service.context.ConsumerContext;
-import conglin.clrpc.service.proxy.BasicProxy;
+import conglin.clrpc.service.ServiceInterface;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.proxy.AnonymousProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
 
@@ -48,13 +51,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private final ConsumerServiceHandler SERVICE_HANDLER;
 
     /**
-     * @see #RpcConsumerBootstrap(PropertyConfigurer)
-     */
-    public RpcConsumerBootstrap() {
-        this(null);
-    }
-
-    /**
      * 创建 服务消费者 启动对象
      * 
      * @param configurer 配置器
@@ -66,65 +62,58 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 获取基本代理
+     * 获取匿名代理
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
+     * 刷新
      * 
      * @return proxy
      */
-    public BasicProxy proxy() {
-        return SERVICE_HANDLER.getBasicProxy();
+    public AnonymousProxy proxy() {
+        return SERVICE_HANDLER.getAnonymousProxy();
     }
 
     /**
      * 获取异步服务代理
      * 
-     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
+     * 刷新
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
-     * 
-     * @see #proxy(Class, boolean)
+     * @see #proxy(ServiceInterface, boolean)
      * 
      * @param <T>
-     * @param interfaceClass 接口类
+     * @param serviceInterface 接口
      * @return 代理服务对象
      */
-    public <T> T proxy(Class<T> interfaceClass) {
-        return proxy(interfaceClass, true);
+    public <T> T proxy(ServiceInterface<T> serviceInterface) {
+        return proxy(serviceInterface, true);
     }
 
     /**
      * 获取服务代理
-     * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
-     * 
+     *
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
+     * 刷新
+     *
      * @param <T>
-     * @param interfaceClass
-     * @param async          是否是异步代理
+     * @param serviceInterface 接口
+     * @param async            是否是异步代理
      * @return 代理服务对象
      */
-    public <T> T proxy(Class<T> interfaceClass, boolean async) {
-        return async ? SERVICE_HANDLER.getAsyncProxy(interfaceClass) : SERVICE_HANDLER.getSyncProxy(interfaceClass);
+    public <T> T proxy(ServiceInterface<T> serviceInterface, boolean async) {
+        return async ? SERVICE_HANDLER.getAsyncProxy(serviceInterface) : SERVICE_HANDLER.getSyncProxy(serviceInterface);
     }
 
     /**
      * 刷新服务
-     * 
-     * 使用 {@link conglin.clrpc.common.annotation.Service#name()} 标识服务名
-     * 
-     * @param interfaceClass
+     *
+     * @param serviceInterface 接口
      * @return this
      */
-    public RpcConsumerBootstrap subscribe(Class<?> interfaceClass) {
-        String serviceName = AnnotationParser.serviceName(interfaceClass);
-        if (serviceName == null) {
-            LOGGER.error("Please Add a service name for {} by @Service.", interfaceClass);
-            throw new UnsupportedOperationException();
-        }
-
-        SERVICE_HANDLER.prepare(serviceName, interfaceClass);
+    public RpcConsumerBootstrap subscribe(ServiceInterface<?> serviceInterface) {
+        String serviceName = serviceInterface.name();
         if (CONSUMER_TRANSFER.needRefresh(serviceName)) {
-            LOGGER.debug("Refresh service=({}) privider.", serviceName);
+            LOGGER.debug("Refresh service=({}) provider.", serviceName);
             SERVICE_HANDLER.findService(serviceName, CONSUMER_TRANSFER::updateConnectedProvider);
         }
         return this;
@@ -133,7 +122,8 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     /**
      * 订阅事务服务
      * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(Class)} 刷新
+     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
+     * 刷新
      * 
      * @return proxy
      */
@@ -141,11 +131,17 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         return SERVICE_HANDLER.getTransactionProxy();
     }
 
+
+    @Override
+    final public Role role() {
+        return Role.CONSUMER;
+    }
+
     /**
      * 启动
      */
     public void start() {
-        start(new RpcConsumerOption());
+        start(new RpcOption());
     }
 
     /**
@@ -153,11 +149,10 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * 
      * @param option 启动选项
      */
-    public void start(RpcConsumerOption option) {
+    public void start(RpcOption option) {
         LOGGER.info("RpcConsumer is starting.");
         super.start();
-        ConsumerContext context = initContext(option);
-
+        RpcContext context = initContext(option);
         SERVICE_HANDLER.start(context);
         CONSUMER_TRANSFER.start(context);
     }
@@ -188,18 +183,19 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
      * @param option
      * @return context
      */
-    private ConsumerContext initContext(RpcConsumerOption option) {
-        ConsumerContext context = new BasicConsumerContext();
-
+    private RpcContext initContext(RpcOption option) {
+        RpcContext context = new RpcContext();
+        // 设置角色
+        context.put(RpcContextEnum.ROLE, role());
         // 设置属性配置器
-        context.setPropertyConfigurer(configurer());
-
+        context.put(RpcContextEnum.PROPERTY_CONFIGURER, configurer());
         // 设置序列化处理器
-        context.setSerializationHandler(option.serializationHandler());
+        context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.getOrDefault(RpcOptionEnum.IDENTIFIER_GENERATOR));
         // 设置ID生成器
-        context.setIdentifierGenerator(option.identifierGenerator());
+        context.put(RpcContextEnum.PROVIDER_CHOOSER_ADAPTER,
+                option.getOrDefault(RpcOptionEnum.PROVIDER_CHOOSER_ADAPTER));
         // 设置服务提供者挑选适配器
-        context.setProviderChooserAdapter(option.providerChooserAdapter());
+        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serializationHandlerClassName"), String.class)));
         return context;
     }
 }

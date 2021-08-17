@@ -1,12 +1,13 @@
 package conglin.clrpc.extension.cache.handler;
 
 import java.lang.reflect.Method;
-import java.util.function.Function;
+import java.util.Map;
 
+import conglin.clrpc.service.ServiceObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Pair;
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.extension.annotation.CacheableService;
 import conglin.clrpc.extension.annotation.IdempotentService;
@@ -20,11 +21,11 @@ public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderCachedChannelHandler.class);
 
-    private final Function<String, Object> objectHolder;
+    private final Map<String, ServiceObject> objectHolder;
 
     public ProviderCachedChannelHandler(ProviderChannelContext context) {
         super(context);
-        this.objectHolder = context.objectHolder();
+        this.objectHolder = context.getServiceObjectHolder();
     }
 
     @Override
@@ -37,7 +38,7 @@ public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest,
     protected Object cache(T msg) {
         BasicRequest request = msg.getFirst();
         // 一定能找到服务对象
-        Object serviceBean = objectHolder.apply(request.serviceName());
+        Object serviceBean = objectHolder.get(request.serviceName()).object();
         try {
             Method method = serviceBean.getClass().getMethod(request.methodName(),
                     ClassUtils.getClasses(request.parameters()));
@@ -53,7 +54,7 @@ public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest,
             // 可缓存方法
             CacheableService cacheableService = method.getAnnotation(CacheableService.class);
             if (cacheableService != null) {
-                response.setExpireTime(cacheableService.exprie());
+                response.setExpireTime(cacheableService.expire());
                 if (cacheableService.consumer())
                     response.canCacheForConsumer();
                 if (cacheableService.provider())

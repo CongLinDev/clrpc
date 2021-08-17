@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import conglin.clrpc.common.Callback;
+import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.service.future.sync.BasicStateSync;
 import conglin.clrpc.service.future.sync.StateSync;
@@ -14,6 +15,7 @@ abstract public class AbstractFuture implements RpcFuture {
     private final StateSync SYNCHRONIZER; // 同步器
 
     private Callback futureCallback; // 回调
+    private Fallback futureFallback;
 
     private long startTime; // 开始时间
     private boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
@@ -135,6 +137,18 @@ abstract public class AbstractFuture implements RpcFuture {
         return timeThreshold + startTime > System.currentTimeMillis();
     }
 
+
+    @Override
+    public Fallback fallback() {
+        return futureFallback;
+    }
+
+    @Override
+    public RpcFuture fallback(Fallback fallback) {
+        this.futureFallback = fallback;
+        return this;
+    }
+
     @Override
     public RpcFuture callback(Callback callback) {
         if (isDone()) {
@@ -152,8 +166,6 @@ abstract public class AbstractFuture implements RpcFuture {
 
     /**
      * 执行回调函数
-     * 
-     * @param callback
      */
     protected void runCallback() {
         runCallback(this.futureCallback);

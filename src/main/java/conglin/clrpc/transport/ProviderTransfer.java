@@ -1,13 +1,16 @@
 package conglin.clrpc.transport;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 
+import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.service.context.ProviderContext;
 import conglin.clrpc.transport.handler.ProviderChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -20,16 +23,16 @@ public class ProviderTransfer {
 
     private ServerBootstrap nettyBootstrap;
 
-    private ProviderContext context;
+    private RpcContext context;
 
     /**
      * 启动Netty
      * 
      * @param context 上下文
      */
-    public void start(ProviderContext context) {
+    public void start(RpcContext context) {
         this.context = context;
-        PropertyConfigurer configurer = context.getPropertyConfigurer();
+        PropertyConfigurer configurer = (PropertyConfigurer)context.get(RpcContextEnum.PROPERTY_CONFIGURER);
         initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
                 configurer.getOrDefault("provider.thread.worker", 4));
         int servicePort = configurer.getOrDefault("provider.port", 0);
@@ -38,7 +41,10 @@ public class ProviderTransfer {
             String localAddress = IPAddressUtils
                     .addressString((InetSocketAddress) channelFuture.channel().localAddress());
             if (channelFuture.isSuccess()) {
-                context.getServiceRegister().accept(localAddress);
+                ServiceRegistry serviceRegistry = context.getWith(RpcContextEnum.SERVICE_REGISTRY);
+                Map<String, Object> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
+                serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, localAddress,
+                        configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
                 LOGGER.info("Provider starts on {}", localAddress);
             } else {
                 LOGGER.error("Provider starts failed");

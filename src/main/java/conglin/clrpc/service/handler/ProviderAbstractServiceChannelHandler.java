@@ -3,10 +3,11 @@ package conglin.clrpc.service.handler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import conglin.clrpc.service.ServiceObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Pair;
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
@@ -73,14 +74,14 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      * @return
      * @throws UnsupportedServiceException
      */
-    protected Object findServiceBean(String serviceName) throws UnsupportedServiceException {
+    protected ServiceObject findServiceBean(String serviceName) throws UnsupportedServiceException {
         // 获取服务实现类
-        Object serviceBean = context.objectHolder().apply(serviceName);
+        ServiceObject serviceObject = context.getServiceObjectHolder().get(serviceName);
         // 如果服务实现类没有注册，抛出异常
-        if (serviceBean == null) {
+        if (serviceObject == null) {
             throw new UnsupportedServiceException(serviceName);
         }
-        return serviceBean;
+        return serviceObject;
     }
 
     /**

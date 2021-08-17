@@ -27,7 +27,7 @@ public @interface Service {
 
     /**
      * 是否开启该服务
-     * 
+     *
      * @return
      */
     boolean enable() default true;

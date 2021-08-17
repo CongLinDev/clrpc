@@ -46,11 +46,12 @@ public class BasicFuture extends AbstractFuture {
     /**
      * 确认该 {@code RpcFuture} 由fallback机制完成
      * 
-     * @param result
+     * @param response
      */
-    public void fallback(Object result) {
+    public void fallbackDone(BasicResponse response) {
         fallback = true;
-        done(result);
+        this.response = response;
+        done(response);
     }
 
     /**

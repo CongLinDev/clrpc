@@ -7,13 +7,13 @@ import java.lang.reflect.Proxy;
  * RPC proxy 的类型
  */
 public enum ProxyType {
-    Common, Basic, Sync, Async, Transaction, Unknown;
+    Anonymous, Sync, Async, Transaction, Unknown;
 
     public static ProxyType type(Object proxyObject) {
         if (proxyObject instanceof RpcProxy) {
             Class<?> clazz = proxyObject.getClass();
-            if (BasicProxy.class == clazz) {
-                return Basic;
+            if (AnonymousProxy.class == clazz) {
+                return Anonymous;
             } else if (SyncObjectProxy.class.isAssignableFrom(clazz)) {
                 return Sync;
             } else if (AsyncObjectProxy.class.isAssignableFrom(clazz)) {

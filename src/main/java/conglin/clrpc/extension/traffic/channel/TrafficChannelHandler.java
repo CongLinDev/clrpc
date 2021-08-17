@@ -1,6 +1,6 @@
 package conglin.clrpc.extension.traffic.channel;
 
-import conglin.clrpc.common.Calculatable;
+import conglin.clrpc.common.Calculable;
 import conglin.clrpc.extension.traffic.counter.CommonTrafficCounter;
 import conglin.clrpc.extension.traffic.counter.TrafficCounter;
 import io.netty.buffer.ByteBuf;
@@ -9,7 +9,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-public class TrafficChannelHandler extends ChannelDuplexHandler implements Calculatable<TrafficCounter> {
+public class TrafficChannelHandler extends ChannelDuplexHandler implements Calculable<TrafficCounter> {
 
     private final TrafficCounter counter;
 

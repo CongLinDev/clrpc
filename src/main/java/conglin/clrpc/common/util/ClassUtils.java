@@ -33,7 +33,7 @@ public final class ClassUtils {
         int count = 0;
         for (Method method : clazz.getMethods()) {
             if (Modifier.isPublic(method.getModifiers())) {
-                clazzMap.put("method" + count, resloveMethod(method));
+                clazzMap.put("method" + count, resolveMethod(method));
                 count++;
             }
         }
@@ -46,7 +46,7 @@ public final class ClassUtils {
      * @param method
      * @return
      */
-    public static Map<String, Object> resloveMethod(Method method) {
+    public static Map<String, Object> resolveMethod(Method method) {
         Map<String, Object> methodMap = new HashMap<>();
         methodMap.put("method", method.getName());
         methodMap.put("parameter", method.getParameterTypes());
@@ -62,7 +62,7 @@ public final class ClassUtils {
      * @param args
      * @return
      * 
-     * @see #loadObject(String, Class, Object...)
+     * @see #loadObjectByType(String, Class, Object...)
      */
     public static Object loadObject(String qualifiedClassName, Object... args) {
         return loadObjectByType(qualifiedClassName, Object.class, args);
@@ -71,11 +71,11 @@ public final class ClassUtils {
     /**
      * 反射加载给定全限定类名下的类
      * 
-     * @param qualifiedClassName
+     * @param targetClass
      * @param args
      * @return
      * 
-     * @see #loadObject(Class, Class, Object...)
+     * @see #loadObjectByType(Class, Class, Object...)
      */
     public static Object loadObject(Class<?> targetClass, Object... args) {
         return loadObjectByType(targetClass, Object.class, args);
@@ -92,7 +92,7 @@ public final class ClassUtils {
      */
     public static <T> T loadObjectByType(String qualifiedClassName, Class<T> superClass, Object... args) {
         if (qualifiedClassName == null)
-            return null;
+            throw new IllegalArgumentException("qualifiedClassName must not be null");
         try {
             return loadObjectByType(Class.forName(qualifiedClassName), superClass, args);
         } catch (ClassNotFoundException e) {
@@ -152,7 +152,7 @@ public final class ClassUtils {
      * 反射调用对象方法
      * 
      * @param object
-     * @param methodName
+     * @param method
      * @param parameters
      * @return
      * @throws NoSuchMethodException
@@ -198,21 +198,21 @@ public final class ClassUtils {
         }
         // 处理基本类型
         if (clazz == boolean.class) {
-            return Boolean.valueOf(false);
+            return Boolean.FALSE;
         } else if (clazz == byte.class) {
-            return Byte.valueOf((byte) 0);
+            return (byte) 0;
         } else if (clazz == char.class) {
-            return Character.valueOf((char) 0);
+            return (char) 0;
         } else if (clazz == short.class) {
-            return Short.valueOf((short) 0);
+            return (short) 0;
         } else if (clazz == int.class) {
-            return Integer.valueOf(0);
+            return 0;
         } else if (clazz == long.class) {
-            return Long.valueOf(0);
+            return 0L;
         } else if (clazz == float.class) {
-            return Float.valueOf(0);
+            return (float) 0;
         } else if (clazz == double.class) {
-            return Double.valueOf(0);
+            return (double) 0;
         }
 
         throw new IllegalArgumentException(clazz.getName());

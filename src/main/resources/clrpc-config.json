@@ -1,6 +1,10 @@
 {
-    "registry": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
-    "atomicity": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
+    "registry.registerClassName": "conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceRegistry",
+    "registry.discoveryClassName": "conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceDiscovery",
+    "registry.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
+
+    "atomicity.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
+    "atomicity.transaction.proxyClassName": "conglin.clrpc.thirdparty.zookeeper.proxy.ZooKeeperTransactionProxy",
 
     "meta.provider.*": {},
     "meta.consumer.*": {},
@@ -9,13 +13,14 @@
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
     "provider.channel.handler-factory": null,
+    "provider.message.serializationHandlerClassName": "conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler",
 
     "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
     "consumer.retry.check-period": 3000,
     "consumer.retry.initial-threshold": 3000,
-    "consumer.fallback.max-retry": -1,
     "consumer.channel.handler-factory": null,
+    "consumer.message.serializationHandlerClassName": "conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler",
 
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,

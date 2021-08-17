@@ -6,16 +6,20 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
+import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.router.instance.ServiceInstance;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.transport.component.RequestSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Pair;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.service.context.ConsumerContext;
 import conglin.clrpc.transport.component.DefaultRequestSender;
 import conglin.clrpc.transport.component.ProviderChooser;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
@@ -37,9 +41,9 @@ public class ConsumerTransfer {
     private final Condition connected;
     private int timeoutForWait; // 挑选服务提供者超时等待时间 单位是ms
 
-    private ConsumerContext context;
+    private RpcContext context;
 
-    private final LoadBalancer<String, String, Channel> loadBalancer;
+    private final LoadBalancer<String, ServiceInstance, Channel> loadBalancer;
 
     public ConsumerTransfer() {
         loadBalancer = new ConsistentHashLoadBalancer<>(this::connectProviderNode, this::disconnectProviderNode);
@@ -53,11 +57,11 @@ public class ConsumerTransfer {
      * 
      * @param context 上下文
      */
-    public void start(ConsumerContext context) {
+    public void start(RpcContext context) {
         this.context = context;
         initContext(context);
 
-        PropertyConfigurer configurer = context.getPropertyConfigurer();
+        PropertyConfigurer configurer = (PropertyConfigurer)context.get(RpcContextEnum.PROPERTY_CONFIGURER);
         timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
         initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
     }
@@ -67,9 +71,10 @@ public class ConsumerTransfer {
      * 
      * @param context
      */
-    protected void initContext(ConsumerContext context) {
-        context.setProviderChooser(new DefaultProviderChooser(context.getProviderChooserAdapter()));
-        context.setRequestSender(new DefaultRequestSender(context));
+    protected void initContext(RpcContext context) {
+        ProviderChooserAdapter adapter = (ProviderChooserAdapter) context.get(RpcContextEnum.PROVIDER_CHOOSER_ADAPTER);
+        context.put(RpcContextEnum.PROVIDER_CHOOSER, new DefaultProviderChooser(adapter));
+        context.put(RpcContextEnum.REQUEST_SENDER, new DefaultRequestSender(context));
     }
 
     /**
@@ -92,7 +97,7 @@ public class ConsumerTransfer {
         signalWaitingConsumer();
 
         nettyBootstrap.config().group().shutdownGracefully();
-        context.getRequestSender().shutdown();
+        ((RequestSender)context.get(RpcContextEnum.REQUEST_SENDER)).shutdown();
     }
 
     /**
@@ -101,7 +106,7 @@ public class ConsumerTransfer {
      * @param serviceName 服务名
      * @param providers   服务提供者
      */
-    public void updateConnectedProvider(String serviceName, Collection<Pair<String, String>> providers) {
+    public void updateConnectedProvider(String serviceName, Collection<ServiceInstance> providers) {
         loadBalancer.update(serviceName, providers);
         signalWaitingConsumer();
     }
@@ -118,17 +123,18 @@ public class ConsumerTransfer {
      * 连接某个特定的服务提供者
      * 
      * @param serviceName
-     * @param remoteAddress
+     * @param serviceInstance
      */
-    private Channel connectProviderNode(String serviceName, String remoteAddress) {
+    private Channel connectProviderNode(String serviceName, ServiceInstance serviceInstance) {
+        String remoteAddress = serviceInstance.address();
         try {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
                 String localAddress = IPAddressUtils
                         .addressString((InetSocketAddress) channelFuture.channel().localAddress());
-                context.getServiceRegister().register(serviceName, localAddress, context.getPropertyConfigurer()
-                        .subConfigurer("meta.consumer." + serviceName, "meta.consumer.*").toString());
+                ((ServiceRegistry)context.get(RpcContextEnum.SERVICE_REGISTRY)).register(serviceName, localAddress,
+                        "{}");
                 LOGGER.info("Consumer starts on {}", localAddress);
                 return channelFuture.channel();
             } else {
@@ -148,7 +154,7 @@ public class ConsumerTransfer {
      * @param channel
      */
     private void disconnectProviderNode(String serviceName, Channel channel) {
-        context.getServiceRegister().unregister(serviceName, channel.localAddress().toString());
+        ((ServiceRegistry)context.get(RpcContextEnum.SERVICE_REGISTRY)).unregister(serviceName, channel.localAddress().toString());
         channel.close();
     }
 
@@ -218,11 +224,11 @@ public class ConsumerTransfer {
         }
 
         @Override
-        public Channel choose(String serviceName, String addition) {
+        public Channel choose(String serviceName, Predicate<ServiceInstance> instancePredicate) {
             int count = 0;
             // 尝试三次，若三次未成功，则放弃
             while (count < 3) {
-                Channel channel = loadBalancer.get(serviceName, addition);
+                Channel channel = loadBalancer.getKey(serviceName, instancePredicate);
                 if (channel != null)
                     return channel;
                 try {

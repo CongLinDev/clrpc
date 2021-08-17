@@ -19,7 +19,7 @@ import conglin.clrpc.transport.message.TransactionRequest;
  */
 public class GlobalMessageManager {
 
-    private final Class<?> messageClasses[];
+    private final Class<?>[] messageClasses;
 
     private GlobalMessageManager(int capacity) {
         messageClasses = new Class[capacity];

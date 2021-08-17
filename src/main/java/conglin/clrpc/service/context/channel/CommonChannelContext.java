@@ -5,7 +5,8 @@ import java.util.concurrent.ExecutorService;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.global.role.Role;
-import conglin.clrpc.service.context.CommonContext;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 
 public class CommonChannelContext {
 
@@ -17,11 +18,11 @@ public class CommonChannelContext {
 
     private final SerializationHandler serializationHandler;
 
-    public CommonChannelContext(CommonContext context) {
-        role = context.role();
-        propertyConfigurer = context.getPropertyConfigurer();
-        executorService = context.getExecutorService();
-        serializationHandler = context.getSerializationHandler();
+    public CommonChannelContext(RpcContext context) {
+        role = context.getWith(RpcContextEnum.ROLE);
+        propertyConfigurer = context.getWith(RpcContextEnum.PROPERTY_CONFIGURER);
+        executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
+        serializationHandler = context.getWith(RpcContextEnum.SERIALIZATION_HANDLER);
     }
 
     /**

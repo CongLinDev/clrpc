@@ -1,10 +1,10 @@
 package conglin.clrpc.transport.handler;
 
-import conglin.clrpc.service.context.ProviderContext;
+import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.channel.CommonChannelContext;
 import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
-import conglin.clrpc.service.handler.ProviderTransactionServiceChannelHandler;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 
@@ -61,9 +61,9 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class ProviderChannelInitializer extends AbstractChannelInitializer {
 
-    private final ProviderContext context;
+    private final RpcContext context;
 
-    public ProviderChannelInitializer(ProviderContext context) {
+    public ProviderChannelInitializer(RpcContext context) {
         super();
         this.context = context;
     }
@@ -77,10 +77,7 @@ public class ProviderChannelInitializer extends AbstractChannelInitializer {
     protected void doInitChannel(SocketChannel ch, CommonChannelContext channelContext) throws Exception {
         ProviderChannelContext context = (ProviderChannelContext)channelContext;
         // handle request
-        pipeline()
-                .addLast("ProviderTransactionServiceChannelHandler",
-                        new ProviderTransactionServiceChannelHandler(context))
-                .addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context));
+        pipeline().addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context));
 
         // send response
         pipeline().addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());

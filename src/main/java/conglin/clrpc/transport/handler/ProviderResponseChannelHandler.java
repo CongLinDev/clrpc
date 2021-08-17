@@ -3,7 +3,7 @@ package conglin.clrpc.transport.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Pair;
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;

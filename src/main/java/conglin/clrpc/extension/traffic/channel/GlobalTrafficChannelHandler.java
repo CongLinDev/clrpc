@@ -1,10 +1,10 @@
 package conglin.clrpc.extension.traffic.channel;
 
-import conglin.clrpc.common.Url;
+import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.context.channel.CommonChannelContext;
-import conglin.clrpc.zookeeper.registry.ZooKeeperServiceLogger;
+import conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,7 +20,7 @@ public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
     public GlobalTrafficChannelHandler(CommonChannelContext context) {
         this.context = context;
         String urlString = context.propertyConfigurer().get("extension.logger", String.class);
-        serviceLogger = new ZooKeeperServiceLogger(new Url(urlString));
+        serviceLogger = new ZooKeeperServiceLogger(new UrlScheme(urlString));
     }
 
     /**

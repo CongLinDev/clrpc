@@ -6,7 +6,7 @@ package conglin.clrpc.global.role;
 public enum Role {
     CONSUMER("consumer"), PROVIDER("provider"), UNKNOWN("unknown");
 
-    private String role;
+    private final String role;
 
     Role(String role) {
         this.role = role;

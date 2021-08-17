@@ -1,8 +1,7 @@
 package conglin.clrpc.bootstrap;
 
-import conglin.clrpc.common.config.JsonPropertyConfigurer;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.global.GlobalResourceManager;
+import conglin.clrpc.global.role.Role;
 
 /**
  * 抽象的 RpcBootstrap
@@ -14,33 +13,29 @@ abstract public class RpcBootstrap {
     private final PropertyConfigurer CONFIGURER;
 
     /**
-     * @see #RpcBootstrap(PropertyConfigurer)
-     */
-    public RpcBootstrap() {
-        this(null);
-    }
-
-    /**
      * 创建启动对象
      * 
      * @param configurer 配置器
      */
     public RpcBootstrap(PropertyConfigurer configurer) {
-        this.CONFIGURER = (configurer != null) ? configurer : JsonPropertyConfigurer.fromFile();
+        if(configurer == null) {
+            throw new NullPointerException();
+        }
+        this.CONFIGURER = configurer;
     }
 
     /**
      * 准备
      */
     protected void start() {
-        GlobalResourceManager.manager().acquire();
+
     }
 
     /**
      * 销毁
      */
     protected void stop() {
-        GlobalResourceManager.manager().release();
+
     }
 
     /**
@@ -59,5 +54,9 @@ abstract public class RpcBootstrap {
      */
     protected PropertyConfigurer configurer() {
         return CONFIGURER;
+    }
+
+    public Role role() {
+        return Role.UNKNOWN;
     }
 }
