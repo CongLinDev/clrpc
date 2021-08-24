@@ -1,25 +1,41 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.context.channel.ConsumerChannelContext;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> {
+import java.util.concurrent.ExecutorService;
+
+abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerAbstractServiceChannelHandler.class);
 
-    protected final ConsumerChannelContext context;
+    private RpcContext context;
 
-    public ConsumerAbstractServiceChannelHandler(ConsumerChannelContext context) {
+    @Override
+    public RpcContext getContext() {
+        return context;
+    }
+
+    @Override
+    public void setContext(RpcContext context) {
         this.context = context;
+        init();
+    }
+
+    protected void init() {
+
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        context.executorService().submit(() -> {
+        ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
+        executorService.submit(() -> {
             Object result = execute(msg);
             if(result != null)
                 ctx.fireChannelRead(result);
@@ -36,7 +52,7 @@ abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error("ExceptionCaught : {}", cause.getMessage());
+        LOGGER.error("ExceptionCaught : ", cause);
         ctx.close();
     }
 }

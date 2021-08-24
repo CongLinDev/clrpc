@@ -1,10 +1,14 @@
 package conglin.clrpc.transport.handler;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.global.role.Role;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.service.context.channel.CommonChannelContext;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.transport.handler.codec.RpcProtocolCodec;
 import io.netty.channel.ChannelHandler;
@@ -14,25 +18,42 @@ import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
-abstract public class AbstractChannelInitializer extends ChannelInitializer<SocketChannel> {
+abstract public class AbstractChannelInitializer extends ChannelInitializer<SocketChannel> implements ContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractChannelInitializer.class);
 
     private ChannelPipeline pipeline;
 
+    private RpcContext rpcContext;
+
+    @Override
+    public RpcContext getContext() {
+        return rpcContext;
+    }
+
+    @Override
+    public void setContext(RpcContext context) {
+        rpcContext = context;
+        init();
+    }
+
+    protected void init() {
+
+    }
+
     @Override
     final protected void initChannel(SocketChannel ch) throws Exception {
         this.pipeline = ch.pipeline();
 
-        CommonChannelContext channelContext = channelContext();
+        PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
+        Role role = getContext().getWith(RpcContextEnum.ROLE);
 
-        String factoryClass = channelContext.propertyConfigurer()
-                .get(channelContext.role().item(".channel.handler-factory"), String.class);
-        ChannelHandlerFactory factory = ChannelHandlerFactory.newFactory(factoryClass, channelContext);
+        String factoryClass = c.get(role.item(".channel.handler-factory"), String.class);
+        ChannelHandlerFactory factory = ChannelHandlerFactory.newFactory(factoryClass, getContext());
         factory.beforeCodec().forEach(pipeline::addLast);
-        addCodecHandler(channelContext);
+        addCodecHandler();
         factory.beforeHandle().forEach(pipeline::addLast);
-        doInitChannel(ch, channelContext);
+        doInitChannel(ch);
         factory.afterHandle().forEach(pipeline::addLast);
 
         LOGGER.info("Here are ChannelHandlers in Channel(id={}) as follows.", ch.id().asShortText());
@@ -65,10 +86,9 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
      * 初始化Channel具体方法
      * 
      * @param ch
-     * @param channelContext
      * @throws Exception
      */
-    abstract protected void doInitChannel(SocketChannel ch, CommonChannelContext channelContext) throws Exception;
+    abstract protected void doInitChannel(SocketChannel ch) throws Exception;
 
     /**
      * 返回当前绑定的 {@link io.netty.channel.ChannelPipeline}
@@ -82,15 +102,8 @@ abstract public class AbstractChannelInitializer extends ChannelInitializer<Sock
     /**
      * 向 {@link io.netty.channel.ChannelPipeline} 中添加默认的编解码处理器
      */
-    protected void addCodecHandler(CommonChannelContext context) {
-        SerializationHandler serializationHandler = context.serializationHandler();
+    protected void addCodecHandler() {
+        SerializationHandler serializationHandler = rpcContext.getWith(RpcContextEnum.SERIALIZATION_HANDLER);
         pipeline().addLast("RpcProtocolCodec", new RpcProtocolCodec(serializationHandler));
     }
-
-    /**
-     * 创建新的 Channel Context
-     * 
-     * @return
-     */
-    abstract protected CommonChannelContext channelContext();
 }

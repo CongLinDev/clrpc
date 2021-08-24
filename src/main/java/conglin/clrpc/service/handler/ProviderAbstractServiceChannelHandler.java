@@ -2,8 +2,13 @@ package conglin.clrpc.service.handler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,23 +16,33 @@ import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> {
+abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
-    protected final ProviderChannelContext context;
+    private RpcContext context;
 
     private ChannelPipeline pipeline;
 
-    public ProviderAbstractServiceChannelHandler(ProviderChannelContext context) {
+    @Override
+    public void setContext(RpcContext context) {
         this.context = context;
+        init();
+    }
+
+    @Override
+    public RpcContext getContext() {
+        return context;
+    }
+
+    protected void init() {
+
     }
 
     @Override
@@ -38,7 +53,8 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        context.executorService().submit(() -> {
+        ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
+        executorService.submit(() -> {
             next(msg, execute(msg));
         });
     }
@@ -63,7 +79,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error("ExceptionCaught : {}", cause);
+        LOGGER.error("ExceptionCaught : ", cause);
         ctx.close();
     }
 
@@ -76,7 +92,8 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      */
     protected ServiceObject findServiceBean(String serviceName) throws UnsupportedServiceException {
         // 获取服务实现类
-        ServiceObject serviceObject = context.getServiceObjectHolder().get(serviceName);
+        Map<String, ServiceObject> serviceObjectHolder = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
+        ServiceObject serviceObject = serviceObjectHolder.get(serviceName);
         // 如果服务实现类没有注册，抛出异常
         if (serviceObject == null) {
             throw new UnsupportedServiceException(serviceName);

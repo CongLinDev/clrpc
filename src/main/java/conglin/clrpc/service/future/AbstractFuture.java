@@ -7,7 +7,7 @@ import java.util.concurrent.TimeoutException;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.exception.RpcServiceException;
-import conglin.clrpc.service.future.sync.BasicStateSync;
+import conglin.clrpc.service.future.sync.AqsStateSync;
 import conglin.clrpc.service.future.sync.StateSync;
 
 abstract public class AbstractFuture implements RpcFuture {
@@ -31,7 +31,7 @@ abstract public class AbstractFuture implements RpcFuture {
      * @return
      */
     protected StateSync newSynchronizer() {
-        return new BasicStateSync();
+        return new AqsStateSync();
     }
 
     @Override

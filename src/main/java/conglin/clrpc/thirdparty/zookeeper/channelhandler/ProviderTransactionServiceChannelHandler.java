@@ -2,6 +2,8 @@ package conglin.clrpc.thirdparty.zookeeper.channelhandler;
 
 import java.lang.reflect.Method;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,6 @@ import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.TransactionHelper;
 import conglin.clrpc.service.annotation.AnnotationParser;
-import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicResponse;
 import conglin.clrpc.transport.message.TransactionRequest;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
@@ -24,11 +25,13 @@ public class ProviderTransactionServiceChannelHandler
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransactionServiceChannelHandler.class);
 
-    protected final TransactionHelper helper;
+    protected TransactionHelper helper;
 
-    public ProviderTransactionServiceChannelHandler(ProviderChannelContext context) {
-        super(context);
-        String urlString = context.propertyConfigurer().get("atomicity", String.class);
+    @Override
+    protected void init() {
+        super.init();
+        PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
+        String urlString = c.get("atomicity", String.class);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
     }
 

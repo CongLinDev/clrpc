@@ -1,9 +1,12 @@
 package conglin.clrpc.extension.traffic.channel;
 
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.global.role.Role;
-import conglin.clrpc.service.context.channel.CommonChannelContext;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -11,17 +14,24 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 @Sharable
-public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
+abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter implements ContextAware {
 
-    private final ServiceLogger serviceLogger;
+    protected ServiceLogger serviceLogger;
 
-    private final CommonChannelContext context;
+    private RpcContext context;
 
-    public GlobalTrafficChannelHandler(CommonChannelContext context) {
-        this.context = context;
-        String urlString = context.propertyConfigurer().get("extension.logger", String.class);
-        serviceLogger = new ZooKeeperServiceLogger(new UrlScheme(urlString));
+    @Override
+    public RpcContext getContext() {
+        return context;
     }
+
+    @Override
+    public void setContext(RpcContext context) {
+        this.context = context;
+        init();
+    }
+
+    abstract protected void init();
 
     /**
      * 为了服务端和客户端保证 {@link Channel} 的唯一性
@@ -44,14 +54,14 @@ public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         TrafficChannelHandler handler = new TrafficChannelHandler();
-        serviceLogger.put(id(context.role(), ctx.channel()), handler);
+        serviceLogger.put(id(getContext().getWith(RpcContextEnum.ROLE), ctx.channel()), handler);
         ctx.pipeline().addFirst(handler);
         super.channelActive(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        serviceLogger.remove(id(context.role(), ctx.channel()));
+        serviceLogger.remove(id(getContext().getWith(RpcContextEnum.ROLE), ctx.channel()));
         super.channelInactive(ctx);
     }
 }

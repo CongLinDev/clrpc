@@ -175,12 +175,7 @@ bootstrap.stop();
 
 使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，并声明在配置文件中，即可完成对消息处理的扩展。
 
-在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，会向构造方法其中传入一个参数，其参数类型如下：
-
-|   Role   |                             Type                             | Remark |
-| :------: | :----------------------------------------------------------: | :----: |
-| Provider | conglin.clrpc.service.context.channel.ProviderChannelContext | 上下文 |
-| Consumer | conglin.clrpc.service.context.channel.ConsumerChannelContext | 上下文 |
+在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，必须提供一个无参构造函数，该对象可以通过实现 `conglin.clrpc.service.context.ContextAware` 接口来实现 `conglin.clrpc.service.context.RpcContext` 的注入。
 
 ## License
 

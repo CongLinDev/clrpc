@@ -8,7 +8,6 @@ public interface StateSync {
     int PENDING = 0; // 等待
     int CANCELLED = 1; // 取消
     int DONE = 2; // 完成
-    int USED = 3; // 占用
 
     /**
      * 等待
@@ -71,15 +70,6 @@ public interface StateSync {
      */
     default boolean isCancelled() {
         return state() == CANCELLED;
-    }
-
-    /**
-     * 是否被占用
-     * 
-     * @return
-     */
-    default boolean isUsed() {
-        return state() == USED;
     }
 
     /**

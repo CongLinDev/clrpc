@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,6 @@ import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.extension.annotation.CacheableService;
 import conglin.clrpc.extension.annotation.IdempotentService;
-import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 import conglin.clrpc.transport.message.CacheableResponse;
@@ -21,11 +21,12 @@ public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderCachedChannelHandler.class);
 
-    private final Map<String, ServiceObject> objectHolder;
+    private Map<String, ServiceObject> objectHolder;
 
-    public ProviderCachedChannelHandler(ProviderChannelContext context) {
-        super(context);
-        this.objectHolder = context.getServiceObjectHolder();
+    @Override
+    public void init() {
+        super.init();
+        this.objectHolder = getContext().getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
     }
 
     @Override

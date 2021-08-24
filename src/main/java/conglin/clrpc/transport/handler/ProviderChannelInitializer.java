@@ -1,8 +1,5 @@
 package conglin.clrpc.transport.handler;
 
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.channel.CommonChannelContext;
-import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,23 +58,12 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class ProviderChannelInitializer extends AbstractChannelInitializer {
 
-    private final RpcContext context;
-
-    public ProviderChannelInitializer(RpcContext context) {
-        super();
-        this.context = context;
-    }
-
     @Override
-    protected ProviderChannelContext channelContext() {
-        return new ProviderChannelContext(context);
-    }
-
-    @Override
-    protected void doInitChannel(SocketChannel ch, CommonChannelContext channelContext) throws Exception {
-        ProviderChannelContext context = (ProviderChannelContext)channelContext;
+    protected void doInitChannel(SocketChannel ch) throws Exception {
         // handle request
-        pipeline().addLast("ProviderBasicServiceChannelHandler", new ProviderBasicServiceChannelHandler(context));
+        ProviderBasicServiceChannelHandler providerBasicServiceChannelHandler = new ProviderBasicServiceChannelHandler();
+        providerBasicServiceChannelHandler.setContext(getContext());
+        pipeline().addLast("ProviderBasicServiceChannelHandler", providerBasicServiceChannelHandler);
 
         // send response
         pipeline().addLast("ProviderResponseChannelHandler", new ProviderResponseChannelHandler());

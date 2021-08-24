@@ -6,7 +6,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 /**
  * 基于 {@link java.util.concurrent.locks.AbstractQueuedSynchronizer} 的同步器
  */
-public class BasicStateSync extends AbstractQueuedSynchronizer implements StateSync {
+public class AqsStateSync extends AbstractQueuedSynchronizer implements StateSync {
 
     private static final long serialVersionUID = -7504883045517282600L;
 
@@ -42,15 +42,13 @@ public class BasicStateSync extends AbstractQueuedSynchronizer implements StateS
 
     @Override
     protected boolean tryAcquire(int arg) {
-        if (isCancelled())
-            return true;
-        return compareAndSetState(DONE, USED);
+        return !isPending();
     }
 
     @Override
     protected boolean tryRelease(int arg) {
-        if (!isCancelled()) {
-            setState(DONE);
+        if (isPending()) {
+            throw new UnsupportedOperationException();
         }
         return true;
     }

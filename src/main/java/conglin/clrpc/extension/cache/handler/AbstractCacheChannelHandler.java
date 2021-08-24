@@ -2,18 +2,33 @@ package conglin.clrpc.extension.cache.handler;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.CacheManager;
-import conglin.clrpc.service.context.channel.CommonChannelContext;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboundHandler<T> {
+abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware {
 
-    private final CacheManager<BasicRequest, CacheableResponse> cacheManager;
+    private RpcContext context;
 
-    public AbstractCacheChannelHandler(CommonChannelContext context) {
-        PropertyConfigurer configurer = context.propertyConfigurer();
+    private CacheManager<BasicRequest, CacheableResponse> cacheManager;
+
+    @Override
+    public RpcContext getContext() {
+        return context;
+    }
+
+    @Override
+    public void setContext(RpcContext context) {
+        this.context = context;
+        init();
+    }
+
+    protected void init() {
+        PropertyConfigurer configurer = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
         @SuppressWarnings("unchecked")
         CacheManager<BasicRequest, CacheableResponse> cm = (CacheManager<BasicRequest, CacheableResponse>) configurer
                 .get("extension.cache.cacheManager");

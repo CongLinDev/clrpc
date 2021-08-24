@@ -4,13 +4,12 @@ import java.util.Collection;
 import java.util.Collections;
 
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.context.channel.CommonChannelContext;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
 import io.netty.channel.ChannelHandler;
 
 /**
- * {@link ChannelHandlerFactory} 的实现类应当提供一个有参构造方法
- * 
- * 其中参数应当为 {@link conglin.clrpc.service.context.channel.CommonChannelContext}
+ * {@link ChannelHandlerFactory} 的实现类应当提供一个无参构造方法
  */
 public interface ChannelHandlerFactory {
 
@@ -21,11 +20,14 @@ public interface ChannelHandlerFactory {
      * @param context
      * @return
      */
-    static ChannelHandlerFactory newFactory(String qualifiedClassName, CommonChannelContext context) {
+    static ChannelHandlerFactory newFactory(String qualifiedClassName, RpcContext context) {
         if (qualifiedClassName == null) {
             return new ChannelHandlerFactory() { };
         }
-        ChannelHandlerFactory factory = ClassUtils.loadObjectByType(qualifiedClassName, ChannelHandlerFactory.class, context);
+        ChannelHandlerFactory factory = ClassUtils.loadObjectByType(qualifiedClassName, ChannelHandlerFactory.class);
+        if (factory instanceof ContextAware) {
+            ((ContextAware)factory).setContext(context);
+        }
         return factory != null ? factory : new ChannelHandlerFactory() { };
     }
 

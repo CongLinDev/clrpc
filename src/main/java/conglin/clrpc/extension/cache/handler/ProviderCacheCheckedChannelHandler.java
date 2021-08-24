@@ -1,7 +1,6 @@
 package conglin.clrpc.extension.cache.handler;
 
 import conglin.clrpc.common.object.Pair;
-import conglin.clrpc.service.context.channel.ProviderChannelContext;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
 
@@ -16,10 +15,6 @@ import conglin.clrpc.transport.message.BasicResponse;
  * @param <T>
  */
 public class ProviderCacheCheckedChannelHandler<T extends BasicRequest> extends AbstractCacheChannelHandler<T> {
-
-    public ProviderCacheCheckedChannelHandler(ProviderChannelContext context) {
-        super(context);
-    }
 
     @Override
     protected boolean check(T msg) {

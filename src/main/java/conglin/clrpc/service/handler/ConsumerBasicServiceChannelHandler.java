@@ -1,9 +1,9 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.service.context.channel.ConsumerChannelContext;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicResponse;
@@ -12,11 +12,12 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBasicServiceChannelHandler.class);
 
-    protected final FutureHolder<Long> futureHolder;
+    protected FutureHolder<Long> futureHolder;
 
-    public ConsumerBasicServiceChannelHandler(ConsumerChannelContext context) {
-        super(context);
-        this.futureHolder = context.futureHolder();
+    @Override
+    protected void init() {
+        super.init();
+        futureHolder = getContext().getWith(RpcContextEnum.FUTURE_HOLDER);
     }
 
     @Override

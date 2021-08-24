@@ -1,6 +1,6 @@
 package conglin.clrpc.extension.cache.handler;
 
-import conglin.clrpc.service.context.channel.ConsumerChannelContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
@@ -17,11 +17,12 @@ import conglin.clrpc.transport.message.BasicRequest;
  */
 public class ConsumerCacheCheckedChannelHandler<T extends BasicRequest> extends AbstractCacheChannelHandler<T> {
 
-    private final FutureHolder<Long> futureHolder;
+    private FutureHolder<Long> futureHolder;
 
-    public ConsumerCacheCheckedChannelHandler(ConsumerChannelContext context) {
-        super(context);
-        this.futureHolder = context.futureHolder();
+    @Override
+    public void init() {
+        super.init();
+        futureHolder = getContext().getWith(RpcContextEnum.FUTURE_HOLDER);
     }
 
     @Override

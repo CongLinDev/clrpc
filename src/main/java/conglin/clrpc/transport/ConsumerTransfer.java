@@ -84,9 +84,11 @@ public class ConsumerTransfer {
      */
     private void initNettyBootstrap(int workerThread) {
         nettyBootstrap = new Bootstrap();
-        nettyBootstrap.group(new NioEventLoopGroup(workerThread)).channel(NioSocketChannel.class)
+        nettyBootstrap.group(new NioEventLoopGroup(workerThread)).channel(NioSocketChannel.class);
                 // .handler(new LoggingHandler(LogLevel.INFO))
-                .handler(new ConsumerChannelInitializer(context));
+        ConsumerChannelInitializer initializer = new ConsumerChannelInitializer();
+        initializer.setContext(context);
+        nettyBootstrap.handler(initializer);
     }
 
     /**

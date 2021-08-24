@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 
 import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class ProviderTransfer {
                     .addressString((InetSocketAddress) channelFuture.channel().localAddress());
             if (channelFuture.isSuccess()) {
                 ServiceRegistry serviceRegistry = context.getWith(RpcContextEnum.SERVICE_REGISTRY);
-                Map<String, Object> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
+                Map<String, ServiceObject> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
                 serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, localAddress,
                         configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
                 LOGGER.info("Provider starts on {}", localAddress);
@@ -65,9 +66,11 @@ public class ProviderTransfer {
     private void initNettyBootstrap(int bossThread, int workerThread) {
         nettyBootstrap = new ServerBootstrap();
         nettyBootstrap.group(new NioEventLoopGroup(bossThread), new NioEventLoopGroup(workerThread))
-                .channel(NioServerSocketChannel.class)
+                .channel(NioServerSocketChannel.class);
                 // .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ProviderChannelInitializer(context)).option(ChannelOption.SO_BACKLOG, 128)
+        ProviderChannelInitializer initializer = new ProviderChannelInitializer();
+        initializer.setContext(context);
+        nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
     }
 
