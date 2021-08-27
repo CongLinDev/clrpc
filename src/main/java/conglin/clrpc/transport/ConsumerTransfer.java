@@ -13,6 +13,7 @@ import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.component.RequestSender;
+import conglin.clrpc.transport.handler.DefaultChannelInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,6 @@ import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.transport.component.DefaultRequestSender;
 import conglin.clrpc.transport.component.ProviderChooser;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
-import conglin.clrpc.transport.handler.ConsumerChannelInitializer;
 import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -61,7 +61,7 @@ public class ConsumerTransfer {
         this.context = context;
         initContext(context);
 
-        PropertyConfigurer configurer = (PropertyConfigurer)context.get(RpcContextEnum.PROPERTY_CONFIGURER);
+        PropertyConfigurer configurer = (PropertyConfigurer) context.get(RpcContextEnum.PROPERTY_CONFIGURER);
         timeoutForWait = configurer.getOrDefault("consumer.wait-time", 5000);
         initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
     }
@@ -85,9 +85,10 @@ public class ConsumerTransfer {
     private void initNettyBootstrap(int workerThread) {
         nettyBootstrap = new Bootstrap();
         nettyBootstrap.group(new NioEventLoopGroup(workerThread)).channel(NioSocketChannel.class);
-                // .handler(new LoggingHandler(LogLevel.INFO))
-        ConsumerChannelInitializer initializer = new ConsumerChannelInitializer();
+        // .handler(new LoggingHandler(LogLevel.INFO))
+        DefaultChannelInitializer initializer = new DefaultChannelInitializer();
         initializer.setContext(context);
+        initializer.init();
         nettyBootstrap.handler(initializer);
     }
 
@@ -99,7 +100,7 @@ public class ConsumerTransfer {
         signalWaitingConsumer();
 
         nettyBootstrap.config().group().shutdownGracefully();
-        ((RequestSender)context.get(RpcContextEnum.REQUEST_SENDER)).shutdown();
+        ((RequestSender) context.get(RpcContextEnum.REQUEST_SENDER)).shutdown();
     }
 
     /**
@@ -135,7 +136,7 @@ public class ConsumerTransfer {
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
                 String localAddress = IPAddressUtils
                         .addressString((InetSocketAddress) channelFuture.channel().localAddress());
-                ((ServiceRegistry)context.get(RpcContextEnum.SERVICE_REGISTRY)).register(serviceName, localAddress,
+                ((ServiceRegistry) context.get(RpcContextEnum.SERVICE_REGISTRY)).register(serviceName, localAddress,
                         "{}");
                 LOGGER.info("Consumer starts on {}", localAddress);
                 return channelFuture.channel();
@@ -156,7 +157,8 @@ public class ConsumerTransfer {
      * @param channel
      */
     private void disconnectProviderNode(String serviceName, Channel channel) {
-        ((ServiceRegistry)context.get(RpcContextEnum.SERVICE_REGISTRY)).unregister(serviceName, channel.localAddress().toString());
+        ((ServiceRegistry) context.get(RpcContextEnum.SERVICE_REGISTRY)).unregister(serviceName,
+                channel.localAddress().toString());
         channel.close();
     }
 

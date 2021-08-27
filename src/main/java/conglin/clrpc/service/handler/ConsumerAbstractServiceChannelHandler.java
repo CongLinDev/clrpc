@@ -1,5 +1,6 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -11,7 +12,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.concurrent.ExecutorService;
 
-abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware {
+abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerAbstractServiceChannelHandler.class);
 
@@ -25,11 +26,6 @@ abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleCha
     @Override
     public void setContext(RpcContext context) {
         this.context = context;
-        init();
-    }
-
-    protected void init() {
-
     }
 
     @Override

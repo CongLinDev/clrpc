@@ -1,12 +1,8 @@
 package conglin.clrpc.router.instance;
 
-public interface ServiceInstance {
-    /**
-     * 服务名称
-     *
-     * @return
-     */
-    String name();
+import conglin.clrpc.service.Service;
+
+public interface ServiceInstance extends Service {
 
     /**
      * 地址

@@ -15,8 +15,7 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
     protected FutureHolder<Long> futureHolder;
 
     @Override
-    protected void init() {
-        super.init();
+    public void init() {
         futureHolder = getContext().getWith(RpcContextEnum.FUTURE_HOLDER);
     }
 

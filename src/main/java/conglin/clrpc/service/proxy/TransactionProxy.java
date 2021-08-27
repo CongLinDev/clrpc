@@ -14,17 +14,7 @@ public interface TransactionProxy extends RpcProxy {
      * 
      * @throws TransactionException
      */
-    default void begin() throws TransactionException {
-        begin(false);
-    }
-
-    /**
-     * 开始一个事务
-     * 
-     * @param serial 是否顺序执行
-     * @throws TransactionException
-     */
-    void begin(boolean serial) throws TransactionException;
+    void begin() throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求

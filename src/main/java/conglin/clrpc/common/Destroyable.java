@@ -8,9 +8,7 @@ public interface Destroyable {
      * 
      * @throws DestroyFailedException
      */
-    default void destroy() throws DestroyFailedException {
-        throw new DestroyFailedException();
-    }
+    void destroy() throws DestroyFailedException;
 
     /**
      * 是否销毁

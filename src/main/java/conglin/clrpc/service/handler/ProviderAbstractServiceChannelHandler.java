@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
@@ -22,7 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware {
+abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
@@ -33,16 +34,11 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
     @Override
     public void setContext(RpcContext context) {
         this.context = context;
-        init();
     }
 
     @Override
     public RpcContext getContext() {
         return context;
-    }
-
-    protected void init() {
-
     }
 
     @Override
@@ -70,7 +66,8 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
     /**
      * 传递给下一个 ChannelHandler
      * 
-     * @param object
+     * @param msg
+     * @param result
      */
     protected void next(T msg, Object result) {
         if (result != null)

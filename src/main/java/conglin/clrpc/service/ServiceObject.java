@@ -1,21 +1,18 @@
 package conglin.clrpc.service;
 
-import java.util.Map;
+import conglin.clrpc.common.config.PropertyConfigurer;
 
 public interface ServiceObject extends Service {
+
+    String OBJECT = "OBJECT";   // 对象
+    String VERSION = "VERSION"; // 版本
+
     /**
      * 元信息
      *
      * @return
      */
-    Map<String, Object> metaInfo();
-
-    /**
-     * 元信息字符串
-     *
-     * @return
-     */
-    String metaInfoString();
+    PropertyConfigurer metaInfo();
 
     /**
      * 对象

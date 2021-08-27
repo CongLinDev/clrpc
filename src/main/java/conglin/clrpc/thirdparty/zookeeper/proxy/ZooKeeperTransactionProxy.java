@@ -36,7 +36,6 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     protected final IdentifierGenerator identifierGenerator;
 
     protected long currentTransactionId;
-    protected boolean serial; // 是否顺序执行
 
     protected final TransactionHelper helper;
 
@@ -50,12 +49,11 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     }
 
     @Override
-    public void begin(boolean serial) throws TransactionException {
+    public void begin() throws TransactionException {
         if (isTransaction()) {
             throw new TransactionException("Transaction has been begin with this proxy");
         }
-        this.currentTransactionId = identifierGenerator.generate() << 32; // 生成一个新的ID
-        this.serial = serial;
+        this.currentTransactionId = identifierGenerator.generate(); // 生成一个新的ID
         this.transactionFuture = new TransactionFuture(currentTransactionId);
         LOGGER.debug("Transaction id={} will begin.", currentTransactionId);
         helper.begin(currentTransactionId); // 开启事务
@@ -64,8 +62,6 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     @Override
     public RpcFuture call(String serviceName, String method, Object... args) throws TransactionException {
         TransactionRequest request = new TransactionRequest(currentTransactionId, transactionFuture.size() + 1, serviceName, method, args);
-        if(serial)
-            request.signSerial();
         return call(request);
     }
 
@@ -122,7 +118,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public RpcFuture call(TransactionRequest request) throws TransactionException {
-        helper.prepare(currentTransactionId, request.getSerialId());
+        helper.prepare(currentTransactionId, request.serialId());
         RpcFuture f = super.call(request);
         if (!transactionFuture.combine(f)) {
             throw new TransactionException("Atomic request added failed. " + request);

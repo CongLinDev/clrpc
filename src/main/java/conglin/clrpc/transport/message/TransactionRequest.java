@@ -11,7 +11,10 @@ public class TransactionRequest extends BasicRequest {
         return MESSAGE_TYPE;
     }
 
-    protected boolean serial = false;
+    /**
+     * 序列号
+     */
+    protected final Integer serialId;
 
     /**
      * 构造事务请求
@@ -21,24 +24,9 @@ public class TransactionRequest extends BasicRequest {
      * @param methodName  方法名
      * @param parameters  参数
      */
-    public TransactionRequest(Long messageId, String serviceName, String methodName, Object[] parameters) {
+    public TransactionRequest(Long messageId, Integer serialId, String serviceName, String methodName, Object[] parameters) {
         super(messageId, serviceName, methodName, parameters);
-    }
-
-    /**
-     * 构造事务请求
-     * 
-     * @param transactionId 事务ID
-     * @param serialId      序列ID
-     * @param serviceName   服务名
-     * @param methodName    方法名
-     * @param parameters    参数
-     * 
-     * @see #TransactionRequest(Long, String, String, Object[])
-     */
-    public TransactionRequest(long transactionId, int serialId, String serviceName, String methodName,
-            Object[] parameters) {
-        this(transactionId | serialId, serviceName, methodName, parameters);
+        this.serialId = serialId;
     }
 
     /**
@@ -48,16 +36,16 @@ public class TransactionRequest extends BasicRequest {
      */
     public TransactionRequest(TransactionRequest request) {
         super(request);
-        serial = request.isSerial();
+        this.serialId = request.serialId();
     }
 
     /**
      * 获取序列ID
-     * 
+     *
      * @return
      */
-    final public int getSerialId() {
-        return messageId().intValue();
+    final public int serialId() {
+        return serialId;
     }
 
     /**
@@ -65,23 +53,7 @@ public class TransactionRequest extends BasicRequest {
      * 
      * @return
      */
-    final public long getTransactionId() {
-        return messageId().longValue() & 0xFFFFFFFF00000000L;
-    }
-
-    /**
-     * 设为顺序执行
-     */
-    final public void signSerial() {
-        serial = true;
-    }
-
-    /**
-     * 是否顺序执行
-     * 
-     * @return the serial
-     */
-    final public boolean isSerial() {
-        return serial;
+    final public long transactionId() {
+        return messageId();
     }
 }

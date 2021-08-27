@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 public class ZooKeeperGlobalTrafficChannelHandler extends GlobalTrafficChannelHandler {
 
     @Override
-    protected void init() {
+    public void init() {
         PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
         String urlString = c.get("extension.logger", String.class);
         serviceLogger = new ZooKeeperServiceLogger(new UrlScheme(urlString));

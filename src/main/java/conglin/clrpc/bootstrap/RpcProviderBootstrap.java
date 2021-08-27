@@ -63,7 +63,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     public RpcProviderBootstrap publish(ServiceObject serviceObject) {
         String serviceName = serviceObject.name();
         SERVICE_HANDLER.publish(serviceObject);
-        SERVICE_HANDLER.publishServiceMetaInfo(serviceName, serviceObject.metaInfoString());
+        SERVICE_HANDLER.publishServiceMetaInfo(serviceName, serviceObject.metaInfo().toString());
         return this;
     }
 

@@ -1,5 +1,6 @@
 package conglin.clrpc.extension.cache.handler;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.CacheManager;
 import conglin.clrpc.service.context.ContextAware;
@@ -10,7 +11,7 @@ import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware {
+abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware, Initializable {
 
     private RpcContext context;
 
@@ -27,7 +28,8 @@ abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboun
         init();
     }
 
-    protected void init() {
+    @Override
+    public void init() {
         PropertyConfigurer configurer = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
         @SuppressWarnings("unchecked")
         CacheManager<BasicRequest, CacheableResponse> cm = (CacheManager<BasicRequest, CacheableResponse>) configurer

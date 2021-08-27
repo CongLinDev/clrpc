@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SignalStateSync implements StateSync {
 
-    protected AtomicInteger state;
+    protected final AtomicInteger state;
 
     public SignalStateSync() {
         state = new AtomicInteger(PENDING);

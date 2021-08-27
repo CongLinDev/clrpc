@@ -56,7 +56,10 @@ abstract public class RpcBootstrap {
         return CONFIGURER;
     }
 
-    public Role role() {
-        return Role.UNKNOWN;
-    }
+    /**
+     * 角色
+     *
+     * @return
+     */
+    abstract public Role role();
 }

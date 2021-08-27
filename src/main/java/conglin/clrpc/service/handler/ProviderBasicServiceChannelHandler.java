@@ -14,6 +14,11 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBasicServiceChannelHandler.class);
 
     @Override
+    public void init() {
+
+    }
+
+    @Override
     protected Object execute(BasicRequest msg) {
         try {
             LOGGER.debug("Receive basic request messageId={}", msg.messageId());

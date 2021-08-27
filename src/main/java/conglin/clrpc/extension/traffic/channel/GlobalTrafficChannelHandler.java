@@ -1,20 +1,18 @@
 package conglin.clrpc.extension.traffic.channel;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
-import conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 @Sharable
-abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter implements ContextAware {
+abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter implements ContextAware, Initializable {
 
     protected ServiceLogger serviceLogger;
 
@@ -28,10 +26,7 @@ abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerA
     @Override
     public void setContext(RpcContext context) {
         this.context = context;
-        init();
     }
-
-    abstract protected void init();
 
     /**
      * 为了服务端和客户端保证 {@link Channel} 的唯一性

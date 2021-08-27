@@ -7,12 +7,12 @@ import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.transport.handler.DefaultChannelInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.transport.handler.ProviderChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -33,7 +33,7 @@ public class ProviderTransfer {
      */
     public void start(RpcContext context) {
         this.context = context;
-        PropertyConfigurer configurer = (PropertyConfigurer)context.get(RpcContextEnum.PROPERTY_CONFIGURER);
+        PropertyConfigurer configurer = (PropertyConfigurer) context.get(RpcContextEnum.PROPERTY_CONFIGURER);
         initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
                 configurer.getOrDefault("provider.thread.worker", 4));
         int servicePort = configurer.getOrDefault("provider.port", 0);
@@ -67,9 +67,10 @@ public class ProviderTransfer {
         nettyBootstrap = new ServerBootstrap();
         nettyBootstrap.group(new NioEventLoopGroup(bossThread), new NioEventLoopGroup(workerThread))
                 .channel(NioServerSocketChannel.class);
-                // .handler(new LoggingHandler(LogLevel.INFO))
-        ProviderChannelInitializer initializer = new ProviderChannelInitializer();
+        // .handler(new LoggingHandler(LogLevel.INFO))
+        DefaultChannelInitializer initializer = new DefaultChannelInitializer();
         initializer.setContext(context);
+        initializer.init();
         nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
     }

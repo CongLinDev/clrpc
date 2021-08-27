@@ -28,8 +28,7 @@ public class ProviderTransactionServiceChannelHandler
     protected TransactionHelper helper;
 
     @Override
-    protected void init() {
-        super.init();
+    public void init() {
         PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
         String urlString = c.get("atomicity", String.class);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
@@ -39,8 +38,8 @@ public class ProviderTransactionServiceChannelHandler
     protected Object execute(TransactionRequest msg) {
 
         // 标记事务的本条请求被当前服务提供者所占有
-        long transactionId = msg.getTransactionId();
-        int serialId = msg.getSerialId();
+        long transactionId = msg.transactionId();
+        int serialId = msg.serialId();
         LOGGER.debug("Receive transaction request(transactionId={} serialId={})", transactionId, serialId);
 
         if (!helper.sign(transactionId, serialId)) { // 标记占有该原子消息的处理权
@@ -75,7 +74,7 @@ public class ProviderTransactionServiceChannelHandler
 
             // 预提交成功后，标记预提交成功并监视上一个节点
             // 若顺序执行，则监视上一个子节点，反之监视事务节点
-            helper.watch(transactionId, (msg.isSerial() ? serialId - 1 : 0), new Callback() {
+            helper.watch(transactionId, 0, new Callback() {
                 @Override
                 public void success(Object r) {
                     if (isTrans) {

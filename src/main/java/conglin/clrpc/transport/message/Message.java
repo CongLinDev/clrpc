@@ -51,7 +51,7 @@ abstract public class Message implements Serializable {
      * @see #Message(Long)
      */
     public Message(Message message) {
-        this(message.messageId());
+        this.messageId = message.messageId();
     }
 
     /**

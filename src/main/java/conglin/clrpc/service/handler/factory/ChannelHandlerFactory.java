@@ -1,8 +1,8 @@
 package conglin.clrpc.service.handler.factory;
 
 import java.util.Collection;
-import java.util.Collections;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
@@ -21,40 +21,27 @@ public interface ChannelHandlerFactory {
      * @return
      */
     static ChannelHandlerFactory newFactory(String qualifiedClassName, RpcContext context) {
-        if (qualifiedClassName == null) {
-            return new ChannelHandlerFactory() { };
+        ChannelHandlerFactory factory = null;
+        if (qualifiedClassName != null) {
+            factory = ClassUtils.loadObjectByType(qualifiedClassName, ChannelHandlerFactory.class);
         }
-        ChannelHandlerFactory factory = ClassUtils.loadObjectByType(qualifiedClassName, ChannelHandlerFactory.class);
+        if (factory == null) {
+            // fallback default factory
+           factory = new DefaultChannelHandlerFactory();
+        }
         if (factory instanceof ContextAware) {
             ((ContextAware)factory).setContext(context);
         }
-        return factory != null ? factory : new ChannelHandlerFactory() { };
+        if (factory instanceof Initializable) {
+            ((Initializable)factory).init();
+        }
+        return factory;
     }
 
     /**
-     * 向 clrpc 编解码逻辑前加入 {@link ChannelHandler}
-     * 
+     * 处理器
+     *
      * @return
      */
-    default Collection<ChannelHandler> beforeCodec() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * 向 clrpc 处理逻辑前加入 {@link ChannelHandler}
-     * 
-     * @return
-     */
-    default Collection<ChannelHandler> beforeHandle() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * 向 clrpc 处理逻辑后加入 {@link ChannelHandler}
-     * 
-     * @return
-     */
-    default Collection<ChannelHandler> afterHandle() {
-        return Collections.emptyList();
-    }
+    Collection<ChannelHandler> handlers();
 }
