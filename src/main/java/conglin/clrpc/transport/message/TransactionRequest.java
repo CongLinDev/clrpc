@@ -19,24 +19,15 @@ public class TransactionRequest extends BasicRequest {
     /**
      * 构造事务请求
      * 
-     * @param messageId   由两部分组成，高32位为事务ID，低32位为序列ID
+     * @param transactionId   事务id
+     * @param serialId    序列id
      * @param serviceName 服务名
      * @param methodName  方法名
      * @param parameters  参数
      */
-    public TransactionRequest(Long messageId, Integer serialId, String serviceName, String methodName, Object[] parameters) {
-        super(messageId, serviceName, methodName, parameters);
+    public TransactionRequest(Long transactionId, Integer serialId, String serviceName, String methodName, Object[] parameters) {
+        super(transactionId, serviceName, methodName, parameters);
         this.serialId = serialId;
-    }
-
-    /**
-     * 构造事务请求
-     * 
-     * @param request
-     */
-    public TransactionRequest(TransactionRequest request) {
-        super(request);
-        this.serialId = request.serialId();
     }
 
     /**
@@ -54,6 +45,11 @@ public class TransactionRequest extends BasicRequest {
      * @return
      */
     final public long transactionId() {
-        return messageId();
+        return messageId;
+    }
+
+    @Override
+    public Long messageId() {
+        return messageId & serialId;
     }
 }

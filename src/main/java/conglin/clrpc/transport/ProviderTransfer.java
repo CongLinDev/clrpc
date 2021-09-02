@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 
 import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -44,8 +45,10 @@ public class ProviderTransfer {
             if (channelFuture.isSuccess()) {
                 ServiceRegistry serviceRegistry = context.getWith(RpcContextEnum.SERVICE_REGISTRY);
                 Map<String, ServiceObject> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
-                serviceObjects.keySet().forEach(serviceName -> serviceRegistry.register(serviceName, localAddress,
-                        configurer.subConfigurer("meta.provider." + serviceName, "meta.provider.*").toString()));
+                serviceObjects.values().forEach(serviceObject -> {
+                    ServiceInstance instance = serviceObject.newServiceInstance(localAddress);
+                    serviceRegistry.register(serviceObject.name(), localAddress, instance.toString());
+                });
                 LOGGER.info("Provider starts on {}", localAddress);
             } else {
                 LOGGER.error("Provider starts failed");

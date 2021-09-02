@@ -553,4 +553,19 @@ public final class ZooKeeperUtils {
             return false;
         }
     }
+
+    /**
+     * 获取节点的值
+     * @param keeper
+     * @param path
+     * @return
+     */
+    public static String getNodeData(final ZooKeeper keeper, String path) {
+        try {
+            return new String(keeper.getData(path, false, null));
+        } catch (KeeperException | InterruptedException e) {
+            LOGGER.error(e.getMessage());
+            return null;
+        }
+    }
 }

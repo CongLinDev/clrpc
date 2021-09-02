@@ -32,7 +32,7 @@ abstract public class Message implements Serializable {
      */
     abstract public int messageType();
 
-    private final Long messageId;
+    protected final Long messageId;
 
     /**
      * 构造一个 Message 对象
@@ -59,12 +59,12 @@ abstract public class Message implements Serializable {
      * 
      * @return the messageId
      */
-    final public Long messageId() {
+    public Long messageId() {
         return messageId;
     }
 
     @Override
     public String toString() {
-        return "Message [messageId=" + messageId + "]";
+        return "Message [messageId=" + messageId() + "]";
     }
 }

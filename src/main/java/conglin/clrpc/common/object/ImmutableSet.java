@@ -1,9 +1,6 @@
 package conglin.clrpc.common.object;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class ImmutableSet<V> implements Set<V> {
 
@@ -11,6 +8,12 @@ public class ImmutableSet<V> implements Set<V> {
 
     public ImmutableSet() {
         this.elements = new ImmutableList<>();
+    }
+
+    public ImmutableSet(V[] elements) {
+        Set<V> set = new HashSet<>();
+        Collections.addAll(set, elements);
+        this.elements = new ImmutableList<>(set);
     }
 
     public ImmutableSet(Collection<V> elements) {

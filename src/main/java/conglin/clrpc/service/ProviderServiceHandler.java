@@ -27,7 +27,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     public ProviderServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         serviceObjects = new HashMap<>();
-        String registryClassName = configurer.get("registry.registerClassName", String.class);
+        String registryClassName = configurer.get("registry.register-class", String.class);
         String registryUrl = configurer.get("registry.url", String.class);
         serviceRegistry = ClassUtils.loadObjectByType(registryClassName, ServiceRegistry.class, new UrlScheme(registryUrl));
     }
@@ -40,17 +40,6 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     public void publish(ServiceObject serviceObject) {
         serviceObjects.put(serviceObject.name(), serviceObject);
         LOGGER.info("Publish service named {} with bean(class={}).", serviceObject.name(), serviceObject.objectClass());
-    }
-
-    /**
-     * 发布服务元信息
-     *
-     * @param serviceName
-     * @param metaInfo
-     */
-    public void publishServiceMetaInfo(String serviceName, String metaInfo) {
-        serviceRegistry.publish(serviceName, metaInfo);
-        LOGGER.info("Publish service(name={}) metaInfo(={}).", serviceName, metaInfo);
     }
 
     @Override

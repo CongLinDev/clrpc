@@ -10,6 +10,7 @@ import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.RequestWrapper;
 
 /**
  * 基本的代理
@@ -84,7 +85,9 @@ public class BasicProxy extends CommonProxy implements InvocationHandler {
      */
     public RpcFuture call(String serviceName, String methodName, Object... args) {
         BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName), serviceName, methodName, args);
-        return super.call(request);
+        RequestWrapper wrapper = new RequestWrapper();
+        wrapper.setRequest(request);
+        return super.call(wrapper);
     }
 
     /**
@@ -99,7 +102,10 @@ public class BasicProxy extends CommonProxy implements InvocationHandler {
      */
     public RpcFuture callWith(String remoteAddress, String serviceName, String methodName, Object... args) {
         BasicRequest request = new BasicRequest(identifierGenerator.generate(methodName), serviceName, methodName, args);
-        return super.callWith(remoteAddress, request);
+        RequestWrapper wrapper = new RequestWrapper();
+        wrapper.setRequest(request);
+        wrapper.setRemoteAddress(remoteAddress);
+        return super.call(wrapper);
     }
 
     /**

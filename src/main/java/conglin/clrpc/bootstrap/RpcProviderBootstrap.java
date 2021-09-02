@@ -24,7 +24,11 @@ import io.netty.bootstrap.ServerBootstrap;
  * <pre>
  * 
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
- * bootstrap.publish(new ServiceImpl1()).publishFactory(ServiceImpl2::new).hookStop().start();
+ * ServiceObject serviceObject = JsonSimpleServiceObjectBuilder.builder()
+ *                                  .name("Service1")
+ *                                  .object(new ServiceImpl1())
+ *                                  .build();
+ * bootstrap.publish(serviceObject).hookStop().start();
  * 
  * </pre>
  * 
@@ -61,9 +65,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
      * @return
      */
     public RpcProviderBootstrap publish(ServiceObject serviceObject) {
-        String serviceName = serviceObject.name();
         SERVICE_HANDLER.publish(serviceObject);
-        SERVICE_HANDLER.publishServiceMetaInfo(serviceName, serviceObject.metaInfo().toString());
         return this;
     }
 
@@ -125,7 +127,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         // 设置属性配置器
         context.put(RpcContextEnum.PROPERTY_CONFIGURER, configurer());
         // 设置序列化处理器
-        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serializationHandlerClassName"), String.class)));
+        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serialization-class"), String.class)));
         return context;
     }
 

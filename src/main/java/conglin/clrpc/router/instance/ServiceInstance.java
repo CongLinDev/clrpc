@@ -1,8 +1,13 @@
 package conglin.clrpc.router.instance;
 
 import conglin.clrpc.service.Service;
+import conglin.clrpc.service.ServiceVersion;
 
 public interface ServiceInstance extends Service {
+
+    String INSTANCE_ADDRESS = "INSTANCE_ADDRESS";
+
+    String INSTANCE_OBJECT = "INSTANCE_OBJECT";
 
     /**
      * 地址
@@ -18,14 +23,5 @@ public interface ServiceInstance extends Service {
      */
     default ServiceVersion version() {
         return ServiceVersion.defaultVersion();
-    }
-
-    /**
-     * 协议
-     *
-     * @return
-     */
-    default ServiceProtocol protocol() {
-        return ServiceProtocol.clrpc;
     }
 }

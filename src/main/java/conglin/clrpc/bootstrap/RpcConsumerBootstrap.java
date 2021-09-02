@@ -26,14 +26,20 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * <pre>
  * RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
  * bootstrap.start();
+ *
+ * // 构造ServiceInterface
+ * ServiceInterface<Interface1> serviceInterface1 = SimpleServiceInterfaceBuilder.builder()
+ *                              .name("Service1")
+ *                              .interfaceClass(Interface1.class)
+ *                              .build();
  * // 刷新
- * bootstrap.subscribe(Interface1.class).subscribe(Interface2.class);
+ * bootstrap.subscribe(serviceInterface1);
  * 
  * // 订阅同步服务
- * Interface1 i1 = bootstrap.proxy(Interface1.class);
+ * Interface1 sync = bootstrap.proxy(serviceInterface1);
  * 
  * // 订阅异步服务
- * Interface2 i2 = bootstrap.proxy(Interface2.class, true);
+ * Interface1 async = bootstrap.proxy(serviceInterface1, true);
  *
  * bootstrap.stop();
  * </pre>
@@ -195,7 +201,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.put(RpcContextEnum.PROVIDER_CHOOSER_ADAPTER,
                 option.getOrDefault(RpcOptionEnum.PROVIDER_CHOOSER_ADAPTER));
         // 设置服务提供者挑选适配器
-        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serializationHandlerClassName"), String.class)));
+        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serialization-class"), String.class)));
         return context;
     }
 }

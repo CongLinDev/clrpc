@@ -2,7 +2,7 @@ package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.RequestWrapper;
 
 public class AnonymousProxy implements RpcProxy {
     private final BasicProxy proxy;
@@ -38,12 +38,7 @@ public class AnonymousProxy implements RpcProxy {
     }
 
     @Override
-    public RpcFuture call(BasicRequest request) {
-        return proxy.call(request);
-    }
-
-    @Override
-    public RpcFuture callWith(String remoteAddress, BasicRequest request) {
-        return proxy.callWith(remoteAddress, request);
+    public RpcFuture call(RequestWrapper wrapper) {
+        return proxy.call(wrapper);
     }
 }

@@ -1,49 +1,25 @@
 package conglin.clrpc.transport.component;
 
-import conglin.clrpc.common.Fallback;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.RequestWrapper;
 
 public interface RequestSender {
+
     /**
      * 发送请求信息
-     * 
-     * @param request
+     *
+     * @param requestWrapper
      * @return
      */
-    default RpcFuture sendRequest(BasicRequest request, Fallback fallbackObject) {
-        return sendRequest(request, fallbackObject, null);
-    }
+    RpcFuture sendRequest(RequestWrapper requestWrapper);
 
-    /**
-     * 向指定服务提供者发送请求
-     * 
-     * 当地址为 {@code null} 时调用 {@link RequestSender#sendRequest(BasicRequest, Fallback)}
-     * 
-     * @param request
-     * @param remoteAddress 指定服务提供者地址
-     * @return
-     */
-    RpcFuture sendRequest(BasicRequest request, Fallback fallbackObject, String remoteAddress);
-
-    /**
-     * 重发请求信息
-     * 
-     * @param request
-     */
-    default void resendRequest(BasicRequest request) {
-        resendRequest(request, null);
-    }
 
     /**
      * 向指定服务提供者重发请求信息
      * 
-     * 当地址为 {@code null} 时调用 {@link RequestSender#resendRequest(BasicRequest)}
-     * 
-     * @param request
-     * @param remoteAddress 指定服务提供者地址
+     * @param requestWrapper
      */
-    void resendRequest(BasicRequest request, String remoteAddress);
+    void resendRequest(RequestWrapper requestWrapper);
 
     /**
      * 关闭

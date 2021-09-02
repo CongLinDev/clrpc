@@ -28,7 +28,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
     public ConsumerServiceHandler(PropertyConfigurer configurer) {
         super(configurer);
         futureHolder = new DefaultFutureHolder();
-        String discoveryClassName = configurer.get("registry.discoveryClassName", String.class);
+        String discoveryClassName = configurer.get("registry.discovery-class", String.class);
         String registryUrl = configurer.get("registry.url", String.class);
         serviceDiscovery = ClassUtils.loadObjectByType(discoveryClassName, ServiceDiscovery.class, new UrlScheme(registryUrl));
     }
@@ -75,7 +75,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     public TransactionProxy getTransactionProxy() {
         PropertyConfigurer c = context().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        String transactionProxyClassName = c.get("atomicity.transaction.proxyClassName", String.class);
+        String transactionProxyClassName = c.get("atomicity.transaction.proxy-class", String.class);
         return ClassUtils.loadObjectByType(transactionProxyClassName, TransactionProxy.class, context());
     }
 

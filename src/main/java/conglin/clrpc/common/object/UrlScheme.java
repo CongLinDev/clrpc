@@ -1,5 +1,7 @@
 package conglin.clrpc.common.object;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,19 +29,19 @@ final public class UrlScheme {
 
     private final Map<String, String> parameters;
 
-    public static ImmutableMap<String, String> resolveParameters(String parameterString, String paramsSplitRegex, String keyValueSplitRegex) {
+    public static Map<String, String> resolveParameters(String parameterString, String paramsSplitRegex, String keyValueSplitRegex) {
         if(parameterString == null || "".equals(parameterString)) {
-            return ImmutableMap.empty();
+            return Collections.emptyMap();
         }
 
         String[] params = parameterString.split(paramsSplitRegex);
-        ImmutableMap.ImmutableMapBuilder<String, String> builder = new ImmutableMap.ImmutableMapBuilder<>();
+        Map<String, String> map = new HashMap<>();
         for (String param : params) {
             String[] pair = param.split(keyValueSplitRegex);
             if(pair.length < 2) continue;
-            builder.add(pair[0], pair[1]);
+            map.put(pair[0], pair[1]);
         }
-        return builder.build();
+        return map;
     }
 
     /**

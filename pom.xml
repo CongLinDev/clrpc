@@ -100,9 +100,9 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
-          <compilerVersion>14</compilerVersion>
-          <source>14</source>
-          <target>14</target>
+          <compilerVersion>15</compilerVersion>
+          <source>15</source>
+          <target>15</target>
         </configuration>
       </plugin>
       <plugin>

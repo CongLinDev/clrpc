@@ -15,8 +15,7 @@
 ### Define Service And Implement it
 
 ```java
-// define a service named 'HelloService'
-@conglin.clrpc.service.annotation.Service(name = "HelloService")
+// define a service interface
 interface HelloService {
     String hello(String arg);
     String hi(String arg);
@@ -42,9 +41,14 @@ class HelloServiceImpl implements HelloService {
 // 创建服务提供者
 RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
+// 创建服务对象
+ServiceObject serviceObject = JsonSimpleServiceObjectBuilder.builder()
+        .name("HelloService")
+        .object(new HelloServiceImpl())
+        .build();
+
 // 发布服务并开启服务
-bootstrap.publish(new HelloServiceImpl()) // 发布享元模式的服务对象
-//      .publishFactory(HelloServiceImpl::new) // 发布原型模式的服务对象
+bootstrap.publish(serviceObject) // 发布享元模式的服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start();
 ```
@@ -56,15 +60,21 @@ bootstrap.publish(new HelloServiceImpl()) // 发布享元模式的服务对象
 RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
+// 创建服务接口对象
+ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.builder()
+        .name("HelloService")
+        .interfaceClass(HelloService.class)
+        .build();
+
 // 提前刷新需要订阅的服务
-bootstrap.subscribe(HelloService.class);
+bootstrap.subscribe(serviceInterface);
 
 //使用同步服务
-HelloService syncService = bootstrap.proxy(HelloService.class, false);
+HelloService syncService = bootstrap.proxy(serviceInterface, false);
 String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
 // 使用异步服务
-HelloService asyncService = bootstrap.proxy(HelloService.class, true);
+HelloService asyncService = bootstrap.proxy(serviceInterface, true);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
 RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
@@ -86,11 +96,16 @@ bootstrap.stop();
 RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start();
+// 创建服务接口对象
+ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.builder()
+        .name("HelloService")
+        .interfaceClass(HelloService.class)
+        .build();
 // 提前刷新需要订阅的服务
-bootstrap.subscribe(HelloService.class);
+bootstrap.subscribe(serviceInterface);
 
 TransactionProxy proxy = bootstrap.transaction();
-HelloService service = proxy.proxy(HelloService.class);
+HelloService service = proxy.proxy(serviceInterface);
 
 proxy.begin(); // 事务开启
 
@@ -121,26 +136,29 @@ bootstrap.stop();
 
 ### Config Items
 
-|              Field               |           Type            | Required |  Default  |                         Remark                          |
-| :------------------------------: | :-----------------------: | :------: | :-------: | :-----------------------------------------------------: |
-|             registry             |          String           |   True   |           |                      注册中心地址                       |
-|            atomicity             |          String           |   True   |           |                      原子服务地址                       |
-|         meta.provider.\*         | Map&lt;String, Object&gt; |  False   | Empty Map |                  服务提供者通用元信息                   |
-|         meta.consumer.\*         | Map&lt;String, Object&gt; |  False   | Empty Map |                  服务消费者通用元信息                   |
-|          provider.port           |          Integer          |  False   |     0     |                    服务提供者端口号                     |
-|       provider.thread.boss       |          Integer          |  False   |     1     |               服务提供者的bossGroup线程数               |
-|      provider.thread.worker      |          Integer          |  False   |     4     |              服务提供者的workerGroup线程数              |
-| provider.channel.handler-factory |          String           |  False   |  `null`   |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|        consumer.wait-time        |          Integer          |  False   |   5000    |         无服务提供者时等待重试时间，单位为毫秒          |
-|      consumer.thread.worker      |          Integer          |  False   |     4     |              服务使用者的workerGroup线程数              |
-|   consumer.retry.check-period    |          Integer          |  False   |   3000    |           重试机制执行周期(非正数代表不开启)            |
-| consumer.retry.initial-threshold |          Integer          |  False   |   3000    |                    初始重试时间门槛                     |
-|   consumer.fallback.max-retry    |          Integer          |  False   |    -1     | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
-| provider.channel.handler-factory |          String           |  False   |  `null`   |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|  service.thread-pool.core-size   |          Integer          |  False   |     5     |                  业务线程池核心线程数                   |
-|   service.thread-pool.max-size   |          Integer          |  False   |    10     |                  业务线程池最大线程数                   |
-|  service.thread-pool.keep-alive  |          Integer          |  False   |   1000    |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
-|    service.thread-pool.queue     |          Integer          |  False   |    10     |                    业务线程池队列数                     |
+|                Field                 |  Type   | Required | Default |                         Remark                          |
+| :----------------------------------: | :-----: | :------: | :-----: | :-----------------------------------------------------: |
+|             registry.url             | String  |   True   |         |                      注册中心地址                       |
+|       registry.register-class        | String  |   True   |         |                        注册类名                         |
+|       registry.discovery-class       | String  |   True   |         |                        发现类名                         |
+|            atomicity.url             | String  |   True   |         |                      原子服务地址                       |
+|  atomicity.transaction.proxy-class   | String  |   True   |         |                      事务代理类名                       |
+|            provider.port             | Integer |  False   |    0    |                    服务提供者端口号                     |
+|         provider.thread.boss         | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
+|        provider.thread.worker        | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
+|   provider.channel.handler-factory   | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
+| provider.message.serialization-class | String  |   True   |         |                    序列化处理器类名                     |
+|          consumer.wait-time          | Integer |  False   |  5000   |         无服务提供者时等待重试时间，单位为毫秒          |
+|        consumer.thread.worker        | Integer |  False   |    4    |              服务使用者的workerGroup线程数              |
+|     consumer.retry.check-period      | Integer |  False   |  3000   |           重试机制执行周期(非正数代表不开启)            |
+|   consumer.retry.initial-threshold   | Integer |  False   |  3000   |                    初始重试时间门槛                     |
+|     consumer.fallback.max-retry      | Integer |  False   |   -1    | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
+|   consumer.channel.handler-factory   | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
+| consumer.message.serialization-class | String  |   True   |         |                    序列化处理器类名                     |
+|    service.thread-pool.core-size     | Integer |  False   |    5    |                  业务线程池核心线程数                   |
+|     service.thread-pool.max-size     | Integer |  False   |   10    |                  业务线程池最大线程数                   |
+|    service.thread-pool.keep-alive    | Integer |  False   |  1000   |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
+|      service.thread-pool.queue       | Integer |  False   |   10    |                    业务线程池队列数                     |
 
 ### Extendsion config Items
 
@@ -168,6 +186,14 @@ bootstrap.stop();
 #### About customized channel handler
 
 [Click me](#Extension).
+
+## Distributed transaction
+
+**clrpc** 使用 **ZooKeeper** 实现了类似于两段式提交(2PC)的分布式事务协调服务。
+
+流程图如下：
+
+![distributed.png](https://i.loli.net/2021/08/31/ien8BDuNRvt7FMA.png)
 
 ## Extension
 

@@ -147,6 +147,11 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     }
 
     @Override
+    public <T> T get(String key, Class<T> clazz) {
+        return CONFIG_HOLDER.getObject(key, clazz);
+    }
+
+    @Override
     public Object put(String key, Object value) {
         return CONFIG_HOLDER.put(key, value);
     }

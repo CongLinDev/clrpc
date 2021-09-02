@@ -90,6 +90,13 @@ public final class IPAddressUtils {
         return localAddress(0);
     }
 
+    /**
+     * 分割host和端口
+     *
+     * @param data
+     * @return
+     * @throws UnknownHostException
+     */
     public static InetSocketAddress splitHostAndPortResolved(String data) throws UnknownHostException {
         String[] hostnameAndPort = data.trim().split(":");
         if (hostnameAndPort.length != 2)

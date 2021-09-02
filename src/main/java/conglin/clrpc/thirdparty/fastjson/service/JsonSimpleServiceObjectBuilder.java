@@ -1,15 +1,15 @@
 package conglin.clrpc.thirdparty.fastjson.service;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.router.instance.ServiceInstance;
+import conglin.clrpc.service.ServiceVersion;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.SimpleServiceObject;
 import conglin.clrpc.thirdparty.fastjson.config.JsonPropertyConfigurer;
 
-public class JsonServiceObjectBuilder {
+public class JsonSimpleServiceObjectBuilder {
 
     protected Object object;
-
-    protected String name;
 
     protected PropertyConfigurer metaInfo = JsonPropertyConfigurer.empty();
 
@@ -18,8 +18,8 @@ public class JsonServiceObjectBuilder {
      *
      * @return
      */
-    static JsonServiceObjectBuilder builder() {
-        return new JsonServiceObjectBuilder();
+    static JsonSimpleServiceObjectBuilder builder() {
+        return new JsonSimpleServiceObjectBuilder();
     }
 
     /**
@@ -28,7 +28,7 @@ public class JsonServiceObjectBuilder {
      * @param object
      * @return
      */
-    public JsonServiceObjectBuilder object(Object object) {
+    public JsonSimpleServiceObjectBuilder object(Object object) {
         this.object = object;
         return this;
     }
@@ -39,9 +39,8 @@ public class JsonServiceObjectBuilder {
      * @param name
      * @return
      */
-    public JsonServiceObjectBuilder name(String name) {
-        this.name = name;
-        return this;
+    public JsonSimpleServiceObjectBuilder name(String name) {
+        return meta(ServiceObject.SERVICE_NAME, name);
     }
 
     /**
@@ -51,7 +50,7 @@ public class JsonServiceObjectBuilder {
      * @param value
      * @return
      */
-    public JsonServiceObjectBuilder meta(String key, Object value) {
+    public JsonSimpleServiceObjectBuilder meta(String key, Object value) {
         metaInfo.put(key, value);
         return this;
     }
@@ -64,19 +63,22 @@ public class JsonServiceObjectBuilder {
     public ServiceObject build() {
         if(object == null)
             throw new IllegalArgumentException();
-        if (name == null) {
-           name = object.getClass().getName();
-        }
         checkMeta();
-        return new SimpleServiceObject(name, object, metaInfo);
+        return new SimpleServiceObject(object, metaInfo) {
+            @Override
+            public ServiceInstance newServiceInstance(String address) {
+                return new JsonServiceInstance(this, address);
+            }
+        };
     }
 
     /**
      * 检查元信息
      */
     protected void checkMeta() {
-        metaInfo.put(ServiceObject.SERVICE_NAME, name);
-        metaInfo.put(ServiceObject.OBJECT, object.getClass().getName());
+        metaInfo.putIfAbsent(ServiceObject.SERVICE_NAME, object.getClass().getName());
+        metaInfo.putIfAbsent(ServiceObject.OBJECT, object.getClass().getName());
+        metaInfo.putIfAbsent(ServiceObject.VERSION, ServiceVersion.defaultVersion());
     }
 
 }

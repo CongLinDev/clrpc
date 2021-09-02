@@ -1,11 +1,19 @@
-package conglin.clrpc.router.instance;
+package conglin.clrpc.service;
 
 public class ServiceVersion implements Comparable<ServiceVersion> {
 
-    public final static ServiceVersion DEFAULT_VERSION = new ServiceVersion(1, 0, 0);
+    protected final static ServiceVersion DEFAULT_VERSION = new ServiceVersion(1, 0, 0);
 
     public static ServiceVersion defaultVersion() {
         return DEFAULT_VERSION;
+    }
+
+    public static ServiceVersion parse(String content) {
+        String[] s = content.split("\\.");
+        if (s.length != 3) {
+           throw new IllegalArgumentException(content);
+        }
+        return new ServiceVersion(Integer.parseInt(s[0]), Integer.parseInt(s[1]), Integer.parseInt(s[2]));
     }
 
     private final int major;

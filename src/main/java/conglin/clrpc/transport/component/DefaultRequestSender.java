@@ -1,5 +1,6 @@
 package conglin.clrpc.transport.component;
 
+import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -7,9 +8,12 @@ import java.util.concurrent.ExecutorService;
 
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 
+import conglin.clrpc.transport.message.RequestWrapper;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,16 +55,16 @@ public class DefaultRequestSender implements RequestSender {
     }
 
     @Override
-    public RpcFuture sendRequest(BasicRequest request, Fallback fallbackObject, String remoteAddress) {
-        RpcFuture future = putFuture(request);
-        future.fallback(fallbackObject);
-        doSendRequest(request, remoteAddress);
+    public RpcFuture sendRequest(RequestWrapper requestWrapper) {
+        RpcFuture future = putFuture(requestWrapper.getRequest());
+        future.fallback(requestWrapper.getFallback());
+        doSendRequest(requestWrapper);
         return future;
     }
 
     @Override
-    public void resendRequest(BasicRequest request, String remoteAddress) {
-        doSendRequest(request, remoteAddress);
+    public void resendRequest(RequestWrapper requestWrapper) {
+        doSendRequest(requestWrapper);
     }
 
     @Override
@@ -84,18 +88,29 @@ public class DefaultRequestSender implements RequestSender {
 
     /**
      * 发送请求
-     * 
-     * @param request
-     * @param targetAddress
+     *
+     * @param requestWrapper
      */
-    protected void doSendRequest(BasicRequest request, String targetAddress) {
+    protected void doSendRequest(RequestWrapper requestWrapper) {
+        BasicRequest request = requestWrapper.getRequest();
+
         String serviceName = request.serviceName();
         threadPool.execute(() -> {
-            if (targetAddress == null) {
-                providerChooser.choose(request).pipeline().fireChannelRead(request);
+            Channel channel = null;
+            if (requestWrapper.getRemoteAddress() == null) {
+                channel = providerChooser.choose(request);
+                requestWrapper.setRemoteAddress(IPAddressUtils.addressString((InetSocketAddress)channel.remoteAddress()));
             } else {
-                providerChooser.choose(serviceName, serviceInstance -> targetAddress.equals(serviceInstance.address())).pipeline().fireChannelRead(request);
+                channel = providerChooser.choose(serviceName, serviceInstance -> requestWrapper.getRemoteAddress().equals(serviceInstance.address()));
+                if(channel == null) {
+                    // can not find
+                    return;
+                }
             }
+            if (requestWrapper.getBeforeSendRequest() != null) {
+                requestWrapper.getBeforeSendRequest().run();
+            }
+            channel.pipeline().fireChannelRead(request);
         });
     }
 
@@ -103,7 +118,7 @@ public class DefaultRequestSender implements RequestSender {
      * 轮询线程，检查超时 RpcFuture 超时重试
      */
     private Timer checkFuture() {
-        Timer timer = new Timer("check-uncomplete-future", true);
+        Timer timer = new Timer("check-uncompleted-future", true);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -131,7 +146,9 @@ public class DefaultRequestSender implements RequestSender {
                             }
                             f.fallbackDone(fallbackResponse);
                         } else {
-                            resendRequest(r);
+                            RequestWrapper wrapper = new RequestWrapper();
+                            wrapper.setRequest(r);
+                            resendRequest(wrapper);
                             LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",
                                     r.messageId(), retryTimes);
                         }

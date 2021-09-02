@@ -9,6 +9,7 @@ import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
+import conglin.clrpc.transport.message.RequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +120,10 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     @Override
     public RpcFuture call(TransactionRequest request) throws TransactionException {
         helper.prepare(currentTransactionId, request.serialId());
-        RpcFuture f = super.call(request);
+        RequestWrapper wrapper = new RequestWrapper();
+        wrapper.setRequest(request);
+        // wrapper.setBeforeSendRequest();
+        RpcFuture f = super.call(wrapper);
         if (!transactionFuture.combine(f)) {
             throw new TransactionException("Atomic request added failed. " + request);
         }
