@@ -7,8 +7,8 @@ import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.annotation.AnnotationParser;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.RequestWrapper;
 
@@ -20,11 +20,12 @@ import conglin.clrpc.transport.message.RequestWrapper;
 public class BasicProxy extends CommonProxy implements InvocationHandler {
 
     // ID生成器
-    private final IdentifierGenerator identifierGenerator;
+    private IdentifierGenerator identifierGenerator;
 
-    public BasicProxy(RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender);
-        this.identifierGenerator = identifierGenerator;
+    @Override
+    public void init() {
+        super.init();
+        identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
     }
 
     @Override

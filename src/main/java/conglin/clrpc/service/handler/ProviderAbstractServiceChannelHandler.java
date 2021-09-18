@@ -56,6 +56,15 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
     }
 
     /**
+     * pipeline
+     *
+     * @return
+     */
+    protected ChannelPipeline pipeline() {
+        return pipeline;
+    }
+
+    /**
      * 执行具体的业务逻辑
      * 
      * @param msg

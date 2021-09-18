@@ -104,7 +104,7 @@ ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
 
-TransactionProxy proxy = bootstrap.transaction();
+TransactionProxy proxy = (TransactionProxy)bootstrap.proxy(ZooKeeperTransactionProxy.class);
 HelloService service = proxy.proxy(serviceInterface);
 
 proxy.begin(); // 事务开启
@@ -142,7 +142,6 @@ bootstrap.stop();
 |       registry.register-class        | String  |   True   |         |                        注册类名                         |
 |       registry.discovery-class       | String  |   True   |         |                        发现类名                         |
 |            atomicity.url             | String  |   True   |         |                      原子服务地址                       |
-|  atomicity.transaction.proxy-class   | String  |   True   |         |                      事务代理类名                       |
 |            provider.port             | Integer |  False   |    0    |                    服务提供者端口号                     |
 |         provider.thread.boss         | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
 |        provider.thread.worker        | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
@@ -160,7 +159,7 @@ bootstrap.stop();
 |    service.thread-pool.keep-alive    | Integer |  False   |  1000   |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
 |      service.thread-pool.queue       | Integer |  False   |   10    |                    业务线程池队列数                     |
 
-### Extendsion config Items
+### Extension config Items
 
 |      Field       |  Type  | Required | Default |    Remark    |
 | :--------------: | :----: | :------: | :-----: | :----------: |
@@ -177,7 +176,7 @@ bootstrap.stop();
 3. 根节点部分，如 `/clrpc` （若未给出默认为 `/` ）；
 4. 参数部分，如 `session-timeout=5000` 。
 
-#### About customized meta infomation
+#### About customized meta information
 
 在一个进程中，针对不同的服务可以使用不同的元信息。
 

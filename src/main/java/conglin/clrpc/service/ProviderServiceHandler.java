@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.common.util.ObjectUtils;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.registry.ServiceRegistry;
 
 public class ProviderServiceHandler extends AbstractServiceHandler {
@@ -52,12 +52,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     @Override
     public void stop() {
-        if (!super.isDestroyed()) {
-            try {
-                super.destroy();
-            } catch (DestroyFailedException e) {
-                LOGGER.error(e.getMessage());
-            }
-        }
+        ObjectUtils.destroy(serviceRegistry);
+        ObjectUtils.destroy(this);
     }
 }

@@ -5,8 +5,6 @@ import java.util.function.Predicate;
 
 public interface PropertyConfigurer {
 
-    String DEFAULT_CONFIG_FILENAME = "clrpc-config";
-
     /**
      * 获取属性值 若不存在返回 {@code null}
      * 

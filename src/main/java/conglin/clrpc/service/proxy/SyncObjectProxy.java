@@ -1,9 +1,7 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.Fallback;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.transport.component.RequestSender;
 
 /**
  * 同步对象代理
@@ -14,8 +12,7 @@ public class SyncObjectProxy extends BasicProxy {
 
     private final ServiceInterface<?> serviceInterface;
 
-    public SyncObjectProxy(ServiceInterface<?> serviceInterface, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender, identifierGenerator);
+    public SyncObjectProxy(ServiceInterface<?> serviceInterface) {
         this.serviceInterface = serviceInterface;
     }
 

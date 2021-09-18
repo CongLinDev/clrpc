@@ -1,6 +1,7 @@
 package conglin.clrpc.bootstrap;
 
 import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.proxy.RpcProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +14,6 @@ import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.proxy.AnonymousProxy;
-import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
 
 /**
@@ -126,15 +126,13 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     }
 
     /**
-     * 订阅事务服务
-     * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
-     * 刷新
-     * 
-     * @return proxy
+     * 返回一个自定义代理，该代理必须提供一个无参函数
+     *
+     * @param clazz
+     * @return
      */
-    public TransactionProxy transaction() {
-        return SERVICE_HANDLER.getTransactionProxy();
+    public RpcProxy proxy(Class<? extends RpcProxy> clazz) {
+        return SERVICE_HANDLER.getProxy(clazz);
     }
 
 

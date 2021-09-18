@@ -33,8 +33,11 @@ public class SignalStateSync implements StateSync {
 
     @Override
     public void signal() {
+        if(!isPending()) return;
         synchronized (this) {
-            notifyAll();
+            if(isPending()) {
+                notifyAll();
+            }
         }
     }
 

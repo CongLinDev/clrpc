@@ -4,11 +4,11 @@ import java.lang.reflect.Proxy;
 import java.util.concurrent.TimeUnit;
 
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.CommonProxy;
 import conglin.clrpc.service.proxy.TransactionProxy;
+import conglin.clrpc.service.util.ObjectAssemblyUtils;
 import conglin.clrpc.transport.message.RequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,18 +34,19 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
 
     // ID生成器
-    protected final IdentifierGenerator identifierGenerator;
+    protected IdentifierGenerator identifierGenerator;
 
     protected long currentTransactionId;
 
-    protected final TransactionHelper helper;
+    protected TransactionHelper helper;
 
     protected TransactionFuture transactionFuture;
 
-    public ZooKeeperTransactionProxy(RpcContext context) {
-        super(context.getWith(RpcContextEnum.REQUEST_SENDER));
-        this.identifierGenerator = context.getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
-        PropertyConfigurer c = context.getWith(RpcContextEnum.PROPERTY_CONFIGURER);
+    @Override
+    public void init() {
+        super.init();
+        this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
+        PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(c.get("atomicity.url", String.class)));
     }
 
@@ -119,10 +120,12 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     @Override
     public RpcFuture call(TransactionRequest request) throws TransactionException {
-        helper.prepare(currentTransactionId, request.serialId());
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
-        // wrapper.setBeforeSendRequest();
+        wrapper.setBeforeSendRequest(() -> {
+            TransactionRequest transactionRequest = (TransactionRequest)wrapper.getRequest();
+            helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), wrapper.getRemoteAddress());
+        });
         RpcFuture f = super.call(wrapper);
         if (!transactionFuture.combine(f)) {
             throw new TransactionException("Atomic request added failed. " + request);
@@ -147,15 +150,16 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     @Override
     @SuppressWarnings("unchecked")
     public <T> T proxy(ServiceInterface<T> serviceInterface) {
+        InnerAsyncObjectProxy proxy = new InnerAsyncObjectProxy(serviceInterface);
+        ObjectAssemblyUtils.assemble(proxy, getContext());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[] { serviceInterface.interfaceClass() }, new InnerAsyncObjectProxy(serviceInterface));
+                new Class<?>[] { serviceInterface.interfaceClass() }, proxy);
     }
 
     class InnerAsyncObjectProxy extends AsyncObjectProxy {
 
         public InnerAsyncObjectProxy(ServiceInterface<?> serviceInterface) {
-            super(serviceInterface, ZooKeeperTransactionProxy.this.requestSender(),
-                    ZooKeeperTransactionProxy.this.identifierGenerator);
+            super(serviceInterface);
         }
 
         @Override

@@ -37,7 +37,7 @@ public class SequentialIdentifierGenerator extends AbstractZooKeeperService impl
             return Long.parseLong(id);
         }
         LOGGER.warn(
-                "'SequetialIdentifierGenerator' generated Indentifier failed. Starting use 'BasicIdentifierGenerator'.");
+                "'SequentialIdentifierGenerator' generated Identifier failed. Starting use 'BasicIdentifierGenerator'.");
         return downgradeGenerator.generate(key);
     }
 }

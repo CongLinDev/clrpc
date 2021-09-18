@@ -11,7 +11,7 @@ public interface RpcProxy {
     /**
      * 异步调用函数 使用负载均衡策略
      *
-     * @param request 请求
+     * @param requestWrapper 请求
      * @return future
      */
     RpcFuture call(RequestWrapper requestWrapper);

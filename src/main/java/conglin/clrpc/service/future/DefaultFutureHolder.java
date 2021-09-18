@@ -45,7 +45,7 @@ public class DefaultFutureHolder implements FutureHolder<Long> {
     public void waitForUncompletedFuture() {
         while (!rpcFutures.isEmpty()) {
             try {
-                LOGGER.info("Waiting uncomplete futures for 500 ms.");
+                LOGGER.info("Waiting uncompleted futures for 500 ms.");
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage());

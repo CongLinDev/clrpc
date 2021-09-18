@@ -2,10 +2,9 @@ package conglin.clrpc.service.handler.factory;
 
 import java.util.Collection;
 
-import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.util.ObjectAssemblyUtils;
 import io.netty.channel.ChannelHandler;
 
 /**
@@ -29,12 +28,7 @@ public interface ChannelHandlerFactory {
             // fallback default factory
            factory = new DefaultChannelHandlerFactory();
         }
-        if (factory instanceof ContextAware) {
-            ((ContextAware)factory).setContext(context);
-        }
-        if (factory instanceof Initializable) {
-            ((Initializable)factory).init();
-        }
+        ObjectAssemblyUtils.assemble(factory, context);
         return factory;
     }
 

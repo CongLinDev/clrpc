@@ -4,14 +4,15 @@ import java.lang.reflect.Proxy;
 
 import conglin.clrpc.common.registry.DiscoveryCallback;
 import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.common.util.ObjectUtils;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.proxy.*;
+import conglin.clrpc.service.util.ObjectAssemblyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.future.DefaultFutureHolder;
@@ -41,9 +42,11 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     @SuppressWarnings("unchecked")
     public <T> T getSyncProxy(ServiceInterface<T> serviceInterface) {
+        SyncObjectProxy proxy = new SyncObjectProxy(serviceInterface);
+        ObjectAssemblyUtils.assemble(proxy, context());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { serviceInterface.interfaceClass() },
-                new SyncObjectProxy(serviceInterface, context().getWith(RpcContextEnum.REQUEST_SENDER), context().getWith(RpcContextEnum.IDENTIFIER_GENERATOR)));
+                proxy);
     }
 
     /**
@@ -54,9 +57,10 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     @SuppressWarnings("unchecked")
     public <T> T getAsyncProxy(ServiceInterface<T> serviceInterface) {
+        AsyncObjectProxy proxy = new AsyncObjectProxy(serviceInterface);
+        ObjectAssemblyUtils.assemble(proxy, context());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[] { serviceInterface.interfaceClass() },
-                new AsyncObjectProxy(serviceInterface, context().getWith(RpcContextEnum.REQUEST_SENDER), context().getWith(RpcContextEnum.IDENTIFIER_GENERATOR)));
+                new Class<?>[] { serviceInterface.interfaceClass() }, proxy);
     }
 
     /**
@@ -65,18 +69,21 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @return
      */
     public AnonymousProxy getAnonymousProxy() {
-        return new AnonymousProxy(new BasicProxy(context().getWith(RpcContextEnum.REQUEST_SENDER), context().getWith(RpcContextEnum.IDENTIFIER_GENERATOR)));
+        BasicProxy proxy = new BasicProxy();
+        ObjectAssemblyUtils.assemble(proxy, context());
+        return new AnonymousProxy(proxy);
     }
 
     /**
-     * 获取事务服务代理
-     * 
+     * 获取代理
+     *
+     * @param clazz
      * @return
      */
-    public TransactionProxy getTransactionProxy() {
-        PropertyConfigurer c = context().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        String transactionProxyClassName = c.get("atomicity.transaction.proxy-class", String.class);
-        return ClassUtils.loadObjectByType(transactionProxyClassName, TransactionProxy.class, context());
+    public RpcProxy getProxy(Class<? extends RpcProxy> clazz) {
+        RpcProxy proxy = ClassUtils.loadObjectByType(clazz, RpcProxy.class);
+        ObjectAssemblyUtils.assemble(proxy, context());
+        return proxy;
     }
 
     /**
@@ -95,14 +102,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     public void stop() {
         futureHolder.waitForUncompletedFuture();
-
-        if (!super.isDestroyed()) {
-            try {
-                super.destroy();
-            } catch (DestroyFailedException e) {
-                LOGGER.error(e.getMessage());
-            }
-        }
+        ObjectUtils.destroy(this);
     }
 
     /**

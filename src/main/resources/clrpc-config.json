@@ -4,7 +4,6 @@
     "registry.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
 
     "atomicity.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
-    "atomicity.transaction.proxy-class": "conglin.clrpc.thirdparty.zookeeper.proxy.ZooKeeperTransactionProxy",
 
     "provider.port": 0,
     "provider.thread.boss": 1,

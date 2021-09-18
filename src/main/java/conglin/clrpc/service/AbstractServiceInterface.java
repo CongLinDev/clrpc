@@ -18,16 +18,16 @@ public class AbstractServiceInterface<T> implements ServiceInterface<T> {
 
     @Override
     public String name() {
-        return null;
+        return name;
     }
 
     @Override
     public Class<T> interfaceClass() {
-        return null;
+        return interfaceClass;
     }
 
     @Override
     public Fallback fallback() {
-        return null;
+        return fallback;
     }
 }

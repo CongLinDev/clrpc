@@ -29,15 +29,6 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     }
 
     /**
-     * 将默认本地文件内容导入配置器
-     * 
-     * @return
-     */
-    public static JsonPropertyConfigurer fromFile() {
-        return fromFile(DEFAULT_CONFIG_FILENAME + ".json");
-    }
-
-    /**
      * 将本地文件内容导入配置器
      * 
      * @param filename

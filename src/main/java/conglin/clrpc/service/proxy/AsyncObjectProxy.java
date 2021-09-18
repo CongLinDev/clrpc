@@ -1,10 +1,8 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.Fallback;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.component.RequestSender;
 
 /**
  * 异步对象代理
@@ -38,8 +36,7 @@ public class AsyncObjectProxy extends BasicProxy {
 
     private final ServiceInterface<?> serviceInterface;
 
-    public AsyncObjectProxy(ServiceInterface<?> serviceInterface, RequestSender sender, IdentifierGenerator identifierGenerator) {
-        super(sender, identifierGenerator);
+    public AsyncObjectProxy(ServiceInterface<?> serviceInterface) {
         this.serviceInterface = serviceInterface;
     }
 
