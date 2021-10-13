@@ -25,20 +25,6 @@ abstract public class RpcBootstrap {
     }
 
     /**
-     * 准备
-     */
-    protected void start() {
-
-    }
-
-    /**
-     * 销毁
-     */
-    protected void stop() {
-
-    }
-
-    /**
      * 虚拟机钩子
      * 
      * @param runnable

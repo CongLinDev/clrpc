@@ -6,6 +6,7 @@ import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.global.role.Role;
+import conglin.clrpc.router.instance.ServiceInstanceGenerator;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.transport.component.ProviderChooser;
 import conglin.clrpc.transport.component.ProviderChooserAdapter;
@@ -28,7 +29,8 @@ public enum RpcContextEnum {
     SERVICE_REGISTRY(ServiceRegistry.class),
     FUTURE_HOLDER(FutureHolder.class),
 
-    SERVICE_OBJECT_HOLDER(Map.class);
+    SERVICE_OBJECT_HOLDER(Map.class),
+    SERVICE_INSTANCE_GENERATOR(ServiceInstanceGenerator.class);
 
 
     private final Class<?> clazz;

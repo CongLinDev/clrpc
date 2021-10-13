@@ -1,16 +1,15 @@
 package conglin.clrpc.service.proxy;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.annotation.AnnotationParser;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.RequestWrapper;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
 /**
  * 基本的代理
@@ -33,17 +32,13 @@ public class BasicProxy extends CommonProxy implements InvocationHandler {
         String methodName = method.getName();
         Class<?> methodDeclaringClass = method.getDeclaringClass();
         if (Object.class == methodDeclaringClass) {
-            switch (methodName) {
-                case "equals":
-                    return proxy == args[0];
-                case "hashCode":
-                    return System.identityHashCode(proxy);
-                case "toString":
-                    return proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
-                            + ", with InvocationHandler " + this;
-                default:
-                    throw new IllegalStateException(methodName);
-            }
+            return switch (methodName) {
+                case "equals" -> proxy == args[0];
+                case "hashCode" -> System.identityHashCode(proxy);
+                case "toString" -> proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
+                        + ", with InvocationHandler " + this;
+                default -> throw new IllegalStateException(methodName);
+            };
         }
 
         RpcFuture future = call(getServiceName(methodDeclaringClass), methodName, args);
@@ -58,11 +53,7 @@ public class BasicProxy extends CommonProxy implements InvocationHandler {
      * @return
      */
     protected String getServiceName(Class<?> methodDeclaringClass) {
-        String serviceName = AnnotationParser.serviceName(methodDeclaringClass);
-        if (serviceName == null) {
-            throw new IllegalStateException("Cannot find available serviceName from " + methodDeclaringClass.getName());
-        }
-        return serviceName;
+        return methodDeclaringClass.getName();
     }
 
     /**

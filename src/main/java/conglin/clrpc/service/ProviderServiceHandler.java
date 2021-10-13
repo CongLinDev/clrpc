@@ -1,8 +1,8 @@
 package conglin.clrpc.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.ObjectUtils;
 import conglin.clrpc.service.context.RpcContext;
@@ -10,9 +10,8 @@ import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.registry.ServiceRegistry;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProviderServiceHandler extends AbstractServiceHandler {
 
@@ -53,6 +52,7 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
     @Override
     public void stop() {
         ObjectUtils.destroy(serviceRegistry);
+        ObjectUtils.destroy(serviceObjects);
         ObjectUtils.destroy(this);
     }
 }

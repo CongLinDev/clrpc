@@ -9,14 +9,12 @@
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
     "provider.channel.handler-factory": null,
-    "provider.message.serialization-class": "conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler",
 
     "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
     "consumer.retry.check-period": 3000,
     "consumer.retry.initial-threshold": 3000,
     "consumer.channel.handler-factory": null,
-    "consumer.message.serialization-class": "conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler",
 
     "service.thread-pool.core-size": 5,
     "service.thread-pool.max-size": 10,

@@ -13,9 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ZooKeeperInstance implements Destroyable, Available {
 
     private final ZooKeeper keeper;
-
     private final AtomicInteger count;
-
     private final String cacheKey;
 
     protected static String ZOOKEEPER_CONNECTION_POOL_KEY_FORMAT = "%s-%d";
@@ -32,12 +30,12 @@ public class ZooKeeperInstance implements Destroyable, Available {
     public static ZooKeeperInstance connect(final String address, final int sessionTimeout) {
         String cacheKey = String.format(ZOOKEEPER_CONNECTION_POOL_KEY_FORMAT, address, sessionTimeout);
         ZooKeeperInstance instance = ZOOKEEPER_CONNECTION_POOL.get(cacheKey);
-        if(instance == null) {
+        if (instance == null) {
             ZooKeeper keeper = ZooKeeperUtils.connectNewZooKeeper(address, sessionTimeout);
-            instance = new ZooKeeperInstance(cacheKey, keeper, 1);
+            instance = new ZooKeeperInstance(cacheKey, keeper, 0);
             ZOOKEEPER_CONNECTION_POOL.put(cacheKey, instance);
         }
-
+        instance.acquire();
         return instance;
     }
 
@@ -57,7 +55,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
      * @param cacheKey
      * @return
      */
-    public static ZooKeeperInstance removeCache(String cacheKey) {
+    protected static ZooKeeperInstance removeCache(String cacheKey) {
         return ZOOKEEPER_CONNECTION_POOL.remove(cacheKey);
     }
 
@@ -85,7 +83,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
      *
      * @return
      */
-    public String getCacheKey() {
+    protected String getCacheKey() {
         return cacheKey;
     }
 
@@ -100,27 +98,26 @@ public class ZooKeeperInstance implements Destroyable, Available {
         return count.decrementAndGet();
     }
 
-    public int releaseAndDestroy() throws DestroyFailedException {
-        int c = release();
-        if (c <= 0) {
-            destroy();
-        }
-        return c;
+    public int count() {
+        return count.get();
     }
 
     @Override
     public boolean isDestroyed() {
-        return Destroyable.super.isDestroyed();
+        return count() <= 0;
     }
 
     @Override
     public void destroy() throws DestroyFailedException {
-        ZooKeeperInstance.removeCache(getCacheKey());
-        ZooKeeperUtils.disconnectZooKeeper(instance());
+        int count = release();
+        if (count <= 0) {
+            ZooKeeperInstance.removeCache(getCacheKey());
+            ZooKeeperUtils.disconnectZooKeeper(instance());
+        }
     }
 
     protected void check() {
-        if(isDestroyed()) {
+        if (isDestroyed()) {
             throw new UnsupportedOperationException("instance has been destroyed");
         }
     }

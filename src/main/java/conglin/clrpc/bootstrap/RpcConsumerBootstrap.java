@@ -1,12 +1,6 @@
 package conglin.clrpc.bootstrap;
 
-import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.proxy.RpcProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.bootstrap.option.RpcOption;
-import conglin.clrpc.bootstrap.option.RpcOptionEnum;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.ConsumerServiceHandler;
@@ -14,7 +8,10 @@ import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.proxy.AnonymousProxy;
+import conglin.clrpc.service.proxy.RpcProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * RPC consumer端启动类
@@ -25,7 +22,7 @@ import conglin.clrpc.transport.ConsumerTransfer;
  * 
  * <pre>
  * RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
- * bootstrap.start();
+ * bootstrap.start(new CommonOption());
  *
  * // 构造ServiceInterface
  * ServiceInterface<Interface1> serviceInterface1 = SimpleServiceInterfaceBuilder.builder()
@@ -143,19 +140,11 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
 
     /**
      * 启动
-     */
-    public void start() {
-        start(new RpcOption());
-    }
-
-    /**
-     * 启动
      * 
      * @param option 启动选项
      */
     public void start(RpcOption option) {
         LOGGER.info("RpcConsumer is starting.");
-        super.start();
         RpcContext context = initContext(option);
         SERVICE_HANDLER.start(context);
         CONSUMER_TRANSFER.start(context);
@@ -168,7 +157,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         LOGGER.info("RpcConsumer is stopping.");
         SERVICE_HANDLER.stop();
         CONSUMER_TRANSFER.stop();
-        super.stop();
     }
 
     /**
@@ -194,12 +182,11 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         // 设置属性配置器
         context.put(RpcContextEnum.PROPERTY_CONFIGURER, configurer());
         // 设置序列化处理器
-        context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.getOrDefault(RpcOptionEnum.IDENTIFIER_GENERATOR));
+        context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
         // 设置ID生成器
-        context.put(RpcContextEnum.PROVIDER_CHOOSER_ADAPTER,
-                option.getOrDefault(RpcOptionEnum.PROVIDER_CHOOSER_ADAPTER));
+        context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.identifierGenerator());
         // 设置服务提供者挑选适配器
-        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serialization-class"), String.class)));
+        context.put(RpcContextEnum.PROVIDER_CHOOSER_ADAPTER, option.providerChooserAdapter());
         return context;
     }
 }

@@ -34,40 +34,40 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.1.46.Final</version>
+      <version>4.1.68.Final</version>
     </dependency>
 
     <!-- zookeeper -->
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
-      <version>3.6.0</version>
+      <version>3.7.0</version>
     </dependency>
 
     <!-- fastjson -->
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.66</version>
+      <version>1.2.78</version>
     </dependency>
 
     <!-- protostuff -->
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-core</artifactId>
-      <version>1.6.2</version>
+      <version>1.7.4</version>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime</artifactId>
-      <version>1.6.2</version>
+      <version>1.7.4</version>
     </dependency>
 
     <!-- slf4j -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.30</version>
+      <version>1.7.32</version>
       <scope>test</scope>
     </dependency>
 
@@ -75,19 +75,19 @@
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-launcher</artifactId>
-      <version>1.6.0</version>
+      <version>1.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.6.0</version>
+      <version>5.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.6.0</version>
+      <version>5.8.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -100,9 +100,9 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
-          <compilerVersion>15</compilerVersion>
-          <source>15</source>
-          <target>15</target>
+          <compilerVersion>17</compilerVersion>
+          <source>17</source>
+          <target>17</target>
         </configuration>
       </plugin>
       <plugin>

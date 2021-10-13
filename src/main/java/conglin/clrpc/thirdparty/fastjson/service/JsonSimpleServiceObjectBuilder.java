@@ -1,9 +1,8 @@
 package conglin.clrpc.thirdparty.fastjson.service;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.router.instance.ServiceInstance;
-import conglin.clrpc.service.ServiceVersion;
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.ServiceVersion;
 import conglin.clrpc.service.SimpleServiceObject;
 import conglin.clrpc.thirdparty.fastjson.config.JsonPropertyConfigurer;
 
@@ -64,12 +63,7 @@ public class JsonSimpleServiceObjectBuilder {
         if(object == null)
             throw new IllegalArgumentException();
         checkMeta();
-        return new SimpleServiceObject(object, metaInfo) {
-            @Override
-            public ServiceInstance newServiceInstance(String address) {
-                return new JsonServiceInstance(this, address);
-            }
-        };
+        return new SimpleServiceObject(object, metaInfo);
     }
 
     /**

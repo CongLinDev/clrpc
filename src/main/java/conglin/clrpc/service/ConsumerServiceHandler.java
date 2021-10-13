@@ -8,8 +8,6 @@ import conglin.clrpc.common.util.ObjectUtils;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.proxy.*;
 import conglin.clrpc.service.util.ObjectAssemblyUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.config.PropertyConfigurer;
@@ -19,8 +17,6 @@ import conglin.clrpc.service.future.DefaultFutureHolder;
 import conglin.clrpc.service.future.FutureHolder;
 
 public class ConsumerServiceHandler extends AbstractServiceHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerServiceHandler.class);
 
     private final FutureHolder<Long> futureHolder;
 
@@ -102,6 +98,8 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      */
     public void stop() {
         futureHolder.waitForUncompletedFuture();
+        ObjectUtils.destroy(serviceDiscovery);
+        ObjectUtils.destroy(futureHolder);
         ObjectUtils.destroy(this);
     }
 

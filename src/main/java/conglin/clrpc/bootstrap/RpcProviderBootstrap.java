@@ -1,18 +1,16 @@
 package conglin.clrpc.bootstrap;
 
-import conglin.clrpc.common.util.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.bootstrap.option.RpcOption;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.global.role.Role;
+import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
-import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.transport.ProviderTransfer;
 import io.netty.bootstrap.ServerBootstrap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * RPC provider端启动类
@@ -28,7 +26,7 @@ import io.netty.bootstrap.ServerBootstrap;
  *                                  .name("Service1")
  *                                  .object(new ServiceImpl1())
  *                                  .build();
- * bootstrap.publish(serviceObject).hookStop().start();
+ * bootstrap.publish(serviceObject).hookStop().start(new CommonOption());
  * 
  * </pre>
  * 
@@ -76,19 +74,11 @@ public class RpcProviderBootstrap extends RpcBootstrap {
 
     /**
      * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
-     */
-    public void start() {
-        start(new RpcOption());
-    }
-
-    /**
-     * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
      * 
      * @param option 启动选项
      */
     public void start(RpcOption option) {
         LOGGER.info("RpcProvider is starting.");
-        super.start();
         RpcContext context = initContext(option);
         SERVICE_HANDLER.start(context);
         PROVIDER_TRANSFER.start(context);
@@ -101,7 +91,6 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         LOGGER.info("RpcProvider is stopping.");
         SERVICE_HANDLER.stop();
         PROVIDER_TRANSFER.stop();
-        super.stop();
     }
 
     /**
@@ -127,7 +116,9 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         // 设置属性配置器
         context.put(RpcContextEnum.PROPERTY_CONFIGURER, configurer());
         // 设置序列化处理器
-        context.put(RpcContextEnum.SERIALIZATION_HANDLER, ClassUtils.loadObject(configurer().get(role().item(".message.serialization-class"), String.class)));
+        context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
+        // 设置 service instance generator
+        context.put(RpcContextEnum.SERVICE_INSTANCE_GENERATOR, option.serviceInstanceGenerator());
         return context;
     }
 

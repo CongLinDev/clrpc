@@ -1,7 +1,6 @@
 package conglin.clrpc.thirdparty.fastjson.util;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.AbstractServiceObject;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.thirdparty.fastjson.config.JsonPropertyConfigurer;
@@ -22,10 +21,6 @@ public class JsonServiceObjectUtils {
             @Override
             public Class<?> objectClass() {
                 return null;
-            }
-            @Override
-            public ServiceInstance newServiceInstance(String address) {
-                throw new UnsupportedOperationException();
             }
         };
     }

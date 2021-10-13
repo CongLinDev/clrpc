@@ -1,41 +1,50 @@
 package conglin.clrpc.bootstrap.option;
 
-import conglin.clrpc.common.object.ObjectArrayHolder;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.serialization.SerializationHandler;
+import conglin.clrpc.router.instance.ServiceInstanceGenerator;
+import conglin.clrpc.transport.component.ProviderChooserAdapter;
 
-public class RpcOption extends ObjectArrayHolder<RpcOptionEnum> {
-    
-    public RpcOption() {
-        super(RpcOptionEnum.values().length);
+public class RpcOption {
+
+    private IdentifierGenerator identifierGenerator;
+    private ProviderChooserAdapter providerChooserAdapter;
+    private SerializationHandler serializationHandler;
+    private ServiceInstanceGenerator serviceInstanceGenerator;
+
+    public IdentifierGenerator identifierGenerator() {
+        return identifierGenerator;
     }
 
-    /**
-     * 设置属性
-     * 
-     * @param key
-     * @param value
-     */
-    @Override
-    public void put(RpcOptionEnum key, Object value) {
-        if (!key.accept(value)) {
-            throw new IllegalArgumentException("unacceptable value");
-        }
-        super.put(key, value);;
+    public RpcOption identifierGenerator(IdentifierGenerator identifierGenerator) {
+        this.identifierGenerator = identifierGenerator;
+        return this;
     }
 
-
-    /**
-     * 获取属性
-     * 
-     * @param key
-     * @return
-     */
-    public Object getOrDefault(RpcOptionEnum key) {
-        Object obj = get(key);
-        if(obj == null) {
-            obj = key.generate();
-            put(key, obj);
-        }
-        return obj;
+    public ProviderChooserAdapter providerChooserAdapter() {
+        return providerChooserAdapter;
     }
-    
+
+    public RpcOption providerChooserAdapter(ProviderChooserAdapter providerChooserAdapter) {
+        this.providerChooserAdapter = providerChooserAdapter;
+        return this;
+    }
+
+    public SerializationHandler serializationHandler() {
+        return serializationHandler;
+    }
+
+    public RpcOption serializationHandler(SerializationHandler serializationHandler) {
+        this.serializationHandler = serializationHandler;
+        return this;
+    }
+
+    public ServiceInstanceGenerator serviceInstanceGenerator() {
+        return serviceInstanceGenerator;
+    }
+
+    public RpcOption serviceInstanceGenerator(ServiceInstanceGenerator serviceInstanceGenerator) {
+        this.serviceInstanceGenerator = serviceInstanceGenerator;
+        return this;
+    }
 }

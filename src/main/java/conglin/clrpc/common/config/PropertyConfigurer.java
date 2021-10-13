@@ -113,21 +113,4 @@ public interface PropertyConfigurer {
      * @return
      */
     boolean isEmpty();
-
-    /**
-     * 获取子配置器
-     * 
-     * @param key
-     * @return 若key对应的配置器不存在返回空配置器
-     */
-    PropertyConfigurer subConfigurer(String key);
-
-    /**
-     * 获取子配置器
-     * 
-     * @param specialKey
-     * @param commonKey
-     * @return 若specialKey对应的配置器不存在，则返回commonKey对应的配置器，若不存在返回空配置器
-     */
-    PropertyConfigurer subConfigurer(String specialKey, String commonKey);
 }

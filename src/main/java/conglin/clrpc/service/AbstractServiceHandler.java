@@ -1,21 +1,14 @@
 package conglin.clrpc.service;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.*;
 
 abstract public class AbstractServiceHandler implements Destroyable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceHandler.class);
@@ -119,7 +112,7 @@ abstract public class AbstractServiceHandler implements Destroyable {
      *
      * @param context
      */
-    void start(RpcContext context) {
+    public void start(RpcContext context) {
         this.context = context;
         context.put(RpcContextEnum.EXECUTOR_SERVICE, getExecutorService());
     }
@@ -127,7 +120,7 @@ abstract public class AbstractServiceHandler implements Destroyable {
     /**
      * 停止
      */
-    abstract void stop();
+    abstract public void stop();
 
     /**
      * 获取 context

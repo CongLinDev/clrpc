@@ -50,12 +50,7 @@ public final class EmptyPropertyConfigurer implements PropertyConfigurer {
     }
 
     @Override
-    public PropertyConfigurer subConfigurer(String key) {
-        return this;
-    }
-
-    @Override
-    public PropertyConfigurer subConfigurer(String specialKey, String commonKey) {
-        return this;
+    public String toString() {
+        return "";
     }
 }

@@ -50,7 +50,7 @@ ServiceObject serviceObject = JsonSimpleServiceObjectBuilder.builder()
 // 发布服务并开启服务
 bootstrap.publish(serviceObject) // 发布享元模式的服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
-        .start();
+        .start(new CommonOption());
 ```
 
 ### Service Consumer
@@ -59,7 +59,7 @@ bootstrap.publish(serviceObject) // 发布享元模式的服务对象
 // 创建服务消费者
 RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
-bootstrap.start();
+bootstrap.start(new CommonOption());
 // 创建服务接口对象
 ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.builder()
         .name("HelloService")
@@ -95,7 +95,7 @@ bootstrap.stop();
 // 创建服务消费者
 RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
-bootstrap.start();
+bootstrap.start(new CommonOption());
 // 创建服务接口对象
 ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.builder()
         .name("HelloService")
@@ -146,14 +146,12 @@ bootstrap.stop();
 |         provider.thread.boss         | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
 |        provider.thread.worker        | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
 |   provider.channel.handler-factory   | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-| provider.message.serialization-class | String  |   True   |         |                    序列化处理器类名                     |
 |          consumer.wait-time          | Integer |  False   |  5000   |         无服务提供者时等待重试时间，单位为毫秒          |
 |        consumer.thread.worker        | Integer |  False   |    4    |              服务使用者的workerGroup线程数              |
 |     consumer.retry.check-period      | Integer |  False   |  3000   |           重试机制执行周期(非正数代表不开启)            |
 |   consumer.retry.initial-threshold   | Integer |  False   |  3000   |                    初始重试时间门槛                     |
 |     consumer.fallback.max-retry      | Integer |  False   |   -1    | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
 |   consumer.channel.handler-factory   | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-| consumer.message.serialization-class | String  |   True   |         |                    序列化处理器类名                     |
 |    service.thread-pool.core-size     | Integer |  False   |    5    |                  业务线程池核心线程数                   |
 |     service.thread-pool.max-size     | Integer |  False   |   10    |                  业务线程池最大线程数                   |
 |    service.thread-pool.keep-alive    | Integer |  False   |  1000   |    线程池多余空闲线程在终止之前等待新任务的最长时间     |

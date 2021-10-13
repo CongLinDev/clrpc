@@ -1,17 +1,16 @@
 package conglin.clrpc.thirdparty.fastjson.config;
 
+import com.alibaba.fastjson.JSONObject;
+import conglin.clrpc.common.config.PropertyConfigurer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
-
-import com.alibaba.fastjson.JSONObject;
-
-import conglin.clrpc.common.config.PropertyConfigurer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JsonPropertyConfigurer implements PropertyConfigurer {
 
@@ -165,25 +164,6 @@ public class JsonPropertyConfigurer implements PropertyConfigurer {
     @Override
     public Object remove(String key) {
         return CONFIG_HOLDER.remove(key);
-    }
-
-    @Override
-    public PropertyConfigurer subConfigurer(String key) {
-        JSONObject object = CONFIG_HOLDER.getJSONObject(key);
-        // if cannot find subconfigurer, will return empty configurer
-        if (object == null)
-            object = new JSONObject();
-        return new JsonPropertyConfigurer(object);
-    }
-
-    @Override
-    public PropertyConfigurer subConfigurer(String specialKey, String commonKey) {
-        JSONObject object = CONFIG_HOLDER.getJSONObject(specialKey);
-        if (object == null) {
-            return subConfigurer(commonKey);
-        } else {
-            return new JsonPropertyConfigurer(object);
-        }
     }
 
     @Override

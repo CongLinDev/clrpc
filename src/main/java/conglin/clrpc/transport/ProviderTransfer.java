@@ -1,24 +1,24 @@
 package conglin.clrpc.transport;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
-
+import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.router.instance.ServiceInstance;
+import conglin.clrpc.router.instance.ServiceInstanceGenerator;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.util.IPAddressUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
 
 public class ProviderTransfer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransfer.class);
@@ -45,8 +45,9 @@ public class ProviderTransfer {
             if (channelFuture.isSuccess()) {
                 ServiceRegistry serviceRegistry = context.getWith(RpcContextEnum.SERVICE_REGISTRY);
                 Map<String, ServiceObject> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
+                ServiceInstanceGenerator serviceInstanceGenerator = context.getWith(RpcContextEnum.SERVICE_INSTANCE_GENERATOR);
                 serviceObjects.values().forEach(serviceObject -> {
-                    ServiceInstance instance = serviceObject.newServiceInstance(localAddress);
+                    ServiceInstance instance = serviceInstanceGenerator.instance(serviceObject ,localAddress);
                     serviceRegistry.register(serviceObject.name(), localAddress, instance.toString());
                 });
                 LOGGER.info("Provider starts on {}", localAddress);

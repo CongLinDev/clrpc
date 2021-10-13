@@ -1,8 +1,8 @@
 package conglin.clrpc.service;
 
-public class ServiceVersion implements Comparable<ServiceVersion> {
+final public class ServiceVersion implements Comparable<ServiceVersion> {
 
-    protected final static ServiceVersion DEFAULT_VERSION = new ServiceVersion(1, 0, 0);
+    private final static ServiceVersion DEFAULT_VERSION = new ServiceVersion(1, 0, 0);
 
     public static ServiceVersion defaultVersion() {
         return DEFAULT_VERSION;

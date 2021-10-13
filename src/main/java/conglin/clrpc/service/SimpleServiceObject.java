@@ -2,7 +2,7 @@ package conglin.clrpc.service;
 
 import conglin.clrpc.common.config.PropertyConfigurer;
 
-abstract public class SimpleServiceObject extends AbstractServiceObject {
+public class SimpleServiceObject extends AbstractServiceObject {
 
     protected final Object object;
 
