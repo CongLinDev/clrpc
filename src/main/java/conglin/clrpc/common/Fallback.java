@@ -9,6 +9,8 @@ public interface Fallback {
 
     int DEFAULT_MAX_RETRY_TIMES = 5;
 
+    Fallback DEFAULT = () -> null;
+
     /**
      * 执行fallback的对象
      *

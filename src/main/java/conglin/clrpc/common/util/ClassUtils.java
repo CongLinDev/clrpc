@@ -1,16 +1,12 @@
 package conglin.clrpc.common.util;
 
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class ClassUtils {
 
@@ -174,7 +170,7 @@ public final class ClassUtils {
      * @param objects
      * @return
      */
-    public static Class<?>[] getClasses(Object... objects) {
+    public static Class<?>[] getClasses(Object[] objects) {
         if (objects == null)
             return new Class<?>[0];
         Class<?>[] types = new Class[objects.length];

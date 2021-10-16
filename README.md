@@ -174,12 +174,6 @@ bootstrap.stop();
 3. 根节点部分，如 `/clrpc` （若未给出默认为 `/` ）；
 4. 参数部分，如 `session-timeout=5000` 。
 
-#### About customized meta information
-
-在一个进程中，针对不同的服务可以使用不同的元信息。
-
-例如服务提供者提供了 `AService` 和 `BService`，那么发布的元信息在配置文件中分别对应于 `meta.provider.AService` 和 `meta.provider.BService` 指向的具体元信息；若具体元信息不存在，则发布 `meta.provider.*` 对应的通用元信息；若通用元信息不存在，则发布空信息。
-
 #### About customized channel handler
 
 [Click me](#Extension).
@@ -188,9 +182,14 @@ bootstrap.stop();
 
 **clrpc** 使用 **ZooKeeper** 实现了类似于两段式提交(2PC)的分布式事务协调服务。
 
+注意：该服务仅支持 返回值为 `conglin.clrpc.extension.transaction.TransactionResult` 及其子类的服务方法。不满足条件的服务方法执行方式与普通调用相同。
+
+1. 阶段一 执行服务方法，并返回 `conglin.clrpc.extension.transaction.TransactionResult` 对象。并通过 `conglin.clrpc.extension.transaction.TransactionResult#result()` 方法获取一阶段提交结果，返回给调用者。
+2. 阶段二 从 `conglin.clrpc.extension.transaction.TransactionResult#callback()` 获取 `conglin.clrpc.common.Callback` 对象。根据实际需求执行 `conglin.clrpc.common.Callback#success(Object)` 或 `conglin.clrpc.common.Callback#fail(Exception)` 方法。
+
 流程图如下：
 
-![distributed.png](https://i.loli.net/2021/08/31/ien8BDuNRvt7FMA.png)
+![distributed.png](https://i.loli.net/2021/10/16/loCg5LTF2uitGMh.png)
 
 ## Extension
 
@@ -198,7 +197,7 @@ bootstrap.stop();
 
 使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，并声明在配置文件中，即可完成对消息处理的扩展。
 
-在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，必须提供一个无参构造函数，该对象可以通过实现 `conglin.clrpc.service.context.ContextAware` 接口来实现 `conglin.clrpc.service.context.RpcContext` 的注入。
+在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，必须提供一个无参构造函数。该对象可以通过实现 `conglin.clrpc.service.context.ContextAware` 接口来实现 `conglin.clrpc.service.context.RpcContext` 的注入。
 
 ## License
 

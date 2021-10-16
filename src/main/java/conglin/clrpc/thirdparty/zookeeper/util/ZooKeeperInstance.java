@@ -35,7 +35,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
             instance = new ZooKeeperInstance(cacheKey, keeper, 0);
             ZOOKEEPER_CONNECTION_POOL.put(cacheKey, instance);
         }
-        instance.acquire();
+        instance.acquire(false);
         return instance;
     }
 
@@ -89,12 +89,22 @@ public class ZooKeeperInstance implements Destroyable, Available {
 
 
     public int acquire() {
-        check();
+        return acquire(true);
+    }
+
+    protected int acquire(boolean check) {
+        if (check)
+            check();
         return count.incrementAndGet();
     }
 
     public int release() {
-        check();
+        return release(true);
+    }
+
+    protected int release(boolean check) {
+        if (check)
+            check();
         return count.decrementAndGet();
     }
 

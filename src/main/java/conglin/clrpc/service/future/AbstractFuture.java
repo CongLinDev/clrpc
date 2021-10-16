@@ -1,14 +1,14 @@
 package conglin.clrpc.service.future;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.exception.RpcServiceException;
 import conglin.clrpc.service.future.sync.SignalStateSync;
 import conglin.clrpc.service.future.sync.StateSync;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 abstract public class AbstractFuture implements RpcFuture {
 
@@ -36,12 +36,8 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public Object get() throws InterruptedException, ExecutionException {
-        try {
-            SYNCHRONIZER.await();
-            return doGet();
-        } finally {
-            SYNCHRONIZER.signal();
-        }
+        SYNCHRONIZER.await();
+        return doGet();
     }
 
     @Override

@@ -1,32 +1,29 @@
 package conglin.clrpc.thirdparty.zookeeper.proxy;
 
-import java.lang.reflect.Proxy;
-import java.util.concurrent.TimeUnit;
-
+import conglin.clrpc.common.Available;
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.extension.transaction.*;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.CommonProxy;
-import conglin.clrpc.service.proxy.TransactionProxy;
 import conglin.clrpc.service.util.ObjectAssemblyUtils;
+import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.RequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Available;
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.exception.TransactionException;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.util.TransactionHelper;
-import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.service.future.TransactionFuture;
-import conglin.clrpc.transport.message.TransactionRequest;
-import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
+import java.lang.reflect.Proxy;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 使用 ZooKeeper 控制分布式事务 注意，该类是线程不安全的
- * 
+ * <p>
  * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用 {@link #isAvailable()} 查看
  */
 public class ZooKeeperTransactionProxy extends CommonProxy implements TransactionProxy, Available {
@@ -72,12 +69,20 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
-        if (helper.check(currentTransactionId)) { // 如果可以进行提交
-            helper.commit(currentTransactionId);
-            LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
+
+        if (transactionFuture.isDone()) {
+            if (transactionFuture.isError()) {
+                helper.abort(currentTransactionId);
+            } else {
+                helper.commit(currentTransactionId);
+            }
         } else {
-            helper.abort(currentTransactionId);
-            LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
+            try {
+                transactionFuture.get();
+                return commit();
+            } catch (Exception e) {
+                helper.abort(currentTransactionId);
+            }
         }
 
         RpcFuture f = transactionFuture;
@@ -86,16 +91,24 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     }
 
     @Override
-    public RpcFuture commit(long timeout, TimeUnit unit) throws TransactionException {
+    public RpcFuture commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException {
         if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
-        if (helper.check(currentTransactionId, timeout, unit)) { // 如果可以进行提交
-            helper.commit(currentTransactionId);
-            LOGGER.debug("Transaction id={} will commit.", currentTransactionId);
+
+        if (transactionFuture.isDone()) {
+            if (transactionFuture.isError()) {
+                helper.abort(currentTransactionId);
+            } else {
+                helper.commit(currentTransactionId);
+            }
         } else {
-            helper.abort(currentTransactionId);
-            LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
+            try {
+                transactionFuture.get(timeout, unit);
+                return commit(timeout, unit);
+            } catch (InterruptedException | ExecutionException e) {
+                helper.abort(currentTransactionId);
+            }
         }
 
         RpcFuture f = transactionFuture;
@@ -108,8 +121,6 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
-        if (transactionFuture.isDone())
-            throw new TransactionException("Transaction request has committed. Can not abort.");
         LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
         helper.abort(currentTransactionId);
 
@@ -123,8 +134,12 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
         wrapper.setBeforeSendRequest(() -> {
-            TransactionRequest transactionRequest = (TransactionRequest)wrapper.getRequest();
-            helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), wrapper.getRemoteAddress());
+            TransactionRequest transactionRequest = (TransactionRequest) wrapper.getRequest();
+            try {
+                helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), wrapper.getRemoteAddress());
+            } catch (TransactionException e) {
+                LOGGER.error("Transaction message(transactionId={}, serialId={}) prepare failed. {}", transactionRequest.transactionId(), transactionRequest.serialId(), e.getMessage());
+            }
         });
         RpcFuture f = super.call(wrapper);
         if (!transactionFuture.combine(f)) {
@@ -140,7 +155,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     /**
      * 当前是否在进行着事务
-     * 
+     *
      * @return
      */
     protected boolean isTransaction() {
@@ -153,7 +168,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         InnerAsyncObjectProxy proxy = new InnerAsyncObjectProxy(serviceInterface);
         ObjectAssemblyUtils.assemble(proxy, getContext());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[] { serviceInterface.interfaceClass() }, proxy);
+                new Class<?>[]{serviceInterface.interfaceClass()}, proxy);
     }
 
     class InnerAsyncObjectProxy extends AsyncObjectProxy {
@@ -164,10 +179,14 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
         @Override
         public RpcFuture call(String serviceName, String methodName, Object... args) {
-            if (isTransaction())
-                return ZooKeeperTransactionProxy.this.call(serviceName, methodName, args);
+            if (isTransaction()) {
+                try {
+                    return ZooKeeperTransactionProxy.this.call(serviceName, methodName, args);
+                } catch (TransactionException e) {
+                    return super.call(serviceName, methodName, args);
+                }
+            }
             return super.call(serviceName, methodName, args);
         }
-
     }
 }

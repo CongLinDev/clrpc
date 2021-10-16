@@ -35,6 +35,9 @@ public class SimpleServiceInterfaceBuilder<T> {
         if (name == null) {
             name = interfaceClass.getName();
         }
+        if (fallback == null) {
+            fallback = Fallback.DEFAULT;
+        }
         return new AbstractServiceInterface<>(name, interfaceClass, fallback) {
         };
     }

@@ -1,9 +1,9 @@
 package conglin.clrpc.extension.cache.handler;
 
 import conglin.clrpc.common.object.Pair;
+import conglin.clrpc.extension.cache.CacheableResponse;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
-import conglin.clrpc.transport.message.CacheableResponse;
 
 /**
  * 将接收到的请求与回复进行缓存，反之将对象传递给下一个 ChannelHandler
@@ -11,7 +11,7 @@ import conglin.clrpc.transport.message.CacheableResponse;
  * 该处理器的作用时机是处理请求的业务逻辑后
  * 
  * 该处理器的作用将有效的{@link conglin.clrpc.transport.message.BasicRequest} 与
- * 对应的可缓存的基本回复{@link conglin.clrpc.transport.message.CacheableResponse} 加入缓存
+ * 对应的可缓存的基本回复{@link CacheableResponse} 加入缓存
  * 
  * @param <T>
  */

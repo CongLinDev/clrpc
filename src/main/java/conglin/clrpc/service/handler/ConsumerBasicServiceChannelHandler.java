@@ -28,6 +28,8 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
         if (future != null) {
             future.done(msg);
             return future;
+        } else {
+            LOGGER.error("Can not find binding future (messageId={})", msg.messageId());
         }
         return null;
     }

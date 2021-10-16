@@ -1,28 +1,26 @@
 package conglin.clrpc.transport.component;
 
-import java.net.InetSocketAddress;
-import java.util.Iterator;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.FallbackFailedException;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
-
-import conglin.clrpc.transport.message.RequestWrapper;
-import io.netty.channel.Channel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import conglin.clrpc.common.exception.FallbackFailedException;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.RequestWrapper;
+import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 默认的请求发送器，采用异步直接发送请求
@@ -134,7 +132,7 @@ public class DefaultRequestSender implements RequestSender {
                     if (f.timeout(INITIAL_THRESHOLD << (retryTimes - 1)) && f.retry()) {
                         BasicRequest r = f.request();
                         Fallback fallback = f.fallback();
-                        if(fallback.needFallback(retryTimes)) {
+                        if (fallback.needFallback(retryTimes)) {
                             iterator.remove();
                             BasicResponse fallbackResponse = null;
                             try {

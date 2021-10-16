@@ -1,16 +1,11 @@
 package conglin.clrpc.global;
 
+import conglin.clrpc.transport.message.Message;
+
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
-import conglin.clrpc.transport.message.CacheableResponse;
-import conglin.clrpc.transport.message.Message;
-import conglin.clrpc.transport.message.SystemMessage;
-import conglin.clrpc.transport.message.TransactionRequest;
 
 /**
  * 全局的消息类型管理器
@@ -23,22 +18,10 @@ public class GlobalMessageManager {
 
     private GlobalMessageManager(int capacity) {
         messageClasses = new Class[capacity];
-        initDefaultMessageType();
     }
 
     private GlobalMessageManager() {
         this(Message.MESSAGE_TYPE_MASK + 1);
-    }
-
-    /**
-     * 初始化默认的消息类型
-     */
-    private void initDefaultMessageType() {
-        setMessageClass(SystemMessage.MESSAGE_TYPE, SystemMessage.class);
-        setMessageClass(BasicResponse.MESSAGE_TYPE, BasicResponse.class);
-        setMessageClass(BasicRequest.MESSAGE_TYPE, BasicRequest.class);
-        setMessageClass(CacheableResponse.MESSAGE_TYPE, CacheableResponse.class);
-        setMessageClass(TransactionRequest.MESSAGE_TYPE, TransactionRequest.class);
     }
 
     /**
@@ -64,7 +47,7 @@ public class GlobalMessageManager {
         @SuppressWarnings("unchecked")
         Class<? extends Message> clazz = (Class<? extends Message>) messageClasses[messageType];
         if (clazz == null)
-            throw new NullPointerException("Unkonwn message type=" + messageType);
+            throw new NullPointerException("Unknown message type=" + messageType);
         return clazz;
     }
 

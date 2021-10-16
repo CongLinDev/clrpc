@@ -3,11 +3,11 @@ package conglin.clrpc.extension.cache.handler;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.CacheManager;
+import conglin.clrpc.extension.cache.CacheableResponse;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.CacheableResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
