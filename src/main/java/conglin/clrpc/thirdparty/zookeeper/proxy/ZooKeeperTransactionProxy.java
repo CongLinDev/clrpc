@@ -1,10 +1,13 @@
 package conglin.clrpc.thirdparty.zookeeper.proxy;
 
 import conglin.clrpc.common.Available;
+import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.extension.transaction.*;
+import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
@@ -26,7 +29,7 @@ import java.util.concurrent.TimeoutException;
  * <p>
  * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用 {@link #isAvailable()} 查看
  */
-public class ZooKeeperTransactionProxy extends CommonProxy implements TransactionProxy, Available {
+public class ZooKeeperTransactionProxy extends CommonProxy implements TransactionProxy, Available, Destroyable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
 
@@ -35,7 +38,7 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
 
     protected long currentTransactionId;
 
-    protected TransactionHelper helper;
+    protected ZooKeeperTransactionHelper helper;
 
     protected TransactionFuture transactionFuture;
 
@@ -44,7 +47,8 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
         super.init();
         this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
         PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        helper = new ZooKeeperTransactionHelper(new UrlScheme(c.get("atomicity.url", String.class)));
+        helper = new ZooKeeperTransactionHelper(new UrlScheme(c.get("extension.atomicity.url", String.class)));
+        GlobalMessageManager.manager().setMessageClass(TransactionRequest.MESSAGE_TYPE, TransactionRequest.class);
     }
 
     @Override
@@ -151,6 +155,16 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     @Override
     public boolean isAvailable() {
         return transactionFuture == null;
+    }
+
+    @Override
+    public void destroy() throws DestroyFailedException {
+        helper.destroy();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return helper.isDestroyed();
     }
 
     /**

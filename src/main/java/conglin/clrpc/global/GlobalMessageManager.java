@@ -1,6 +1,6 @@
 package conglin.clrpc.global;
 
-import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.*;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -18,10 +18,20 @@ public class GlobalMessageManager {
 
     private GlobalMessageManager(int capacity) {
         messageClasses = new Class[capacity];
+        initDefaultMessageType();
     }
 
     private GlobalMessageManager() {
         this(Message.MESSAGE_TYPE_MASK + 1);
+    }
+
+    /**
+     * 初始化默认的消息类型
+     */
+    private void initDefaultMessageType() {
+        setMessageClass(SystemMessage.MESSAGE_TYPE, SystemMessage.class);
+        setMessageClass(BasicResponse.MESSAGE_TYPE, BasicResponse.class);
+        setMessageClass(BasicRequest.MESSAGE_TYPE, BasicRequest.class);
     }
 
     /**
@@ -42,12 +52,13 @@ public class GlobalMessageManager {
      * 
      * @param messageType
      * @return
+     * @throws UnknownMessageTypeException
      */
-    public Class<? extends Message> getMessageClass(int messageType) {
+    public Class<? extends Message> getMessageClass(int messageType) throws UnknownMessageTypeException {
         @SuppressWarnings("unchecked")
         Class<? extends Message> clazz = (Class<? extends Message>) messageClasses[messageType];
         if (clazz == null)
-            throw new NullPointerException("Unknown message type=" + messageType);
+            throw new UnknownMessageTypeException(messageType);
         return clazz;
     }
 
@@ -58,9 +69,12 @@ public class GlobalMessageManager {
      * @param clazz
      */
     public void setMessageClass(int messageType, Class<? extends Message> clazz) {
-        if (messageClasses[messageType] != null)
-            throw new IllegalArgumentException("Message type=" + messageType + " has been used.");
-        messageClasses[messageType] = clazz;
+        if (messageClasses[messageType] == null) {
+            messageClasses[messageType] = clazz;
+            return;
+        }
+        if (messageClasses[messageType] == clazz) return;
+        throw new IllegalArgumentException("Message type=" + messageType + " has been used.");
     }
 
     /**

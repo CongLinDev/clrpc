@@ -9,15 +9,18 @@ import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.transport.handler.ConsumerRequestChannelHandler;
 import conglin.clrpc.transport.handler.ProviderResponseChannelHandler;
 import conglin.clrpc.transport.handler.codec.RpcProtocolCodec;
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 对于Consumer端的 {@link io.netty.channel.ChannelPipeline}
- * 
+ * <p>
  * 其目前主要由下面的 {@link io.netty.channel.ChannelHandler} 组成
- * 
+ *
  * <pre>
  *                                                 I/O Request
  *                                            via {@link Channel} or
@@ -56,17 +59,15 @@ import java.util.*;
  *  |                                                                   |
  *  |  Netty Internal I/O Threads (Transport Implementation)            |
  *  +-------------------------------------------------------------------+
- * 
+ *
  * </pre>
- */
+ * </p>
 
- 
-/**
  * 对于Provider端的 {@link io.netty.channel.ChannelPipeline}
- * 
+ * <p>
  * 其目前主要由下面的 {@link io.netty.channel.ChannelHandler} 组成
- * 
- * 
+ *
+ *
  * <pre>
  *                                                 I/O Request
  *                                            via {@link Channel} or
@@ -109,11 +110,12 @@ import java.util.*;
  *  |                                                                   |
  *  |  Netty Internal I/O Threads (Transport Implementation)            |
  *  +-------------------------------------------------------------------+
- * 
+ *
  * </pre>
+ * </p>
  */
 
-public class DefaultChannelHandlerFactory implements ChannelHandlerFactory, ContextAware {
+public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactory, ContextAware {
 
     private RpcContext context;
 
@@ -127,77 +129,25 @@ public class DefaultChannelHandlerFactory implements ChannelHandlerFactory, Cont
         return context;
     }
 
-    /**
-     * 向编解码逻辑前加入 {@link ChannelHandler}
-     *
-     * @return
-     */
-    protected Collection<ChannelHandler> beforeCodec() {
-        return Collections.emptyList();
-    }
+    @Override
+    public Collection<OrderedChannelHandler> disorderlyHandlers() {
+        List<OrderedChannelHandler> channelHandlerList = new ArrayList<>();
+        channelHandlerList.add(new DefaultOrderedChannelHandler(new RpcProtocolCodec(getContext().getWith(RpcContextEnum.SERIALIZATION_HANDLER)), ChannelHandlerPhase.CODEC));
 
-    /**
-     * 向处理逻辑前加入 {@link ChannelHandler}
-     *
-     * @return
-     */
-    protected Collection<ChannelHandler> beforeHandle() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * 向处理逻辑后加入 {@link ChannelHandler}
-     *
-     * @return
-     */
-    protected Collection<ChannelHandler> afterHandle() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * 消息处理 {@link ChannelHandler}
-     *
-     * @return
-     */
-    protected Collection<ChannelHandler> messageHandle() {
         Role role = getContext().getWith(RpcContextEnum.ROLE);
         if (role.isConsumer()) {
             ConsumerBasicServiceChannelHandler consumerBasicServiceChannelHandler = new ConsumerBasicServiceChannelHandler();
             consumerBasicServiceChannelHandler.setContext(getContext());
             consumerBasicServiceChannelHandler.init();
-            return Arrays.asList(consumerBasicServiceChannelHandler, new ConsumerRequestChannelHandler());
+            channelHandlerList.add(new DefaultOrderedChannelHandler(consumerBasicServiceChannelHandler, ChannelHandlerPhase.HANDLE, 1));
+            channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerRequestChannelHandler(), ChannelHandlerPhase.HANDLE, 2));
         } else if (role.isProvider()) {
             ProviderBasicServiceChannelHandler providerBasicServiceChannelHandler = new ProviderBasicServiceChannelHandler();
             providerBasicServiceChannelHandler.setContext(getContext());
             providerBasicServiceChannelHandler.init();
-            return Arrays.asList(providerBasicServiceChannelHandler, new ProviderResponseChannelHandler());
+            channelHandlerList.add(new DefaultOrderedChannelHandler(providerBasicServiceChannelHandler, ChannelHandlerPhase.HANDLE, 1));
+            channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderResponseChannelHandler(), ChannelHandlerPhase.HANDLE, 2));
         }
-        return Collections.emptyList();
-    }
-
-    /**
-     * 编解码 {@link ChannelHandler}
-     *
-     * @return
-     */
-    protected Collection<ChannelHandler> codecHandler() {
-        return Collections.singletonList(new RpcProtocolCodec(getContext().getWith(RpcContextEnum.SERIALIZATION_HANDLER)));
-    }
-
-    @Override
-    public Collection<ChannelHandler> handlers() {
-        List<ChannelHandler> channelHandlerList = new ArrayList<>();
-        // before codec
-        channelHandlerList.addAll(beforeCodec());
-        // codec
-        channelHandlerList.addAll(codecHandler());
-        // after codec before handle
-        channelHandlerList.addAll(beforeHandle());
-        // handle message
-        channelHandlerList.addAll(messageHandle());
-        // after handle
-        channelHandlerList.addAll(afterHandle());
-
         return channelHandlerList;
     }
 }

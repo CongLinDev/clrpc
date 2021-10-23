@@ -3,8 +3,6 @@
     "registry.discovery-class": "conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceDiscovery",
     "registry.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
 
-    "atomicity.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
-
     "provider.port": 0,
     "provider.thread.boss": 1,
     "provider.thread.worker": 4,
@@ -21,5 +19,6 @@
     "service.thread-pool.keep-alive": 1000,
     "service.thread-pool.queue": 10,
 
-    "extension.logger": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000&period=1000"
+    "extension.atomicity.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000",
+    "extension.logger.url": "zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000&period=1000"
 }

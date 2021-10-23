@@ -33,7 +33,7 @@ public class ObjectUtils {
      * @return
      */
     public static boolean destroy(Destroyable destroyable) {
-        if(destroyable.isDestroyed()) return true;
+        if (destroyable.isDestroyed()) return true;
         try {
             destroyable.destroy();
             return true;

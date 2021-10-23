@@ -1,5 +1,6 @@
 package conglin.clrpc.common.exception;
 
+import java.io.Serial;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -7,6 +8,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class RpcServiceException extends ExecutionException {
 
+    @Serial
     private static final long serialVersionUID = -761328557352237488L;
 
     public RpcServiceException() {

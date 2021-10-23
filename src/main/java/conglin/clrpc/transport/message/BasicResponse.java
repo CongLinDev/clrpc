@@ -1,16 +1,13 @@
 package conglin.clrpc.transport.message;
 
-import conglin.clrpc.global.GlobalMessageManager;
+import java.io.Serial;
 
 public class BasicResponse extends Message {
 
+    @Serial
     private static final long serialVersionUID = 7123186624198529783L;
 
     transient public static final int MESSAGE_TYPE = 2;
-
-    static {
-        GlobalMessageManager.manager().setMessageClass(MESSAGE_TYPE, BasicResponse.class);
-    }
 
     @Override
     public int messageType() {

@@ -136,36 +136,36 @@ bootstrap.stop();
 
 ### Config Items
 
-|                Field                 |  Type   | Required | Default |                         Remark                          |
-| :----------------------------------: | :-----: | :------: | :-----: | :-----------------------------------------------------: |
-|             registry.url             | String  |   True   |         |                      注册中心地址                       |
-|       registry.register-class        | String  |   True   |         |                        注册类名                         |
-|       registry.discovery-class       | String  |   True   |         |                        发现类名                         |
-|            atomicity.url             | String  |   True   |         |                      原子服务地址                       |
-|            provider.port             | Integer |  False   |    0    |                    服务提供者端口号                     |
-|         provider.thread.boss         | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
-|        provider.thread.worker        | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
-|   provider.channel.handler-factory   | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|          consumer.wait-time          | Integer |  False   |  5000   |         无服务提供者时等待重试时间，单位为毫秒          |
-|        consumer.thread.worker        | Integer |  False   |    4    |              服务使用者的workerGroup线程数              |
-|     consumer.retry.check-period      | Integer |  False   |  3000   |           重试机制执行周期(非正数代表不开启)            |
-|   consumer.retry.initial-threshold   | Integer |  False   |  3000   |                    初始重试时间门槛                     |
-|     consumer.fallback.max-retry      | Integer |  False   |   -1    | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
-|   consumer.channel.handler-factory   | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|    service.thread-pool.core-size     | Integer |  False   |    5    |                  业务线程池核心线程数                   |
-|     service.thread-pool.max-size     | Integer |  False   |   10    |                  业务线程池最大线程数                   |
-|    service.thread-pool.keep-alive    | Integer |  False   |  1000   |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
-|      service.thread-pool.queue       | Integer |  False   |   10    |                    业务线程池队列数                     |
+|              Field               |  Type   | Required | Default |                         Remark                          |
+| :------------------------------: | :-----: | :------: | :-----: | :-----------------------------------------------------: |
+|           registry.url           | String  |   True   |         |                      注册中心地址                       |
+|     registry.register-class      | String  |   True   |         |                        注册类名                         |
+|     registry.discovery-class     | String  |   True   |         |                        发现类名                         |
+|          provider.port           | Integer |  False   |    0    |                    服务提供者端口号                     |
+|       provider.thread.boss       | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
+|      provider.thread.worker      | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
+| provider.channel.handler-factory | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
+|        consumer.wait-time        | Integer |  False   |  5000   |         无服务提供者时等待重试时间，单位为毫秒          |
+|      consumer.thread.worker      | Integer |  False   |    4    |              服务使用者的workerGroup线程数              |
+|   consumer.retry.check-period    | Integer |  False   |  3000   |           重试机制执行周期(非正数代表不开启)            |
+| consumer.retry.initial-threshold | Integer |  False   |  3000   |                    初始重试时间门槛                     |
+|   consumer.fallback.max-retry    | Integer |  False   |   -1    | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
+| consumer.channel.handler-factory | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
+|  service.thread-pool.core-size   | Integer |  False   |    5    |                  业务线程池核心线程数                   |
+|   service.thread-pool.max-size   | Integer |  False   |   10    |                  业务线程池最大线程数                   |
+|  service.thread-pool.keep-alive  | Integer |  False   |  1000   |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
+|    service.thread-pool.queue     | Integer |  False   |   10    |                    业务线程池队列数                     |
 
 ### Extension config Items
 
-|      Field       |  Type  | Required | Default |    Remark    |
-| :--------------: | :----: | :------: | :-----: | :----------: |
-| extension.logger | String |   True   |         | 日志中心地址 |
+|          Field          |  Type  | Required | Default |             Remark             |
+| :---------------------: | :----: | :------: | :-----: | :----------------------------: |
+|  extension.logger.url   | String |   True   |         | 日志中心地址，目前用于记录日志 |
+| extension.atomicity.url | String |   True   |         | 原子服务地址，目前用于事务管理 |
 
 #### About customized address url
 
-配置项中的 `registry` `atomicity` 为必填项，其url解析规则如下：
+配置项中的 `registry.url` 为必填项，其url解析规则如下：
 
 `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000`
 

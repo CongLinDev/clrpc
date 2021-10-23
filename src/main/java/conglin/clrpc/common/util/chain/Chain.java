@@ -37,8 +37,7 @@ public interface Chain<T> {
      * 将节点链接起来
      *
      * @param <V>
-     * @param pre
-     * @param next
+     * @param nodes
      * @return
      */
     @SafeVarargs

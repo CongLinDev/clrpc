@@ -231,18 +231,14 @@ public final class ClassUtils {
                 new Class<?>[] { interfaceClass }, (proxy, method, args) -> {
                     String methodName = method.getName();
                     if (Object.class == method.getDeclaringClass()) {
-                        switch (methodName) {
-                            case "equals":
-                                return proxy == args[0];
-                            case "hashCode":
-                                return System.identityHashCode(proxy);
-                            case "toString":
-                                return proxy.getClass().getName() + "@"
-                                        + Integer.toHexString(System.identityHashCode(proxy))
-                                        + ", with Default InvocationHandler";
-                            default:
-                                throw new IllegalStateException(methodName);
-                        }
+                        return switch (methodName) {
+                            case "equals" -> proxy == args[0];
+                            case "hashCode" -> System.identityHashCode(proxy);
+                            case "toString" -> proxy.getClass().getName() + "@"
+                                    + Integer.toHexString(System.identityHashCode(proxy))
+                                    + ", with Default InvocationHandler";
+                            default -> throw new IllegalStateException(methodName);
+                        };
                     }
 
                     if (!method.isDefault())

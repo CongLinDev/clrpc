@@ -1,11 +1,11 @@
 package conglin.clrpc.service.handler.factory;
 
-import java.util.Collection;
-
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.util.ObjectAssemblyUtils;
 import io.netty.channel.ChannelHandler;
+
+import java.util.Collection;
 
 /**
  * {@link ChannelHandlerFactory} 的实现类应当提供一个无参构造方法
@@ -13,11 +13,11 @@ import io.netty.channel.ChannelHandler;
 public interface ChannelHandlerFactory {
 
     /**
-     * 反射创建 {ChannelHandlerFactory}
+     * 反射创建 {@link ChannelHandlerFactory}
      * 
-     * @param qualifiedClassName
-     * @param context
-     * @return
+     * @param qualifiedClassName 全限定名
+     * @param context 上下文
+     * @return 工厂对象
      */
     static ChannelHandlerFactory newFactory(String qualifiedClassName, RpcContext context) {
         ChannelHandlerFactory factory = null;
@@ -35,7 +35,7 @@ public interface ChannelHandlerFactory {
     /**
      * 处理器
      *
-     * @return
+     * @return 处理器集合
      */
     Collection<ChannelHandler> handlers();
 }

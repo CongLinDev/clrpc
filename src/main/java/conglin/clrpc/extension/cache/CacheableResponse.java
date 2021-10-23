@@ -1,17 +1,15 @@
 package conglin.clrpc.extension.cache;
 
-import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.transport.message.BasicResponse;
+
+import java.io.Serial;
 
 public class CacheableResponse extends BasicResponse {
 
+    @Serial
     private static final long serialVersionUID = 8675701922448321682L;
 
     transient public static final int MESSAGE_TYPE = 4;
-
-    static {
-        GlobalMessageManager.manager().setMessageClass(MESSAGE_TYPE, CacheableResponse.class);
-    }
 
     @Override
     public int messageType() {

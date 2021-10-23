@@ -4,15 +4,13 @@ import conglin.clrpc.common.Callback;
 
 public class CommonTransactionResult implements TransactionResult {
 
-    private static final Callback defaultCallback = new Callback() {
+    protected static final Callback defaultCallback = new Callback() {
         @Override
         public void success(Object result) {
-
         }
 
         @Override
         public void fail(Exception exception) {
-
         }
     };
 

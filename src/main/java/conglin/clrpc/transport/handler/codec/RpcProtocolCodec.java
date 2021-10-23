@@ -1,20 +1,20 @@
 package conglin.clrpc.transport.handler.codec;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.transport.handler.codec.RpcProtocolCodec.RpcProtocolDecoder;
 import conglin.clrpc.transport.handler.codec.RpcProtocolCodec.RpcProtocolEncoder;
 import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.UnknownMessageTypeException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * <pre>
@@ -99,17 +99,20 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
                 in.resetReaderIndex();
                 return;
             }
-
-            int messageType = resolveMessageType(messageHeader);
-            Class<? extends Message> clazz = manager.getMessageClass(messageType);
-            if (in.hasArray()) {
-                int contentOffset = in.readerIndex(); // 正文起始偏移量
-                out.add(serializationHandler.deserialize(clazz, in.readerIndex(contentOffset + dataLength).array(),
-                        contentOffset, dataLength));
-            } else {
-                byte[] messageBody = new byte[dataLength];
-                in.readBytes(messageBody);
-                out.add(serializationHandler.deserialize(clazz, messageBody));
+            try {
+                int messageType = resolveMessageType(messageHeader);
+                Class<? extends Message> clazz = manager.getMessageClass(messageType);
+                if (in.hasArray()) {
+                    int contentOffset = in.readerIndex(); // 正文起始偏移量
+                    out.add(serializationHandler.deserialize(clazz, in.readerIndex(contentOffset + dataLength).array(),
+                            contentOffset, dataLength));
+                } else {
+                    byte[] messageBody = new byte[dataLength];
+                    in.readBytes(messageBody);
+                    out.add(serializationHandler.deserialize(clazz, messageBody));
+                }
+            } catch (UnknownMessageTypeException e) {
+                LOGGER.error("unknown message type={} from={}", e.getType(), ctx.channel().remoteAddress());
             }
         }
     }

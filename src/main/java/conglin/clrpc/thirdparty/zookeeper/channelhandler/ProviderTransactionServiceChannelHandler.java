@@ -5,13 +5,16 @@ import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.util.IPAddressUtils;
+import conglin.clrpc.common.util.ObjectUtils;
 import conglin.clrpc.extension.transaction.*;
+import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.BasicRequest;
 import conglin.clrpc.transport.message.BasicResponse;
+import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +30,15 @@ public class ProviderTransactionServiceChannelHandler
     @Override
     public void init() {
         PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        String urlString = c.get("atomicity.url", String.class);
+        String urlString = c.get("extension.atomicity.url", String.class);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
+        GlobalMessageManager.manager().setMessageClass(TransactionRequest.MESSAGE_TYPE, TransactionRequest.class);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        ObjectUtils.destroy(helper);
     }
 
     @Override
@@ -91,7 +101,7 @@ public class ProviderTransactionServiceChannelHandler
     @Override
     protected TransactionResult jdkReflectInvoke(Object serviceBean, BasicRequest request) throws ServiceExecutionException {
         Object result = super.jdkReflectInvoke(serviceBean, request);
-        if (request instanceof TransactionResult) {
+        if (result instanceof TransactionResult) {
             return (TransactionResult) result;
         }
         return new CommonTransactionResult(result);

@@ -1,5 +1,7 @@
 package conglin.clrpc.common.exception;
 
+import java.io.Serial;
+
 /**
  * RPC服务异常
  * 
@@ -7,6 +9,7 @@ package conglin.clrpc.common.exception;
  */
 public class ServiceExecutionException extends RpcServiceException {
 
+    @Serial
     private static final long serialVersionUID = 7912835199025899934L;
 
     public ServiceExecutionException(String desc) {

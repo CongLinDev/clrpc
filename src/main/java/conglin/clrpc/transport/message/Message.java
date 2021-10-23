@@ -1,5 +1,6 @@
 package conglin.clrpc.transport.message;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -12,6 +13,7 @@ import java.io.Serializable;
  */
 abstract public class Message implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -7949510479931399141L;
 
     /**

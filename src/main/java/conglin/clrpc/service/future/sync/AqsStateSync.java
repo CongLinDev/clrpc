@@ -1,5 +1,6 @@
 package conglin.clrpc.service.future.sync;
 
+import java.io.Serial;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
@@ -8,6 +9,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  */
 public class AqsStateSync extends AbstractQueuedSynchronizer implements StateSync {
 
+    @Serial
     private static final long serialVersionUID = -7504883045517282600L;
 
     @Override
