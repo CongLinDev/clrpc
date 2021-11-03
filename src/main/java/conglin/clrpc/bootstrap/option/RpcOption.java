@@ -3,12 +3,10 @@ package conglin.clrpc.bootstrap.option;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.router.instance.ServiceInstanceGenerator;
-import conglin.clrpc.transport.component.ProviderChooserAdapter;
 
 public class RpcOption {
 
     private IdentifierGenerator identifierGenerator;
-    private ProviderChooserAdapter providerChooserAdapter;
     private SerializationHandler serializationHandler;
     private ServiceInstanceGenerator serviceInstanceGenerator;
 
@@ -18,15 +16,6 @@ public class RpcOption {
 
     public RpcOption identifierGenerator(IdentifierGenerator identifierGenerator) {
         this.identifierGenerator = identifierGenerator;
-        return this;
-    }
-
-    public ProviderChooserAdapter providerChooserAdapter() {
-        return providerChooserAdapter;
-    }
-
-    public RpcOption providerChooserAdapter(ProviderChooserAdapter providerChooserAdapter) {
-        this.providerChooserAdapter = providerChooserAdapter;
         return this;
     }
 

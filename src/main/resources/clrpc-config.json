@@ -8,7 +8,6 @@
     "provider.thread.worker": 4,
     "provider.channel.handler-factory": null,
 
-    "consumer.wait-time": 5000,
     "consumer.thread.worker": 4,
     "consumer.retry.check-period": 3000,
     "consumer.retry.initial-threshold": 3000,

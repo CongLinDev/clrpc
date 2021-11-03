@@ -7,10 +7,6 @@ import java.lang.reflect.InvocationTargetException;
 
 public interface Fallback {
 
-    int DEFAULT_MAX_RETRY_TIMES = 5;
-
-    Fallback DEFAULT = () -> null;
-
     /**
      * 执行fallback的对象
      *
@@ -25,7 +21,7 @@ public interface Fallback {
      * @return
      */
     default boolean needFallback(int retryTimes) {
-        return DEFAULT_MAX_RETRY_TIMES > retryTimes;
+        return false;
     }
 
     /**

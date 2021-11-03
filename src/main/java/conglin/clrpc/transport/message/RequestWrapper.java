@@ -1,6 +1,10 @@
 package conglin.clrpc.transport.message;
 
 import conglin.clrpc.common.Fallback;
+import conglin.clrpc.router.instance.ServiceInstance;
+
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class RequestWrapper {
 
@@ -8,9 +12,9 @@ public class RequestWrapper {
 
     protected Fallback fallback;
 
-    protected String remoteAddress;
+    protected Predicate<ServiceInstance> predicate;
 
-    protected Runnable beforeSendRequest;
+    protected Consumer<ServiceInstance> beforeSendRequest;
 
     public BasicRequest getRequest() {
         return request;
@@ -28,19 +32,19 @@ public class RequestWrapper {
         this.fallback = fallback;
     }
 
-    public String getRemoteAddress() {
-        return remoteAddress;
+    public Predicate<ServiceInstance> getPredicate() {
+        return predicate;
     }
 
-    public void setRemoteAddress(String remoteAddress) {
-        this.remoteAddress = remoteAddress;
+    public void setPredicate(Predicate<ServiceInstance> predicate) {
+        this.predicate = predicate;
     }
 
-    public Runnable getBeforeSendRequest() {
+    public Consumer<ServiceInstance> getBeforeSendRequest() {
         return beforeSendRequest;
     }
 
-    public void setBeforeSendRequest(Runnable beforeSendRequest) {
+    public void setBeforeSendRequest(Consumer<ServiceInstance> beforeSendRequest) {
         this.beforeSendRequest = beforeSendRequest;
     }
 }

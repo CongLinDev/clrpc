@@ -3,7 +3,11 @@ package conglin.clrpc.transport.component;
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.FallbackFailedException;
-import conglin.clrpc.common.util.IPAddressUtils;
+import conglin.clrpc.common.object.Pair;
+import conglin.clrpc.router.RouterCondition;
+import conglin.clrpc.router.NoAvailableServiceInstancesException;
+import conglin.clrpc.router.ProviderRouter;
+import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.BasicFuture;
@@ -16,7 +20,6 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,7 +34,7 @@ public class DefaultRequestSender implements RequestSender {
 
     protected final FutureHolder<Long> futureHolder;
 
-    protected final ProviderChooser providerChooser;
+    protected final ProviderRouter providerRouter;
 
     protected final ExecutorService threadPool;
 
@@ -44,7 +47,7 @@ public class DefaultRequestSender implements RequestSender {
 
     public DefaultRequestSender(RpcContext context) {
         this.futureHolder = context.getWith(RpcContextEnum.FUTURE_HOLDER);
-        this.providerChooser = context.getWith(RpcContextEnum.PROVIDER_CHOOSER);
+        this.providerRouter = context.getWith(RpcContextEnum.PROVIDER_ROUTER);
         this.threadPool = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
         PropertyConfigurer c = context.getWith(RpcContextEnum.PROPERTY_CONFIGURER);
         this.CHECK_PERIOD = c.getOrDefault("consumer.retry.check-period", 3000);
@@ -90,25 +93,21 @@ public class DefaultRequestSender implements RequestSender {
      * @param requestWrapper
      */
     protected void doSendRequest(RequestWrapper requestWrapper) {
-        BasicRequest request = requestWrapper.getRequest();
-
-        String serviceName = request.serviceName();
         threadPool.execute(() -> {
-            Channel channel = null;
-            if (requestWrapper.getRemoteAddress() == null) {
-                channel = providerChooser.choose(request);
-                requestWrapper.setRemoteAddress(IPAddressUtils.addressString((InetSocketAddress)channel.remoteAddress()));
-            } else {
-                channel = providerChooser.choose(serviceName, serviceInstance -> requestWrapper.getRemoteAddress().equals(serviceInstance.address()));
-                if(channel == null) {
-                    // can not find
-                    return;
+            RouterCondition<ServiceInstance> condition = new RouterCondition<>();
+            condition.setServiceName(requestWrapper.getRequest().serviceName());
+            condition.setRandom(System.identityHashCode(requestWrapper.getRequest()));
+            condition.setRetryTimes(5);
+            condition.setPredicate(requestWrapper.getPredicate());
+            try {
+                Pair<ServiceInstance, Channel> pair = providerRouter.choose(condition);
+                if (requestWrapper.getBeforeSendRequest() != null) {
+                    requestWrapper.getBeforeSendRequest().accept(pair.getFirst());
                 }
+                pair.getSecond().pipeline().fireChannelRead(requestWrapper.getRequest());
+            } catch (NoAvailableServiceInstancesException e) {
+                // do nothing wait fallback
             }
-            if (requestWrapper.getBeforeSendRequest() != null) {
-                requestWrapper.getBeforeSendRequest().run();
-            }
-            channel.pipeline().fireChannelRead(request);
         });
     }
 

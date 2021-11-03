@@ -12,7 +12,7 @@ import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
-import conglin.clrpc.service.proxy.CommonProxy;
+import conglin.clrpc.service.proxy.SimpleProxy;
 import conglin.clrpc.service.util.ObjectAssemblyUtils;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.RequestWrapper;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeoutException;
  * <p>
  * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用 {@link #isAvailable()} 查看
  */
-public class ZooKeeperTransactionProxy extends CommonProxy implements TransactionProxy, Available, Destroyable {
+public class ZooKeeperTransactionProxy extends SimpleProxy implements TransactionProxy, Available, Destroyable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperTransactionProxy.class);
 
@@ -137,10 +137,10 @@ public class ZooKeeperTransactionProxy extends CommonProxy implements Transactio
     public RpcFuture call(TransactionRequest request) throws TransactionException {
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
-        wrapper.setBeforeSendRequest(() -> {
+        wrapper.setBeforeSendRequest(instance -> {
             TransactionRequest transactionRequest = (TransactionRequest) wrapper.getRequest();
             try {
-                helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), wrapper.getRemoteAddress());
+                helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), instance.address());
             } catch (TransactionException e) {
                 LOGGER.error("Transaction message(transactionId={}, serialId={}) prepare failed. {}", transactionRequest.transactionId(), transactionRequest.serialId(), e.getMessage());
             }

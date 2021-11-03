@@ -1,20 +1,21 @@
 package conglin.clrpc.service;
 
-import java.lang.reflect.Proxy;
-
+import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.DiscoveryCallback;
+import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.ObjectUtils;
-import conglin.clrpc.service.context.RpcContextEnum;
-import conglin.clrpc.service.proxy.*;
-import conglin.clrpc.service.util.ObjectAssemblyUtils;
-
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.DefaultFutureHolder;
 import conglin.clrpc.service.future.FutureHolder;
+import conglin.clrpc.service.proxy.AsyncObjectProxy;
+import conglin.clrpc.service.proxy.RpcProxy;
+import conglin.clrpc.service.proxy.SyncObjectProxy;
+import conglin.clrpc.service.util.ObjectAssemblyUtils;
+
+import java.lang.reflect.Proxy;
 
 public class ConsumerServiceHandler extends AbstractServiceHandler {
 
@@ -32,7 +33,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     /**
      * 获取同步服务代理
-     * 
+     *
      * @param <T>
      * @param serviceInterface
      */
@@ -41,13 +42,13 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         SyncObjectProxy proxy = new SyncObjectProxy(serviceInterface);
         ObjectAssemblyUtils.assemble(proxy, context());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[] { serviceInterface.interfaceClass() },
+                new Class<?>[]{serviceInterface.interfaceClass()},
                 proxy);
     }
 
     /**
      * 获取异步服务代理
-     * 
+     *
      * @param <T>
      * @param serviceInterface
      */
@@ -56,18 +57,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
         AsyncObjectProxy proxy = new AsyncObjectProxy(serviceInterface);
         ObjectAssemblyUtils.assemble(proxy, context());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[] { serviceInterface.interfaceClass() }, proxy);
-    }
-
-    /**
-     * 获取基本的异步服务代理
-     * 
-     * @return
-     */
-    public AnonymousProxy getAnonymousProxy() {
-        BasicProxy proxy = new BasicProxy();
-        ObjectAssemblyUtils.assemble(proxy, context());
-        return new AnonymousProxy(proxy);
+                new Class<?>[]{serviceInterface.interfaceClass()}, proxy);
     }
 
     /**
@@ -84,7 +74,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     /**
      * 启动 获得请求发送器，用于检查超时Future 重发请求
-     * 
+     *
      * @param context
      */
     public void start(RpcContext context) {
@@ -105,7 +95,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     /**
      * 发现服务
-     * 
+     *
      * @param serviceName
      * @param updateMethod
      */

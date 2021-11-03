@@ -145,7 +145,6 @@ bootstrap.stop();
 |       provider.thread.boss       | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
 |      provider.thread.worker      | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
 | provider.channel.handler-factory | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|        consumer.wait-time        | Integer |  False   |  5000   |         无服务提供者时等待重试时间，单位为毫秒          |
 |      consumer.thread.worker      | Integer |  False   |    4    |              服务使用者的workerGroup线程数              |
 |   consumer.retry.check-period    | Integer |  False   |  3000   |           重试机制执行周期(非正数代表不开启)            |
 | consumer.retry.initial-threshold | Integer |  False   |  3000   |                    初始重试时间门槛                     |

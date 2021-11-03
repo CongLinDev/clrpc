@@ -12,7 +12,7 @@ public class SystemMessage extends Message {
 
     transient public static final int MESSAGE_TYPE = 0;
 
-    private final String command; // 指令
+    private final Integer command; // 指令
 
     /**
      * 构造一个系统消息
@@ -20,7 +20,7 @@ public class SystemMessage extends Message {
      * @param messageId 消息ID
      * @param command   命令
      */
-    public SystemMessage(Long messageId, String command) {
+    public SystemMessage(Long messageId, Integer command) {
         super(messageId);
         this.command = command;
     }
@@ -30,7 +30,7 @@ public class SystemMessage extends Message {
      * 
      * @param message
      * 
-     * @see #SystemMessage(Long, String)
+     * @see #SystemMessage(Long, Integer)
      */
     public SystemMessage(SystemMessage message) {
         this(message.messageId(), message.command());
@@ -41,7 +41,7 @@ public class SystemMessage extends Message {
      * 
      * @return command
      */
-    final public String command() {
+    final public Integer command() {
         return command;
     }
 

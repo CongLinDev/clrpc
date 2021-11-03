@@ -23,7 +23,7 @@ public class RpcContext extends ObjectArrayHolder<RpcContextEnum> {
         if (!key.accept(value)) {
             throw new IllegalArgumentException("unacceptable value");
         }
-        super.put(key, value);;
+        super.put(key, value);
     }
 
     @Override

@@ -7,7 +7,6 @@ import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
-import conglin.clrpc.service.proxy.AnonymousProxy;
 import conglin.clrpc.service.proxy.RpcProxy;
 import conglin.clrpc.transport.ConsumerTransfer;
 import org.slf4j.Logger;
@@ -62,18 +61,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         super(configurer);
         SERVICE_HANDLER = new ConsumerServiceHandler(configurer());
         CONSUMER_TRANSFER = new ConsumerTransfer();
-    }
-
-    /**
-     * 获取匿名代理
-     * 
-     * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
-     * 刷新
-     * 
-     * @return proxy
-     */
-    public AnonymousProxy proxy() {
-        return SERVICE_HANDLER.getAnonymousProxy();
     }
 
     /**
@@ -185,8 +172,6 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
         // 设置ID生成器
         context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.identifierGenerator());
-        // 设置服务提供者挑选适配器
-        context.put(RpcContextEnum.PROVIDER_CHOOSER_ADAPTER, option.providerChooserAdapter());
         return context;
     }
 }

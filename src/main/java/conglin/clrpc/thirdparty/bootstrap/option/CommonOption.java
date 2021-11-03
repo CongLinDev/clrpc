@@ -7,7 +7,6 @@ import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.router.instance.ServiceInstanceGenerator;
 import conglin.clrpc.thirdparty.fastjson.service.JsonServiceInstance;
 import conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler;
-import conglin.clrpc.transport.component.ProviderChooserAdapter;
 
 public class CommonOption extends RpcOption {
     @Override
@@ -16,16 +15,6 @@ public class CommonOption extends RpcOption {
         if (object == null) {
             object = new RandomIdentifierGenerator();
             identifierGenerator(object);
-        }
-        return object;
-    }
-
-    @Override
-    public ProviderChooserAdapter providerChooserAdapter() {
-        ProviderChooserAdapter object = super.providerChooserAdapter();
-        if (object == null) {
-            object = ProviderChooserAdapter.defaultAdapter();
-            providerChooserAdapter(object);
         }
         return object;
     }

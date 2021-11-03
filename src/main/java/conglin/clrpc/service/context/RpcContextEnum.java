@@ -6,10 +6,9 @@ import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.global.role.Role;
+import conglin.clrpc.router.ProviderRouter;
 import conglin.clrpc.router.instance.ServiceInstanceGenerator;
 import conglin.clrpc.service.future.FutureHolder;
-import conglin.clrpc.transport.component.ProviderChooser;
-import conglin.clrpc.transport.component.ProviderChooserAdapter;
 import conglin.clrpc.transport.component.RequestSender;
 
 import java.util.Map;
@@ -19,8 +18,7 @@ public enum RpcContextEnum {
     ROLE(Role.class),
     SERIALIZATION_HANDLER(SerializationHandler.class),
     IDENTIFIER_GENERATOR(IdentifierGenerator.class),
-    PROVIDER_CHOOSER_ADAPTER(ProviderChooserAdapter.class),
-    PROVIDER_CHOOSER(ProviderChooser.class),
+    PROVIDER_ROUTER(ProviderRouter.class),
     PROPERTY_CONFIGURER(PropertyConfigurer.class),
     EXECUTOR_SERVICE(ExecutorService.class),
     REQUEST_SENDER(RequestSender.class),

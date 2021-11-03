@@ -1,8 +1,11 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.Fallback;
+import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
+
+import java.util.function.Consumer;
 
 /**
  * 异步对象代理
@@ -14,7 +17,7 @@ import conglin.clrpc.service.future.RpcFuture;
  * 
  * 需要注意的 {@code ThreadLocalMap} 只保存调用线程最新的 {@link RpcFuture} 对象
  */
-public class AsyncObjectProxy extends BasicProxy {
+public class AsyncObjectProxy extends AbstractObjectProxy {
 
     private static final ThreadLocal<RpcFuture> threadLocal = new ThreadLocal<>();
 
@@ -53,6 +56,11 @@ public class AsyncObjectProxy extends BasicProxy {
     @Override
     protected Object handleFuture(RpcFuture future) throws Exception {
         threadLocal.set(future);
+        return null;
+    }
+
+    @Override
+    protected Consumer<ServiceInstance> beforeSendRequest() {
         return null;
     }
 }

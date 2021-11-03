@@ -1,28 +1,19 @@
 package conglin.clrpc.common.loadbalance;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
+import conglin.clrpc.common.object.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.*;
+import java.util.stream.Collectors;
 
 
 /**
  * 该类用作一致性哈希负载均衡 适合一个 type 对应多个 key-value 的负载均衡
- * 
+ *
  * @param <T> type
  * @param <K> key
  * @param <V> value
@@ -142,9 +133,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     @Override
     public boolean hasType(T type) {
         AtomicInteger regionAndEpoch = descriptions.get(type);
-        if (regionAndEpoch == null)
-            return false;
-        return true;
+        return regionAndEpoch != null;
     }
 
     @Override
@@ -154,39 +143,24 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     @Override
-    public V get(T type, int random) {
-        AtomicInteger regionAndEpoch = descriptions.get(type);
-        if (regionAndEpoch == null)
-            return null;
-
-        // 获取当前区域范围 [head, tail]
-        int head = regionHead(regionAndEpoch);
-        int tail = regionTail(head);// 区域编号不得超过最大编号
-        int next = head | (random & _16_BIT_MASK);
-
-        for (int count = 0; count < 2; count++) { // 检查两轮即可
-            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
-
-            if (entry != null && (next = entry.getKey()) <= tail) {
-                return entry.getValue().getValue();
-            }
-            next = head + 1;
-        }
-        return null;
-    }
-
-    @Override
-    public V getKey(T type, Predicate<K> predicate) {
-        Node<K, V> n = getNode(type, node -> predicate.test(node.getKey()));
+    public V getKey(T type, int random, Predicate<K> predicate) {
+        Node<K, V> n = getNode(type, random, node -> predicate.test(node.getKey()));
         if (n == null) return null;
         return n.getValue();
     }
 
     @Override
-    public V getValue(T type, Predicate<V> predicate) {
-        Node<K, V> n = getNode(type, node -> predicate.test(node.getValue()));
+    public V getValue(T type, int random, Predicate<V> predicate) {
+        Node<K, V> n = getNode(type, random, node -> predicate.test(node.getValue()));
         if (n == null) return null;
         return n.getValue();
+    }
+
+    @Override
+    public Pair<K, V> getEntity(T type, int random, Predicate<K> predicate) {
+        Node<K, V> n = getNode(type, random, node -> predicate.test(node.getKey()));
+        if (n == null) return null;
+        return new Pair<>(n.getKey(), n.getValue());
     }
 
     /**
@@ -196,7 +170,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
      * @param predicate
      * @return
      */
-    protected Node<K, V> getNode(T type, Predicate<Node<K, V>> predicate) {
+    protected Node<K, V> getNode(T type, int random, Predicate<Node<K, V>> predicate) {
         // 遍历查找，寻找满足条件的 V
         AtomicInteger regionAndEpoch = descriptions.get(type);
         if (regionAndEpoch == null)
@@ -205,20 +179,35 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         int head = regionHead(regionAndEpoch);
         int tail = regionTail(head);// 区域编号不得超过最大编号
 
-        int next = head;
+        int offset = regionOffset(head, random);
+        int next = offset;
+        // 遍历 [offset, tail]
         while (next <= tail) {
             Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
+            if (entry == null) {
+                break;
+            }
             if (predicate.test(entry.getValue()))
                 return entry.getValue();
             next = entry.getKey() + 1;
         }
-
+        // 遍历 [head, offset)
+        next = head;
+        while (next < offset) {
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(next);
+            if (entry == null) {
+                break;
+            }
+            if (predicate.test(entry.getValue()))
+                return entry.getValue();
+            next = entry.getKey() + 1;
+        }
         return null;
     }
 
     @Override
     public void update(T type, Collection<K> data) {
-        AtomicInteger regionAndEpoch = null;
+        AtomicInteger regionAndEpoch;
         int currentEpoch = 0;
 
         if ((regionAndEpoch = descriptions.get(type)) == null) {
@@ -229,7 +218,6 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
             // 非首次更新的话 更新epoch
             currentEpoch = regionAndEpoch.incrementAndGet() & _16_BIT_MASK;
         }
-
         // 获取当前区域范围 [head, tail]
         int head = regionHead(regionAndEpoch);
         int tail = regionTail(head);// 区域编号不得超过最大编号
@@ -240,14 +228,14 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
             int position = hash(key) & _16_BIT_MASK | head;// 获取区域内部编号
 
             do {
-                Node<K, V> node = null;
+                Node<K, V> node;
                 if ((node = circle.get(position)) == null) { // 插入新值
                     // 插入前再次检查 epoch
                     if (currentEpoch == (regionAndEpoch.get() & _16_BIT_MASK)) {
                         V v = convertor.apply(type, key);
                         if (v != null) {
                             LOGGER.info("Add new node(position={}, key={})", position, key);
-                            circle.put(position, new Node<K, V>(currentEpoch, key, v));
+                            circle.put(position, new Node<>(currentEpoch, key, v));
                         } else {
                             LOGGER.error("Null Object from {}", key);
                         }
@@ -285,8 +273,8 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
     /**
      * 返回区域起点
-     * 
-     * @param regionAndEpoch
+     *
+     * @param regionAndEpoch 区域
      * @return
      */
     protected int regionHead(AtomicInteger regionAndEpoch) {
@@ -295,8 +283,8 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
     /**
      * 返回区域终点
-     * 
-     * @param regionHead
+     *
+     * @param regionHead 区域起点
      * @return
      */
     protected int regionTail(int regionHead) {
@@ -304,8 +292,19 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     /**
+     * 返回区域内部的一个点
+     *
+     * @param regionHead 区域起点
+     * @param offset     偏移量
+     * @return
+     */
+    protected int regionOffset(int regionHead, int offset) {
+        return (offset & _16_BIT_MASK) | regionHead;
+    }
+
+    /**
      * 返回区域终点
-     * 
+     *
      * @param regionAndEpoch
      * @return
      */
@@ -316,7 +315,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     /**
      * 为 新的类型 在 {@link ConsistentHashLoadBalancer#circle} 申请一块可用的区域 确定区域并添加区域头节点
      * 该方法应该与首次更新时调用
-     * 
+     *
      * @param type
      * @return 返回 descriptions中 type 所对应的值。即前16位代表区域 region; 后16位代表 该键所在的区域 region。
      */
@@ -342,16 +341,16 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
     /**
      * 创建一个区域头节点
-     * 
+     *
      * @return
      */
     protected Node<K, V> createRegionHeadNode() {
-        return new Node<K, V>();
+        return new Node<>();
     }
 
     /**
      * hash函数
-     * 
+     *
      * @param obj
      * @return
      */
@@ -379,7 +378,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
         /**
          * 获得当前节点的代
-         * 
+         *
          * @return
          */
         public int getEpoch() {
@@ -388,7 +387,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
         /**
          * 设置当前节点的代
-         * 
+         *
          * @param epoch
          * @return
          */
@@ -398,7 +397,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
         /**
          * 获取当前节点存储的值
-         * 
+         *
          * @return
          */
         public V getValue() {
@@ -407,7 +406,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
         /**
          * 设置存储的值
-         * 
+         *
          * @param value
          */
         public void setValue(V value) {
@@ -424,12 +423,12 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
         /**
          * 检查是否匹配
-         * 
+         *
          * @param key
          * @return
          */
         public boolean match(K key) {
-            if(this.key == null) return false; // empty node
+            if (this.key == null) return false; // empty node
             return this.key.equals(key);
         }
     }
