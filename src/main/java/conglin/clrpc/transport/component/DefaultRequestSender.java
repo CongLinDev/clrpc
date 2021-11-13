@@ -1,12 +1,11 @@
 package conglin.clrpc.transport.component;
 
 import conglin.clrpc.common.Fallback;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.FallbackFailedException;
 import conglin.clrpc.common.object.Pair;
-import conglin.clrpc.router.RouterCondition;
 import conglin.clrpc.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.router.ProviderRouter;
+import conglin.clrpc.router.RouterCondition;
 import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -21,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -49,9 +49,9 @@ public class DefaultRequestSender implements RequestSender {
         this.futureHolder = context.getWith(RpcContextEnum.FUTURE_HOLDER);
         this.providerRouter = context.getWith(RpcContextEnum.PROVIDER_ROUTER);
         this.threadPool = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
-        PropertyConfigurer c = context.getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        this.CHECK_PERIOD = c.getOrDefault("consumer.retry.check-period", 3000);
-        this.INITIAL_THRESHOLD = c.getOrDefault("consumer.retry.initial-threshold", 3000);
+        Properties properties = context.getWith(RpcContextEnum.PROPERTIES);
+        this.CHECK_PERIOD = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
+        this.INITIAL_THRESHOLD = Integer.parseInt(properties.getProperty("consumer.retry.initial-threshold", "3000"));
         this.timer = CHECK_PERIOD > 0 ? checkFuture() : null;
     }
 

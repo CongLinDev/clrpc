@@ -14,7 +14,7 @@ import conglin.clrpc.transport.message.BasicResponse;
  * 
  * @param <T>
  */
-public class ProviderCacheCheckedChannelHandler<T extends BasicRequest> extends AbstractCacheChannelHandler<T> {
+abstract public class ProviderCacheCheckedChannelHandler<T extends BasicRequest> extends AbstractCacheChannelHandler<T> {
 
     @Override
     protected boolean check(T msg) {

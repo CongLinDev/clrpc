@@ -1,13 +1,13 @@
 package conglin.clrpc.service;
 
 import conglin.clrpc.common.Destroyable;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
 import java.util.concurrent.*;
 
 abstract public class AbstractServiceHandler implements Destroyable {
@@ -20,25 +20,25 @@ abstract public class AbstractServiceHandler implements Destroyable {
     /**
      * 构造 {@link AbstractServiceHandler}
      * 
-     * 本质上即是构造线程池
+     * 本质上是构造线程池
      * 
-     * @param configurer
+     * @param properties 配置
      */
-    public AbstractServiceHandler(PropertyConfigurer configurer) {
-        businessThreadExecutorService = threadPool(configurer);
+    public AbstractServiceHandler(Properties properties) {
+        businessThreadExecutorService = threadPool(properties);
     }
 
     /**
      * 根据配置文件返回一个线程池
      * 
-     * @param configurer
-     * @return
+     * @param properties 配置
+     * @return 线程池
      */
-    public ExecutorService threadPool(PropertyConfigurer configurer) {
-        return threadPool(configurer.getOrDefault("service.thread-pool.core-size", 5),
-                configurer.getOrDefault("service.thread-pool.max-size", 10),
-                configurer.getOrDefault("service.thread-pool.keep-alive", 1000),
-                configurer.getOrDefault("service.thread-pool.queues", 10));
+    public ExecutorService threadPool(Properties properties) {
+        return threadPool(Integer.parseInt(properties.getProperty("service.thread-pool.core-size", "5")),
+                Integer.parseInt(properties.getProperty("service.thread-pool.max-size", "10")),
+                Integer.parseInt(properties.getProperty("service.thread-pool.keep-alive", "1000")),
+                Integer.parseInt(properties.getProperty("service.thread-pool.queue", "10")));
     }
 
     /**

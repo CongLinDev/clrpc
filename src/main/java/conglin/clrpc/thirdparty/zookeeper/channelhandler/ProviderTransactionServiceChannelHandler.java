@@ -1,6 +1,5 @@
 package conglin.clrpc.thirdparty.zookeeper.channelhandler;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.object.UrlScheme;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Properties;
 
 public class ProviderTransactionServiceChannelHandler
         extends ProviderAbstractServiceChannelHandler<TransactionRequest> {
@@ -29,8 +29,8 @@ public class ProviderTransactionServiceChannelHandler
 
     @Override
     public void init() {
-        PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        String urlString = c.get("extension.atomicity.url", String.class);
+        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
+        String urlString = properties.getProperty("extension.atomicity.url");
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
         GlobalMessageManager.manager().setMessageClass(TransactionRequest.MESSAGE_TYPE, TransactionRequest.class);
     }

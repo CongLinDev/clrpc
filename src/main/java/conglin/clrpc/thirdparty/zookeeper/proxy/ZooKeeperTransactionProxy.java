@@ -2,11 +2,13 @@ package conglin.clrpc.thirdparty.zookeeper.proxy;
 
 import conglin.clrpc.common.Available;
 import conglin.clrpc.common.Destroyable;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.extension.transaction.*;
+import conglin.clrpc.extension.transaction.TransactionException;
+import conglin.clrpc.extension.transaction.TransactionFuture;
+import conglin.clrpc.extension.transaction.TransactionProxy;
+import conglin.clrpc.extension.transaction.TransactionRequest;
 import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -20,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Proxy;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -46,8 +49,8 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     public void init() {
         super.init();
         this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
-        PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        helper = new ZooKeeperTransactionHelper(new UrlScheme(c.get("extension.atomicity.url", String.class)));
+        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
+        helper = new ZooKeeperTransactionHelper(new UrlScheme(properties.getProperty("extension.atomicity.url")));
         GlobalMessageManager.manager().setMessageClass(TransactionRequest.MESSAGE_TYPE, TransactionRequest.class);
     }
 

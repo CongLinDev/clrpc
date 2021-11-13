@@ -1,7 +1,6 @@
 package conglin.clrpc.bootstrap;
 
 import conglin.clrpc.bootstrap.option.RpcOption;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.ProviderServiceHandler;
 import conglin.clrpc.service.ServiceObject;
@@ -12,26 +11,28 @@ import io.netty.bootstrap.ServerBootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
+
 /**
  * RPC provider端启动类
- * 
+ * <p>
  * 使用如下代码启动
- * 
+ *
  * <blockquote>
- * 
+ *
  * <pre>
- * 
+ *
  * RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
  * ServiceObject serviceObject = JsonSimpleServiceObjectBuilder.builder()
  *                                  .name("Service1")
  *                                  .object(new ServiceImpl1())
  *                                  .build();
  * bootstrap.publish(serviceObject).hookStop().start(new CommonOption());
- * 
+ *
  * </pre>
- * 
+ *
  * </blockquote>
- * 
+ * <p>
  * 注意：若服务接口相同，先添加的服务会被覆盖。 结束后不要忘记关闭服务端，释放资源。
  */
 
@@ -45,14 +46,18 @@ public class RpcProviderBootstrap extends RpcBootstrap {
     // 管理服务
     private final ProviderServiceHandler SERVICE_HANDLER;
 
+    public RpcProviderBootstrap() {
+        this(null);
+    }
+
     /**
      * 创建 服务提供者 启动对象
-     * 
-     * @param configurer 配置器
+     *
+     * @param properties 配置
      */
-    public RpcProviderBootstrap(PropertyConfigurer configurer) {
-        super(configurer);
-        SERVICE_HANDLER = new ProviderServiceHandler(configurer());
+    public RpcProviderBootstrap(Properties properties) {
+        super(properties);
+        SERVICE_HANDLER = new ProviderServiceHandler(properties());
         PROVIDER_TRANSFER = new ProviderTransfer();
     }
 
@@ -74,7 +79,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
 
     /**
      * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
-     * 
+     *
      * @param option 启动选项
      */
     public void start(RpcOption option) {
@@ -95,7 +100,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
 
     /**
      * 关闭钩子
-     * 
+     *
      * @return this
      */
     public RpcProviderBootstrap hookStop() {
@@ -105,7 +110,7 @@ public class RpcProviderBootstrap extends RpcBootstrap {
 
     /**
      * 初始化上下文
-     * 
+     *
      * @param option
      * @return
      */
@@ -114,11 +119,11 @@ public class RpcProviderBootstrap extends RpcBootstrap {
         // 设置角色
         context.put(RpcContextEnum.ROLE, role());
         // 设置属性配置器
-        context.put(RpcContextEnum.PROPERTY_CONFIGURER, configurer());
+        context.put(RpcContextEnum.PROPERTIES, properties());
         // 设置序列化处理器
         context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
-        // 设置 service instance generator
-        context.put(RpcContextEnum.SERVICE_INSTANCE_GENERATOR, option.serviceInstanceGenerator());
+        // codec
+        context.put(RpcContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         return context;
     }
 

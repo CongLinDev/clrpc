@@ -42,7 +42,7 @@ class HelloServiceImpl implements HelloService {
 RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
 
 // 创建服务对象
-ServiceObject serviceObject = JsonSimpleServiceObjectBuilder.builder()
+ServiceObject serviceObject = new SimpleServiceObject.Builder()
         .name("HelloService")
         .object(new HelloServiceImpl())
         .build();
@@ -61,7 +61,7 @@ RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建服务接口对象
-ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.builder()
+ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<HelloService>()
         .name("HelloService")
         .interfaceClass(HelloService.class)
         .build();
@@ -97,7 +97,7 @@ RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建服务接口对象
-ServiceInterface<HelloService> serviceInterface = SimpleServiceInterfaceBuilder.builder()
+ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<HelloService>()
         .name("HelloService")
         .interfaceClass(HelloService.class)
         .build();
@@ -126,13 +126,13 @@ bootstrap.stop();
 
 ## Config
 
-默认配置文件名为 `clrpc-config`。
+默认配置文件名为 `config.properties`。
 
-[默认配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/src/main/resources/clrpc-config.json)。
+[默认配置文件模板](https://github.com/CongLinDev/clrpc/blob/master/src/main/resources/config.properties)。
 
 ### Config File
 
-配置文件位置默认在项目 `resources` 目录下，默认格式为 `json` ，默认文件为 `clrpc-config.json`。
+配置文件位置默认在项目 `resources` 目录下，默认格式为 `properties` ，默认文件为 `config.properties`。
 
 ### Config Items
 

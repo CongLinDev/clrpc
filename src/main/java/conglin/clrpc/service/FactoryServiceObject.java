@@ -1,7 +1,6 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
-
+import java.util.Map;
 import java.util.function.Supplier;
 
 abstract public class FactoryServiceObject extends AbstractServiceObject {
@@ -10,13 +9,13 @@ abstract public class FactoryServiceObject extends AbstractServiceObject {
 
     protected final Class<?> objectClass;
 
-    public FactoryServiceObject(Supplier<?> factory, Class<?> objectClass, PropertyConfigurer metaInfo) {
-        super(metaInfo);
+    public FactoryServiceObject(Supplier<?> factory, Class<?> objectClass, Map<String, String> metaInfo) {
+        super(factory.getClass().getName(), metaInfo);
         this.factory = factory;
         this.objectClass = objectClass;
     }
 
-    public FactoryServiceObject(String name, Supplier<?> factory, Class<?> objectClass, PropertyConfigurer metaInfo) {
+    public FactoryServiceObject(String name, Supplier<?> factory, Class<?> objectClass, Map<String, String> metaInfo) {
         super(name, metaInfo);
         this.factory = factory;
         this.objectClass = objectClass;

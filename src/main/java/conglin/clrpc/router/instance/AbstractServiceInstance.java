@@ -14,6 +14,10 @@ abstract public class AbstractServiceInstance implements ServiceInstance {
         this.address = address;
     }
 
+    public ServiceObject serviceObject() {
+        return serviceObject;
+    }
+
     @Override
     public String address() {
         return address;

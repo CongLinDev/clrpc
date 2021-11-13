@@ -2,13 +2,13 @@ package conglin.clrpc.bootstrap.option;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.router.instance.ServiceInstanceGenerator;
+import conglin.clrpc.router.instance.ServiceInstanceCodec;
 
 public class RpcOption {
 
     private IdentifierGenerator identifierGenerator;
     private SerializationHandler serializationHandler;
-    private ServiceInstanceGenerator serviceInstanceGenerator;
+    private ServiceInstanceCodec serviceInstanceCodec;
 
     public IdentifierGenerator identifierGenerator() {
         return identifierGenerator;
@@ -28,12 +28,12 @@ public class RpcOption {
         return this;
     }
 
-    public ServiceInstanceGenerator serviceInstanceGenerator() {
-        return serviceInstanceGenerator;
+    public ServiceInstanceCodec serviceInstanceCodec() {
+        return serviceInstanceCodec;
     }
 
-    public RpcOption serviceInstanceGenerator(ServiceInstanceGenerator serviceInstanceGenerator) {
-        this.serviceInstanceGenerator = serviceInstanceGenerator;
+    public RpcOption serviceInstanceCodec(ServiceInstanceCodec serviceInstanceCodec) {
+        this.serviceInstanceCodec = serviceInstanceCodec;
         return this;
     }
 }

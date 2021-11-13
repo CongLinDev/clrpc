@@ -1,8 +1,7 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.registry.DiscoveryCallback;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.ObjectUtils;
@@ -16,6 +15,9 @@ import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.util.ObjectAssemblyUtils;
 
 import java.lang.reflect.Proxy;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.function.BiConsumer;
 
 public class ConsumerServiceHandler extends AbstractServiceHandler {
 
@@ -23,11 +25,11 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
 
     private final ServiceDiscovery serviceDiscovery;
 
-    public ConsumerServiceHandler(PropertyConfigurer configurer) {
-        super(configurer);
+    public ConsumerServiceHandler(Properties properties) {
+        super(properties);
         futureHolder = new DefaultFutureHolder();
-        String discoveryClassName = configurer.get("registry.discovery-class", String.class);
-        String registryUrl = configurer.get("registry.url", String.class);
+        String discoveryClassName = properties.getProperty("registry.discovery-class");
+        String registryUrl = properties.getProperty("registry.url");
         serviceDiscovery = ClassUtils.loadObjectByType(discoveryClassName, ServiceDiscovery.class, new UrlScheme(registryUrl));
     }
 
@@ -99,7 +101,7 @@ public class ConsumerServiceHandler extends AbstractServiceHandler {
      * @param serviceName
      * @param updateMethod
      */
-    public void findService(String serviceName, DiscoveryCallback updateMethod) {
+    public void findService(String serviceName, BiConsumer<String, Collection<Pair<String, String>>> updateMethod) {
         serviceDiscovery.discover(serviceName, updateMethod);
     }
 }

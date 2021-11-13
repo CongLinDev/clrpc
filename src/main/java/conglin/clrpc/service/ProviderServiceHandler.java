@@ -1,6 +1,5 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.ClassUtils;
@@ -12,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class ProviderServiceHandler extends AbstractServiceHandler {
 
@@ -23,11 +23,11 @@ public class ProviderServiceHandler extends AbstractServiceHandler {
 
     private final ServiceRegistry serviceRegistry;
 
-    public ProviderServiceHandler(PropertyConfigurer configurer) {
-        super(configurer);
+    public ProviderServiceHandler(Properties properties) {
+        super(properties);
         serviceObjects = new HashMap<>();
-        String registryClassName = configurer.get("registry.register-class", String.class);
-        String registryUrl = configurer.get("registry.url", String.class);
+        String registryClassName = properties.getProperty("registry.register-class");
+        String registryUrl = properties.getProperty("registry.url");
         serviceRegistry = ClassUtils.loadObjectByType(registryClassName, ServiceRegistry.class, new UrlScheme(registryUrl));
     }
 

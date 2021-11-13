@@ -7,8 +7,6 @@ public interface ServiceInstance extends Service {
 
     String INSTANCE_ADDRESS = "INSTANCE_ADDRESS";
 
-    String INSTANCE_OBJECT = "INSTANCE_OBJECT";
-
     /**
      * 地址
      *

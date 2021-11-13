@@ -1,14 +1,15 @@
 package conglin.clrpc.extension.annotation;
 
-import conglin.clrpc.common.config.MapPropertyConfigurer;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.util.ClassUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AnnotationServiceObject implements conglin.clrpc.service.ServiceObject {
     private final Object object;
     private final String name;
     private final conglin.clrpc.service.ServiceVersion version;
-    private final PropertyConfigurer configurer;
+    private final Map<String, String> metaInfo;
 
     public AnnotationServiceObject(Class<?> serviceObjectClass) {
         ServiceObject serviceObject = serviceObjectClass.getAnnotation(ServiceObject.class);
@@ -31,15 +32,11 @@ public class AnnotationServiceObject implements conglin.clrpc.service.ServiceObj
         this.version = new conglin.clrpc.service.ServiceVersion(serviceVersion.major(), serviceVersion.minor(), serviceVersion.build());
 
         MetaInfo metaInfo = serviceObject.metaInfo();
-        Class<? extends PropertyConfigurer> metaClass = metaInfo.metaClass();
-        PropertyConfigurer c = null;
-        if (metaClass.isInterface() || (c = ClassUtils.loadObjectByType(metaClass, PropertyConfigurer.class)) == null) {
-            c = new MapPropertyConfigurer();
-        }
+        Map<String, String> metaInfoMap = new HashMap<>();
         for (Entry entry : metaInfo.entries()) {
-            c.put(entry.key(), entry.value());
+            metaInfoMap.put(entry.key(), entry.value());
         }
-        configurer = c;
+        this.metaInfo = metaInfoMap;
     }
 
     @Override
@@ -48,8 +45,8 @@ public class AnnotationServiceObject implements conglin.clrpc.service.ServiceObj
     }
 
     @Override
-    public PropertyConfigurer metaInfo() {
-        return configurer;
+    public Map<String, String> metaInfo() {
+        return this.metaInfo;
     }
 
     @Override

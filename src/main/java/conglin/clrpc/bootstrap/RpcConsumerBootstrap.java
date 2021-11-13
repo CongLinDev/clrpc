@@ -1,7 +1,6 @@
 package conglin.clrpc.bootstrap;
 
 import conglin.clrpc.bootstrap.option.RpcOption;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.ConsumerServiceHandler;
 import conglin.clrpc.service.ServiceInterface;
@@ -12,13 +11,15 @@ import conglin.clrpc.transport.ConsumerTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
+
 /**
  * RPC consumer端启动类
- * 
+ * <p>
  * 使用如下代码启动
- * 
+ *
  * <blockquote>
- * 
+ *
  * <pre>
  * RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
  * bootstrap.start(new CommonOption());
@@ -30,18 +31,18 @@ import org.slf4j.LoggerFactory;
  *                              .build();
  * // 刷新
  * bootstrap.subscribe(serviceInterface1);
- * 
+ *
  * // 订阅同步服务
  * Interface1 sync = bootstrap.proxy(serviceInterface1);
- * 
+ *
  * // 订阅异步服务
  * Interface1 async = bootstrap.proxy(serviceInterface1, true);
  *
  * bootstrap.stop();
  * </pre>
- * 
+ *
  * </blockquote>
- * 
+ * <p>
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 
@@ -52,28 +53,31 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
     private final ConsumerTransfer CONSUMER_TRANSFER;
     private final ConsumerServiceHandler SERVICE_HANDLER;
 
+    public RpcConsumerBootstrap() {
+        this(null);
+    }
+
     /**
      * 创建 服务消费者 启动对象
-     * 
-     * @param configurer 配置器
+     *
+     * @param properties 配置
      */
-    public RpcConsumerBootstrap(PropertyConfigurer configurer) {
-        super(configurer);
-        SERVICE_HANDLER = new ConsumerServiceHandler(configurer());
+    public RpcConsumerBootstrap(Properties properties) {
+        super(properties);
+        SERVICE_HANDLER = new ConsumerServiceHandler(properties());
         CONSUMER_TRANSFER = new ConsumerTransfer();
     }
 
     /**
      * 获取异步服务代理
-     * 
+     * <p>
      * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
      * 刷新
-     * 
-     * @see #proxy(ServiceInterface, boolean)
-     * 
+     *
      * @param <T>
      * @param serviceInterface 接口
      * @return 代理服务对象
+     * @see #proxy(ServiceInterface, boolean)
      */
     public <T> T proxy(ServiceInterface<T> serviceInterface) {
         return proxy(serviceInterface, true);
@@ -81,7 +85,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
 
     /**
      * 获取服务代理
-     *
+     * <p>
      * 使用该方法返回的代理前，应当保证之前调用 {@link RpcConsumerBootstrap#subscribe(ServiceInterface)}
      * 刷新
      *
@@ -127,7 +131,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
 
     /**
      * 启动
-     * 
+     *
      * @param option 启动选项
      */
     public void start(RpcOption option) {
@@ -148,7 +152,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
 
     /**
      * 关闭钩子
-     * 
+     *
      * @return this
      */
     public RpcConsumerBootstrap hookStop() {
@@ -158,7 +162,7 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
 
     /**
      * 初始化上下文
-     * 
+     *
      * @param option
      * @return context
      */
@@ -167,11 +171,13 @@ public class RpcConsumerBootstrap extends RpcBootstrap {
         // 设置角色
         context.put(RpcContextEnum.ROLE, role());
         // 设置属性配置器
-        context.put(RpcContextEnum.PROPERTY_CONFIGURER, configurer());
+        context.put(RpcContextEnum.PROPERTIES, properties());
         // 设置序列化处理器
         context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
         // 设置ID生成器
         context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.identifierGenerator());
+        // codec
+        context.put(RpcContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         return context;
     }
 }

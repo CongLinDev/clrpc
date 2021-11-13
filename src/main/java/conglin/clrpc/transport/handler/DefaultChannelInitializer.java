@@ -1,7 +1,6 @@
 package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.global.role.Role;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
@@ -11,6 +10,8 @@ import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel> implements ContextAware, Initializable {
 
@@ -31,9 +32,9 @@ public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
 
     @Override
     public void init() {
-        PropertyConfigurer c = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
+        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
         Role role = getContext().getWith(RpcContextEnum.ROLE);
-        String factoryClass = c.get(role.item(".channel.handler-factory"), String.class);
+        String factoryClass = properties.getProperty(role.item(".channel.handler-factory"));
         channelHandlerFactory = ChannelHandlerFactory.newFactory(factoryClass, getContext());
     }
 
@@ -48,7 +49,7 @@ public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
 
     /**
      * 获取 {@link ChannelHandler} 类型
-     * 
+     *
      * @param handler
      * @return
      */

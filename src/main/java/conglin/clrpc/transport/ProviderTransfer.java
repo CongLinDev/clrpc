@@ -1,10 +1,8 @@
 package conglin.clrpc.transport;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.router.instance.ServiceInstance;
-import conglin.clrpc.router.instance.ServiceInstanceGenerator;
+import conglin.clrpc.router.instance.ServiceInstanceCodec;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -19,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Properties;
 
 public class ProviderTransfer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransfer.class);
@@ -29,15 +28,15 @@ public class ProviderTransfer {
 
     /**
      * 启动Netty
-     * 
+     *
      * @param context 上下文
      */
     public void start(RpcContext context) {
         this.context = context;
-        PropertyConfigurer configurer = (PropertyConfigurer) context.get(RpcContextEnum.PROPERTY_CONFIGURER);
-        initNettyBootstrap(configurer.getOrDefault("provider.thread.boss", 1),
-                configurer.getOrDefault("provider.thread.worker", 4));
-        int servicePort = configurer.getOrDefault("provider.port", 0);
+        Properties properties = context.getWith(RpcContextEnum.PROPERTIES);
+        initNettyBootstrap(Integer.parseInt(properties.getProperty("provider.thread.boss", "1")),
+                Integer.parseInt(properties.getProperty("provider.thread.worker", "4")));
+        int servicePort = Integer.parseInt(properties.getProperty("provider.port", "0"));
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(servicePort)).sync();
             String localAddress = IPAddressUtils
@@ -45,10 +44,10 @@ public class ProviderTransfer {
             if (channelFuture.isSuccess()) {
                 ServiceRegistry serviceRegistry = context.getWith(RpcContextEnum.SERVICE_REGISTRY);
                 Map<String, ServiceObject> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
-                ServiceInstanceGenerator serviceInstanceGenerator = context.getWith(RpcContextEnum.SERVICE_INSTANCE_GENERATOR);
+                ServiceInstanceCodec serviceInstanceCodec = context.getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);
                 serviceObjects.values().forEach(serviceObject -> {
-                    ServiceInstance instance = serviceInstanceGenerator.instance(serviceObject ,localAddress);
-                    serviceRegistry.register(serviceObject.name(), localAddress, instance.toString());
+                    String instanceInfo = serviceInstanceCodec.toString(serviceObject, localAddress);
+                    serviceRegistry.register(serviceObject.name(), localAddress, instanceInfo);
                 });
                 LOGGER.info("Provider starts on {}", localAddress);
             } else {
@@ -63,7 +62,7 @@ public class ProviderTransfer {
 
     /**
      * 初始化 Netty Bootstrap
-     * 
+     *
      * @param bossThread
      * @param workerThread
      */

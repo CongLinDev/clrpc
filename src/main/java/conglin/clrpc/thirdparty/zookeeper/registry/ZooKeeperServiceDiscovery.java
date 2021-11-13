@@ -1,14 +1,16 @@
 package conglin.clrpc.thirdparty.zookeeper.registry;
 
-import conglin.clrpc.common.registry.DiscoveryCallback;
-import org.apache.zookeeper.CreateMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
+import org.apache.zookeeper.CreateMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.function.BiConsumer;
 
 /**
  * 注册发现类 默认情况下使用ZooKeeper注册服务 根路径 {root-path} 默认为 /clrpc （可在配置文件中更改）
@@ -33,9 +35,9 @@ public class ZooKeeperServiceDiscovery extends AbstractZooKeeperService implemen
     }
 
     @Override
-    public void discover(String type, DiscoveryCallback updater) {
+    public void discover(String type, BiConsumer<String, Collection<Pair<String, String>>> updater) {
         String providerNodes = rootPath + "/" + type + "/provider";
-        ZooKeeperUtils.watchChildrenList(keeperInstance.instance(), providerNodes, new DiscoveryCallbackConvertor(type, updater));
+        ZooKeeperUtils.watchChildrenList(keeperInstance.instance(), providerNodes, values -> updater.accept(type, values));
     }
 
     @Override

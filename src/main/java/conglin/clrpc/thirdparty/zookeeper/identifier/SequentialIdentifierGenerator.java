@@ -1,15 +1,15 @@
 package conglin.clrpc.thirdparty.zookeeper.identifier;
 
+import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
+import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
+import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.config.PropertyConfigurer;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
-import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
-import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
+import java.util.Properties;
 
 public class SequentialIdentifierGenerator extends AbstractZooKeeperService implements IdentifierGenerator {
 
@@ -19,8 +19,8 @@ public class SequentialIdentifierGenerator extends AbstractZooKeeperService impl
     // 本对象不可用时调用
     protected IdentifierGenerator downgradeGenerator;
 
-    public SequentialIdentifierGenerator(PropertyConfigurer configurer) {
-        super(new UrlScheme(configurer.get("atomicity", String.class)), "id");
+    public SequentialIdentifierGenerator(Properties properties) {
+        super(new UrlScheme(properties.getProperty("extension.atomicity.url")), "id");
         downgradeGenerator = new RandomIdentifierGenerator();
     }
 

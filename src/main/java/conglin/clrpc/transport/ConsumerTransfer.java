@@ -1,12 +1,13 @@
 package conglin.clrpc.transport;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.router.ProviderRouter;
 import conglin.clrpc.router.instance.ServiceInstance;
+import conglin.clrpc.router.instance.ServiceInstanceCodec;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.component.DefaultRequestSender;
@@ -23,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class ConsumerTransfer {
 
@@ -46,8 +49,8 @@ public class ConsumerTransfer {
         this.context = context;
         initContext(context);
 
-        PropertyConfigurer configurer = (PropertyConfigurer) context.get(RpcContextEnum.PROPERTY_CONFIGURER);
-        initNettyBootstrap(configurer.getOrDefault("consumer.thread.worker", 4));
+        Properties properties = context.getWith(RpcContextEnum.PROPERTIES);
+        initNettyBootstrap(Integer.parseInt(properties.getProperty("consumer.thread.worker", "4")));
     }
 
     /**
@@ -93,8 +96,10 @@ public class ConsumerTransfer {
      * @param serviceName 服务名
      * @param providers   服务提供者
      */
-    public void updateConnectedProvider(String serviceName, Collection<ServiceInstance> providers) {
-        loadBalancer.update(serviceName, providers);
+    public void updateConnectedProvider(String serviceName, Collection<Pair<String, String>> providers) {
+        ServiceInstanceCodec serviceInstanceCodec = context.getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);
+        Collection<ServiceInstance> instances = providers.stream().map(pair-> serviceInstanceCodec.fromContent(pair.getSecond())).collect(Collectors.toList());
+        loadBalancer.update(serviceName, instances);
         ProviderRouter router = context.getWith(RpcContextEnum.PROVIDER_ROUTER);
         router.refresh();
     }

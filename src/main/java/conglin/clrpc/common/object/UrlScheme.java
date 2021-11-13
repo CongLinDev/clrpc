@@ -3,6 +3,7 @@ package conglin.clrpc.common.object;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +30,14 @@ final public class UrlScheme {
 
     private final Map<String, String> parameters;
 
+    /**
+     * 解析参数
+     *
+     * @param parameterString
+     * @param paramsSplitRegex
+     * @param keyValueSplitRegex
+     * @return
+     */
     public static Map<String, String> resolveParameters(String parameterString, String paramsSplitRegex, String keyValueSplitRegex) {
         if(parameterString == null || "".equals(parameterString)) {
             return Collections.emptyMap();
@@ -42,6 +51,26 @@ final public class UrlScheme {
             map.put(pair[0], pair[1]);
         }
         return map;
+    }
+
+    /**
+     * 转换参数
+     *
+     * @param parameters
+     * @param paramsJoin
+     * @param keyValueJoin
+     * @return
+     */
+    public static String toParameters(Map<String, String> parameters, String paramsJoin, String keyValueJoin) {
+        Set<Map.Entry<String, String>> entrySet = parameters.entrySet();
+        if (entrySet.isEmpty()) return "";
+
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            builder.append(entry.getKey()).append(keyValueJoin).append(entry.getValue()).append(paramsJoin);
+        }
+        builder.delete(builder.length() - paramsJoin.length(), builder.length());
+        return builder.toString();
     }
 
     /**

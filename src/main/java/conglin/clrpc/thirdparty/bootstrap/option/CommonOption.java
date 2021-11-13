@@ -4,8 +4,8 @@ import conglin.clrpc.bootstrap.option.RpcOption;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.router.instance.ServiceInstanceGenerator;
-import conglin.clrpc.thirdparty.fastjson.service.JsonServiceInstance;
+import conglin.clrpc.router.instance.DefaultServiceInstanceCodec;
+import conglin.clrpc.router.instance.ServiceInstanceCodec;
 import conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler;
 
 public class CommonOption extends RpcOption {
@@ -30,11 +30,11 @@ public class CommonOption extends RpcOption {
     }
 
     @Override
-    public ServiceInstanceGenerator serviceInstanceGenerator() {
-        ServiceInstanceGenerator object = super.serviceInstanceGenerator();
+    public ServiceInstanceCodec serviceInstanceCodec() {
+        ServiceInstanceCodec object = super.serviceInstanceCodec();
         if (object == null) {
-            object = JsonServiceInstance::new;
-            serviceInstanceGenerator(object);
+            object = new DefaultServiceInstanceCodec();
+            serviceInstanceCodec(object);
         }
         return object;
     }

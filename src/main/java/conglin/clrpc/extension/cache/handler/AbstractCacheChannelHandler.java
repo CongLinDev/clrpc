@@ -1,13 +1,11 @@
 package conglin.clrpc.extension.cache.handler;
 
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.config.PropertyConfigurer;
 import conglin.clrpc.extension.cache.CacheManager;
 import conglin.clrpc.extension.cache.CacheableResponse;
 import conglin.clrpc.global.GlobalMessageManager;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.message.BasicRequest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -31,11 +29,7 @@ abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboun
     @Override
     public void init() {
         GlobalMessageManager.manager().setMessageClass(CacheableResponse.MESSAGE_TYPE, CacheableResponse.class);
-        PropertyConfigurer configurer = getContext().getWith(RpcContextEnum.PROPERTY_CONFIGURER);
-        @SuppressWarnings("unchecked")
-        CacheManager<BasicRequest, CacheableResponse> cm = (CacheManager<BasicRequest, CacheableResponse>) configurer
-                .get("extension.cache.cacheManager");
-        this.cacheManager = cm;
+        this.cacheManager = newCacheManager();
     }
 
     @Override
@@ -81,4 +75,11 @@ abstract public class AbstractCacheChannelHandler<T> extends SimpleChannelInboun
     protected CacheManager<BasicRequest, CacheableResponse> cacheManager() {
         return cacheManager;
     }
+
+    /**
+     * 创建缓存管理
+     *
+     * @return
+     */
+    abstract protected CacheManager<BasicRequest, CacheableResponse> newCacheManager();
 }

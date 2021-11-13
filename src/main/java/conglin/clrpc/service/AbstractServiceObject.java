@@ -1,35 +1,30 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.config.PropertyConfigurer;
+import java.util.Map;
 
 abstract public class AbstractServiceObject implements ServiceObject {
 
-    protected final PropertyConfigurer metaInfo;
+    protected final Map<String, String> metaInfo;
 
-    public AbstractServiceObject(PropertyConfigurer metaInfo) {
+    public AbstractServiceObject(String name, Map<String, String> metaInfo) {
         this.metaInfo = metaInfo;
-    }
-
-    public AbstractServiceObject(String name, PropertyConfigurer metaInfo) {
-        this.metaInfo = metaInfo;
-        metaInfo.put(ServiceObject.SERVICE_NAME, name);
+        metaInfo.putIfAbsent(ServiceObject.SERVICE_NAME, name);
+        metaInfo.putIfAbsent(ServiceObject.VERSION, ServiceVersion.defaultVersion().toString());
     }
 
     @Override
     public String name() {
-        Object serviceName = metaInfo.putIfAbsent(ServiceObject.SERVICE_NAME, object().getClass().getName());
-        return (String)serviceName;
+        return metaInfo.get(ServiceObject.SERVICE_NAME);
     }
 
     @Override
-    public PropertyConfigurer metaInfo() {
+    public Map<String, String> metaInfo() {
         return metaInfo;
     }
 
     @Override
     public ServiceVersion version() {
-        Object version = metaInfo.putIfAbsent(ServiceObject.VERSION, ServiceVersion.defaultVersion());
-        return (ServiceVersion)version;
+        return ServiceVersion.parse(metaInfo.get(ServiceObject.VERSION));
     }
 
 }

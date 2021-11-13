@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest, ? extends BasicResponse>>
+abstract public class ProviderCachedChannelHandler<T extends Pair<? extends BasicRequest, ? extends BasicResponse>>
         extends AbstractCacheChannelHandler<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderCachedChannelHandler.class);
