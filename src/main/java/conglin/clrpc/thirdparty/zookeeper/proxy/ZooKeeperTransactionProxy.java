@@ -8,8 +8,8 @@ import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.TransactionFuture;
 import conglin.clrpc.extension.transaction.TransactionProxy;
-import conglin.clrpc.extension.transaction.TransactionRequest;
-import conglin.clrpc.global.GlobalMessageManager;
+import conglin.clrpc.extension.transaction.TransactionRequestPayload;
+import conglin.clrpc.global.GlobalPayloadManager;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
@@ -51,7 +51,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
         this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
         Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(properties.getProperty("extension.atomicity.url")));
-        GlobalMessageManager.manager().setMessageClass(TransactionRequest.MESSAGE_TYPE, TransactionRequest.class);
+        GlobalPayloadManager.manager().setPayloadClass(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
 
     @Override
     public RpcFuture call(String serviceName, String method, Object... args) throws TransactionException {
-        TransactionRequest request = new TransactionRequest(currentTransactionId, transactionFuture.size() + 1, serviceName, method, args);
+        TransactionRequestPayload request = new TransactionRequestPayload(currentTransactionId, transactionFuture.size() + 1, serviceName, method, args);
         return call(request);
     }
 
@@ -137,11 +137,11 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     }
 
     @Override
-    public RpcFuture call(TransactionRequest request) throws TransactionException {
+    public RpcFuture call(TransactionRequestPayload request) throws TransactionException {
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
         wrapper.setBeforeSendRequest(instance -> {
-            TransactionRequest transactionRequest = (TransactionRequest) wrapper.getRequest();
+            TransactionRequestPayload transactionRequest = (TransactionRequestPayload) wrapper.getRequest();
             try {
                 helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), instance.address());
             } catch (TransactionException e) {

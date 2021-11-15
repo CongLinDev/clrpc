@@ -2,6 +2,7 @@ package conglin.clrpc.transport.component;
 
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.exception.FallbackFailedException;
+import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.router.ProviderRouter;
@@ -12,9 +13,7 @@ import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
-import conglin.clrpc.transport.message.RequestWrapper;
+import conglin.clrpc.transport.message.*;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +31,8 @@ public class DefaultRequestSender implements RequestSender {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestSender.class);
 
+    protected final IdentifierGenerator identifierGenerator;
+
     protected final FutureHolder<Long> futureHolder;
 
     protected final ProviderRouter providerRouter;
@@ -46,6 +47,7 @@ public class DefaultRequestSender implements RequestSender {
     private final int CHECK_PERIOD;
 
     public DefaultRequestSender(RpcContext context) {
+        this.identifierGenerator = context.getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
         this.futureHolder = context.getWith(RpcContextEnum.FUTURE_HOLDER);
         this.providerRouter = context.getWith(RpcContextEnum.PROVIDER_ROUTER);
         this.threadPool = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
@@ -57,15 +59,16 @@ public class DefaultRequestSender implements RequestSender {
 
     @Override
     public RpcFuture sendRequest(RequestWrapper requestWrapper) {
-        RpcFuture future = putFuture(requestWrapper.getRequest());
+        Long messageId = identifierGenerator.generate();
+        RpcFuture future = putFuture(messageId, requestWrapper.getRequest());
         future.fallback(requestWrapper.getFallback());
-        doSendRequest(requestWrapper);
+        doSendRequest(messageId, requestWrapper);
         return future;
     }
 
     @Override
-    public void resendRequest(RequestWrapper requestWrapper) {
-        doSendRequest(requestWrapper);
+    public void resendRequest(Long messageId, RequestWrapper requestWrapper) {
+        doSendRequest(messageId, requestWrapper);
     }
 
     @Override
@@ -77,12 +80,13 @@ public class DefaultRequestSender implements RequestSender {
 
     /**
      * 保存Future
-     * 
+     *
+     * @param messageId
      * @param request
      * @return
      */
-    protected RpcFuture putFuture(BasicRequest request) {
-        RpcFuture future = new BasicFuture(request);
+    protected RpcFuture putFuture(Long messageId, RequestPayload request) {
+        RpcFuture future = new BasicFuture(messageId ,request);
         futureHolder.putFuture(future.identifier(), future);
         return future;
     }
@@ -90,9 +94,10 @@ public class DefaultRequestSender implements RequestSender {
     /**
      * 发送请求
      *
+     * @param messageId
      * @param requestWrapper
      */
-    protected void doSendRequest(RequestWrapper requestWrapper) {
+    protected void doSendRequest(Long messageId, RequestWrapper requestWrapper) {
         threadPool.execute(() -> {
             RouterCondition<ServiceInstance> condition = new RouterCondition<>();
             condition.setServiceName(requestWrapper.getRequest().serviceName());
@@ -104,7 +109,7 @@ public class DefaultRequestSender implements RequestSender {
                 if (requestWrapper.getBeforeSendRequest() != null) {
                     requestWrapper.getBeforeSendRequest().accept(pair.getFirst());
                 }
-                pair.getSecond().pipeline().fireChannelRead(requestWrapper.getRequest());
+                pair.getSecond().pipeline().fireChannelRead(new Message(messageId, requestWrapper.getRequest()));
             } catch (NoAvailableServiceInstancesException e) {
                 // do nothing wait fallback
             }
@@ -129,25 +134,25 @@ public class DefaultRequestSender implements RequestSender {
 
                     int retryTimes = f.retryTimes() + 1;
                     if (f.timeout(INITIAL_THRESHOLD << (retryTimes - 1)) && f.retry()) {
-                        BasicRequest r = f.request();
+                        RequestPayload r = f.request();
                         Fallback fallback = f.fallback();
                         if (fallback != null && fallback.needFallback(retryTimes)) {
                             iterator.remove();
-                            BasicResponse fallbackResponse = null;
+                            ResponsePayload fallbackResponse = null;
                             try {
                                 Object fallbackResult = fallback.fallback(r.methodName(), r.parameters());
-                                fallbackResponse = new BasicResponse(r.messageId(), fallbackResult);
+                                fallbackResponse = new ResponsePayload(fallbackResult);
                             } catch (FallbackFailedException e) {
-                                LOGGER.warn("Request(id={}) Fallback Failed. Cause: {}", r.messageId(), e.getCause());
-                                fallbackResponse = new BasicResponse(r.messageId(), true, e);
+                                LOGGER.warn("Future(id={}) Fallback Failed. Cause: {}", f.identifier(), e.getCause());
+                                fallbackResponse = new ResponsePayload(true, e);
                             }
                             f.fallbackDone(fallbackResponse);
                         } else {
                             RequestWrapper wrapper = new RequestWrapper();
                             wrapper.setRequest(r);
-                            resendRequest(wrapper);
-                            LOGGER.warn("Service response(messageId={}) is too slow. Retry (times={})...",
-                                    r.messageId(), retryTimes);
+                            resendRequest(f.identifier(), wrapper);
+                            LOGGER.warn("Service response(futureIdentifier={}) is too slow. Retry (times={})...",
+                                    f.identifier(), retryTimes);
                         }
                     }
                 }

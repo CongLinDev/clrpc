@@ -1,17 +1,22 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.common.exception.ServiceExecutionException;
+import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.transport.message.RequestPayload;
+import conglin.clrpc.transport.message.ResponsePayload;
+import conglin.clrpc.transport.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.exception.ServiceExecutionException;
-import conglin.clrpc.common.exception.UnsupportedServiceException;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
-
-public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceChannelHandler<BasicRequest> {
+public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceChannelHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBasicServiceChannelHandler.class);
+
+    @Override
+    protected boolean accept(Message msg) {
+        return msg.payload() instanceof RequestPayload;
+    }
 
     @Override
     public void init() {
@@ -19,15 +24,16 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
     }
 
     @Override
-    protected Object execute(BasicRequest msg) {
+    protected ResponsePayload execute(Message msg) {
         try {
             LOGGER.debug("Receive basic request messageId={}", msg.messageId());
-            ServiceObject serviceObject = findServiceBean(msg.serviceName());
-            Object result = jdkReflectInvoke(serviceObject.object(), msg);
-            return new BasicResponse(msg.messageId(), result);
+            RequestPayload request = (RequestPayload)msg.payload();
+            ServiceObject serviceObject = findServiceBean(request.serviceName());
+            Object result = jdkReflectInvoke(serviceObject.object(), request);
+            return new ResponsePayload(result);
         } catch (UnsupportedServiceException | ServiceExecutionException e) {
             LOGGER.error("Request failed: {}", e.getMessage());
-            return new BasicResponse(msg.messageId(), true, e);
+            return new ResponsePayload(true, e);
         }
     }
 }

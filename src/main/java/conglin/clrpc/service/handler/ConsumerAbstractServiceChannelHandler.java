@@ -30,13 +30,25 @@ abstract public class ConsumerAbstractServiceChannelHandler<T> extends SimpleCha
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
-        executorService.submit(() -> {
-            Object result = execute(msg);
-            if(result != null)
-                ctx.fireChannelRead(result);
-        });
+        if (accept(msg)) {
+            ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
+            executorService.submit(() -> {
+                Object result = execute(msg);
+                if(result != null)
+                    ctx.fireChannelRead(result);
+            });
+        } else {
+            ctx.fireChannelRead(msg);
+        }
     }
+
+    /**
+     * 是否处理
+     *
+     * @param msg
+     * @return
+     */
+    abstract boolean accept(T msg);
 
     /**
      * 执行具体方法

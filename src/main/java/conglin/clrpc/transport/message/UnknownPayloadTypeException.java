@@ -2,12 +2,12 @@ package conglin.clrpc.transport.message;
 
 import conglin.clrpc.common.exception.RpcServiceException;
 
-public class UnknownMessageTypeException extends RpcServiceException {
+public class UnknownPayloadTypeException extends RpcServiceException {
 
     private final int type;
 
-    public UnknownMessageTypeException(int type) {
-        super("Unknown message type=" + type);
+    public UnknownPayloadTypeException(int type) {
+        super("Unknown payload type=" + type);
         this.type = type;
     }
 

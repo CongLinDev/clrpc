@@ -1,29 +1,29 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.common.Initializable;
+import conglin.clrpc.common.exception.ServiceExecutionException;
+import conglin.clrpc.common.exception.UnsupportedServiceException;
+import conglin.clrpc.common.object.Pair;
+import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.transport.message.RequestPayload;
+import conglin.clrpc.transport.message.ResponsePayload;
+import conglin.clrpc.transport.message.Message;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import conglin.clrpc.common.Initializable;
-import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import conglin.clrpc.common.object.Pair;
-import conglin.clrpc.common.exception.ServiceExecutionException;
-import conglin.clrpc.common.exception.UnsupportedServiceException;
-import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
-
-abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleChannelInboundHandler<T> implements ContextAware, Initializable {
+abstract public class ProviderAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
@@ -48,11 +48,15 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
-        ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
-        executorService.submit(() -> {
-            next(msg, execute(msg));
-        });
+    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
+        if (accept(msg)) {
+            ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
+            executorService.submit(() -> {
+                next(msg, execute(msg));
+            });
+        } else {
+            ctx.fireChannelRead(msg);
+        }
     }
 
     /**
@@ -70,7 +74,15 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      * @param msg
      * @return
      */
-    abstract protected Object execute(T msg);
+    abstract protected ResponsePayload execute(Message msg);
+
+    /**
+     * 是否处理
+     *
+     * @param msg
+     * @return
+     */
+    abstract protected boolean accept(Message msg);
 
     /**
      * 传递给下一个 ChannelHandler
@@ -78,9 +90,9 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      * @param msg
      * @param result
      */
-    protected void next(T msg, Object result) {
+    protected void next(Message msg, ResponsePayload result) {
         if (result != null)
-            pipeline.fireChannelRead(new Pair<T, BasicResponse>(msg, (BasicResponse) result));
+            pipeline.fireChannelRead(new Pair<Message, ResponsePayload>(msg, result));
     }
 
     @Override
@@ -115,7 +127,7 @@ abstract public class ProviderAbstractServiceChannelHandler<T> extends SimpleCha
      * @return
      * @throws ServiceExecutionException
      */
-    protected Object jdkReflectInvoke(Object serviceBean, BasicRequest request) throws ServiceExecutionException {
+    protected Object jdkReflectInvoke(Object serviceBean, RequestPayload request) throws ServiceExecutionException {
         return jdkReflectInvoke(serviceBean, request.methodName(), request.parameters());
     }
 

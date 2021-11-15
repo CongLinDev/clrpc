@@ -2,19 +2,20 @@ package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.RpcServiceException;
-import conglin.clrpc.transport.message.BasicRequest;
-import conglin.clrpc.transport.message.BasicResponse;
+import conglin.clrpc.transport.message.*;
 
 public class BasicFuture extends AbstractFuture {
 
-    private final BasicRequest request;
-    private BasicResponse response;
+    private final RequestPayload request;
+    private final Long messageId;
+    private ResponsePayload response;
 
     private boolean fallback; // 是否是 fallback产生的结果，只有在该future已经完成的情况下，该变量才有效
 
-    public BasicFuture(BasicRequest request) {
+    public BasicFuture(Long messageId, RequestPayload request) {
         super();
         this.request = request;
+        this.messageId = messageId;
     }
 
     @Override
@@ -29,7 +30,7 @@ public class BasicFuture extends AbstractFuture {
 
     @Override
     public long identifier() {
-        return request.messageId();
+        return messageId;
     }
     
     /**
@@ -48,18 +49,18 @@ public class BasicFuture extends AbstractFuture {
      * 
      * @param response
      */
-    public void fallbackDone(BasicResponse response) {
+    public void fallbackDone(ResponsePayload response) {
         fallback = true;
         this.response = response;
         done(response);
     }
 
     /**
-     * 获得与该 RpcFuture 相关联的 BasicRequest
+     * 获得与该 RpcFuture 相关联的 RequestPayload
      * 
      * @return
      */
-    public final BasicRequest request() {
+    public final RequestPayload request() {
         return this.request;
     }
 
@@ -68,13 +69,13 @@ public class BasicFuture extends AbstractFuture {
      * 
      * @return
      */
-    public final BasicResponse response() {
+    public final ResponsePayload response() {
         return this.response;
     }
 
     @Override
     protected void beforeDone(Object result) {
-        this.response = (BasicResponse) result;
+        this.response = (ResponsePayload) result;
         if (response.isError())
             signError();
     }

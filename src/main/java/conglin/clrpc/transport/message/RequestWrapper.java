@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 public class RequestWrapper {
 
-    protected BasicRequest request;
+    protected RequestPayload request;
 
     protected Fallback fallback;
 
@@ -16,11 +16,11 @@ public class RequestWrapper {
 
     protected Consumer<ServiceInstance> beforeSendRequest;
 
-    public BasicRequest getRequest() {
+    public RequestPayload getRequest() {
         return request;
     }
 
-    public void setRequest(BasicRequest request) {
+    public void setRequest(RequestPayload request) {
         this.request = request;
     }
 

@@ -34,7 +34,7 @@ public interface TransactionProxy extends RpcProxy {
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(TransactionRequest request) throws TransactionException;
+    RpcFuture call(TransactionRequestPayload request) throws TransactionException;
 
     /**
      * 提交事务

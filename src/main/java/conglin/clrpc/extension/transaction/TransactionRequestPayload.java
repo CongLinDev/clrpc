@@ -1,21 +1,25 @@
 package conglin.clrpc.extension.transaction;
 
-import conglin.clrpc.transport.message.BasicRequest;
+import conglin.clrpc.transport.message.RequestPayload;
 
 import java.io.Serial;
 
-public class TransactionRequest extends BasicRequest {
+public class TransactionRequestPayload extends RequestPayload {
 
     @Serial
     private static final long serialVersionUID = -7860287729080523289L;
 
-    transient public static final int MESSAGE_TYPE = 3;
+    transient public static final int PAYLOAD_TYPE = 3;
 
     @Override
-    public int messageType() {
-        return MESSAGE_TYPE;
+    public int payloadType() {
+        return PAYLOAD_TYPE;
     }
 
+    /**
+     * 事务id
+     */
+    protected final Long transactionId;
     /**
      * 序列号
      */
@@ -23,15 +27,16 @@ public class TransactionRequest extends BasicRequest {
 
     /**
      * 构造事务请求
-     * 
+     *
      * @param transactionId   事务id
      * @param serialId    序列id
      * @param serviceName 服务名
      * @param methodName  方法名
      * @param parameters  参数
      */
-    public TransactionRequest(Long transactionId, Integer serialId, String serviceName, String methodName, Object[] parameters) {
-        super(transactionId, serviceName, methodName, parameters);
+    public TransactionRequestPayload(Long transactionId, Integer serialId, String serviceName, String methodName, Object[] parameters) {
+        super(serviceName, methodName, parameters);
+        this.transactionId = transactionId;
         this.serialId = serialId;
     }
 
@@ -46,15 +51,10 @@ public class TransactionRequest extends BasicRequest {
 
     /**
      * 获取事务ID
-     * 
+     *
      * @return
      */
     final public long transactionId() {
-        return messageId;
-    }
-
-    @Override
-    public Long messageId() {
-        return messageId ^ serialId;
+        return transactionId;
     }
 }

@@ -16,10 +16,11 @@ public interface RequestSender {
 
     /**
      * 向指定服务提供者重发请求信息
-     * 
+     *
+     * @param messageId
      * @param requestWrapper
      */
-    void resendRequest(RequestWrapper requestWrapper);
+    void resendRequest(Long messageId, RequestWrapper requestWrapper);
 
     /**
      * 关闭

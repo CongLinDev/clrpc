@@ -1,7 +1,9 @@
 package conglin.clrpc.common.identifier;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Twitter 的 SnowFalke算法实现
+ * Twitter 的 SnowFlake算法实现
  * 
  * 对于64位的标识符：最高位不用，置为0；次41位作为当前的毫秒数；再次10位作为工作机器的ID；低12位作为序列号。
  * 
@@ -15,16 +17,16 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
     private final long startTimeStamp; // 开启时刻的时间戳
 
     // 代表着机房ID和机器ID的应用ID，其机房ID和机器ID有效位的位置与生成的ID位置相同
-    private long applicationId;
+    private final long applicationId;
 
     // 上次使用的时间戳
     private long lastTimeStamp;
 
     // 当前的序列号
-    private int serialId;
+    private final AtomicInteger serialId;
 
     /**
-     * 构造一个雪花ID生成器
+     * 构造一个 SnowFlakeIdentifierGenerator
      * 
      * @param startTimeStamp 启动时间戳
      * @param applicationId  应用ID，只有低10位有效
@@ -35,11 +37,11 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
         // 取低10位，放入 this.applicationId 中
         this.applicationId = ((applicationId & 0x3ff) << 12);
         // 初始序列号
-        this.serialId = 0;
+        this.serialId = new AtomicInteger(0);
     }
 
     /**
-     * 构造一个雪花ID生成器
+     * 构造一个 SnowFlakeIdentifierGenerator
      * 
      * @param applicationId 应用ID，只有低10位有效
      * 
@@ -52,13 +54,14 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
     /**
      * 更新时间戳和序列号
      */
-    private void updateTimeStamp() {
+    private int updateTimeStamp() {
         long currentTimeStamp = System.currentTimeMillis();
         if (currentTimeStamp != lastTimeStamp) {
             lastTimeStamp = currentTimeStamp;
-            serialId = 0;
+            serialId.set(0);
+            return 0;
         } else {
-            serialId = (++serialId) & 0xfff;
+            return serialId.getAndIncrement() & 0xfff;
         }
     }
 
@@ -69,7 +72,7 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
 
     @Override
     public long generate(String key) {
-        updateTimeStamp();
+        int serialId = updateTimeStamp();
         return ((lastTimeStamp - startTimeStamp) << 22) | applicationId | serialId;
     }
 

@@ -1,19 +1,19 @@
 package conglin.clrpc.service.future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultFutureHolder implements FutureHolder<Long> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFutureHolder.class);
 
     private final Map<Long, RpcFuture> rpcFutures;
     /**
-     * 对于每个 BasicRequest 请求，都会有一个 RpcFuture 等待一个 BasicResponse 响应 这些未到达客户端的
-     * BasicResponse 响应 换言之即为 RpcFuture 被保存在 ConsumerServiceHandler 中的一个 list 中
+     * 对于每个 Request 请求，都会有一个 RpcFuture 等待一个 Response 响应 这些未到达客户端的
+     * Response 响应 换言之即为 RpcFuture 被保存在 ConsumerServiceHandler 中的一个 list 中
      * 以下代码用于 RpcFuture 的管理和维护
      */
 
