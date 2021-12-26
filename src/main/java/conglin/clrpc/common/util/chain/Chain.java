@@ -52,7 +52,7 @@ public interface Chain<T> {
                 next = node;
             }
         }
-        return header.next();
+        return header;
     }
 
     /**

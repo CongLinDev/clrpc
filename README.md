@@ -4,6 +4,8 @@
 
 服务提供者将服务发布注册到 注册中心 **ZooKeeper** 上后，服务消费者请求 注册中心 **ZooKeeper** 查找订阅服务后与服务提供者通信调用服务( 支持 *同步服务* 和 *异步服务* )。
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://apache.org/licenses/LICENSE-2.0)
+
 ## Setup
 
 当前阶段均为 `SNAPSHOT` 版本，暂时不提供依赖配置。

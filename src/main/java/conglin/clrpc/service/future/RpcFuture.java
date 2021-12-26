@@ -1,10 +1,10 @@
 package conglin.clrpc.service.future;
 
-import java.util.concurrent.Future;
-import java.util.function.Consumer;
-
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.Fallback;
+
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 /**
  * future 对象 用于同步或异步地获取任务的执行结果
@@ -61,7 +61,7 @@ public interface RpcFuture extends Future<Object> {
      * 
      * @return
      */
-    long identifier();
+    Long identifier();
 
     /**
      * 重试

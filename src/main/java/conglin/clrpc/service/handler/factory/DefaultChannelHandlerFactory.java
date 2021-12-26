@@ -144,7 +144,6 @@ public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactor
         } else if (role.isProvider()) {
             ProviderBasicServiceChannelHandler providerBasicServiceChannelHandler = new ProviderBasicServiceChannelHandler();
             providerBasicServiceChannelHandler.setContext(getContext());
-            providerBasicServiceChannelHandler.init();
             channelHandlerList.add(new DefaultOrderedChannelHandler(providerBasicServiceChannelHandler, ChannelHandlerPhase.HANDLE, 1));
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderResponseChannelHandler(), ChannelHandlerPhase.HANDLE, 2));
         }

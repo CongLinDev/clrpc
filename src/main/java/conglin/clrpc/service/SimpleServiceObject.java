@@ -10,13 +10,13 @@ public class SimpleServiceObject extends AbstractServiceObject {
     public SimpleServiceObject(Object object, Map<String, String> metaInfo) {
         super(object.getClass().getName(), metaInfo);
         this.object = object;
-        metaInfo.putIfAbsent(ServiceObject.OBJECT, object().getClass().getName());
+        metaInfo.putIfAbsent(ServiceObject.OBJECT, objectClass().getName());
     }
 
     public SimpleServiceObject(String name, Object object, Map<String, String> metaInfo) {
         super(name, metaInfo);
         this.object = object;
-        metaInfo.putIfAbsent(ServiceObject.OBJECT, object().getClass().getName());
+        metaInfo.putIfAbsent(ServiceObject.OBJECT, objectClass().getName());
     }
 
     @Override

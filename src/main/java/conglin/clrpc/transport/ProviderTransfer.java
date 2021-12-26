@@ -39,9 +39,9 @@ public class ProviderTransfer {
         int servicePort = Integer.parseInt(properties.getProperty("provider.port", "0"));
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(servicePort)).sync();
-            String localAddress = IPAddressUtils
-                    .addressString((InetSocketAddress) channelFuture.channel().localAddress());
             if (channelFuture.isSuccess()) {
+                String localAddress = IPAddressUtils
+                        .addressString((InetSocketAddress) channelFuture.channel().localAddress());
                 ServiceRegistry serviceRegistry = context.getWith(RpcContextEnum.SERVICE_REGISTRY);
                 Map<String, ServiceObject> serviceObjects = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
                 ServiceInstanceCodec serviceInstanceCodec = context.getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);

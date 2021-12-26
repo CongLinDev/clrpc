@@ -5,7 +5,7 @@ package conglin.clrpc.common.util.chain;
  */
 public class CommonChain<T> implements Chain<T> {
 
-    private T value;
+    private final T value;
 
     private Chain<T> nextNode;
 

@@ -9,7 +9,7 @@ import java.util.Map;
 public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
     @Override
     public ServiceInstance fromContent(String content) {
-        Map<String, String> serviceMetaInfo = UrlScheme.resolveParameters(content, "&", "=");
+        Map<String, String> serviceMetaInfo = UrlScheme.resolveParameters(content, "[&]", "[=]");
         String address = serviceMetaInfo.get(ServiceInstance.INSTANCE_ADDRESS);
         return new AbstractServiceInstance(new AbstractServiceObject("", serviceMetaInfo) {
             @Override

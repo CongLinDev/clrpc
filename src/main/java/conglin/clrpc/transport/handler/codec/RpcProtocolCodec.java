@@ -20,13 +20,11 @@ import java.util.List;
 /**
  * <pre>
  *  --------------------------------------------------------------------------------------
- *  | 字节数 |   2     |         2        |        8       |        4        |      n     |
+ *  | 字节数 |   1     |         1        |        8       |        4        |      n     |
  *  |  解释 |  VERSION |   payload type   |   message id   |  payload length |   payload  |
  *  --------------------------------------------------------------------------------------
  * 
  * </pre>
- * 
- * 消息头中高4个bit代表协议类型，低4个bit代表消息类型
  */
 
 public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDecoder, RpcProtocolEncoder> {
@@ -52,8 +50,8 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
         @Override
         protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
             byte[] data = serializationHandler.serialize(msg.payload());
-            out.writeShort(CURRENT_VERSION);
-            out.writeShort(msg.payload().payloadType());
+            out.writeByte(CURRENT_VERSION);
+            out.writeByte(msg.payload().payloadType());
             out.writeLong(msg.messageId());
             out.writeInt(data.length);
             out.writeBytes(data);
@@ -71,13 +69,13 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
                 return;
             in.markReaderIndex();
 
-            short version = in.readShort(); // version
+            byte version = in.readByte(); // version
             if (version != CURRENT_VERSION) {
                 LOGGER.error("Unsupported version={} from {}.", version, getClass());
                 return;
             }
 
-            short payloadType = in.readShort(); // payload type
+            byte payloadType = in.readByte(); // payload type
             long messageId = in.readLong();     // messageId
             int dataLength = in.readInt();      // data length
 

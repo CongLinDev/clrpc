@@ -1,6 +1,7 @@
 package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.RequestPayload;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ public class ConsumerRequestChannelHandler extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof Message message) {
+        if (msg instanceof Message message && message.payload() instanceof RequestPayload) {
             ctx.writeAndFlush(message);
             LOGGER.debug("Send request for messageId={}", message.messageId());
         } else {

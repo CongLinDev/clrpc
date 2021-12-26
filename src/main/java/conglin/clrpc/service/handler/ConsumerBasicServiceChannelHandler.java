@@ -1,22 +1,23 @@
 package conglin.clrpc.service.handler;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.ResponsePayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceChannelHandler<Message> {
+public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceChannelHandler implements Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBasicServiceChannelHandler.class);
 
     protected FutureHolder<Long> futureHolder;
 
     @Override
-    boolean accept(Message msg) {
-        return msg.payload() instanceof ResponsePayload;
+    protected boolean accept(Payload payload) {
+        return payload instanceof ResponsePayload;
     }
 
     @Override
@@ -25,17 +26,16 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
     }
 
     @Override
-    protected Object execute(Message msg) {
-        Long messageId = msg.messageId();
+    protected Object execute(Long messageId, Payload payload) {
         LOGGER.debug("Receive response (messageId={})", messageId);
         RpcFuture future = futureHolder.removeFuture(messageId);
 
         if (future != null) {
-            future.done(msg.payload());
+            future.done(payload);
             return future;
         } else {
-            LOGGER.error("Can not find binding future (messageId={})", msg.messageId());
+            LOGGER.error("Can not find binding future (messageId={})", messageId);
+            return null;
         }
-        return null;
     }
 }

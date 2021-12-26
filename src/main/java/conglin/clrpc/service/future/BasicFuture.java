@@ -29,7 +29,7 @@ public class BasicFuture extends AbstractFuture {
     }
 
     @Override
-    public long identifier() {
+    public Long identifier() {
         return messageId;
     }
     

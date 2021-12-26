@@ -38,8 +38,9 @@ final public class UrlScheme {
      * @param keyValueSplitRegex
      * @return
      */
-    public static Map<String, String> resolveParameters(String parameterString, String paramsSplitRegex, String keyValueSplitRegex) {
-        if(parameterString == null || "".equals(parameterString)) {
+    public static Map<String, String> resolveParameters(String parameterString, String paramsSplitRegex,
+            String keyValueSplitRegex) {
+        if (parameterString == null || "".equals(parameterString)) {
             return Collections.emptyMap();
         }
 
@@ -47,7 +48,8 @@ final public class UrlScheme {
         Map<String, String> map = new HashMap<>();
         for (String param : params) {
             String[] pair = param.split(keyValueSplitRegex);
-            if(pair.length < 2) continue;
+            if (pair.length < 2)
+                continue;
             map.put(pair[0], pair[1]);
         }
         return map;
@@ -63,11 +65,12 @@ final public class UrlScheme {
      */
     public static String toParameters(Map<String, String> parameters, String paramsJoin, String keyValueJoin) {
         Set<Map.Entry<String, String>> entrySet = parameters.entrySet();
-        if (entrySet.isEmpty()) return "";
+        if (entrySet.isEmpty())
+            return "";
 
         StringBuilder builder = new StringBuilder();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            builder.append(entry.getKey()).append(keyValueJoin).append(entry.getValue()).append(paramsJoin);
+            builder.append(entry.getKey()).append(keyValueJoin).append(entry.getValue() == null ? "" : entry.getValue()).append(paramsJoin);
         }
         builder.delete(builder.length() - paramsJoin.length(), builder.length());
         return builder.toString();
@@ -104,7 +107,7 @@ final public class UrlScheme {
         this.port = matcher.group(3);
         this.path = matcher.group(4).equals("") ? "/" : matcher.group(4);
         this.query = matcher.group(5);
-        this.parameters = resolveParameters(query, "&", "=");
+        this.parameters = resolveParameters(query, "[&]", "[=]");
     }
 
     public UrlScheme(UrlScheme urlScheme) {

@@ -1,5 +1,6 @@
 package conglin.clrpc.thirdparty.zookeeper.channelhandler;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.object.UrlScheme;
@@ -11,9 +12,9 @@ import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
+import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
-import conglin.clrpc.transport.message.Message;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
-public class ProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler {
+public class ProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler implements Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransactionServiceChannelHandler.class);
 
@@ -42,16 +43,16 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
     }
 
     @Override
-    protected boolean accept(Message msg) {
-        return msg.payload() instanceof TransactionRequestPayload;
+    protected boolean accept(Payload payload) {
+        return payload instanceof TransactionRequestPayload;
     }
 
     @Override
-    protected ResponsePayload execute(Message msg) {
+    protected ResponsePayload execute(Payload payload) {
         // 标记事务的本条请求被当前服务提供者所占有
-        TransactionRequestPayload payload = (TransactionRequestPayload) msg.payload();
-        long transactionId = payload.transactionId();
-        int serialId = payload.serialId();
+        TransactionRequestPayload request = (TransactionRequestPayload) payload;
+        long transactionId = request.transactionId();
+        int serialId = request.serialId();
         LOGGER.debug("Receive transaction request(transactionId={} serialId={})", transactionId, serialId);
         final String serviceAddress = IPAddressUtils.addressString((InetSocketAddress) pipeline().channel().localAddress());
         try {
@@ -63,10 +64,10 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
             // 开始处理请求
             LOGGER.debug("Transaction request(transactionId={} serialId={}) will be executed.", transactionId, serialId);
             // 查询服务对象
-            ServiceObject serviceObject = findServiceBean(payload.serviceName());
+            ServiceObject serviceObject = findServiceBean(request.serviceName());
             // 处理事务
             // 预提交事务
-            TransactionResult transactionResult = jdkReflectInvoke(serviceObject.object(), payload);
+            TransactionResult transactionResult = jdkReflectInvoke(serviceObject.object(), request);
             if (!helper.signSuccess(transactionId, serialId, serviceAddress)) { // 标记预提交成功
                 // 标记操作失败的话直接丢弃请求
                 return null;
@@ -74,8 +75,7 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
             // 监视节点
             helper.watch(transactionId, serialId, transactionResult.callback());
             // 发送预提交结果
-            next(msg, new ResponsePayload(transactionResult.result()));
-            return null;
+            return new ResponsePayload(transactionResult.result());
         } catch (UnsupportedServiceException e) {
             LOGGER.error("Transaction request(transactionId={} serialId={}) unsupported: {}", transactionId, serialId, e.getMessage());
             // 标记失败，未找到服务对象

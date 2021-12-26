@@ -1,17 +1,16 @@
 package conglin.clrpc.service.handler;
 
-import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
-import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
-import conglin.clrpc.transport.message.Message;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -23,7 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-abstract public class ProviderAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware, Initializable {
+abstract public class ProviderAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
@@ -49,10 +48,14 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        if (accept(msg)) {
+        if (accept(msg.payload())) {
             ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
             executorService.submit(() -> {
-                next(msg, execute(msg));
+                LOGGER.debug("Receive request messageId={}", msg.messageId());
+                ResponsePayload response = execute(msg.payload());
+                if (response != null) {
+                    ctx.fireChannelRead(new Message(msg.messageId(), response));
+                }
             });
         } else {
             ctx.fireChannelRead(msg);
@@ -71,29 +74,18 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
     /**
      * 执行具体的业务逻辑
      * 
-     * @param msg
+     * @param payload
      * @return
      */
-    abstract protected ResponsePayload execute(Message msg);
+    abstract protected ResponsePayload execute(Payload payload);
 
     /**
      * 是否处理
      *
-     * @param msg
+     * @param payload
      * @return
      */
-    abstract protected boolean accept(Message msg);
-
-    /**
-     * 传递给下一个 ChannelHandler
-     * 
-     * @param msg
-     * @param result
-     */
-    protected void next(Message msg, ResponsePayload result) {
-        if (result != null)
-            pipeline.fireChannelRead(new Pair<Message, ResponsePayload>(msg, result));
-    }
+    abstract protected boolean accept(Payload payload);
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
