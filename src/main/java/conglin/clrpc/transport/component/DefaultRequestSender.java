@@ -1,20 +1,23 @@
 package conglin.clrpc.transport.component;
 
+import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Fallback;
+import conglin.clrpc.common.Initializable;
+import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.exception.FallbackFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.object.Pair;
-import conglin.clrpc.router.NoAvailableServiceInstancesException;
-import conglin.clrpc.router.ProviderRouter;
-import conglin.clrpc.router.RouterCondition;
-import conglin.clrpc.router.instance.ServiceInstance;
+import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.transport.message.*;
-import io.netty.channel.Channel;
+import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
+import conglin.clrpc.transport.router.Router;
+import conglin.clrpc.transport.router.RouterCondition;
+import conglin.clrpc.transport.router.RouterResult;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,39 +25,48 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
 
 /**
- * 默认的请求发送器，采用异步直接发送请求
+ * 默认的请求发送器，直接发送请求
  */
-public class DefaultRequestSender implements RequestSender {
+public class DefaultRequestSender implements RequestSender, ContextAware, Initializable, Destroyable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestSender.class);
 
-    protected final IdentifierGenerator identifierGenerator;
+    private RpcContext context;
 
-    protected final FutureHolder<Long> futureHolder;
+    protected IdentifierGenerator identifierGenerator;
 
-    protected final ProviderRouter providerRouter;
+    protected FutureHolder<Long> futureHolder;
 
-    protected final ExecutorService threadPool;
+    protected Router router;
 
-    private final Timer timer;
+    private Timer timer;
 
     // 初始重试后的 threshold
-    private final int INITIAL_THRESHOLD;
+    private int INITIAL_THRESHOLD;
     // 检查周期
-    private final int CHECK_PERIOD;
+    private int CHECK_PERIOD;
 
-    public DefaultRequestSender(RpcContext context) {
-        this.identifierGenerator = context.getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
-        this.futureHolder = context.getWith(RpcContextEnum.FUTURE_HOLDER);
-        this.providerRouter = context.getWith(RpcContextEnum.PROVIDER_ROUTER);
-        this.threadPool = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
-        Properties properties = context.getWith(RpcContextEnum.PROPERTIES);
+    @Override
+    public void init() {
+        this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
+        this.futureHolder = getContext().getWith(RpcContextEnum.FUTURE_HOLDER);
+        this.router = getContext().getWith(RpcContextEnum.ROUTER);
+        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
         this.CHECK_PERIOD = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
         this.INITIAL_THRESHOLD = Integer.parseInt(properties.getProperty("consumer.retry.initial-threshold", "3000"));
         this.timer = CHECK_PERIOD > 0 ? checkFuture() : null;
+    }
+
+    @Override
+    public void setContext(RpcContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public RpcContext getContext() {
+        return context;
     }
 
     @Override
@@ -67,15 +79,14 @@ public class DefaultRequestSender implements RequestSender {
     }
 
     @Override
-    public void resendRequest(Long messageId, RequestWrapper requestWrapper) {
-        doSendRequest(messageId, requestWrapper);
+    public boolean isDestroyed() {
+        return timer != null;
     }
 
     @Override
-    public void shutdown() {
-        if (timer != null) {
-            timer.cancel();
-        }
+    public void destroy() throws DestroyFailedException {
+        timer.cancel();
+        timer = null;
     }
 
     /**
@@ -98,22 +109,21 @@ public class DefaultRequestSender implements RequestSender {
      * @param requestWrapper
      */
     protected void doSendRequest(Long messageId, RequestWrapper requestWrapper) {
-        threadPool.execute(() -> {
-            RouterCondition<ServiceInstance> condition = new RouterCondition<>();
-            condition.setServiceName(requestWrapper.getRequest().serviceName());
-            condition.setRandom(System.identityHashCode(requestWrapper.getRequest()));
-            condition.setRetryTimes(5);
-            condition.setPredicate(requestWrapper.getPredicate());
-            try {
-                Pair<ServiceInstance, Channel> pair = providerRouter.choose(condition);
-                if (requestWrapper.getBeforeSendRequest() != null) {
-                    requestWrapper.getBeforeSendRequest().accept(pair.getFirst());
-                }
-                pair.getSecond().pipeline().fireChannelRead(new Message(messageId, requestWrapper.getRequest()));
-            } catch (NoAvailableServiceInstancesException e) {
-                // do nothing wait fallback
+        RouterCondition condition = new RouterCondition();
+        condition.setServiceName(requestWrapper.getRequest().serviceName());
+        condition.setRandom(System.identityHashCode(requestWrapper.getRequest()));
+        condition.setRetryTimes(5);
+        condition.setPredicate(requestWrapper.getPredicate());
+        try {
+            RouterResult routerResult = router.choose(condition);
+            if (requestWrapper.getBeforeSendRequest() != null) {
+                requestWrapper.getBeforeSendRequest().accept(routerResult.getInstance());
             }
-        });
+            routerResult.send(new Message(messageId, requestWrapper.getRequest()));
+        } catch (NoAvailableServiceInstancesException e) {
+            // do nothing wait fallback
+        }
+        
     }
 
     /**
@@ -150,7 +160,7 @@ public class DefaultRequestSender implements RequestSender {
                         } else {
                             RequestWrapper wrapper = new RequestWrapper();
                             wrapper.setRequest(r);
-                            resendRequest(f.identifier(), wrapper);
+                            doSendRequest(f.identifier(), wrapper); // retry
                             LOGGER.warn("Service response(futureIdentifier={}) is too slow. Retry (times={})...",
                                     f.identifier(), retryTimes);
                         }

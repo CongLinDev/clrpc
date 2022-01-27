@@ -2,7 +2,6 @@ package conglin.clrpc.service.handler;
 
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.transport.message.Message;
 import conglin.clrpc.transport.message.Payload;
 import org.slf4j.Logger;
@@ -10,8 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import java.util.concurrent.ExecutorService;
 
 abstract public class ConsumerAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware {
 
@@ -31,13 +28,10 @@ abstract public class ConsumerAbstractServiceChannelHandler extends SimpleChanne
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        if (accept(msg.payload())) {
-            ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
-            executorService.submit(() -> {
-                Object result = execute(msg.messageId(), msg.payload());
-                if(result != null)
-                    ctx.fireChannelRead(result);
-            });
+        if (accept(msg.payload())) {      
+        Object result = execute(msg.messageId(), msg.payload());
+        if(result != null)
+            ctx.fireChannelRead(result);
         } else {
             ctx.fireChannelRead(msg);
         }

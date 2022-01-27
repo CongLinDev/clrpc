@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 abstract public class ProviderAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware {
 
@@ -49,14 +48,11 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
         if (accept(msg.payload())) {
-            ExecutorService executorService = context.getWith(RpcContextEnum.EXECUTOR_SERVICE);
-            executorService.submit(() -> {
-                LOGGER.debug("Receive request messageId={}", msg.messageId());
-                ResponsePayload response = execute(msg.payload());
-                if (response != null) {
-                    ctx.fireChannelRead(new Message(msg.messageId(), response));
-                }
-            });
+            LOGGER.debug("Receive request messageId={}", msg.messageId());
+            ResponsePayload response = execute(msg.payload());
+            if (response != null) {
+                ctx.fireChannelRead(new Message(msg.messageId(), response));
+            }  
         } else {
             ctx.fireChannelRead(msg);
         }

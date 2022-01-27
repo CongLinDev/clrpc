@@ -41,7 +41,7 @@ class HelloServiceImpl implements HelloService {
 
 ```java
 // 创建服务提供者
-RpcProviderBootstrap bootstrap = new RpcProviderBootstrap();
+ProviderBootstrap bootstrap = new ProviderBootstrap();
 
 // 创建服务对象
 ServiceObject serviceObject = new SimpleServiceObject.Builder()
@@ -59,7 +59,7 @@ bootstrap.publish(serviceObject) // 发布享元模式的服务对象
 
 ```java
 // 创建服务消费者
-RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
+ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建服务接口对象
@@ -95,7 +95,7 @@ bootstrap.stop();
 
 ```java
 // 创建服务消费者
-RpcConsumerBootstrap bootstrap = new RpcConsumerBootstrap();
+ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建服务接口对象
@@ -152,10 +152,6 @@ bootstrap.stop();
 | consumer.retry.initial-threshold | Integer |  False   |  3000   |                    初始重试时间门槛                     |
 |   consumer.fallback.max-retry    | Integer |  False   |   -1    | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
 | consumer.channel.handler-factory | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|  service.thread-pool.core-size   | Integer |  False   |    5    |                  业务线程池核心线程数                   |
-|   service.thread-pool.max-size   | Integer |  False   |   10    |                  业务线程池最大线程数                   |
-|  service.thread-pool.keep-alive  | Integer |  False   |  1000   |    线程池多余空闲线程在终止之前等待新任务的最长时间     |
-|    service.thread-pool.queue     | Integer |  False   |   10    |                    业务线程池队列数                     |
 
 ### Extension config Items
 

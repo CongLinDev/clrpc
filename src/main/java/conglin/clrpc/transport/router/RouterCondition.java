@@ -1,10 +1,12 @@
-package conglin.clrpc.router;
+package conglin.clrpc.transport.router;
 
 import java.util.function.Predicate;
 
-public class RouterCondition<T> {
+import conglin.clrpc.service.instance.ServiceInstance;
+
+public class RouterCondition {
     private int retryTimes;
-    private Predicate<T> predicate;
+    private Predicate<ServiceInstance> predicate;
     private String serviceName;
     private Integer random;
 
@@ -16,14 +18,14 @@ public class RouterCondition<T> {
         this.retryTimes = retryTimes;
     }
 
-    public Predicate<T> getPredicate() {
+    public Predicate<ServiceInstance> getPredicate() {
         if (predicate == null) {
             predicate = obj -> Boolean.TRUE;
         }
         return predicate;
     }
 
-    public void setPredicate(Predicate<T> predicate) {
+    public void setPredicate(Predicate<ServiceInstance> predicate) {
         this.predicate = predicate;
     }
 

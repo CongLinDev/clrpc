@@ -1,4 +1,4 @@
-package conglin.clrpc.router.instance;
+package conglin.clrpc.service.instance;
 
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.service.AbstractServiceObject;

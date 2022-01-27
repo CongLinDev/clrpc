@@ -5,12 +5,12 @@ import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.common.util.ObjectUtils;
 import conglin.clrpc.extension.transaction.*;
 import conglin.clrpc.global.GlobalPayloadManager;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
+import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
@@ -39,7 +39,7 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        ObjectUtils.destroy(helper);
+        ObjectLifecycleUtils.destroy(helper);
     }
 
     @Override

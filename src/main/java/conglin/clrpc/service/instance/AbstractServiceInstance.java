@@ -1,4 +1,4 @@
-package conglin.clrpc.router.instance;
+package conglin.clrpc.service.instance;
 
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.ServiceVersion;

@@ -7,12 +7,12 @@ import conglin.clrpc.transport.message.*;
 public class BasicFuture extends AbstractFuture {
 
     private final RequestPayload request;
-    private final Long messageId;
+    private final long messageId;
     private ResponsePayload response;
 
     private boolean fallback; // 是否是 fallback产生的结果，只有在该future已经完成的情况下，该变量才有效
 
-    public BasicFuture(Long messageId, RequestPayload request) {
+    public BasicFuture(long messageId, RequestPayload request) {
         super();
         this.request = request;
         this.messageId = messageId;
@@ -29,7 +29,7 @@ public class BasicFuture extends AbstractFuture {
     }
 
     @Override
-    public Long identifier() {
+    public long identifier() {
         return messageId;
     }
     

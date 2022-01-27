@@ -1,7 +1,7 @@
 package conglin.clrpc.transport.message;
 
 import conglin.clrpc.common.Fallback;
-import conglin.clrpc.router.instance.ServiceInstance;
+import conglin.clrpc.service.instance.ServiceInstance;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;

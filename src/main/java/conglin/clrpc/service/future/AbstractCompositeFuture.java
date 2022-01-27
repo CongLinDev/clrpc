@@ -1,7 +1,7 @@
 package conglin.clrpc.service.future;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      */
     public AbstractCompositeFuture(Collection<? extends RpcFuture> futures) {
         super();
-        this.futures = (futures == null) ? new LinkedList<>() : new LinkedList<>(futures);
+        this.futures = (futures == null) ? new ArrayList<>() : new ArrayList<>(futures);
     }
 
     /**
@@ -86,7 +86,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     @Override
-    protected Object doGet() {
+    protected List<Object> doGet() {
         // return results as list
         return futures.stream().map(t -> {
             try {

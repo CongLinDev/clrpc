@@ -1,8 +1,6 @@
 package conglin.clrpc.service.handler.factory;
 
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.util.ObjectAssemblyUtils;
 import io.netty.channel.ChannelHandler;
 
 import java.util.Collection;
@@ -19,7 +17,7 @@ public interface ChannelHandlerFactory {
      * @param context 上下文
      * @return 工厂对象
      */
-    static ChannelHandlerFactory newFactory(String qualifiedClassName, RpcContext context) {
+    static ChannelHandlerFactory newFactory(String qualifiedClassName) {
         ChannelHandlerFactory factory = null;
         if (qualifiedClassName != null) {
             factory = ClassUtils.loadObjectByType(qualifiedClassName, ChannelHandlerFactory.class);
@@ -28,7 +26,6 @@ public interface ChannelHandlerFactory {
             // fallback default factory
            factory = new DefaultChannelHandlerFactory();
         }
-        ObjectAssemblyUtils.assemble(factory, context);
         return factory;
     }
 

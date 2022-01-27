@@ -2,7 +2,7 @@ package conglin.clrpc.bootstrap.option;
 
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.router.instance.ServiceInstanceCodec;
+import conglin.clrpc.service.instance.ServiceInstanceCodec;
 
 public class RpcOption {
 

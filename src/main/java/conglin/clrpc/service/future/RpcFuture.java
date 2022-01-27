@@ -61,7 +61,7 @@ public interface RpcFuture extends Future<Object> {
      * 
      * @return
      */
-    Long identifier();
+    long identifier();
 
     /**
      * 重试

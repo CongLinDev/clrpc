@@ -1,9 +1,9 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.Fallback;
-import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.instance.ServiceInstance;
 
 import java.util.function.Consumer;
 

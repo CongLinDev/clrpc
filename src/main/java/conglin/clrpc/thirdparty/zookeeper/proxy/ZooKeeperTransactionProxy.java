@@ -15,7 +15,7 @@ import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.SimpleProxy;
-import conglin.clrpc.service.util.ObjectAssemblyUtils;
+import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.RequestWrapper;
 import org.slf4j.Logger;
@@ -183,7 +183,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     @SuppressWarnings("unchecked")
     public <T> T proxy(ServiceInterface<T> serviceInterface) {
         InnerAsyncObjectProxy proxy = new InnerAsyncObjectProxy(serviceInterface);
-        ObjectAssemblyUtils.assemble(proxy, getContext());
+        ObjectLifecycleUtils.assemble(proxy, getContext());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[]{serviceInterface.interfaceClass()}, proxy);
     }

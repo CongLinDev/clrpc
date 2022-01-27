@@ -143,6 +143,11 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     @Override
+    public boolean isEmpty() {
+        return circle.isEmpty() && descriptions.isEmpty();
+    }
+
+    @Override
     public V getKey(T type, int random, Predicate<K> predicate) {
         Node<K, V> n = getNode(type, random, node -> predicate.test(node.getKey()));
         if (n == null) return null;

@@ -159,4 +159,11 @@ public interface LoadBalancer<T, K, V> {
      * 清空容器内所有数据
      */
     void clear();
+
+    /**
+     * 是否为空
+     * 
+     * @return
+     */
+    boolean isEmpty();
 }

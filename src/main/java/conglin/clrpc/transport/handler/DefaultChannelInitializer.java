@@ -6,6 +6,7 @@ import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
+import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import org.slf4j.Logger;
@@ -35,16 +36,19 @@ public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
         Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
         Role role = getContext().getWith(RpcContextEnum.ROLE);
         String factoryClass = properties.getProperty(role.item(".channel.handler-factory"));
-        channelHandlerFactory = ChannelHandlerFactory.newFactory(factoryClass, getContext());
+        channelHandlerFactory = ChannelHandlerFactory.newFactory(factoryClass);
+        ObjectLifecycleUtils.assemble(channelHandlerFactory, getContext());
     }
 
     @Override
     final protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        channelHandlerFactory.handlers().forEach(pipeline::addLast);
+        for (ChannelHandler handler : channelHandlerFactory.handlers()) {
+            ObjectLifecycleUtils.assemble(handler, getContext());
+            pipeline.addLast(handler);
+        }
         LOGGER.info("Here are ChannelHandlers in Channel(id={}) as follows.", ch.id().asShortText());
-        pipeline.forEach(
-                entry -> LOGGER.info("Type={}\tName={}", getChannelHandlerType(entry.getValue()), entry.getKey()));
+        pipeline.forEach(entry -> LOGGER.info("Type={}\tName={}", getChannelHandlerType(entry.getValue()), entry.getKey()));
     }
 
     /**

@@ -3,8 +3,8 @@ package conglin.clrpc.service.proxy;
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.router.instance.ServiceInstance;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.RequestWrapper;
 
@@ -19,11 +19,6 @@ import java.util.function.Predicate;
  * 适合未知服务名的调用
  */
 abstract public class AbstractObjectProxy extends SimpleProxy implements InvocationHandler {
-
-    @Override
-    public void init() {
-        super.init();
-    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

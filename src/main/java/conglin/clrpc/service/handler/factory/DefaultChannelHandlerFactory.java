@@ -136,15 +136,10 @@ public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactor
 
         Role role = getContext().getWith(RpcContextEnum.ROLE);
         if (role.isConsumer()) {
-            ConsumerBasicServiceChannelHandler consumerBasicServiceChannelHandler = new ConsumerBasicServiceChannelHandler();
-            consumerBasicServiceChannelHandler.setContext(getContext());
-            consumerBasicServiceChannelHandler.init();
-            channelHandlerList.add(new DefaultOrderedChannelHandler(consumerBasicServiceChannelHandler, ChannelHandlerPhase.HANDLE, 1));
+            channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerRequestChannelHandler(), ChannelHandlerPhase.HANDLE, 2));
         } else if (role.isProvider()) {
-            ProviderBasicServiceChannelHandler providerBasicServiceChannelHandler = new ProviderBasicServiceChannelHandler();
-            providerBasicServiceChannelHandler.setContext(getContext());
-            channelHandlerList.add(new DefaultOrderedChannelHandler(providerBasicServiceChannelHandler, ChannelHandlerPhase.HANDLE, 1));
+            channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderResponseChannelHandler(), ChannelHandlerPhase.HANDLE, 2));
         }
         return channelHandlerList;
