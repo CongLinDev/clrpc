@@ -1,6 +1,6 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.Fallback;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 
 public interface ServiceInterface<T> extends Service {
 
@@ -12,9 +12,9 @@ public interface ServiceInterface<T> extends Service {
     Class<T> interfaceClass();
 
     /**
-     * fallback
-     *
+     * failStrategyClass
+     * 
      * @return
      */
-    Fallback fallback();
+    Class<? extends FailStrategy> failStrategyClass();
 }

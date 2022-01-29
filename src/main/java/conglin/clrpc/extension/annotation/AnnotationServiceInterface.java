@@ -1,13 +1,12 @@
 package conglin.clrpc.extension.annotation;
 
-import conglin.clrpc.common.Fallback;
-import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 
 public class AnnotationServiceInterface<T> implements conglin.clrpc.service.ServiceInterface<T> {
 
     private final Class<T> serviceInterfaceClass;
     private final String name;
-    private final Fallback fallback;
+    private final Class<? extends FailStrategy> failStrategyClass;
     private final conglin.clrpc.service.ServiceVersion version;
 
     public AnnotationServiceInterface(Class<T> serviceInterfaceClass) {
@@ -24,9 +23,7 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
         }
         this.name = name;
 
-        Class<? extends Fallback> fallbackClass = serviceInterface.fallback();
-        fallback = fallbackClass.isInterface() ? null : ClassUtils.loadObjectByType(fallbackClass, Fallback.class);
-
+        this.failStrategyClass = serviceInterface.failStrategy();
         ServiceVersion serviceVersion = serviceInterface.version();
         this.version = new conglin.clrpc.service.ServiceVersion(serviceVersion.major(), serviceVersion.minor(), serviceVersion.build());
     }
@@ -42,8 +39,8 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
     }
 
     @Override
-    public Fallback fallback() {
-        return fallback;
+    public Class<? extends FailStrategy> failStrategyClass() {
+        return failStrategyClass;
     }
 
     @Override

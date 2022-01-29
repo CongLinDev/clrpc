@@ -75,6 +75,7 @@ public class BasicFuture extends AbstractFuture {
 
     @Override
     protected void beforeDone(Object result) {
+        super.beforeDone(result);
         this.response = (ResponsePayload) result;
         if (response.isError())
             signError();

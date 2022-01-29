@@ -1,10 +1,16 @@
 package conglin.clrpc.transport.component;
 
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import conglin.clrpc.common.Destroyable;
-import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.common.exception.FallbackFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
@@ -12,19 +18,15 @@ import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.RpcFuture;
-import conglin.clrpc.transport.message.*;
+import conglin.clrpc.service.future.strategy.FailFast;
+import conglin.clrpc.service.future.strategy.FailStrategy;
+import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.RequestPayload;
+import conglin.clrpc.transport.message.RequestWrapper;
 import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.transport.router.Router;
 import conglin.clrpc.transport.router.RouterCondition;
 import conglin.clrpc.transport.router.RouterResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * 默认的请求发送器，直接发送请求
@@ -73,8 +75,15 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
     public RpcFuture sendRequest(RequestWrapper requestWrapper) {
         Long messageId = identifierGenerator.generate();
         RpcFuture future = putFuture(messageId, requestWrapper.getRequest());
-        future.fallback(requestWrapper.getFallback());
-        doSendRequest(messageId, requestWrapper);
+        Class<? extends FailStrategy> failStrategyClass = requestWrapper.getFailStrategyClass();
+        future.failStrategy(failStrategyClass == null ? FailFast.class : failStrategyClass);
+        try {
+            doSendRequest(messageId, requestWrapper);
+        } catch (NoAvailableServiceInstancesException e) {
+            if (!future.failStrategy().noTarget(e)) {
+                futureHolder.removeFuture(messageId);
+            }
+        }
         return future;
     }
 
@@ -97,7 +106,7 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
      * @return
      */
     protected RpcFuture putFuture(Long messageId, RequestPayload request) {
-        RpcFuture future = new BasicFuture(messageId ,request);
+        RpcFuture future = new BasicFuture(messageId, request);
         futureHolder.putFuture(future.identifier(), future);
         return future;
     }
@@ -107,28 +116,21 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
      *
      * @param messageId
      * @param requestWrapper
+     * @throws NoAvailableServiceInstancesException
      */
-    protected void doSendRequest(Long messageId, RequestWrapper requestWrapper) {
+    protected void doSendRequest(Long messageId, RequestWrapper requestWrapper)
+            throws NoAvailableServiceInstancesException {
         RouterCondition condition = new RouterCondition();
         condition.setServiceName(requestWrapper.getRequest().serviceName());
         condition.setRandom(System.identityHashCode(requestWrapper.getRequest()));
-        condition.setRetryTimes(5);
         condition.setPredicate(requestWrapper.getPredicate());
-        try {
-            RouterResult routerResult = router.choose(condition);
-            if (requestWrapper.getBeforeSendRequest() != null) {
-                requestWrapper.getBeforeSendRequest().accept(routerResult.getInstance());
-            }
-            routerResult.send(new Message(messageId, requestWrapper.getRequest()));
-        } catch (NoAvailableServiceInstancesException e) {
-            // do nothing wait fallback
+        RouterResult routerResult = router.choose(condition);
+        if (requestWrapper.getBeforeSendRequest() != null) {
+            requestWrapper.getBeforeSendRequest().accept(routerResult.getInstance());
         }
-        
+        routerResult.send(new Message(messageId, requestWrapper.getRequest()));
     }
 
-    /**
-     * 轮询线程，检查超时 RpcFuture 超时重试
-     */
     private Timer checkFuture() {
         Timer timer = new Timer("check-uncompleted-future", true);
         timer.schedule(new TimerTask() {
@@ -136,33 +138,31 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
             public void run() {
                 Iterator<RpcFuture> iterator = futureHolder.iterator();
                 while (iterator.hasNext()) {
-                    BasicFuture f = (BasicFuture) iterator.next();
-                    if (f.isCancelled()) {
+                    RpcFuture future = iterator.next();
+                    if (!future.isPending()) {
                         iterator.remove();
                         continue;
                     }
 
-                    int retryTimes = f.retryTimes() + 1;
-                    if (f.timeout(INITIAL_THRESHOLD << (retryTimes - 1)) && f.retry()) {
-                        RequestPayload r = f.request();
-                        Fallback fallback = f.fallback();
-                        if (fallback != null && fallback.needFallback(retryTimes)) {
+                    FailStrategy failStrategy = future.failStrategy();
+                    if (!failStrategy.isTimeout())
+                        continue;
+                    
+                    if (!failStrategy.timeout()) {
+                        iterator.remove();
+                        continue;
+                    }
+
+                     // retry
+                    try {
+                        RequestWrapper wrapper = new RequestWrapper();
+                        wrapper.setRequest(((BasicFuture) future).request());
+                        doSendRequest(future.identifier(), wrapper); // retry
+                        LOGGER.warn("Service response(futureIdentifier={}) is too slow. Retry...",
+                                future.identifier());
+                    } catch (NoAvailableServiceInstancesException e) {
+                        if (!failStrategy.noTarget(e)) {
                             iterator.remove();
-                            ResponsePayload fallbackResponse = null;
-                            try {
-                                Object fallbackResult = fallback.fallback(r.methodName(), r.parameters());
-                                fallbackResponse = new ResponsePayload(fallbackResult);
-                            } catch (FallbackFailedException e) {
-                                LOGGER.warn("Future(id={}) Fallback Failed. Cause: {}", f.identifier(), e.getCause());
-                                fallbackResponse = new ResponsePayload(true, e);
-                            }
-                            f.fallbackDone(fallbackResponse);
-                        } else {
-                            RequestWrapper wrapper = new RequestWrapper();
-                            wrapper.setRequest(r);
-                            doSendRequest(f.identifier(), wrapper); // retry
-                            LOGGER.warn("Service response(futureIdentifier={}) is too slow. Retry (times={})...",
-                                    f.identifier(), retryTimes);
                         }
                     }
                 }

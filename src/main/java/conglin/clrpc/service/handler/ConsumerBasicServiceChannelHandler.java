@@ -28,10 +28,15 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
     @Override
     protected Object execute(Long messageId, Payload payload) {
         LOGGER.debug("Receive response (messageId={})", messageId);
-        RpcFuture future = futureHolder.removeFuture(messageId);
+        RpcFuture future = futureHolder.getFuture(messageId);
 
         if (future != null) {
-            future.done(payload);
+            ResponsePayload response = (ResponsePayload) payload;
+            if (response.isError()) {
+                future.failStrategy().error(payload);
+            } else {
+                future.done(payload);
+            }
             return future;
         } else {
             LOGGER.error("Can not find binding future (messageId={})", messageId);

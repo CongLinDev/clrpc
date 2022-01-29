@@ -1,7 +1,7 @@
 package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.Fallback;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -42,40 +42,11 @@ public interface RpcFuture extends Future<Object> {
     }
 
     /**
-     * fallback
-     *
-     * @return
-     */
-    Fallback fallback();
-
-    /**
-     * set fallback
-     *
-     * @param fallback
-     * @return
-     */
-    RpcFuture fallback(Fallback fallback);
-
-    /**
      * 该 {@code RpcFuture} 的标识符
      * 
      * @return
      */
     long identifier();
-
-    /**
-     * 重试
-     * 
-     * @return 是否重试成功
-     */
-    boolean retry();
-
-    /**
-     * 获取重试次数
-     * 
-     * @return
-     */
-    int retryTimes();
 
     /**
      * 确认该 {@code RpcFuture} 完成
@@ -101,10 +72,17 @@ public interface RpcFuture extends Future<Object> {
     boolean isError();
 
     /**
-     * 是否超时
+     * 绑定失败策略类
      * 
-     * @param timeThreshold ms
-     * @return
+     * @param strategy
+     * @return this
      */
-    boolean timeout(long timeThreshold);
+    RpcFuture failStrategy(Class<? extends FailStrategy> strategyClass);
+
+    /**
+     * 获取失败策略
+     * 
+     * @param strategy
+     */
+    FailStrategy failStrategy();
 }

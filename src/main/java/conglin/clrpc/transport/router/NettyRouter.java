@@ -32,7 +32,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class NettyRouter implements Router, ContextAware, Initializable, Destroyable {
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyRouter.class);
-    private final static int TIMEOUT_FOR_WAIT = 5000;
 
     private final ServiceDiscovery serviceDiscovery;
     private final LoadBalancer<String, ServiceInstance, Channel> loadBalancer;
@@ -42,7 +41,8 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
 
     public NettyRouter(ServiceDiscovery serviceDiscovery) {
         this.serviceDiscovery = serviceDiscovery;
-        this.loadBalancer = new ConsistentHashLoadBalancer<String, ServiceInstance, Channel>(this::connectProvider, this::disconnectProvider);
+        this.loadBalancer = new ConsistentHashLoadBalancer<String, ServiceInstance, Channel>(this::connectProvider,
+                this::disconnectProvider);
     }
 
     @Override
@@ -60,8 +60,10 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
         serviceInstanceCodec = getContext().getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);
         Properties properites = getContext().getWith(RpcContextEnum.PROPERTIES);
         nettyBootstrap = new Bootstrap();
-        nettyBootstrap.group(new NioEventLoopGroup(Integer.parseInt(properites.getProperty("consumer.thread.worker", "4")))).channel(NioSocketChannel.class);
-                // .handler(new LoggingHandler(LogLevel.INFO))
+        nettyBootstrap
+                .group(new NioEventLoopGroup(Integer.parseInt(properites.getProperty("consumer.thread.worker", "4"))))
+                .channel(NioSocketChannel.class);
+        // .handler(new LoggingHandler(LogLevel.INFO))
         DefaultChannelInitializer initializer = new DefaultChannelInitializer();
         ObjectLifecycleUtils.assemble(initializer, getContext());
         nettyBootstrap.handler(initializer);
@@ -70,21 +72,11 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
     @Override
     public RouterResult choose(RouterCondition condition) throws NoAvailableServiceInstancesException {
         String serviceName = condition.getServiceName();
-        // 不断尝试
-        final int retryTimes = condition.getRetryTimes();
-        int retryCount = 0;
-        while (retryCount++ < retryTimes) {
-            Pair<ServiceInstance, Channel> pair = loadBalancer.getEntity(serviceName, condition.getRandom(), condition.getPredicate());
-            if (pair != null)
-                return new RouterResult(pair.getFirst(), message -> pair.getSecond().pipeline().fireChannelRead(message));
-            try {
-                LOGGER.debug("Wait for available service=({}) provider {} ms ...", serviceName, TIMEOUT_FOR_WAIT);
-                Thread.sleep(TIMEOUT_FOR_WAIT);
-            } catch (InterruptedException e) {
-                LOGGER.error("Waiting for available provider(serviceName={}) is interrupted!", serviceName, e);
-            }
-            LOGGER.warn("Waiting for available provider(serviceName={}). retryTimes={}", serviceName, retryCount);
-        }
+
+        Pair<ServiceInstance, Channel> pair = loadBalancer.getEntity(serviceName, condition.getRandom(),
+                condition.getPredicate());
+        if (pair != null)
+            return new RouterResult(pair.getFirst(), message -> pair.getSecond().pipeline().fireChannelRead(message));
         throw new NoAvailableServiceInstancesException(condition);
     }
 
@@ -155,7 +147,8 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
     }
 
     public void updateConnectedProvider(String serviceName, Collection<Pair<String, String>> providers) {
-        Collection<ServiceInstance> instances = providers.stream().map(pair-> serviceInstanceCodec.fromContent(pair.getSecond())).collect(Collectors.toList());
+        Collection<ServiceInstance> instances = providers.stream()
+                .map(pair -> serviceInstanceCodec.fromContent(pair.getSecond())).collect(Collectors.toList());
         loadBalancer.update(serviceName, instances);
     }
 }

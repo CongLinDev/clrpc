@@ -1,6 +1,6 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.Fallback;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 
 public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
@@ -8,12 +8,12 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
     protected final Class<T> interfaceClass;
 
-    protected final Fallback fallback;
+    protected final Class<? extends FailStrategy> failStrategyClass;
 
-    public SimpleServiceInterface(String name, Class<T> interfaceClass, Fallback fallback) {
+    public SimpleServiceInterface(String name, Class<T> interfaceClass, Class<? extends FailStrategy> failStrategyClass) {
         this.name = name;
         this.interfaceClass = interfaceClass;
-        this.fallback = fallback;
+        this.failStrategyClass = failStrategyClass;
     }
 
     @Override
@@ -27,8 +27,8 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
     }
 
     @Override
-    public Fallback fallback() {
-        return fallback;
+    public Class<? extends FailStrategy> failStrategyClass() {
+        return failStrategyClass;
     }
 
     /**
@@ -39,7 +39,7 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
         protected Class<T> interfaceClass;
 
-        protected Fallback fallback;
+        protected Class<? extends FailStrategy> failStrategyClass;
 
         public Builder<T> name(String name) {
             this.name = name;
@@ -51,8 +51,8 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             return this;
         }
 
-        public Builder<T> fallback(Fallback fallback) {
-            this.fallback = fallback;
+        public Builder<T> failStrategyClass(Class<? extends FailStrategy> failStrategyClass) {
+            this.failStrategyClass = failStrategyClass;
             return this;
         }
 
@@ -63,7 +63,7 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             if (name == null) {
                 name = interfaceClass.getName();
             }
-            return new SimpleServiceInterface<>(name, interfaceClass, fallback) {
+            return new SimpleServiceInterface<>(name, interfaceClass, failStrategyClass) {
             };
         }
     }

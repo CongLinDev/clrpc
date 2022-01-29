@@ -5,19 +5,9 @@ import java.util.function.Predicate;
 import conglin.clrpc.service.instance.ServiceInstance;
 
 public class RouterCondition {
-    private int retryTimes;
     private Predicate<ServiceInstance> predicate;
     private String serviceName;
     private Integer random;
-
-    public int getRetryTimes() {
-        return retryTimes;
-    }
-
-    public void setRetryTimes(int retryTimes) {
-        this.retryTimes = retryTimes;
-    }
-
     public Predicate<ServiceInstance> getPredicate() {
         if (predicate == null) {
             predicate = obj -> Boolean.TRUE;

@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.message;
 
-import conglin.clrpc.common.Fallback;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 
 import java.util.function.Consumer;
@@ -10,7 +10,7 @@ public class RequestWrapper {
 
     protected RequestPayload request;
 
-    protected Fallback fallback;
+    protected Class<? extends FailStrategy> failStrategyClass;
 
     protected Predicate<ServiceInstance> predicate;
 
@@ -24,12 +24,18 @@ public class RequestWrapper {
         this.request = request;
     }
 
-    public Fallback getFallback() {
-        return fallback;
+    /**
+     * @return the failStrategyClass
+     */
+    public Class<? extends FailStrategy> getFailStrategyClass() {
+        return failStrategyClass;
     }
 
-    public void setFallback(Fallback fallback) {
-        this.fallback = fallback;
+    /**
+     * @param failStrategyClass the failStrategyClass to set
+     */
+    public void setFailStrategyClass(Class<? extends FailStrategy> failStrategyClass) {
+        this.failStrategyClass = failStrategyClass;
     }
 
     public Predicate<ServiceInstance> getPredicate() {

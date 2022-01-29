@@ -1,9 +1,9 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.RequestWrapper;
@@ -72,7 +72,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
         RequestPayload request = new RequestPayload(serviceName, methodName, args);
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
-        wrapper.setFallback(fallback());
+        wrapper.setFailStrategyClass(failStrategyClass());
         wrapper.setBeforeSendRequest(beforeSendRequest());
         return super.call(wrapper);
     }
@@ -96,11 +96,11 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
     }
 
     /**
-     * fallback
+     * fail strategy
      *
      * @return
      */
-    abstract protected Fallback fallback();
+    abstract protected Class<? extends FailStrategy> failStrategyClass();
 
     /**
      * beforeSendRequest

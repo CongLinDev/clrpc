@@ -1,11 +1,11 @@
 package conglin.clrpc.service.proxy;
 
-import conglin.clrpc.common.Fallback;
+import java.util.function.Consumer;
+
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
-
-import java.util.function.Consumer;
 
 /**
  * 异步对象代理
@@ -49,8 +49,8 @@ public class AsyncObjectProxy extends AbstractObjectProxy {
     }
 
     @Override
-    protected Fallback fallback() {
-        return serviceInterface.fallback();
+    protected Class<? extends FailStrategy> failStrategyClass() {
+        return serviceInterface.failStrategyClass();
     }
 
     @Override

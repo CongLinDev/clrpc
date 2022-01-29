@@ -122,6 +122,42 @@ public final class ClassUtils {
     }
 
     /**
+     * 反射加载指定类型的全限定类名下的类
+     * @param targetClass
+     * @param parameterTypes
+     * @param parameters
+     * @return
+     */
+    public static Object loadObjectByParamType(Class<?> targetClass, Class<?>[] parameterTypes, Object[] parameters) {
+        return loadObjectByParamType(targetClass, Object.class, parameterTypes, parameters);
+    }
+
+    /**
+     * 反射加载指定类型的全限定类名下的类
+     * 
+     * @param <T>
+     * @param targetClass
+     * @param superClass
+     * @param parameterTypes
+     * @param parameters
+     * @return
+     */
+    public static <T> T loadObjectByParamType(Class<?> targetClass, Class<T> superClass, Class<?>[] parameterTypes, Object[] parameters) {
+        try {
+            Class<? extends T> clazz = targetClass.asSubclass(superClass);
+            Constructor<? extends T> constructor = clazz.getDeclaredConstructor(parameterTypes);
+            constructor.setAccessible(true);
+            return constructor.newInstance(parameters);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            LOGGER.error("Load class {} error. Cause: {}", targetClass, e.getMessage());
+        } catch (ClassCastException e) {
+            LOGGER.error("Class({}) is not match class({})", targetClass, superClass);
+        }
+        return null;
+    }
+
+    /**
      * 反射调用对象方法
      * 
      * @param object

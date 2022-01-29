@@ -78,7 +78,7 @@ public interface StateSync {
      * @return
      */
     default boolean isPending() {
-        return state() < CANCELLED;
+        return state() == PENDING;
     }
 
     /**
@@ -87,26 +87,5 @@ public interface StateSync {
     default boolean cancel() {
         int curState = state();
         return !isDone() && casState(curState, CANCELLED);
-    }
-
-    /**
-     * 重试
-     * 
-     * @return 是否重试成功
-     */
-    default boolean retry() {
-        int curState = state();
-        if (curState > PENDING) // pending
-            return false;
-        return casState(curState, curState - 1);
-    }
-
-    /**
-     * 已经重试的次数
-     * 
-     * @return
-     */
-    default int retryTimes() {
-        return Math.max(-state(), 0);
     }
 }

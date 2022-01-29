@@ -1,6 +1,7 @@
 package conglin.clrpc.extension.annotation;
 
-import conglin.clrpc.common.Fallback;
+import conglin.clrpc.service.future.strategy.FailFast;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 
 import java.lang.annotation.*;
 
@@ -24,11 +25,11 @@ public @interface ServiceInterface {
     String name() default "";
 
     /**
-     * fallback
-     *
+     * 失败策略
+     * 
      * @return
      */
-    Class<? extends Fallback> fallback() default Fallback.class;
+    Class<? extends FailStrategy> failStrategy() default FailFast.class;
 
     /**
      * version

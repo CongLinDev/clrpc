@@ -1,8 +1,9 @@
 package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.Fallback;
 import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.future.sync.SignalStateSync;
 import conglin.clrpc.service.future.sync.StateSync;
 
@@ -15,14 +16,11 @@ abstract public class AbstractFuture implements RpcFuture {
     private final StateSync SYNCHRONIZER; // 同步器
 
     private Callback futureCallback; // 回调
-    private Fallback futureFallback;
-
-    private long startTime; // 开始时间
+    private FailStrategy failStrategy; // 失败策略
     private boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
     public AbstractFuture() {
         this.SYNCHRONIZER = newSynchronizer();
-        startTime = System.currentTimeMillis();
     }
 
     /**
@@ -107,42 +105,11 @@ abstract public class AbstractFuture implements RpcFuture {
         return error;
     }
 
-    @Override
-    public boolean retry() {
-        if (SYNCHRONIZER.retry()) {
-            resetTime();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public int retryTimes() {
-        return SYNCHRONIZER.retryTimes();
-    }
-
     /**
      * 设置错误标志位
      */
     protected void signError() {
         this.error = true;
-    }
-
-    @Override
-    public boolean timeout(long timeThreshold) {
-        return timeThreshold + startTime > System.currentTimeMillis();
-    }
-
-
-    @Override
-    public Fallback fallback() {
-        return futureFallback;
-    }
-
-    @Override
-    public RpcFuture fallback(Fallback fallback) {
-        this.futureFallback = fallback;
-        return this;
     }
 
     @Override
@@ -153,6 +120,18 @@ abstract public class AbstractFuture implements RpcFuture {
             futureCallback = (futureCallback == null) ? callback : futureCallback.andThen(callback);
         }
         return this;
+    }
+
+    @Override
+    public RpcFuture failStrategy(Class<? extends FailStrategy> strategyClass) {
+        this.failStrategy = ClassUtils.loadObjectByParamType(strategyClass, FailStrategy.class,
+                new Class<?>[] { RpcFuture.class }, new Object[] { this });
+        return this;
+    }
+
+    @Override
+    public FailStrategy failStrategy() {
+        return this.failStrategy;
     }
 
     protected void runCallback(Callback callback) {
@@ -173,11 +152,4 @@ abstract public class AbstractFuture implements RpcFuture {
      * @param callback
      */
     abstract protected void doRunCallback(Callback callback);
-
-    /**
-     * 重置开始时间
-     */
-    private void resetTime() {
-        this.startTime = System.currentTimeMillis();
-    }
 }

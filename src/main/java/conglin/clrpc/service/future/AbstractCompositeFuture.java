@@ -65,12 +65,6 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
         return futures.size();
     }
 
-    @Override
-    public boolean retry() {
-        futures.forEach(RpcFuture::retry);
-        return true;
-    }
-
     /**
      * 用于检查当前已经完成的子Future是否完成
      * 
