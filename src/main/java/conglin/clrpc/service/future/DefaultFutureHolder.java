@@ -11,11 +11,6 @@ public class DefaultFutureHolder implements FutureHolder<Long> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFutureHolder.class);
 
     private final Map<Long, RpcFuture> rpcFutures;
-    /**
-     * 对于每个 Request 请求，都会有一个 RpcFuture 等待一个 Response 响应 这些未到达客户端的
-     * Response 响应 换言之即为 RpcFuture 被保存在 ConsumerServiceHandler 中的一个 list 中
-     * 以下代码用于 RpcFuture 的管理和维护
-     */
 
     public DefaultFutureHolder() {
         rpcFutures = new ConcurrentHashMap<>();
@@ -43,12 +38,30 @@ public class DefaultFutureHolder implements FutureHolder<Long> {
 
     @Override
     public void waitForUncompletedFuture() {
+        if (!rpcFutures.isEmpty()) {
+            clearCompletedFuture(); // help clear future completed.
+        }
+
         while (!rpcFutures.isEmpty()) {
             try {
                 LOGGER.info("Waiting uncompleted futures for 500 ms.");
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage());
+            }
+        }
+    }
+
+    
+    /**
+     * 尽最大可能清空 已经完成的  {@link conglin.clrpc.service.future.RpcFuture}
+     */
+    protected void clearCompletedFuture() {
+        Iterator<RpcFuture> iterator = iterator();
+        while (iterator.hasNext()) {
+            RpcFuture future = iterator.next();
+            if (!future.isPending()) {
+                iterator.remove();
             }
         }
     }

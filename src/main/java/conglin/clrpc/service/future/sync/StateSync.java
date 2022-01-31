@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit;
 
 public interface StateSync {
 
-    // if pending, retry times == Math.abs(getState())
     int PENDING = 0; // 等待
     int CANCELLED = 1; // 取消
     int DONE = 2; // 完成
@@ -60,7 +59,7 @@ public interface StateSync {
      * @return
      */
     default boolean isDone() {
-        return state() >= DONE;
+        return state() == DONE;
     }
 
     /**
@@ -85,7 +84,7 @@ public interface StateSync {
      * 取消
      */
     default boolean cancel() {
-        int curState = state();
-        return !isDone() && casState(curState, CANCELLED);
+        final int currentState = state();
+        return isPending() && casState(currentState, CANCELLED);
     }
 }

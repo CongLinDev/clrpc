@@ -4,7 +4,7 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.instance.ServiceInstanceCodec;
 
-public class RpcOption {
+public class BootOption {
 
     private IdentifierGenerator identifierGenerator;
     private SerializationHandler serializationHandler;
@@ -14,7 +14,7 @@ public class RpcOption {
         return identifierGenerator;
     }
 
-    public RpcOption identifierGenerator(IdentifierGenerator identifierGenerator) {
+    public BootOption identifierGenerator(IdentifierGenerator identifierGenerator) {
         this.identifierGenerator = identifierGenerator;
         return this;
     }
@@ -23,7 +23,7 @@ public class RpcOption {
         return serializationHandler;
     }
 
-    public RpcOption serializationHandler(SerializationHandler serializationHandler) {
+    public BootOption serializationHandler(SerializationHandler serializationHandler) {
         this.serializationHandler = serializationHandler;
         return this;
     }
@@ -32,7 +32,7 @@ public class RpcOption {
         return serviceInstanceCodec;
     }
 
-    public RpcOption serviceInstanceCodec(ServiceInstanceCodec serviceInstanceCodec) {
+    public BootOption serviceInstanceCodec(ServiceInstanceCodec serviceInstanceCodec) {
         this.serviceInstanceCodec = serviceInstanceCodec;
         return this;
     }

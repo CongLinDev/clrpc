@@ -7,7 +7,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.bootstrap.option.RpcOption;
+import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.ClassUtils;
@@ -33,7 +33,7 @@ import conglin.clrpc.transport.publisher.Publisher;
  *         .name("Service1")
  *         .object(new ServiceImpl1())
  *         .build();
- * bootstrap.publish(serviceObject).hookStop().start(new RpcOption());
+ * bootstrap.publish(serviceObject).hookStop().start(new BootOption());
  *
  * </pre>
  *
@@ -91,7 +91,7 @@ public class ProviderBootstrap extends Bootstrap {
      *
      * @param option 启动选项
      */
-    public void start(RpcOption option) {
+    public void start(BootOption option) {
         LOGGER.info("Provider is starting.");
         RpcContext context = initContext(option);
         ObjectLifecycleUtils.assemble(publisher, context);
@@ -123,7 +123,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @param option
      * @return
      */
-    private RpcContext initContext(RpcOption option) {
+    private RpcContext initContext(BootOption option) {
         context = new RpcContext();
         context.put(RpcContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjects);
         // 设置角色

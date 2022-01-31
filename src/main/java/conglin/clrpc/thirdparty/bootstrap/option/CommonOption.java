@@ -1,6 +1,6 @@
 package conglin.clrpc.thirdparty.bootstrap.option;
 
-import conglin.clrpc.bootstrap.option.RpcOption;
+import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
@@ -8,7 +8,7 @@ import conglin.clrpc.service.instance.DefaultServiceInstanceCodec;
 import conglin.clrpc.service.instance.ServiceInstanceCodec;
 import conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler;
 
-public class CommonOption extends RpcOption {
+public class CommonOption extends BootOption {
     @Override
     public IdentifierGenerator identifierGenerator() {
         IdentifierGenerator object = super.identifierGenerator();

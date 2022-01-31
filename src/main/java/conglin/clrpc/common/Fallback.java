@@ -15,16 +15,6 @@ public interface Fallback {
     Object object();
 
     /**
-     * 是否需要fallback
-     *
-     * @param retryTimes
-     * @return
-     */
-    default boolean needFallback(int retryTimes) {
-        return false;
-    }
-
-    /**
      * 执行fallback
      *
      * @param methodName

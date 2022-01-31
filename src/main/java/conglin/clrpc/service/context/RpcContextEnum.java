@@ -18,9 +18,7 @@ public enum RpcContextEnum {
     ROUTER(Router.class),
     PROPERTIES(Properties.class),
     REQUEST_SENDER(RequestSender.class),
-
     FUTURE_HOLDER(FutureHolder.class),
-
     SERVICE_OBJECT_HOLDER(Map.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class);
 

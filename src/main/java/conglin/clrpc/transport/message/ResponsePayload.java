@@ -3,6 +3,8 @@ package conglin.clrpc.transport.message;
 import java.io.Serial;
 import java.io.Serializable;
 
+import conglin.clrpc.common.exception.RpcServiceException;
+
 public class ResponsePayload implements Payload, Serializable {
 
     @Serial
@@ -25,6 +27,8 @@ public class ResponsePayload implements Payload, Serializable {
      * @param result    结果对象
      */
     public ResponsePayload(boolean error, Object result) {
+        if (error &&  !(result instanceof RpcServiceException))
+            throw new IllegalArgumentException();
         this.error = error;
         this.result = result;
     }
@@ -65,13 +69,6 @@ public class ResponsePayload implements Payload, Serializable {
      */
     final public boolean isError() {
         return error;
-    }
-
-    /**
-     * 设为错误
-     */
-    final public void signError() {
-        this.error = true;
     }
 
     @Override

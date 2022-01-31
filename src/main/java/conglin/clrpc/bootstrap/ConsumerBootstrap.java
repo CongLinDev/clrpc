@@ -6,7 +6,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.bootstrap.option.RpcOption;
+import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.ClassUtils;
@@ -35,7 +35,7 @@ import conglin.clrpc.transport.router.Router;
  *
  * <pre>
  * ConsumerBootstrap bootstrap = new ConsumerBootstrap();
- * bootstrap.start(new RpcOption());
+ * bootstrap.start(new BootOption());
  *
  * // 构造ServiceInterface
  * ServiceInterface<Interface1> serviceInterface1 = SimpleServiceInterfaceBuilder.builder()
@@ -153,7 +153,7 @@ public class ConsumerBootstrap extends Bootstrap {
      *
      * @param option 启动选项
      */
-    public void start(RpcOption option) {
+    public void start(BootOption option) {
         LOGGER.info("ConsumerBootstrap is starting.");
         initContext(option);
         ObjectLifecycleUtils.assemble(router, context);
@@ -188,7 +188,7 @@ public class ConsumerBootstrap extends Bootstrap {
      * @param option
      * @return context
      */
-    private void initContext(RpcOption option) {
+    private void initContext(BootOption option) {
         context = new RpcContext();
         // 设置角色
         context.put(RpcContextEnum.ROLE, role());
