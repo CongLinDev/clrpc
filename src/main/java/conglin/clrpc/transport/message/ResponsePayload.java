@@ -12,11 +12,6 @@ public class ResponsePayload implements Payload, Serializable {
 
     transient public static final int PAYLOAD_TYPE = 2;
 
-    @Override
-    public int payloadType() {
-        return PAYLOAD_TYPE;
-    }
-
     private final Object result;
     private boolean error;
 

@@ -1,10 +1,10 @@
 package conglin.clrpc.bootstrap;
 
-import conglin.clrpc.global.role.Role;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import conglin.clrpc.definition.role.Role;
 
 /**
  * 抽象的 RpcBootstrap

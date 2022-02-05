@@ -42,11 +42,6 @@ public class RequestPayload implements Payload, Serializable {
         this.parameters = parameters;
     }
 
-    @Override
-    public int payloadType() {
-        return PAYLOAD_TYPE;
-    }
-
     /**
      * 获取服务名
      *

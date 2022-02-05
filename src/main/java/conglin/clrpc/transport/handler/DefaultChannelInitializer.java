@@ -1,7 +1,7 @@
 package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.global.role.Role;
+import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;

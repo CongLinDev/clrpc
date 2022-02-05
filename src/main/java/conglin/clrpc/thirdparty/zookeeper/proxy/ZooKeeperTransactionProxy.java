@@ -1,5 +1,14 @@
 package conglin.clrpc.thirdparty.zookeeper.proxy;
 
+import java.lang.reflect.Proxy;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import conglin.clrpc.common.Available;
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.exception.DestroyFailedException;
@@ -9,7 +18,6 @@ import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.TransactionFuture;
 import conglin.clrpc.extension.transaction.TransactionProxy;
 import conglin.clrpc.extension.transaction.TransactionRequestPayload;
-import conglin.clrpc.global.GlobalPayloadManager;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.future.RpcFuture;
@@ -18,14 +26,7 @@ import conglin.clrpc.service.proxy.SimpleProxy;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.RequestWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Proxy;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 /**
  * 使用 ZooKeeper 控制分布式事务 注意，该类是线程不安全的
@@ -51,7 +52,8 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
         this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
         Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(properties.getProperty("extension.atomicity.url")));
-        GlobalPayloadManager.manager().setPayloadClass(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
+        ProtocolDefinition protocolDefinition = getContext().getWith(RpcContextEnum.PROTOCOL_DEFINITION);
+        protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
     }
 
     @Override

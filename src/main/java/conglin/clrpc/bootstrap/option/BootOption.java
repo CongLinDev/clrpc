@@ -3,12 +3,14 @@ package conglin.clrpc.bootstrap.option;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.instance.ServiceInstanceCodec;
+import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 public class BootOption {
 
     private IdentifierGenerator identifierGenerator;
     private SerializationHandler serializationHandler;
     private ServiceInstanceCodec serviceInstanceCodec;
+    private ProtocolDefinition protocolDefinition;
 
     public IdentifierGenerator identifierGenerator() {
         return identifierGenerator;
@@ -34,6 +36,15 @@ public class BootOption {
 
     public BootOption serviceInstanceCodec(ServiceInstanceCodec serviceInstanceCodec) {
         this.serviceInstanceCodec = serviceInstanceCodec;
+        return this;
+    }
+
+    public ProtocolDefinition protocolDefinition() {
+        return protocolDefinition;
+    }
+
+    public BootOption protocolDefinition(ProtocolDefinition protocolDefinition) {
+        this.protocolDefinition = protocolDefinition;
         return this;
     }
 }

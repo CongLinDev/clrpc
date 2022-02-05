@@ -10,7 +10,7 @@ import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.global.role.Role;
+import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -200,6 +200,8 @@ public class ConsumerBootstrap extends Bootstrap {
         context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.identifierGenerator());
         // codec
         context.put(RpcContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
+        // protocol
+        context.put(RpcContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
         // future holder
         context.put(RpcContextEnum.FUTURE_HOLDER, futureHolder);
         // router

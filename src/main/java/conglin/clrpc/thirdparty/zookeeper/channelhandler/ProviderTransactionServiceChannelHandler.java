@@ -1,12 +1,21 @@
 package conglin.clrpc.thirdparty.zookeeper.channelhandler;
 
+import java.net.InetSocketAddress;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.extension.transaction.*;
-import conglin.clrpc.global.GlobalPayloadManager;
+import conglin.clrpc.extension.transaction.CommonTransactionResult;
+import conglin.clrpc.extension.transaction.TransactionException;
+import conglin.clrpc.extension.transaction.TransactionHelper;
+import conglin.clrpc.extension.transaction.TransactionRequestPayload;
+import conglin.clrpc.extension.transaction.TransactionResult;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
@@ -15,12 +24,8 @@ import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
+import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-import java.util.Properties;
 
 public class ProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler implements Initializable {
 
@@ -33,7 +38,8 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
         Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
         String urlString = properties.getProperty("extension.atomicity.url");
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
-        GlobalPayloadManager.manager().setPayloadClass(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
+        ProtocolDefinition protocolDefinition = getContext().getWith(RpcContextEnum.PROTOCOL_DEFINITION);
+        protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
     }
 
     @Override

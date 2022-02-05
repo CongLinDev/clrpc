@@ -1,6 +1,6 @@
 package conglin.clrpc.service.handler.factory;
 
-import conglin.clrpc.global.role.Role;
+import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -8,7 +8,7 @@ import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.transport.handler.ConsumerRequestChannelHandler;
 import conglin.clrpc.transport.handler.ProviderResponseChannelHandler;
-import conglin.clrpc.transport.handler.codec.RpcProtocolCodec;
+import conglin.clrpc.transport.handler.codec.UniProtocolCodec;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -132,7 +132,7 @@ public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactor
     @Override
     public Collection<OrderedChannelHandler> disorderlyHandlers() {
         List<OrderedChannelHandler> channelHandlerList = new ArrayList<>();
-        channelHandlerList.add(new DefaultOrderedChannelHandler(new RpcProtocolCodec(getContext().getWith(RpcContextEnum.SERIALIZATION_HANDLER)), ChannelHandlerPhase.CODEC));
+        channelHandlerList.add(new DefaultOrderedChannelHandler(new UniProtocolCodec(), ChannelHandlerPhase.CODEC));
 
         Role role = getContext().getWith(RpcContextEnum.ROLE);
         if (role.isConsumer()) {

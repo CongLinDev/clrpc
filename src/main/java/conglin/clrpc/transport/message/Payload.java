@@ -1,12 +1,7 @@
 package conglin.clrpc.transport.message;
 
 /**
- * 消息类
- *
- * 具体的消息类必须覆盖 {@link Payload#payloadType()} 方法
- *
- * 若将具体消息用于传输通信，则可以调用
- * {@link conglin.clrpc.global.GlobalPayloadManager#setPayloadClass(int, Class)}
+ * 消息 payload 接口
  */
 public interface Payload {
 
@@ -16,11 +11,4 @@ public interface Payload {
      * 其中 [0,0x1F] 被保留
      */
     int PAYLOAD_TYPE_MASK = 0x7f;
-
-    /**
-     * payload type
-     *
-     * @return
-     */
-    int payloadType();
 }

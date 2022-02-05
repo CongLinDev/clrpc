@@ -2,7 +2,7 @@ package conglin.clrpc.extension.traffic.channel;
 
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.registry.ServiceLogger;
-import conglin.clrpc.global.role.Role;
+import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;

@@ -1,4 +1,4 @@
-package conglin.clrpc.global.role;
+package conglin.clrpc.definition.role;
 
 /**
  * rpc的角色

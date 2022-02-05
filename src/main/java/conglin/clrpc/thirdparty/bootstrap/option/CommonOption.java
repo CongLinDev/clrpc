@@ -7,6 +7,8 @@ import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.instance.DefaultServiceInstanceCodec;
 import conglin.clrpc.service.instance.ServiceInstanceCodec;
 import conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler;
+import conglin.clrpc.transport.protocol.DefaultProtocolDefinition;
+import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 public class CommonOption extends BootOption {
     @Override
@@ -35,6 +37,16 @@ public class CommonOption extends BootOption {
         if (object == null) {
             object = new DefaultServiceInstanceCodec();
             serviceInstanceCodec(object);
+        }
+        return object;
+    }
+
+    @Override
+    public ProtocolDefinition protocolDefinition() {
+        ProtocolDefinition object = super.protocolDefinition();
+        if (object == null) {
+            object = new DefaultProtocolDefinition();
+            protocolDefinition(object);
         }
         return object;
     }

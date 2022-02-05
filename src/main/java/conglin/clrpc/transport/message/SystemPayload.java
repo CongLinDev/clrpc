@@ -31,11 +31,6 @@ public class SystemPayload implements Payload, Serializable {
     }
 
     @Override
-    public int payloadType() {
-        return PAYLOAD_TYPE;
-    }
-
-    @Override
     public String toString() {
         return "SystemPayload [command=" + command + "]";
     }

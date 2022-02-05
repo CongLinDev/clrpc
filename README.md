@@ -10,7 +10,7 @@
 
 当前阶段均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
 
-你可以进入 [Release页面](https://github.com/CongLinDev/clrpc/releases/latest) 下载jar包使用，或是使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地。
+你可以进入 [Release页面](https://github.com/CongLinDev/clrpc/releases/latest) 下载jar包使用，或是使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地自行打包。
 
 ## Usage
 
@@ -43,14 +43,14 @@ class HelloServiceImpl implements HelloService {
 // 创建服务提供者
 ProviderBootstrap bootstrap = new ProviderBootstrap();
 
-// 创建服务对象
+// 创建简单的服务对象
 ServiceObject serviceObject = new SimpleServiceObject.Builder()
         .name("HelloService")
         .object(new HelloServiceImpl())
         .build();
 
 // 发布服务并开启服务
-bootstrap.publish(serviceObject) // 发布享元模式的服务对象
+bootstrap.publish(serviceObject) // 发布服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start(new CommonOption());
 ```
@@ -62,7 +62,7 @@ bootstrap.publish(serviceObject) // 发布享元模式的服务对象
 ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
-// 创建服务接口对象
+// 创建简单的服务接口对象
 ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<HelloService>()
         .name("HelloService")
         .interfaceClass(HelloService.class)
@@ -122,10 +122,6 @@ RpcFuture future = proxy.commit(); // 事务提交 返回事务 Future
 bootstrap.stop();
 ```
 
-## Architecture
-
-![architecture.png](https://i.loli.net/2020/01/21/63Ea7nbxez5Hkmd.png)
-
 ## Config
 
 默认配置文件名为 `config.properties`。
@@ -138,20 +134,19 @@ bootstrap.stop();
 
 ### Config Items
 
-|              Field               |  Type   | Required | Default |                         Remark                          |
-| :------------------------------: | :-----: | :------: | :-----: | :-----------------------------------------------------: |
-|           registry.url           | String  |   True   |         |                      注册中心地址                       |
-|     registry.register-class      | String  |   True   |         |                        注册类名                         |
-|     registry.discovery-class     | String  |   True   |         |                        发现类名                         |
-|          provider.port           | Integer |  False   |    0    |                    服务提供者端口号                     |
-|       provider.thread.boss       | Integer |  False   |    1    |               服务提供者的bossGroup线程数               |
-|      provider.thread.worker      | Integer |  False   |    4    |              服务提供者的workerGroup线程数              |
-| provider.channel.handler-factory | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
-|      consumer.thread.worker      | Integer |  False   |    4    |              服务使用者的workerGroup线程数              |
-|   consumer.retry.check-period    | Integer |  False   |  3000   |           重试机制执行周期(非正数代表不开启)            |
-| consumer.retry.initial-threshold | Integer |  False   |  3000   |                    初始重试时间门槛                     |
-|   consumer.fallback.max-retry    | Integer |  False   |   -1    | 降级机制允许重试最大的次数(负数代表不开启，0代表不重试) |
-| consumer.channel.handler-factory | String  |  False   | `null`  |      实现ChannelHandlerFactory，可自定义添加处理器      |
+|              Field               |  Type   | Required | Default |            Remark             |
+| :------------------------------: | :-----: | :------: | :-----: | :---------------------------: |
+|           registry.url           | String  |   True   |         |         注册中心地址          |
+|     registry.register-class      | String  |   True   |         |           注册类名            |
+|     registry.discovery-class     | String  |   True   |         |           发现类名            |
+|          provider.port           | Integer |  False   |    0    |       服务提供者端口号        |
+|       provider.thread.boss       | Integer |  False   |    1    |  服务提供者的bossGroup线程数  |
+|      provider.thread.worker      | Integer |  False   |    4    | 服务提供者的workerGroup线程数 |
+| provider.channel.handler-factory | String  |  False   | `null`  |     自定义处理器工厂类名      |
+|      consumer.thread.worker      | Integer |  False   |    4    | 服务使用者的workerGroup线程数 |
+|   consumer.retry.check-period    | Integer |  False   |  3000   |       重试机制执行周期        |
+| consumer.retry.initial-threshold | Integer |  False   |  3000   |       初始重试时间门槛        |
+| consumer.channel.handler-factory | String  |  False   | `null`  |     自定义处理器工厂类名      |
 
 ### Extension config Items
 
@@ -194,7 +189,17 @@ bootstrap.stop();
 
 使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，并声明在配置文件中，即可完成对消息处理的扩展。
 
-在创建 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 对象时，必须提供一个无参构造函数。该对象可以通过实现 `conglin.clrpc.service.context.ContextAware` 接口来实现 `conglin.clrpc.service.context.RpcContext` 的注入。
+自定义的 `ChannelHandlerFactory` 类，必须提供一个无参构造函数。**clrpc** 保证 `ChannelHandlerFactory#handlers()` 的返回对象具有生命周期[Object Lifecycle](#object-lifecycle)。
+
+## Object Lifecycle
+
+使用者可以通过提供无参构造函数并实现以下接口来保证自己的扩展对象拥有 **clrpc** 对象生命周期。
+
+1. 使用前
+   1. conglin.clrpc.service.context.ContextAware
+   2. conglin.clrpc.common.Initializable
+2. 使用后
+   1. conglin.clrpc.common.Destroyable
 
 ## License
 

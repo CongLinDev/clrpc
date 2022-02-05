@@ -11,7 +11,7 @@ import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.global.role.Role;
+import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
@@ -87,7 +87,7 @@ public class ProviderBootstrap extends Bootstrap {
     }
 
     /**
-     * 启动。该方法会一直阻塞，直到Netty的{@link ServerBootstrap} 被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
+     * 启动。该方法会一直阻塞，直到被显示关闭 若调用该方法后还有其他逻辑，建议使用多线程进行编程
      *
      * @param option 启动选项
      */
@@ -134,6 +134,8 @@ public class ProviderBootstrap extends Bootstrap {
         context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
         // codec
         context.put(RpcContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
+        // protocol
+        context.put(RpcContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
         return context;
     }
 

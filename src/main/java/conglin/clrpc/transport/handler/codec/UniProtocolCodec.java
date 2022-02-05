@@ -1,12 +1,16 @@
 package conglin.clrpc.transport.handler.codec;
 
+import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.global.GlobalPayloadManager;
-import conglin.clrpc.transport.handler.codec.RpcProtocolCodec.RpcProtocolDecoder;
-import conglin.clrpc.transport.handler.codec.RpcProtocolCodec.RpcProtocolEncoder;
+import conglin.clrpc.service.context.ContextAware;
+import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.transport.handler.codec.UniProtocolCodec.RpcProtocolDecoder;
+import conglin.clrpc.transport.handler.codec.UniProtocolCodec.RpcProtocolEncoder;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.Message;
-import conglin.clrpc.transport.message.UnknownPayloadTypeException;
+import conglin.clrpc.transport.protocol.ProtocolDefinition;
+import conglin.clrpc.transport.protocol.UnknownPayloadTypeException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
@@ -27,19 +31,31 @@ import java.util.List;
  * </pre>
  */
 
-public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDecoder, RpcProtocolEncoder> {
+public class UniProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDecoder, RpcProtocolEncoder> implements ContextAware, Initializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RpcProtocolCodec.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UniProtocolCodec.class);
 
-    // 消息类型管理
-    private static final GlobalPayloadManager manager = GlobalPayloadManager.manager();
+    private RpcContext context;
 
-    private static final int CURRENT_VERSION = 0;
+    private SerializationHandler serializationHandler;
 
-    private final SerializationHandler serializationHandler;
+    private ProtocolDefinition protocolDefinition;
 
-    public RpcProtocolCodec(SerializationHandler serializationHandler) {
-        this.serializationHandler = serializationHandler;
+
+    @Override
+    public void setContext(RpcContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public RpcContext getContext() {
+        return context;
+    }
+
+    @Override
+    public void init() {
+        this.serializationHandler = getContext().getWith(RpcContextEnum.SERIALIZATION_HANDLER);
+        this.protocolDefinition = getContext().getWith(RpcContextEnum.PROTOCOL_DEFINITION);
         init(new RpcProtocolDecoder(), new RpcProtocolEncoder());
     }
 
@@ -50,8 +66,8 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
         @Override
         protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
             byte[] data = serializationHandler.serialize(msg.payload());
-            out.writeByte(CURRENT_VERSION);
-            out.writeByte(msg.payload().payloadType());
+            out.writeByte(protocolDefinition.version());
+            out.writeByte(protocolDefinition.getTypeByPayload(msg.payload().getClass()));
             out.writeLong(msg.messageId());
             out.writeInt(data.length);
             out.writeBytes(data);
@@ -70,8 +86,8 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
             in.markReaderIndex();
 
             byte version = in.readByte(); // version
-            if (version != CURRENT_VERSION) {
-                LOGGER.error("Unsupported version={} from {}.", version, getClass());
+            if (version != protocolDefinition.version()) {
+                LOGGER.warn("Unsupported version={} from {}.", version, getClass());
                 return;
             }
 
@@ -89,7 +105,7 @@ public class RpcProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
                 return;
             }
             try {
-                Class<? extends Payload> clazz = manager.getPayloadClass(payloadType);
+                Class<? extends Payload> clazz = protocolDefinition.getPayloadByType(payloadType);
                 Payload payload = null;
                 if (in.hasArray()) {
                     int contentOffset = in.readerIndex(); // 正文起始偏移量

@@ -11,11 +11,6 @@ public class TransactionRequestPayload extends RequestPayload {
 
     transient public static final int PAYLOAD_TYPE = 3;
 
-    @Override
-    public int payloadType() {
-        return PAYLOAD_TYPE;
-    }
-
     /**
      * 事务id
      */
