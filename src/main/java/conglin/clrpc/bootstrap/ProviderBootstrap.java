@@ -29,7 +29,7 @@ import conglin.clrpc.transport.publisher.Publisher;
  * <pre>
  *
  * ProviderBootstrap bootstrap = new ProviderBootstrap();
- * ServiceObject serviceObject = JsonSimpleServiceObjectBuilder.builder()
+ * ServiceObject serviceObject = new SimpleServiceObject.Builder()
  *         .name("Service1")
  *         .object(new ServiceImpl1())
  *         .build();
@@ -94,6 +94,7 @@ public class ProviderBootstrap extends Bootstrap {
     public void start(BootOption option) {
         LOGGER.info("Provider is starting.");
         RpcContext context = initContext(option);
+        ObjectLifecycleUtils.assemble(serviceObjects);
         ObjectLifecycleUtils.assemble(publisher, context);
     }
 

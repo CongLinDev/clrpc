@@ -4,8 +4,6 @@ import conglin.clrpc.common.Callback;
 
 public interface TransactionHelper {
 
-
-
     /**
      * 开始事务
      *
@@ -47,7 +45,7 @@ public interface TransactionHelper {
      *
      * 该方法由事务协调者调用
      *
-     * @param path 路径
+     * @param path   路径
      * @param target 指定的参与者信息
      * @throws TransactionException 失败抛出
      */
@@ -127,8 +125,8 @@ public interface TransactionHelper {
      *
      * 该方法由事务参与者调用
      *
-     * @param path          路径
-     * @param target        当前参与者信息
+     * @param path   路径
+     * @param target 当前参与者信息
      * @return 是否标记成功
      * @throws TransactionException 失败抛出
      */
@@ -159,7 +157,7 @@ public interface TransactionHelper {
      *
      * 该方法由事务参与者调用
      * 
-     * @param path  路径
+     * @param path     路径
      * @param callback 回调对象
      * @throws TransactionException 失败抛出
      */
@@ -182,7 +180,7 @@ public interface TransactionHelper {
      *
      * 该方法由事务协调者调用
      *
-     * @param path                  路径
+     * @param path 路径
      * @throws TransactionException 失败抛出
      */
     void abort(String path) throws TransactionException;
@@ -204,7 +202,7 @@ public interface TransactionHelper {
      *
      * 该方法由事务协调者调用
      *
-     * @param path                  路径
+     * @param path 路径
      * @throws TransactionException 失败抛出
      */
     void commit(String path) throws TransactionException;

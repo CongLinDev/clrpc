@@ -4,7 +4,7 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.future.FutureHolder;
-import conglin.clrpc.service.instance.ServiceInstanceCodec;
+import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import conglin.clrpc.transport.router.Router;

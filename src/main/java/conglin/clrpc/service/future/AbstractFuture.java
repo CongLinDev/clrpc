@@ -40,14 +40,10 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        try {
-            if (SYNCHRONIZER.await(timeout, unit)) {
-                return doGet();
-            } else {
-                throw new TimeoutException();
-            }
-        } finally {
-            SYNCHRONIZER.signal();
+        if (SYNCHRONIZER.await(timeout, unit)) {
+            return doGet();
+        } else {
+            throw new TimeoutException();
         }
     }
 
@@ -61,9 +57,12 @@ abstract public class AbstractFuture implements RpcFuture {
 
     @Override
     public void done(Object result) {
-        beforeDone(result);
-        SYNCHRONIZER.signal();
-        runCallback();
+        if (isPending()) {
+            beforeDone(result);
+            SYNCHRONIZER.signal();
+            runCallback();
+        }
+        throw new UnsupportedOperationException();
     }
 
     /**

@@ -21,7 +21,7 @@ import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
 import conglin.clrpc.service.instance.ServiceInstance;
-import conglin.clrpc.service.instance.ServiceInstanceCodec;
+import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
@@ -57,6 +57,8 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
 
     @Override
     public void init() {
+        ObjectLifecycleUtils.assemble(loadBalancer, getContext());
+        ObjectLifecycleUtils.assemble(serviceDiscovery, getContext());
         serviceInstanceCodec = getContext().getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);
         Properties properites = getContext().getWith(RpcContextEnum.PROPERTIES);
         nettyBootstrap = new Bootstrap();
@@ -74,10 +76,10 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
         String serviceName = condition.getServiceName();
 
         Pair<ServiceInstance, Channel> pair = loadBalancer.getEntity(serviceName, condition.getRandom(),
-                condition.getPredicate());
-        if (pair != null)
-            return new RouterResult(pair.getFirst(), message -> pair.getSecond().pipeline().fireChannelRead(message));
-        throw new NoAvailableServiceInstancesException(condition);
+                condition.getInstanceCondition());
+        if (pair == null)
+            throw new NoAvailableServiceInstancesException(condition);
+        return new RouterResult(pair.getFirst(), pair.getSecond().pipeline()::fireChannelRead);
     }
 
     /**

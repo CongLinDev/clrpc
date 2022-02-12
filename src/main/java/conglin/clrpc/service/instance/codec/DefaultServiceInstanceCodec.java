@@ -1,8 +1,10 @@
-package conglin.clrpc.service.instance;
+package conglin.clrpc.service.instance.codec;
 
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.service.AbstractServiceObject;
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.instance.AbstractServiceInstance;
+import conglin.clrpc.service.instance.ServiceInstance;
 
 import java.util.Map;
 

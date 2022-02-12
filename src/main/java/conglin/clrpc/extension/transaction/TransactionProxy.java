@@ -2,6 +2,7 @@ package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.instance.condition.InstanceCondition;
 import conglin.clrpc.service.proxy.RpcProxy;
 
 import java.util.concurrent.TimeUnit;
@@ -30,11 +31,14 @@ public interface TransactionProxy extends RpcProxy {
     /**
      * 发送事务内部的一条原子性请求
      * 
-     * @param request 请求
+     * @param instanceCondition instance condition
+     * @param serviceName 服务名
+     * @param method      服务方法
+     * @param args        服务参数
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(TransactionRequestPayload request) throws TransactionException;
+    RpcFuture call(InstanceCondition instanceCondition, String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 提交事务

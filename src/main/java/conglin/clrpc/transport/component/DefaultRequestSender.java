@@ -123,10 +123,10 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
         RouterCondition condition = new RouterCondition();
         condition.setServiceName(requestWrapper.getRequest().serviceName());
         condition.setRandom(System.identityHashCode(requestWrapper.getRequest()));
-        condition.setPredicate(requestWrapper.getPredicate());
+        condition.setInstanceCondition(requestWrapper.getInstanceCondition());
         RouterResult routerResult = router.choose(condition);
-        if (requestWrapper.getBeforeSendRequest() != null) {
-            requestWrapper.getBeforeSendRequest().accept(routerResult.getInstance());
+        if (requestWrapper.getInstanceConsumer() != null) {
+            requestWrapper.getInstanceConsumer().accept(routerResult.getInstance());
         }
         routerResult.send(new Message(messageId, requestWrapper.getRequest()));
     }

@@ -1,22 +1,20 @@
 package conglin.clrpc.transport.router;
 
-import java.util.function.Predicate;
-
-import conglin.clrpc.service.instance.ServiceInstance;
+import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 public class RouterCondition {
-    private Predicate<ServiceInstance> predicate;
+    private InstanceCondition instanceCondition;
     private String serviceName;
-    private Integer random;
-    public Predicate<ServiceInstance> getPredicate() {
-        if (predicate == null) {
-            predicate = obj -> Boolean.TRUE;
+    private int random;
+    public InstanceCondition getInstanceCondition() {
+        if (instanceCondition == null) {
+            instanceCondition = InstanceCondition.PERMIT_ALL;
         }
-        return predicate;
+        return instanceCondition;
     }
 
-    public void setPredicate(Predicate<ServiceInstance> predicate) {
-        this.predicate = predicate;
+    public void setInstanceCondition(InstanceCondition instanceCondition) {
+        this.instanceCondition = instanceCondition;
     }
 
     public String getServiceName() {
@@ -27,14 +25,11 @@ public class RouterCondition {
         this.serviceName = serviceName;
     }
 
-    public Integer getRandom() {
-        if (random == null) {
-            random = 0;
-        }
+    public int getRandom() {
         return random;
     }
 
-    public void setRandom(Integer random) {
+    public void setRandom(int random) {
         this.random = random;
     }
 }

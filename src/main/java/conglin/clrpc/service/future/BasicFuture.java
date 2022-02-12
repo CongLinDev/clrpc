@@ -10,8 +10,6 @@ public class BasicFuture extends AbstractFuture {
     private final long messageId;
     private ResponsePayload response;
 
-    private boolean fallback; // 是否是 fallback产生的结果，只有在该future已经完成的情况下，该变量才有效
-
     public BasicFuture(long messageId, RequestPayload request) {
         super();
         this.request = request;
@@ -31,28 +29,6 @@ public class BasicFuture extends AbstractFuture {
     @Override
     public long identifier() {
         return messageId;
-    }
-    
-    /**
-     * 是否是 Fallback 机制产生的结果
-     * 
-     * 如果返回值为 {@code true} 则调用 {@link RpcFuture#isDone()} 返回值一定为 {@code true} 
-     * 
-     * @return
-     */
-    public final boolean isFallback() {
-        return fallback;
-    }
-
-    /**
-     * 确认该 {@code RpcFuture} 由fallback机制完成
-     * 
-     * @param response
-     */
-    public void fallbackDone(ResponsePayload response) {
-        fallback = true;
-        this.response = response;
-        done(response);
     }
 
     /**

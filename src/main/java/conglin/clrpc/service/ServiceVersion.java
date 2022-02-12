@@ -11,7 +11,7 @@ final public class ServiceVersion implements Comparable<ServiceVersion> {
     public static ServiceVersion parse(String content) {
         String[] s = content.split("\\.");
         if (s.length != 3) {
-           throw new IllegalArgumentException(content);
+            throw new IllegalArgumentException(content);
         }
         return new ServiceVersion(Integer.parseInt(s[0]), Integer.parseInt(s[1]), Integer.parseInt(s[2]));
     }
@@ -49,10 +49,10 @@ final public class ServiceVersion implements Comparable<ServiceVersion> {
 
     @Override
     public int compareTo(ServiceVersion o) {
-        if(getMajor() != o.getMajor()) {
+        if (getMajor() != o.getMajor()) {
             return getMajor() - o.getMajor();
         }
-        if(getMinor() != o.getMinor()) {
+        if (getMinor() != o.getMinor()) {
             return getMinor() - o.getMinor();
         }
         return getBuild() - o.getBuild();

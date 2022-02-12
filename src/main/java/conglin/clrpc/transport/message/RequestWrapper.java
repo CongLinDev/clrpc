@@ -2,9 +2,9 @@ package conglin.clrpc.transport.message;
 
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
+import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class RequestWrapper {
 
@@ -12,9 +12,9 @@ public class RequestWrapper {
 
     protected Class<? extends FailStrategy> failStrategyClass;
 
-    protected Predicate<ServiceInstance> predicate;
+    protected InstanceCondition instanceCondition;
 
-    protected Consumer<ServiceInstance> beforeSendRequest;
+    protected Consumer<ServiceInstance> instanceConsumer;
 
     public RequestPayload getRequest() {
         return request;
@@ -38,19 +38,25 @@ public class RequestWrapper {
         this.failStrategyClass = failStrategyClass;
     }
 
-    public Predicate<ServiceInstance> getPredicate() {
-        return predicate;
+    /**
+     * @return the instanceCondition
+     */
+    public InstanceCondition getInstanceCondition() {
+        return instanceCondition;
+    }
+    
+    /**
+     * @param instanceCondition the instanceCondition to set
+     */
+    public void setInstanceCondition(InstanceCondition instanceCondition) {
+        this.instanceCondition = instanceCondition;
     }
 
-    public void setPredicate(Predicate<ServiceInstance> predicate) {
-        this.predicate = predicate;
+    public Consumer<ServiceInstance> getInstanceConsumer() {
+        return instanceConsumer;
     }
 
-    public Consumer<ServiceInstance> getBeforeSendRequest() {
-        return beforeSendRequest;
-    }
-
-    public void setBeforeSendRequest(Consumer<ServiceInstance> beforeSendRequest) {
-        this.beforeSendRequest = beforeSendRequest;
+    public void setInstanceConsumer(Consumer<ServiceInstance> instanceConsumer) {
+        this.instanceConsumer = instanceConsumer;
     }
 }

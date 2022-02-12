@@ -38,7 +38,7 @@ import conglin.clrpc.transport.router.Router;
  * bootstrap.start(new BootOption());
  *
  * // 构造ServiceInterface
- * ServiceInterface<Interface1> serviceInterface1 = SimpleServiceInterfaceBuilder.builder()
+ * ServiceInterface<Interface1> serviceInterface1 = new SimpleServiceInterface.Builder<Interface1>()
  *         .name("Service1")
  *         .interfaceClass(Interface1.class)
  *         .build();
@@ -46,7 +46,7 @@ import conglin.clrpc.transport.router.Router;
  * bootstrap.subscribe(serviceInterface1);
  *
  * // 订阅同步服务
- * Interface1 sync = bootstrap.proxy(serviceInterface1);
+ * Interface1 sync = bootstrap.proxy(serviceInterface1, false);
  *
  * // 订阅异步服务
  * Interface1 async = bootstrap.proxy(serviceInterface1, true);
@@ -156,6 +156,7 @@ public class ConsumerBootstrap extends Bootstrap {
     public void start(BootOption option) {
         LOGGER.info("ConsumerBootstrap is starting.");
         initContext(option);
+        ObjectLifecycleUtils.assemble(futureHolder, context);
         ObjectLifecycleUtils.assemble(router, context);
         ObjectLifecycleUtils.assemble(requestSender, context);
     }

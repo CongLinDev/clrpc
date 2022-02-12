@@ -39,13 +39,4 @@ public class SimpleProxy implements RpcProxy, Initializable, ContextAware {
     public RpcFuture call(RequestWrapper requestWrapper) {
         return sender.sendRequest(requestWrapper);
     }
-
-    /**
-     * 请求发送器
-     * 
-     * @return
-     */
-    protected RequestSender requestSender() {
-        return this.sender;
-    }
 }

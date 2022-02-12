@@ -2,6 +2,8 @@ package conglin.clrpc.extension.annotation;
 
 import conglin.clrpc.service.future.strategy.FailFast;
 import conglin.clrpc.service.future.strategy.FailStrategy;
+import conglin.clrpc.service.instance.condition.DefaultInstanceCondition;
+import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 import java.lang.annotation.*;
 
@@ -37,4 +39,11 @@ public @interface ServiceInterface {
      * @return
      */
     ServiceVersion version() default @ServiceVersion;
+
+    /**
+     * condition class
+     * 
+     * @return
+     */
+    Class<? extends InstanceCondition> conditionClass() default DefaultInstanceCondition.class;
 }

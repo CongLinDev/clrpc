@@ -16,7 +16,7 @@ import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ContextAware;
 import conglin.clrpc.service.context.RpcContext;
 import conglin.clrpc.service.context.RpcContextEnum;
-import conglin.clrpc.service.instance.ServiceInstanceCodec;
+import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -29,34 +29,40 @@ public class NettyPublisher implements Publisher, Initializable, ContextAware, D
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyPublisher.class);
 
     private final ServiceRegistry serviceRegistry;
-    
+
     private RpcContext context;
     private ServerBootstrap nettyBootstrap;
+
     public NettyPublisher(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
     }
+
     @Override
     public void setContext(RpcContext context) {
         this.context = context;
     }
+
     @Override
     public RpcContext getContext() {
         return context;
     }
+
     @Override
     public void init() {
+        ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
         Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
-        
+
         nettyBootstrap = new ServerBootstrap();
-        nettyBootstrap.group(new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.boss", "1"))),
-                            new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.worker", "4"))))
-                    .channel(NioServerSocketChannel.class);
+        nettyBootstrap
+                .group(new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.boss", "1"))),
+                        new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.worker", "4"))))
+                .channel(NioServerSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         DefaultChannelInitializer initializer = new DefaultChannelInitializer();
         ObjectLifecycleUtils.assemble(initializer, getContext());
         nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-                
+
         int servicePort = Integer.parseInt(properties.getProperty("provider.port", "0"));
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(servicePort)).sync();
@@ -78,7 +84,6 @@ public class NettyPublisher implements Publisher, Initializable, ContextAware, D
         } catch (InterruptedException e) {
             LOGGER.error("Cannot bind port {}.", servicePort);
         }
-        
     }
 
     @Override

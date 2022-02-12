@@ -23,11 +23,11 @@ public class TransactionRequestPayload extends RequestPayload {
     /**
      * 构造事务请求
      *
-     * @param transactionId   事务id
-     * @param serialId    序列id
-     * @param serviceName 服务名
-     * @param methodName  方法名
-     * @param parameters  参数
+     * @param transactionId 事务id
+     * @param serialId      序列id
+     * @param serviceName   服务名
+     * @param methodName    方法名
+     * @param parameters    参数
      */
     public TransactionRequestPayload(Long transactionId, Integer serialId, String serviceName, String methodName, Object[] parameters) {
         super(serviceName, methodName, parameters);

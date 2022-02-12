@@ -1,6 +1,8 @@
 package conglin.clrpc.extension.annotation;
 
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.future.strategy.FailStrategy;
+import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 public class AnnotationServiceInterface<T> implements conglin.clrpc.service.ServiceInterface<T> {
 
@@ -8,6 +10,7 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
     private final String name;
     private final Class<? extends FailStrategy> failStrategyClass;
     private final conglin.clrpc.service.ServiceVersion version;
+    private final InstanceCondition instanceCondition;
 
     public AnnotationServiceInterface(Class<T> serviceInterfaceClass) {
         this.serviceInterfaceClass = serviceInterfaceClass;
@@ -26,6 +29,9 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
         this.failStrategyClass = serviceInterface.failStrategy();
         ServiceVersion serviceVersion = serviceInterface.version();
         this.version = new conglin.clrpc.service.ServiceVersion(serviceVersion.major(), serviceVersion.minor(), serviceVersion.build());
+
+        this.instanceCondition = ClassUtils.loadObjectByType(serviceInterface.conditionClass(), InstanceCondition.class);
+        instanceCondition.setMinVersion(version);
     }
 
     @Override
@@ -46,5 +52,10 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
     @Override
     public conglin.clrpc.service.ServiceVersion version() {
         return version;
+    }
+
+    @Override
+    public InstanceCondition instanceCondition() {
+        return instanceCondition;
     }
 }

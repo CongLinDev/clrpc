@@ -1,6 +1,7 @@
-package conglin.clrpc.service.instance;
+package conglin.clrpc.service.instance.codec;
 
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.instance.ServiceInstance;
 
 public interface ServiceInstanceCodec {
 

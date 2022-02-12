@@ -44,10 +44,21 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     // 用于销毁，将V销毁
     private final BiConsumer<T, V> destructor;
 
+    /**
+     * 构造 LoadBalancer
+     * 
+     * @param convertor 用于创建 node
+     */
     public ConsistentHashLoadBalancer(BiFunction<T, K, V> convertor) {
         this(convertor, (type, value) -> LOGGER.debug("Destroy type={} object={}", type, value));
     }
 
+    /**
+     * 构造 LoadBalancer
+     * 
+     * @param convertor 用于创建 node
+     * @param destructor 用于销毁 node
+     */
     public ConsistentHashLoadBalancer(BiFunction<T, K, V> convertor, BiConsumer<T, V> destructor) {
         this.convertor = convertor;
         this.destructor = destructor;
@@ -270,7 +281,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
             Node<K, V> node = entry.getValue();
             if (node.getEpoch() + 1 == currentEpoch) { // 只移除上一代未更新的节点
                 circle.remove(position);
-                LOGGER.debug("Remove valid node(position={}, key={})", position, node.getKey());
+                LOGGER.debug("Remove invalid node(position={}, key={})", position, node.getKey());
                 destructor.accept(type, node.getValue());
             }
         }

@@ -6,6 +6,7 @@ import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.future.RpcFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
+import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 /**
  * 异步对象代理
@@ -60,7 +61,12 @@ public class AsyncObjectProxy extends AbstractObjectProxy {
     }
 
     @Override
-    protected Consumer<ServiceInstance> beforeSendRequest() {
+    protected Consumer<ServiceInstance> instanceConsumer() {
         return null;
+    }
+
+    @Override
+    protected InstanceCondition instanceCondition() {
+        return serviceInterface.instanceCondition();
     }
 }
