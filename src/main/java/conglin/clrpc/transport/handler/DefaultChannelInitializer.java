@@ -2,9 +2,9 @@ package conglin.clrpc.transport.handler;
 
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.definition.role.Role;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import io.netty.channel.*;
@@ -14,27 +14,27 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel> implements ContextAware, Initializable {
+public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel> implements ComponentContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultChannelInitializer.class);
 
     protected ChannelHandlerFactory channelHandlerFactory;
-    private RpcContext rpcContext;
+    private ComponentContext context;
 
     @Override
-    public RpcContext getContext() {
-        return rpcContext;
+    public ComponentContext getContext() {
+        return context;
     }
 
     @Override
-    public void setContext(RpcContext context) {
-        rpcContext = context;
+    public void setContext(ComponentContext context) {
+        this.context = context;
     }
 
     @Override
     public void init() {
-        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
-        Role role = getContext().getWith(RpcContextEnum.ROLE);
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        Role role = getContext().getWith(ComponentContextEnum.ROLE);
         String factoryClass = properties.getProperty(role.item(".channel.handler-factory"));
         channelHandlerFactory = ChannelHandlerFactory.newFactory(factoryClass);
         ObjectLifecycleUtils.assemble(channelHandlerFactory, getContext());

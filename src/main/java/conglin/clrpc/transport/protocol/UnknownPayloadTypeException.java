@@ -1,9 +1,9 @@
 package conglin.clrpc.transport.protocol;
 
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.ServiceException;
 import conglin.clrpc.transport.message.Payload;
 
-public class UnknownPayloadTypeException extends RpcServiceException {
+public class UnknownPayloadTypeException extends ServiceException {
 
     private final int type;
     private final Class<? extends Payload> payloadClass;

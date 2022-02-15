@@ -1,7 +1,7 @@
 package conglin.clrpc.service.handler;
 
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.transport.message.Message;
 import conglin.clrpc.transport.message.Payload;
 import org.slf4j.Logger;
@@ -10,28 +10,29 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-abstract public class ConsumerAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware {
+abstract public class ConsumerAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message>
+        implements ComponentContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerAbstractServiceChannelHandler.class);
 
-    private RpcContext context;
+    private ComponentContext context;
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        if (accept(msg.payload())) {      
-        Object result = execute(msg.messageId(), msg.payload());
-        if(result != null)
-            ctx.fireChannelRead(result);
+        if (accept(msg.payload())) {
+            Object result = execute(msg.messageId(), msg.payload());
+            if (result != null)
+                ctx.fireChannelRead(result);
         } else {
             ctx.fireChannelRead(msg);
         }

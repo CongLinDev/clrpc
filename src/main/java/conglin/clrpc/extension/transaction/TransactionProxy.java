@@ -1,14 +1,14 @@
 package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
-import conglin.clrpc.service.proxy.RpcProxy;
+import conglin.clrpc.service.proxy.InvocationProxy;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public interface TransactionProxy extends RpcProxy {
+public interface TransactionProxy extends InvocationProxy {
 
     /**
      * 开始一个事务，默认非顺序执行
@@ -26,7 +26,7 @@ public interface TransactionProxy extends RpcProxy {
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(String serviceName, String method, Object... args) throws TransactionException;
+    InvocationFuture call(String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
@@ -38,7 +38,7 @@ public interface TransactionProxy extends RpcProxy {
      * @return sub future
      * @throws TransactionException
      */
-    RpcFuture call(InstanceCondition instanceCondition, String serviceName, String method, Object... args) throws TransactionException;
+    InvocationFuture call(InstanceCondition instanceCondition, String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 提交事务
@@ -46,7 +46,7 @@ public interface TransactionProxy extends RpcProxy {
      * @return transaction future
      * @throws TransactionException
      */
-    RpcFuture commit() throws TransactionException;
+    InvocationFuture commit() throws TransactionException;
 
     /**
      * 提交事务
@@ -57,7 +57,7 @@ public interface TransactionProxy extends RpcProxy {
      * @throws TransactionException
      * @throws TimeoutException
      */
-    RpcFuture commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException;
+    InvocationFuture commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException;
 
     /**
      * 中止事务
@@ -65,7 +65,7 @@ public interface TransactionProxy extends RpcProxy {
      * @return transaction future
      * @throws TransactionException
      */
-    RpcFuture abort() throws TransactionException;
+    InvocationFuture abort() throws TransactionException;
 
     /**
      * 获取异步原子请求代理

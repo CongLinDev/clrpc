@@ -123,6 +123,7 @@ public final class ClassUtils {
 
     /**
      * 反射加载指定类型的全限定类名下的类
+     * 
      * @param targetClass
      * @param parameterTypes
      * @param parameters
@@ -142,7 +143,8 @@ public final class ClassUtils {
      * @param parameters
      * @return
      */
-    public static <T> T loadObjectByParamType(Class<?> targetClass, Class<T> superClass, Class<?>[] parameterTypes, Object[] parameters) {
+    public static <T> T loadObjectByParamType(Class<?> targetClass, Class<T> superClass, Class<?>[] parameterTypes,
+            Object[] parameters) {
         try {
             Class<? extends T> clazz = targetClass.asSubclass(superClass);
             Constructor<? extends T> constructor = clazz.getDeclaredConstructor(parameterTypes);

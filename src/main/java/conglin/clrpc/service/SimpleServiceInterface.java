@@ -16,7 +16,8 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
     protected final InstanceCondition instanceCondition;
 
-    protected SimpleServiceInterface(String name, ServiceVersion version, Class<T> interfaceClass, Class<? extends FailStrategy> failStrategyClass, InstanceCondition instanceCondition) {
+    protected SimpleServiceInterface(String name, ServiceVersion version, Class<T> interfaceClass,
+            Class<? extends FailStrategy> failStrategyClass, InstanceCondition instanceCondition) {
         this.name = name;
         this.version = version == null ? ServiceVersion.defaultVersion() : version;
         this.interfaceClass = interfaceClass;
@@ -102,9 +103,12 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             if (name == null) {
                 name = interfaceClass.getName();
             }
+            if (version == null) {
+                version = ServiceVersion.defaultVersion();
+            }
             if (instanceCondition == null && instanceConditionClass != null) {
                 instanceCondition = ClassUtils.loadObjectByType(instanceConditionClass, InstanceCondition.class);
-                instanceCondition.setMinVersion(version);
+                instanceCondition.currentVersion(version);
             }
             return new SimpleServiceInterface<>(name, version, interfaceClass, failStrategyClass, instanceCondition);
         }

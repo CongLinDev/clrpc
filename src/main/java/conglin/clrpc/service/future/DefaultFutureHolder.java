@@ -10,39 +10,39 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultFutureHolder implements FutureHolder<Long> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFutureHolder.class);
 
-    private final Map<Long, RpcFuture> rpcFutures;
+    private final Map<Long, InvocationFuture> futures;
 
     public DefaultFutureHolder() {
-        rpcFutures = new ConcurrentHashMap<>();
+        futures = new ConcurrentHashMap<>();
     }
 
     @Override
-    public void putFuture(Long key, RpcFuture rpcFuture) {
-        rpcFutures.put(key, rpcFuture);
+    public void putFuture(Long key, InvocationFuture future) {
+        futures.put(key, future);
     }
 
     @Override
-    public RpcFuture getFuture(Long key) {
-        return rpcFutures.get(key);
+    public InvocationFuture getFuture(Long key) {
+        return futures.get(key);
     }
 
     @Override
-    public RpcFuture removeFuture(Long key) {
-        return rpcFutures.remove(key);
+    public InvocationFuture removeFuture(Long key) {
+        return futures.remove(key);
     }
 
     @Override
-    public Iterator<RpcFuture> iterator() {
-        return rpcFutures.values().iterator();
+    public Iterator<InvocationFuture> iterator() {
+        return futures.values().iterator();
     }
 
     @Override
     public void waitForUncompletedFuture() {
-        if (!rpcFutures.isEmpty()) {
+        if (!futures.isEmpty()) {
             clearCompletedFuture(); // help clear future completed.
         }
 
-        while (!rpcFutures.isEmpty()) {
+        while (!futures.isEmpty()) {
             try {
                 LOGGER.info("Waiting uncompleted futures for 500 ms.");
                 Thread.sleep(500);
@@ -54,12 +54,12 @@ public class DefaultFutureHolder implements FutureHolder<Long> {
 
     
     /**
-     * 尽最大可能清空 已经完成的  {@link conglin.clrpc.service.future.RpcFuture}
+     * 尽最大可能清空 已经完成的  {@link conglin.clrpc.service.future.InvocationFuture}
      */
     protected void clearCompletedFuture() {
-        Iterator<RpcFuture> iterator = iterator();
+        Iterator<InvocationFuture> iterator = iterator();
         while (iterator.hasNext()) {
-            RpcFuture future = iterator.next();
+            InvocationFuture future = iterator.next();
             if (!future.isPending()) {
                 iterator.remove();
             }

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
-    private final List<RpcFuture> futures;
+    private final List<InvocationFuture> futures;
 
     /**
      * 构造一个空的复合Future
@@ -22,7 +22,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      * 
      * @param futures
      */
-    public AbstractCompositeFuture(Collection<? extends RpcFuture> futures) {
+    public AbstractCompositeFuture(Collection<? extends InvocationFuture> futures) {
         super();
         this.futures = (futures == null) ? new ArrayList<>() : new ArrayList<>(futures);
     }
@@ -33,7 +33,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      * @param future
      * @return
      */
-    public boolean combine(RpcFuture future) {
+    public boolean combine(InvocationFuture future) {
         beforeCombine(future);
         return futures.add(future);
     }
@@ -44,7 +44,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      * @param collection
      * @return
      */
-    public boolean combine(Collection<? extends RpcFuture> collection) {
+    public boolean combine(Collection<? extends InvocationFuture> collection) {
         collection.forEach(this::beforeCombine);
         return futures.addAll(collection);
     }
@@ -54,7 +54,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      * 
      * @param future
      */
-    abstract protected void beforeCombine(RpcFuture future);
+    abstract protected void beforeCombine(InvocationFuture future);
 
     /**
      * 返回当前列表下的future数量 若其中也存在 {@link AbstractCompositeFuture} 则不会递归计算
@@ -72,7 +72,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      */
     protected boolean checkCompleteFuture() {
         // 忽略集合中已经取消的 Future 默认为执行完成
-        for (RpcFuture f : futures) {
+        for (InvocationFuture f : futures) {
             if (f.isPending())
                 return false;
         }

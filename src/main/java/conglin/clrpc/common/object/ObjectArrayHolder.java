@@ -14,8 +14,14 @@ public class ObjectArrayHolder<T extends Enum<?>> implements ObjectHolder<T> {
 
     @Override
     public void put(T key, Object value) {
-        if(holder[key.ordinal()] != null)
+        if(holder[key.ordinal()] != null) {
             putIfContains(key, holder[key.ordinal()], value);
+        } else {
+            doPut(key, value);
+        }
+    }
+
+    protected void doPut(T key, Object value) {
         holder[key.ordinal()] = value;
     }
 

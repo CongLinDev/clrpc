@@ -1,7 +1,7 @@
 package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.ServiceException;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.future.sync.SignalStateSync;
@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-abstract public class AbstractFuture implements RpcFuture {
+abstract public class AbstractFuture implements InvocationFuture {
 
     private final StateSync SYNCHRONIZER; // 同步器
 
@@ -51,9 +51,9 @@ abstract public class AbstractFuture implements RpcFuture {
      * 获取结果实际方法
      * 
      * @return
-     * @throws RpcServiceException
+     * @throws ServiceException
      */
-    abstract protected Object doGet() throws RpcServiceException;
+    abstract protected Object doGet() throws ServiceException;
 
     @Override
     public void done(Object result) {
@@ -112,7 +112,7 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public RpcFuture callback(Callback callback) {
+    public InvocationFuture callback(Callback callback) {
         if (isDone()) {
             runCallback(callback);
         } else {
@@ -122,9 +122,9 @@ abstract public class AbstractFuture implements RpcFuture {
     }
 
     @Override
-    public RpcFuture failStrategy(Class<? extends FailStrategy> strategyClass) {
+    public InvocationFuture failStrategy(Class<? extends FailStrategy> strategyClass) {
         this.failStrategy = ClassUtils.loadObjectByParamType(strategyClass, FailStrategy.class,
-                new Class<?>[] { RpcFuture.class }, new Object[] { this });
+                new Class<?>[] { InvocationFuture.class }, new Object[] { this });
         return this;
     }
 

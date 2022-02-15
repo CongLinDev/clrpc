@@ -12,12 +12,12 @@ import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailFast;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.transport.message.Message;
@@ -31,11 +31,11 @@ import conglin.clrpc.transport.router.RouterResult;
 /**
  * 默认的请求发送器，直接发送请求
  */
-public class DefaultRequestSender implements RequestSender, ContextAware, Initializable, Destroyable {
+public class DefaultRequestSender implements RequestSender, ComponentContextAware, Initializable, Destroyable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestSender.class);
 
-    private RpcContext context;
+    private ComponentContext context;
 
     protected IdentifierGenerator identifierGenerator;
 
@@ -52,35 +52,35 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
 
     @Override
     public void init() {
-        this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
-        this.futureHolder = getContext().getWith(RpcContextEnum.FUTURE_HOLDER);
-        this.router = getContext().getWith(RpcContextEnum.ROUTER);
-        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
+        this.identifierGenerator = getContext().getWith(ComponentContextEnum.IDENTIFIER_GENERATOR);
+        this.futureHolder = getContext().getWith(ComponentContextEnum.FUTURE_HOLDER);
+        this.router = getContext().getWith(ComponentContextEnum.ROUTER);
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         this.CHECK_PERIOD = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
         this.INITIAL_THRESHOLD = Integer.parseInt(properties.getProperty("consumer.retry.initial-threshold", "3000"));
         this.timer = CHECK_PERIOD > 0 ? checkFuture() : null;
     }
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
     @Override
-    public RpcFuture sendRequest(RequestWrapper requestWrapper) {
+    public InvocationFuture sendRequest(RequestWrapper requestWrapper) {
         Long messageId = identifierGenerator.generate();
-        RpcFuture future = putFuture(messageId, requestWrapper.getRequest());
+        InvocationFuture future = putFuture(messageId, requestWrapper.getRequest());
         Class<? extends FailStrategy> failStrategyClass = requestWrapper.getFailStrategyClass();
         future.failStrategy(failStrategyClass == null ? FailFast.class : failStrategyClass);
         try {
             doSendRequest(messageId, requestWrapper);
         } catch (NoAvailableServiceInstancesException e) {
-            if (!future.failStrategy().noTarget(e)) {
+            if (!future.failStrategy().noTarget(e) && future.isPending()) {
                 futureHolder.removeFuture(messageId);
             }
         }
@@ -105,8 +105,8 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
      * @param request
      * @return
      */
-    protected RpcFuture putFuture(Long messageId, RequestPayload request) {
-        RpcFuture future = new BasicFuture(messageId, request);
+    protected InvocationFuture putFuture(Long messageId, RequestPayload request) {
+        InvocationFuture future = new BasicFuture(messageId, request);
         futureHolder.putFuture(future.identifier(), future);
         return future;
     }
@@ -136,9 +136,9 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Iterator<RpcFuture> iterator = futureHolder.iterator();
+                Iterator<InvocationFuture> iterator = futureHolder.iterator();
                 while (iterator.hasNext()) {
-                    RpcFuture future = iterator.next();
+                    InvocationFuture future = iterator.next();
                     if (!future.isPending()) {
                         iterator.remove();
                         continue;
@@ -148,7 +148,7 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
                     if (!failStrategy.isTimeout())
                         continue;
                     
-                    if (!failStrategy.timeout()) {
+                    if (!failStrategy.timeout() && future.isPending()) {
                         iterator.remove();
                         continue;
                     }
@@ -161,7 +161,7 @@ public class DefaultRequestSender implements RequestSender, ContextAware, Initia
                         LOGGER.warn("Service response(futureIdentifier={}) is too slow. Retry...",
                                 future.identifier());
                     } catch (NoAvailableServiceInstancesException e) {
-                        if (!failStrategy.noTarget(e)) {
+                        if (!failStrategy.noTarget(e) && future.isPending()) {
                             iterator.remove();
                         }
                     }

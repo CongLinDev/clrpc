@@ -13,9 +13,9 @@ import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
@@ -25,12 +25,12 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class NettyPublisher implements Publisher, Initializable, ContextAware, Destroyable {
+public class NettyPublisher implements Publisher, Initializable, ComponentContextAware, Destroyable {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyPublisher.class);
 
     private final ServiceRegistry serviceRegistry;
 
-    private RpcContext context;
+    private ComponentContext context;
     private ServerBootstrap nettyBootstrap;
 
     public NettyPublisher(ServiceRegistry serviceRegistry) {
@@ -38,19 +38,19 @@ public class NettyPublisher implements Publisher, Initializable, ContextAware, D
     }
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
     @Override
     public void init() {
         ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
-        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
 
         nettyBootstrap = new ServerBootstrap();
         nettyBootstrap
@@ -69,8 +69,8 @@ public class NettyPublisher implements Publisher, Initializable, ContextAware, D
             if (channelFuture.isSuccess()) {
                 String localAddress = IPAddressUtils
                         .addressString((InetSocketAddress) channelFuture.channel().localAddress());
-                Map<String, ServiceObject> serviceObjects = getContext().getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
-                ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);
+                Map<String, ServiceObject<?>> serviceObjects = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
+                ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
                 serviceObjects.values().forEach(serviceObject -> {
                     String instanceInfo = serviceInstanceCodec.toString(serviceObject, localAddress);
                     serviceRegistry.register(serviceObject.name(), localAddress, instanceInfo);

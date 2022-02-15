@@ -4,9 +4,9 @@ import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.transport.message.Message;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
@@ -21,21 +21,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-abstract public class ProviderAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ContextAware {
+abstract public class ProviderAbstractServiceChannelHandler extends SimpleChannelInboundHandler<Message> implements ComponentContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderAbstractServiceChannelHandler.class);
 
-    private RpcContext context;
+    private ComponentContext context;
 
     private ChannelPipeline pipeline;
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
@@ -96,10 +96,10 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
      * @return
      * @throws UnsupportedServiceException
      */
-    protected ServiceObject findServiceBean(String serviceName) throws UnsupportedServiceException {
+    protected ServiceObject<?> findServiceBean(String serviceName) throws UnsupportedServiceException {
         // 获取服务实现类
-        Map<String, ServiceObject> serviceObjectHolder = context.getWith(RpcContextEnum.SERVICE_OBJECT_HOLDER);
-        ServiceObject serviceObject = serviceObjectHolder.get(serviceName);
+        Map<String, ServiceObject<?>> serviceObjectHolder = context.getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
+        ServiceObject<?> serviceObject = serviceObjectHolder.get(serviceName);
         // 如果服务实现类没有注册，抛出异常
         if (serviceObject == null) {
             throw new UnsupportedServiceException(serviceName);

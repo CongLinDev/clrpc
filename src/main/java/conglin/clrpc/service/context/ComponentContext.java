@@ -4,12 +4,12 @@ import conglin.clrpc.common.object.ObjectArrayHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RpcContext extends ObjectArrayHolder<RpcContextEnum> {
+public class ComponentContext extends ObjectArrayHolder<ComponentContextEnum> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectArrayHolder.class);
 
-    public RpcContext() {
-        super(RpcContextEnum.values().length);
+    public ComponentContext() {
+        super(ComponentContextEnum.values().length);
     }
 
     /**
@@ -19,7 +19,7 @@ public class RpcContext extends ObjectArrayHolder<RpcContextEnum> {
      * @param value
      */
     @Override
-    public void put(RpcContextEnum key, Object value) {
+    public void put(ComponentContextEnum key, Object value) {
         if (!key.accept(value)) {
             throw new IllegalArgumentException("unacceptable value");
         }
@@ -27,13 +27,8 @@ public class RpcContext extends ObjectArrayHolder<RpcContextEnum> {
     }
 
     @Override
-    protected void putIfContains(RpcContextEnum key, Object oldValue, Object value) {
-        LOGGER.warn("RpcContext key={} oldValue={} will be replaced with newValue={}", key.name(), oldValue, value);
+    protected void putIfContains(ComponentContextEnum key, Object oldValue, Object value) {
+        LOGGER.warn("ComponentContext key={} oldValue={} will be replaced with newValue={}", key.name(), oldValue, value);
+        doPut(key, value);
     }
-
-    @Override
-    public Object get(RpcContextEnum key) {
-        return super.get(key);
-    }
-
 }

@@ -1,7 +1,7 @@
 package conglin.clrpc.service.future.strategy;
 
 import conglin.clrpc.common.exception.ServiceTimeoutException;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.ResponsePayload;
 import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
@@ -13,9 +13,9 @@ final public class FailFast implements FailStrategy {
 
     private final long latestTime;
     private final long threshold = 5000L;
-    private final RpcFuture future;
+    private final InvocationFuture future;
 
-    public FailFast(RpcFuture future) {
+    public FailFast(InvocationFuture future) {
         latestTime = System.currentTimeMillis() + threshold;
         this.future = future;
     }

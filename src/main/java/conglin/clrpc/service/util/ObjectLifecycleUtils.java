@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
 
 public class ObjectLifecycleUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectLifecycleUtils.class);
@@ -31,9 +31,9 @@ public class ObjectLifecycleUtils {
      * @param object
      * @param context
      */
-    public static void assemble(Object object, RpcContext context) {
-        if (object instanceof ContextAware) {
-            ((ContextAware) object).setContext(context);
+    public static void assemble(Object object, ComponentContext context) {
+        if (object instanceof ComponentContextAware) {
+            ((ComponentContextAware) object).setContext(context);
         }
         if (object instanceof Initializable) {
             ((Initializable) object).init();

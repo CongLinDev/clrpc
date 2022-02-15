@@ -17,9 +17,9 @@ import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
@@ -30,14 +30,14 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class NettyRouter implements Router, ContextAware, Initializable, Destroyable {
+public class NettyRouter implements Router, ComponentContextAware, Initializable, Destroyable {
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyRouter.class);
 
     private final ServiceDiscovery serviceDiscovery;
     private final LoadBalancer<String, ServiceInstance, Channel> loadBalancer;
     private Bootstrap nettyBootstrap;
     private ServiceInstanceCodec serviceInstanceCodec;
-    private RpcContext context;
+    private ComponentContext context;
 
     public NettyRouter(ServiceDiscovery serviceDiscovery) {
         this.serviceDiscovery = serviceDiscovery;
@@ -46,12 +46,12 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
     }
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
@@ -59,8 +59,8 @@ public class NettyRouter implements Router, ContextAware, Initializable, Destroy
     public void init() {
         ObjectLifecycleUtils.assemble(loadBalancer, getContext());
         ObjectLifecycleUtils.assemble(serviceDiscovery, getContext());
-        serviceInstanceCodec = getContext().getWith(RpcContextEnum.SERVICE_INSTANCE_CODEC);
-        Properties properites = getContext().getWith(RpcContextEnum.PROPERTIES);
+        serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
+        Properties properites = getContext().getWith(ComponentContextEnum.PROPERTIES);
         nettyBootstrap = new Bootstrap();
         nettyBootstrap
                 .group(new NioEventLoopGroup(Integer.parseInt(properites.getProperty("consumer.thread.worker", "4"))))

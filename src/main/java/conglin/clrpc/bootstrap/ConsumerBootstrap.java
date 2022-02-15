@@ -12,13 +12,13 @@ import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.future.DefaultFutureHolder;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.proxy.AbstractObjectProxy;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
-import conglin.clrpc.service.proxy.RpcProxy;
+import conglin.clrpc.service.proxy.InvocationProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.component.DefaultRequestSender;
@@ -66,7 +66,7 @@ public class ConsumerBootstrap extends Bootstrap {
     private final Router router;
     private final RequestSender requestSender;
 
-    private RpcContext context;
+    private ComponentContext context;
 
     public ConsumerBootstrap() {
         this(null);
@@ -142,8 +142,8 @@ public class ConsumerBootstrap extends Bootstrap {
      * @param clazz
      * @return
      */
-    public RpcProxy proxy(Class<? extends RpcProxy> clazz) {
-        RpcProxy proxy = ClassUtils.loadObjectByType(clazz, RpcProxy.class);
+    public InvocationProxy proxy(Class<? extends InvocationProxy> clazz) {
+        InvocationProxy proxy = ClassUtils.loadObjectByType(clazz, InvocationProxy.class);
         ObjectLifecycleUtils.assemble(proxy, context);
         return proxy;
     }
@@ -165,7 +165,7 @@ public class ConsumerBootstrap extends Bootstrap {
      * 停止
      */
     public void stop() {
-        LOGGER.info("RpcConsumer is stopping.");
+        LOGGER.info("Consumer is stopping.");
         futureHolder.waitForUncompletedFuture();
         ObjectLifecycleUtils.destroy(futureHolder);
         ObjectLifecycleUtils.destroy(router);
@@ -190,25 +190,25 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return context
      */
     private void initContext(BootOption option) {
-        context = new RpcContext();
+        context = new ComponentContext();
         // 设置角色
-        context.put(RpcContextEnum.ROLE, role());
+        context.put(ComponentContextEnum.ROLE, role());
         // 设置属性配置器
-        context.put(RpcContextEnum.PROPERTIES, properties());
+        context.put(ComponentContextEnum.PROPERTIES, properties());
         // 设置序列化处理器
-        context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
+        context.put(ComponentContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
         // 设置ID生成器
-        context.put(RpcContextEnum.IDENTIFIER_GENERATOR, option.identifierGenerator());
+        context.put(ComponentContextEnum.IDENTIFIER_GENERATOR, option.identifierGenerator());
         // codec
-        context.put(RpcContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
+        context.put(ComponentContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         // protocol
-        context.put(RpcContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
+        context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
         // future holder
-        context.put(RpcContextEnum.FUTURE_HOLDER, futureHolder);
+        context.put(ComponentContextEnum.FUTURE_HOLDER, futureHolder);
         // router
-        context.put(RpcContextEnum.ROUTER, router);
+        context.put(ComponentContextEnum.ROUTER, router);
         // request sender
-        context.put(RpcContextEnum.REQUEST_SENDER, requestSender);
+        context.put(ComponentContextEnum.REQUEST_SENDER, requestSender);
     }
 
 }

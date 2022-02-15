@@ -7,7 +7,7 @@ import java.io.Serial;
  * 
  * 执行服务错误后抛出
  */
-public class ServiceExecutionException extends RpcServiceException {
+public class ServiceExecutionException extends ServiceException {
 
     @Serial
     private static final long serialVersionUID = 7912835199025899934L;

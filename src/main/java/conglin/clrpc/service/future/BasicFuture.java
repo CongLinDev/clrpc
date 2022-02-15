@@ -1,7 +1,7 @@
 package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.ServiceException;
 import conglin.clrpc.transport.message.*;
 
 public class BasicFuture extends AbstractFuture {
@@ -17,11 +17,11 @@ public class BasicFuture extends AbstractFuture {
     }
 
     @Override
-    protected Object doGet() throws RpcServiceException {
+    protected Object doGet() throws ServiceException {
         if (response == null)
             return null;
         if (isError()) {
-            throw (RpcServiceException) response.result();
+            throw (ServiceException) response.result();
         }
         return response.result();
     }
@@ -32,7 +32,7 @@ public class BasicFuture extends AbstractFuture {
     }
 
     /**
-     * 获得与该 RpcFuture 相关联的 RequestPayload
+     * 获得与该 InvocationFuture 相关联的 RequestPayload
      * 
      * @return
      */
@@ -41,7 +41,7 @@ public class BasicFuture extends AbstractFuture {
     }
 
     /**
-     * 获得与该 RpcFuture 相关联的 BasicResponse
+     * 获得与该 InvocationFuture 相关联的 BasicResponse
      * 
      * @return
      */
@@ -62,7 +62,7 @@ public class BasicFuture extends AbstractFuture {
         if (!isError()) {
             callback.success(response.result());
         } else {
-            callback.fail((RpcServiceException) response.result());
+            callback.fail((ServiceException) response.result());
         }
     }
 }

@@ -1,8 +1,8 @@
 package conglin.clrpc.transport.router;
 
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.ServiceException;
 
-public class NoAvailableServiceInstancesException extends RpcServiceException {
+public class NoAvailableServiceInstancesException extends ServiceException {
 
     private final RouterCondition condition;
     /**

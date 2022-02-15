@@ -3,7 +3,7 @@ package conglin.clrpc.transport.message;
 import java.io.Serial;
 import java.io.Serializable;
 
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.ServiceException;
 
 public class ResponsePayload implements Payload, Serializable {
 
@@ -22,7 +22,7 @@ public class ResponsePayload implements Payload, Serializable {
      * @param result    结果对象
      */
     public ResponsePayload(boolean error, Object result) {
-        if (error &&  !(result instanceof RpcServiceException))
+        if (error &&  !(result instanceof ServiceException))
             throw new IllegalArgumentException();
         this.error = error;
         this.result = result;

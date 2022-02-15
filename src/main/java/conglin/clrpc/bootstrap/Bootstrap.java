@@ -7,7 +7,7 @@ import java.util.Properties;
 import conglin.clrpc.definition.role.Role;
 
 /**
- * 抽象的 RpcBootstrap
+ * 抽象的 Bootstrap
  * <p>
  * 用于保存配置对象、控制资源引用计数
  */

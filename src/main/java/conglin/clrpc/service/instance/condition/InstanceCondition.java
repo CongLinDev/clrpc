@@ -14,7 +14,7 @@ public interface InstanceCondition extends Predicate<ServiceInstance> {
         }
 
         @Override
-        public void setMinVersion(ServiceVersion min) {
+        public void currentVersion(ServiceVersion min) {
             
         }
     };
@@ -25,5 +25,5 @@ public interface InstanceCondition extends Predicate<ServiceInstance> {
      * 
      * @param min
      */
-    void setMinVersion(ServiceVersion min);
+    void currentVersion(ServiceVersion min);
 }

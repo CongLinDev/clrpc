@@ -9,7 +9,7 @@ public class DefaultInstanceCondition implements InstanceCondition {
 
    
     @Override
-    public void setMinVersion(ServiceVersion min) {
+    public void currentVersion(ServiceVersion min) {
         this.minVersion = min;
     }
 

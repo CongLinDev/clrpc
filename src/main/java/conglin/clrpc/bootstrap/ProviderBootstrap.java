@@ -13,8 +13,8 @@ import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.publisher.NettyPublisher;
 import conglin.clrpc.transport.publisher.Publisher;
@@ -29,7 +29,7 @@ import conglin.clrpc.transport.publisher.Publisher;
  * <pre>
  *
  * ProviderBootstrap bootstrap = new ProviderBootstrap();
- * ServiceObject serviceObject = new SimpleServiceObject.Builder()
+ * ServiceObject<Interface1> serviceObject = new SimpleServiceObject.Builder<Interface1>()
  *         .name("Service1")
  *         .object(new ServiceImpl1())
  *         .build();
@@ -46,9 +46,9 @@ public class ProviderBootstrap extends Bootstrap {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBootstrap.class);
 
     private final Publisher publisher;
-    private final Map<String, ServiceObject> serviceObjects;
+    private final Map<String, ServiceObject<?>> serviceObjects;
 
-    private RpcContext context;
+    private ComponentContext context;
 
     public ProviderBootstrap() {
         this(null);
@@ -75,7 +75,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @param serviceObject 服务对象
      * @return
      */
-    public ProviderBootstrap publish(ServiceObject serviceObject) {
+    public ProviderBootstrap publish(ServiceObject<?> serviceObject) {
         serviceObjects.put(serviceObject.name(), serviceObject);
         LOGGER.info("Publish service named {} with bean(class={}).", serviceObject.name(), serviceObject.objectClass());
         return this;
@@ -93,7 +93,7 @@ public class ProviderBootstrap extends Bootstrap {
      */
     public void start(BootOption option) {
         LOGGER.info("Provider is starting.");
-        RpcContext context = initContext(option);
+        ComponentContext context = initContext(option);
         ObjectLifecycleUtils.assemble(serviceObjects);
         ObjectLifecycleUtils.assemble(publisher, context);
     }
@@ -124,19 +124,19 @@ public class ProviderBootstrap extends Bootstrap {
      * @param option
      * @return
      */
-    private RpcContext initContext(BootOption option) {
-        context = new RpcContext();
-        context.put(RpcContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjects);
+    private ComponentContext initContext(BootOption option) {
+        context = new ComponentContext();
+        context.put(ComponentContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjects);
         // 设置角色
-        context.put(RpcContextEnum.ROLE, role());
+        context.put(ComponentContextEnum.ROLE, role());
         // 设置属性配置器
-        context.put(RpcContextEnum.PROPERTIES, properties());
+        context.put(ComponentContextEnum.PROPERTIES, properties());
         // 设置序列化处理器
-        context.put(RpcContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
+        context.put(ComponentContextEnum.SERIALIZATION_HANDLER, option.serializationHandler());
         // codec
-        context.put(RpcContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
+        context.put(ComponentContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         // protocol
-        context.put(RpcContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
+        context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
         return context;
     }
 

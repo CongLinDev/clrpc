@@ -13,7 +13,7 @@ public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
     public ServiceInstance fromContent(String content) {
         Map<String, String> serviceMetaInfo = UrlScheme.resolveParameters(content, "[&]", "[=]");
         String address = serviceMetaInfo.get(ServiceInstance.INSTANCE_ADDRESS);
-        return new AbstractServiceInstance(new AbstractServiceObject("", serviceMetaInfo) {
+        return new AbstractServiceInstance(new AbstractServiceObject<>("", serviceMetaInfo) {
             @Override
             public Object object() {
                 return null;
@@ -31,7 +31,7 @@ public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
     }
 
     @Override
-    public String toString(ServiceObject serviceObject, String address) {
+    public String toString(ServiceObject<?> serviceObject, String address) {
         serviceObject.metaInfo().putIfAbsent(ServiceInstance.INSTANCE_ADDRESS, address);
         return UrlScheme.toParameters(serviceObject.metaInfo(), "&", "=");
     }

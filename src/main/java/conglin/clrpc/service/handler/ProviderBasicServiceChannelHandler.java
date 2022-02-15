@@ -22,7 +22,7 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
     protected ResponsePayload execute(Payload payload) {
         try {
             RequestPayload request = (RequestPayload)payload;
-            ServiceObject serviceObject = findServiceBean(request.serviceName());
+            ServiceObject<?> serviceObject = findServiceBean(request.serviceName());
             Object result = jdkReflectInvoke(serviceObject.object(), request);
             return new ResponsePayload(result);
         } catch (UnsupportedServiceException | ServiceExecutionException e) {

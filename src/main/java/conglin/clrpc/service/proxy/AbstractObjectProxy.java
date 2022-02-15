@@ -1,7 +1,7 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
@@ -33,7 +33,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
             };
         }
 
-        RpcFuture future = call(getServiceName(methodDeclaringClass), methodName, args);
+        InvocationFuture future = call(getServiceName(methodDeclaringClass), methodName, args);
         Object result = handleFuture(future);
         return result == null ? ClassUtils.defaultValue(method.getReturnType()) : result;
     }
@@ -55,7 +55,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @return
      * @throws Exception
      */
-    protected Object handleFuture(RpcFuture future) throws Exception {
+    protected Object handleFuture(InvocationFuture future) throws Exception {
         return future.get();
     }
 
@@ -67,7 +67,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @param args        参数
      * @return future
      */
-    public RpcFuture call(String serviceName, String methodName, Object... args) {
+    public InvocationFuture call(String serviceName, String methodName, Object... args) {
         return call(instanceCondition(), new RequestPayload(serviceName, methodName, args));
     }
 
@@ -78,7 +78,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @param request 请求payload
      * @return future
      */
-    public RpcFuture call(InstanceCondition instanceCondition, RequestPayload request) {
+    public InvocationFuture call(InstanceCondition instanceCondition, RequestPayload request) {
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
         wrapper.setFailStrategyClass(failStrategyClass());

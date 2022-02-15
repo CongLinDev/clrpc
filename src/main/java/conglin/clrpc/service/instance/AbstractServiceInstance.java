@@ -5,16 +5,16 @@ import conglin.clrpc.service.ServiceVersion;
 
 abstract public class AbstractServiceInstance implements ServiceInstance {
 
-    protected final ServiceObject serviceObject;
+    protected final ServiceObject<?> serviceObject;
 
     protected final String address;
 
-    public AbstractServiceInstance(ServiceObject serviceObject, String address) {
+    public AbstractServiceInstance(ServiceObject<?> serviceObject, String address) {
         this.serviceObject = serviceObject;
         this.address = address;
     }
 
-    public ServiceObject serviceObject() {
+    public ServiceObject<?> serviceObject() {
         return serviceObject;
     }
 

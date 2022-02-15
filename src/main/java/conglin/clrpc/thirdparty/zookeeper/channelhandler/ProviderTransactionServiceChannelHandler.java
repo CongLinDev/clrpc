@@ -17,7 +17,7 @@ import conglin.clrpc.extension.transaction.TransactionHelper;
 import conglin.clrpc.extension.transaction.TransactionRequestPayload;
 import conglin.clrpc.extension.transaction.TransactionResult;
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
@@ -35,10 +35,10 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
 
     @Override
     public void init() {
-        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         String urlString = properties.getProperty("extension.atomicity.url");
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
-        ProtocolDefinition protocolDefinition = getContext().getWith(RpcContextEnum.PROTOCOL_DEFINITION);
+        ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
     }
 
@@ -70,7 +70,7 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
             // 开始处理请求
             LOGGER.debug("Transaction request(transactionId={} serialId={}) will be executed.", transactionId, serialId);
             // 查询服务对象
-            ServiceObject serviceObject = findServiceBean(request.serviceName());
+            ServiceObject<?> serviceObject = findServiceBean(request.serviceName());
             // 处理事务
             // 预提交事务
             TransactionResult transactionResult = jdkReflectInvoke(serviceObject.object(), request);

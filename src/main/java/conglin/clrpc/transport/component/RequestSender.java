@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.component;
 
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.transport.message.RequestWrapper;
 
 public interface RequestSender {
@@ -11,5 +11,5 @@ public interface RequestSender {
      * @param requestWrapper
      * @return
      */
-    RpcFuture sendRequest(RequestWrapper requestWrapper);
+    InvocationFuture sendRequest(RequestWrapper requestWrapper);
 }

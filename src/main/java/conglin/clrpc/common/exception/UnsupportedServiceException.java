@@ -7,7 +7,7 @@ import java.io.Serial;
  * 
  * 未找到服务后抛出
  */
-public class UnsupportedServiceException extends RpcServiceException {
+public class UnsupportedServiceException extends ServiceException {
 
     @Serial
     private static final long serialVersionUID = 2977212781905153793L;

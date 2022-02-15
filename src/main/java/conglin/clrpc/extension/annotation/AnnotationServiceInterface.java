@@ -31,7 +31,7 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
         this.version = new conglin.clrpc.service.ServiceVersion(serviceVersion.major(), serviceVersion.minor(), serviceVersion.build());
 
         this.instanceCondition = ClassUtils.loadObjectByType(serviceInterface.conditionClass(), InstanceCondition.class);
-        instanceCondition.setMinVersion(version);
+        instanceCondition.currentVersion(version);
     }
 
     @Override

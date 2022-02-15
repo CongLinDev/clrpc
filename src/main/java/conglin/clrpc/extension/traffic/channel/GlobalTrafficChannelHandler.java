@@ -3,28 +3,28 @@ package conglin.clrpc.extension.traffic.channel;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.registry.ServiceLogger;
 import conglin.clrpc.definition.role.Role;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 @Sharable
-abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter implements ContextAware, Initializable {
+abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerAdapter implements ComponentContextAware, Initializable {
 
     protected ServiceLogger serviceLogger;
 
-    private RpcContext context;
+    private ComponentContext context;
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
@@ -49,14 +49,14 @@ abstract public class GlobalTrafficChannelHandler extends ChannelInboundHandlerA
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         TrafficChannelHandler handler = new TrafficChannelHandler();
-        serviceLogger.put(id(getContext().getWith(RpcContextEnum.ROLE), ctx.channel()), handler);
+        serviceLogger.put(id(getContext().getWith(ComponentContextEnum.ROLE), ctx.channel()), handler);
         ctx.pipeline().addFirst(handler);
         super.channelActive(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        serviceLogger.remove(id(getContext().getWith(RpcContextEnum.ROLE), ctx.channel()));
+        serviceLogger.remove(id(getContext().getWith(ComponentContextEnum.ROLE), ctx.channel()));
         super.channelInactive(ctx);
     }
 }

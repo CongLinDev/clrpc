@@ -1,9 +1,9 @@
 package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.RpcServiceException;
+import conglin.clrpc.common.exception.ServiceException;
 import conglin.clrpc.service.future.AbstractCompositeFuture;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
     }
 
     @Override
-    protected void beforeCombine(RpcFuture future) {
+    protected void beforeCombine(InvocationFuture future) {
         future.callback(subFutureCallback);
     }
 
@@ -62,7 +62,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
         if (!isError()) {
             callback.success(doGet());
         } else {
-            callback.fail(new RpcServiceException("Transaction has been cancelled."));
+            callback.fail(new ServiceException("Transaction has been cancelled."));
         }
     }
 

@@ -19,8 +19,8 @@ import conglin.clrpc.extension.transaction.TransactionFuture;
 import conglin.clrpc.extension.transaction.TransactionProxy;
 import conglin.clrpc.extension.transaction.TransactionRequestPayload;
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.context.RpcContextEnum;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.SimpleProxy;
@@ -50,10 +50,10 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     @Override
     public void init() {
         super.init();
-        this.identifierGenerator = getContext().getWith(RpcContextEnum.IDENTIFIER_GENERATOR);
-        Properties properties = getContext().getWith(RpcContextEnum.PROPERTIES);
+        this.identifierGenerator = getContext().getWith(ComponentContextEnum.IDENTIFIER_GENERATOR);
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         helper = new ZooKeeperTransactionHelper(new UrlScheme(properties.getProperty("extension.atomicity.url")));
-        ProtocolDefinition protocolDefinition = getContext().getWith(RpcContextEnum.PROTOCOL_DEFINITION);
+        ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
     }
 
@@ -69,14 +69,14 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     }
 
     @Override
-    public RpcFuture call(String serviceName, String method, Object... args) throws TransactionException {
+    public InvocationFuture call(String serviceName, String method, Object... args) throws TransactionException {
         TransactionRequestPayload request = new TransactionRequestPayload(currentTransactionId,
                 nextSerialId(), serviceName, method, args);
         return call(null, request);
     }
 
     @Override
-    public RpcFuture call(InstanceCondition instanceCondition, String serviceName, String method, Object... args)
+    public InvocationFuture call(InstanceCondition instanceCondition, String serviceName, String method, Object... args)
             throws TransactionException {
         TransactionRequestPayload request = new TransactionRequestPayload(currentTransactionId,
                 nextSerialId(), serviceName, method, args);
@@ -91,7 +91,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
      * @return sub future
      * @throws TransactionException
      */
-    public RpcFuture call(InstanceCondition instanceCondition, TransactionRequestPayload request)
+    public InvocationFuture call(InstanceCondition instanceCondition, TransactionRequestPayload request)
             throws TransactionException {
         RequestWrapper wrapper = new RequestWrapper();
         wrapper.setRequest(request);
@@ -105,7 +105,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
                         transactionRequest.transactionId(), transactionRequest.serialId(), e.getMessage());
             }
         });
-        RpcFuture f = super.call(wrapper);
+        InvocationFuture f = super.call(wrapper);
         if (!transactionFuture.combine(f)) {
             throw new TransactionException("Atomic request added failed. " + request);
         }
@@ -113,12 +113,12 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     }
 
     @Override
-    public RpcFuture call(RequestWrapper requestWrapper) {
+    public InvocationFuture call(RequestWrapper requestWrapper) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public RpcFuture commit() throws TransactionException {
+    public InvocationFuture commit() throws TransactionException {
         if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
@@ -138,13 +138,13 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
             }
         }
 
-        RpcFuture f = transactionFuture;
+        InvocationFuture f = transactionFuture;
         transactionFuture = null; // 提交后该代理对象可以进行重用
         return f;
     }
 
     @Override
-    public RpcFuture commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException {
+    public InvocationFuture commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException {
         if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
@@ -164,20 +164,20 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
             }
         }
 
-        RpcFuture f = transactionFuture;
+        InvocationFuture f = transactionFuture;
         transactionFuture = null; // 提交后该代理对象可以进行重用
         return f;
     }
 
     @Override
-    public RpcFuture abort() throws TransactionException {
+    public InvocationFuture abort() throws TransactionException {
         if (!isTransaction()) {
             throw new TransactionException("Transaction does not begin with this proxy");
         }
         LOGGER.debug("Transaction id={} will abort.", currentTransactionId);
         helper.abort(currentTransactionId);
 
-        RpcFuture f = transactionFuture;
+        InvocationFuture f = transactionFuture;
         transactionFuture = null; // 提交后该代理对象可以进行重用
         return f;
     }
@@ -231,7 +231,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
         }
 
         @Override
-        public RpcFuture call(String serviceName, String methodName, Object... args) {
+        public InvocationFuture call(String serviceName, String methodName, Object... args) {
             if (isTransaction()) {
                 try {
                     return ZooKeeperTransactionProxy.this.call(instanceCondition(), serviceName, methodName, args);

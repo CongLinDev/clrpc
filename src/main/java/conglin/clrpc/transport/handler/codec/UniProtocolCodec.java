@@ -2,9 +2,9 @@ package conglin.clrpc.transport.handler.codec;
 
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.transport.handler.codec.UniProtocolCodec.RpcProtocolDecoder;
 import conglin.clrpc.transport.handler.codec.UniProtocolCodec.RpcProtocolEncoder;
 import conglin.clrpc.transport.message.Payload;
@@ -31,11 +31,11 @@ import java.util.List;
  * </pre>
  */
 
-public class UniProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDecoder, RpcProtocolEncoder> implements ContextAware, Initializable {
+public class UniProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDecoder, RpcProtocolEncoder> implements ComponentContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UniProtocolCodec.class);
 
-    private RpcContext context;
+    private ComponentContext context;
 
     private SerializationHandler serializationHandler;
 
@@ -43,19 +43,19 @@ public class UniProtocolCodec extends CombinedChannelDuplexHandler<RpcProtocolDe
 
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
     @Override
     public void init() {
-        this.serializationHandler = getContext().getWith(RpcContextEnum.SERIALIZATION_HANDLER);
-        this.protocolDefinition = getContext().getWith(RpcContextEnum.PROTOCOL_DEFINITION);
+        this.serializationHandler = getContext().getWith(ComponentContextEnum.SERIALIZATION_HANDLER);
+        this.protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         init(new RpcProtocolDecoder(), new RpcProtocolEncoder());
     }
 

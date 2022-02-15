@@ -1,9 +1,9 @@
 package conglin.clrpc.service.handler.factory;
 
 import conglin.clrpc.definition.role.Role;
-import conglin.clrpc.service.context.ContextAware;
-import conglin.clrpc.service.context.RpcContext;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.transport.handler.ConsumerRequestChannelHandler;
@@ -48,7 +48,7 @@ import java.util.List;
  *  |               .                                   .               |
  *  |              /|\                                 \|/              |
  *  |    +----------+----------+------------+-----------+----------+    |
- *  |    |                RpcProtocolCodecHandler                  |    |
+ *  |    |                     UniProtocolCodec                    |    |
  *  |    +----------+----------+------------+-----------+----------+    |
  *  |              /|\                                  |               |
  *  +---------------+-----------------------------------+---------------+
@@ -99,7 +99,7 @@ import java.util.List;
  *  |               .                                   .               |
  *  |               .                                  \|/              |
  *  |    +----------+----------+------------+-----------+----------+    |
- *  |    |                RpcProtocolCodecHandler                  |    |
+ *  |    |                     UniProtocolCodec                    |    |
  *  |    +----------+----------+------------+-----------+----------+    |
  *  |              /|\                                  |               |
  *  +---------------+-----------------------------------+---------------+
@@ -115,17 +115,17 @@ import java.util.List;
  * </p>
  */
 
-public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactory, ContextAware {
+public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactory, ComponentContextAware {
 
-    private RpcContext context;
+    private ComponentContext context;
 
     @Override
-    public void setContext(RpcContext context) {
+    public void setContext(ComponentContext context) {
         this.context = context;
     }
 
     @Override
-    public RpcContext getContext() {
+    public ComponentContext getContext() {
         return context;
     }
 
@@ -134,7 +134,7 @@ public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactor
         List<OrderedChannelHandler> channelHandlerList = new ArrayList<>();
         channelHandlerList.add(new DefaultOrderedChannelHandler(new UniProtocolCodec(), ChannelHandlerPhase.CODEC));
 
-        Role role = getContext().getWith(RpcContextEnum.ROLE);
+        Role role = getContext().getWith(ComponentContextEnum.ROLE);
         if (role.isConsumer()) {
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerRequestChannelHandler(), ChannelHandlerPhase.HANDLE, 2));

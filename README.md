@@ -44,7 +44,7 @@ class HelloServiceImpl implements HelloService {
 ProviderBootstrap bootstrap = new ProviderBootstrap();
 
 // 创建简单的服务对象
-ServiceObject serviceObject = new SimpleServiceObject.Builder()
+ServiceObject<HelloService> serviceObject = new SimpleServiceObject.Builder<HelloService>()
         .name("HelloService")
         .object(new HelloServiceImpl())
         .build();
@@ -79,7 +79,7 @@ String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返
 HelloService asyncService = bootstrap.proxy(serviceInterface, true);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
-RpcFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
+InvocationFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
 future.callback(new Callback(){ // 使用回调处理结果
     @Override
     public void success(Object res) {}
@@ -112,11 +112,11 @@ HelloService service = proxy.proxy(serviceInterface);
 proxy.begin(); // 事务开启
 
 service.hello("first request"); // 异步发送第一条请求
-RpcFuture f1 = AsyncObjectProxy.lastFuture(); // 获取第一条请求产生的future对象
+InvocationFuture f1 = AsyncObjectProxy.lastFuture(); // 获取第一条请求产生的future对象
 service.hi("second request"); // 异步发送第二条请求
-RpcFuture f2 = AsyncObjectProxy.lastFuture(); // 获取第二条请求产生的future对象
+InvocationFuture f2 = AsyncObjectProxy.lastFuture(); // 获取第二条请求产生的future对象
 
-RpcFuture future = proxy.commit(); // 事务提交 返回事务 Future
+InvocationFuture future = proxy.commit(); // 事务提交 返回事务 Future
 
 // 关闭服务消费者
 bootstrap.stop();
@@ -196,7 +196,7 @@ bootstrap.stop();
 使用者可以通过提供无参构造函数并实现以下接口来保证自己的扩展对象拥有 **clrpc** 对象生命周期。
 
 1. 使用前
-   1. conglin.clrpc.service.context.ContextAware
+   1. conglin.clrpc.service.context.ComponentContextAware
    2. conglin.clrpc.common.Initializable
 2. 使用后
    1. conglin.clrpc.common.Destroyable

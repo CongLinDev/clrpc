@@ -2,7 +2,7 @@ package conglin.clrpc.service;
 
 import java.util.Map;
 
-public interface ServiceObject extends Service {
+public interface ServiceObject<T> extends Service {
 
     String OBJECT = "OBJECT";   // 对象
 
@@ -18,7 +18,7 @@ public interface ServiceObject extends Service {
      *
      * @return
      */
-    Object object();
+    T object();
 
     /**
      * 对象 class

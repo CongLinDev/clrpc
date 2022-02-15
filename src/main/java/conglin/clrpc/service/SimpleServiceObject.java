@@ -3,32 +3,32 @@ package conglin.clrpc.service;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SimpleServiceObject extends AbstractServiceObject {
+public class SimpleServiceObject<T> extends AbstractServiceObject<T> {
 
-    protected final Object object;
+    protected final T object;
 
-    public SimpleServiceObject(Object object, Map<String, String> metaInfo) {
+    public SimpleServiceObject(T object, Map<String, String> metaInfo) {
         super(object.getClass().getName(), metaInfo);
         this.object = object;
         metaInfo.putIfAbsent(ServiceObject.OBJECT, objectClass().getName());
     }
 
-    public SimpleServiceObject(String name, Object object, Map<String, String> metaInfo) {
+    public SimpleServiceObject(String name, T object, Map<String, String> metaInfo) {
         super(name, metaInfo);
         this.object = object;
         metaInfo.putIfAbsent(ServiceObject.OBJECT, objectClass().getName());
     }
 
     @Override
-    public Object object() {
+    public T object() {
         return object;
     }
 
     /**
      * builder
      */
-    public static class Builder {
-        protected Object object;
+    public static class Builder<T> {
+        protected T object;
         protected final Map<String, String> metaInfo;
 
         public Builder() {
@@ -41,7 +41,7 @@ public class SimpleServiceObject extends AbstractServiceObject {
          * @param object
          * @return
          */
-        public Builder object(Object object) {
+        public Builder<T> object(T object) {
             this.object = object;
             return this;
         }
@@ -52,7 +52,7 @@ public class SimpleServiceObject extends AbstractServiceObject {
          * @param name
          * @return
          */
-        public Builder name(String name) {
+        public Builder<T> name(String name) {
             return meta(ServiceObject.SERVICE_NAME, name);
         }
 
@@ -63,7 +63,7 @@ public class SimpleServiceObject extends AbstractServiceObject {
          * @param value
          * @return
          */
-        public Builder meta(String key, String value) {
+        public Builder<T> meta(String key, String value) {
             metaInfo.putIfAbsent(key, value);
             return this;
         }
@@ -73,10 +73,10 @@ public class SimpleServiceObject extends AbstractServiceObject {
          *
          * @return
          */
-        public SimpleServiceObject build() {
+        public SimpleServiceObject<T> build() {
             if (object == null)
                 throw new IllegalArgumentException();
-            return new SimpleServiceObject(object, metaInfo);
+            return new SimpleServiceObject<>(object, metaInfo);
         }
     }
 }

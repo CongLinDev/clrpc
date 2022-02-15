@@ -12,7 +12,7 @@ import conglin.clrpc.transport.router.Router;
 import java.util.Map;
 import java.util.Properties;
 
-public enum RpcContextEnum {
+public enum ComponentContextEnum {
     ROLE(Role.class),
     SERIALIZATION_HANDLER(SerializationHandler.class),
     IDENTIFIER_GENERATOR(IdentifierGenerator.class),
@@ -27,7 +27,7 @@ public enum RpcContextEnum {
 
     private final Class<?> clazz;
 
-    RpcContextEnum(Class<?> clazz) {
+    ComponentContextEnum(Class<?> clazz) {
         this.clazz = clazz;
     }
 

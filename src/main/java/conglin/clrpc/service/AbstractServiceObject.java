@@ -2,7 +2,7 @@ package conglin.clrpc.service;
 
 import java.util.Map;
 
-abstract public class AbstractServiceObject implements ServiceObject {
+abstract public class AbstractServiceObject<T> implements ServiceObject<T> {
 
     protected final Map<String, String> metaInfo;
 

@@ -1,9 +1,9 @@
 package conglin.clrpc.service.handler;
 
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.service.context.RpcContextEnum;
+import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.future.FutureHolder;
-import conglin.clrpc.service.future.RpcFuture;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.ResponsePayload;
 import org.slf4j.Logger;
@@ -22,13 +22,13 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
 
     @Override
     public void init() {
-        futureHolder = getContext().getWith(RpcContextEnum.FUTURE_HOLDER);
+        futureHolder = getContext().getWith(ComponentContextEnum.FUTURE_HOLDER);
     }
 
     @Override
     protected Object execute(Long messageId, Payload payload) {
         LOGGER.debug("Receive response (messageId={})", messageId);
-        RpcFuture future = futureHolder.getFuture(messageId);
+        InvocationFuture future = futureHolder.getFuture(messageId);
 
         if (future != null) {
             ResponsePayload response = (ResponsePayload) payload;
