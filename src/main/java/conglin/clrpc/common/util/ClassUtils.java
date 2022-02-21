@@ -290,4 +290,19 @@ public final class ClassUtils {
                             .unreflectSpecial(method, interfaceClass).bindTo(proxy).invokeWithArguments(args);
                 });
     }
+
+    /**
+     * 加载类
+     * 
+     * @param className
+     * @return
+     */
+    public static Class<?> loadClass(String className) {
+        if (className == null || "".equals(className)) return Object.class;
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return Object.class;
+        }
+    }
 }

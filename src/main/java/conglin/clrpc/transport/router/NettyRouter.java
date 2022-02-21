@@ -61,8 +61,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
         ObjectLifecycleUtils.assemble(serviceDiscovery, getContext());
         serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
         Properties properites = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        nettyBootstrap = new Bootstrap();
-        nettyBootstrap
+        nettyBootstrap = new Bootstrap()
                 .group(new NioEventLoopGroup(Integer.parseInt(properites.getProperty("consumer.thread.worker", "4"))))
                 .channel(NioSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
@@ -150,7 +149,9 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
 
     public void updateConnectedProvider(String serviceName, Collection<Pair<String, String>> providers) {
         Collection<ServiceInstance> instances = providers.stream()
-                .map(pair -> serviceInstanceCodec.fromContent(pair.getSecond())).collect(Collectors.toList());
+                .map(Pair::getSecond)
+                .map(serviceInstanceCodec::fromContent)
+                .collect(Collectors.toList());
         loadBalancer.update(serviceName, instances);
     }
 }

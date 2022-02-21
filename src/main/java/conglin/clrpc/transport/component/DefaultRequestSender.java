@@ -12,17 +12,17 @@ import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailFast;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.transport.message.Message;
-import conglin.clrpc.transport.message.RequestPayload;
-import conglin.clrpc.transport.message.RequestWrapper;
 import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.transport.router.Router;
 import conglin.clrpc.transport.router.RouterCondition;
@@ -72,13 +72,16 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
     }
 
     @Override
-    public InvocationFuture sendRequest(RequestWrapper requestWrapper) {
+    public InvocationFuture sendRequest(InvocationContext invocationContext) {
         Long messageId = identifierGenerator.generate();
-        InvocationFuture future = putFuture(messageId, requestWrapper.getRequest());
-        Class<? extends FailStrategy> failStrategyClass = requestWrapper.getFailStrategyClass();
-        future.failStrategy(failStrategyClass == null ? FailFast.class : failStrategyClass);
+        InvocationFuture future = putFuture(messageId, invocationContext);
+        Class<? extends FailStrategy> failStrategyClass = invocationContext.getFailStrategyClass();
+        FailStrategy failStrategy = ClassUtils.loadObjectByParamType(
+                failStrategyClass == null ? FailFast.class : failStrategyClass, FailStrategy.class,
+                new Class<?>[] { InvocationFuture.class }, new Object[] { future });
+        future.failStrategy(failStrategy);
         try {
-            doSendRequest(messageId, requestWrapper);
+            doSendRequest(messageId, invocationContext);
         } catch (NoAvailableServiceInstancesException e) {
             if (!future.failStrategy().noTarget(e) && future.isPending()) {
                 futureHolder.removeFuture(messageId);
@@ -102,11 +105,11 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
      * 保存Future
      *
      * @param messageId
-     * @param request
+     * @param invocationContext
      * @return
      */
-    protected InvocationFuture putFuture(Long messageId, RequestPayload request) {
-        InvocationFuture future = new BasicFuture(messageId, request);
+    protected InvocationFuture putFuture(Long messageId, InvocationContext invocationContext) {
+        InvocationFuture future = new BasicFuture(messageId, invocationContext);
         futureHolder.putFuture(future.identifier(), future);
         return future;
     }
@@ -115,20 +118,20 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
      * 发送请求
      *
      * @param messageId
-     * @param requestWrapper
+     * @param invocationContext
      * @throws NoAvailableServiceInstancesException
      */
-    protected void doSendRequest(Long messageId, RequestWrapper requestWrapper)
+    protected void doSendRequest(Long messageId, InvocationContext invocationContext)
             throws NoAvailableServiceInstancesException {
         RouterCondition condition = new RouterCondition();
-        condition.setServiceName(requestWrapper.getRequest().serviceName());
-        condition.setRandom(System.identityHashCode(requestWrapper.getRequest()));
-        condition.setInstanceCondition(requestWrapper.getInstanceCondition());
+        condition.setServiceName(invocationContext.getRequest().serviceName());
+        condition.setRandom(System.identityHashCode(invocationContext.getRequest()));
+        condition.setInstanceCondition(invocationContext.getInstanceCondition());
         RouterResult routerResult = router.choose(condition);
-        if (requestWrapper.getInstanceConsumer() != null) {
-            requestWrapper.getInstanceConsumer().accept(routerResult.getInstance());
+        if (invocationContext.getInstanceConsumer() != null) {
+            invocationContext.getInstanceConsumer().accept(routerResult.getInstance());
         }
-        routerResult.send(new Message(messageId, requestWrapper.getRequest()));
+        routerResult.send(new Message(messageId, invocationContext.getRequest()));
     }
 
     private Timer checkFuture() {
@@ -147,17 +150,15 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
                     FailStrategy failStrategy = future.failStrategy();
                     if (!failStrategy.isTimeout())
                         continue;
-                    
+
                     if (!failStrategy.timeout() && future.isPending()) {
                         iterator.remove();
                         continue;
                     }
 
-                     // retry
+                    // retry
                     try {
-                        RequestWrapper wrapper = new RequestWrapper();
-                        wrapper.setRequest(((BasicFuture) future).request());
-                        doSendRequest(future.identifier(), wrapper); // retry
+                        doSendRequest(future.identifier(), ((BasicFuture) future).context()); // retry
                         LOGGER.warn("Service response(futureIdentifier={}) is too slow. Retry...",
                                 future.identifier());
                     } catch (NoAvailableServiceInstancesException e) {

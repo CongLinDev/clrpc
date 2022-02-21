@@ -38,9 +38,8 @@ import conglin.clrpc.transport.router.Router;
  * bootstrap.start(new BootOption());
  *
  * // 构造ServiceInterface
- * ServiceInterface<Interface1> serviceInterface1 = new SimpleServiceInterface.Builder<Interface1>()
+ * ServiceInterface<Interface1> serviceInterface1 = new SimpleServiceInterface.Builder<>(Interface1.class)
  *         .name("Service1")
- *         .interfaceClass(Interface1.class)
  *         .build();
  * // 刷新
  * bootstrap.subscribe(serviceInterface1);

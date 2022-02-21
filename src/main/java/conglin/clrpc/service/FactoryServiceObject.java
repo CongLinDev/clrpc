@@ -8,26 +8,18 @@ public class FactoryServiceObject<T> extends AbstractServiceObject<T> {
 
     protected final Supplier<T> factory;
 
-    protected final Class<?> objectClass;
-
-    protected FactoryServiceObject(Supplier<T> factory, Map<String, String> metaInfo) {
-        this(factory.getClass().getName(), factory, metaInfo);
+    protected FactoryServiceObject(Class<T> interfaceClass, Supplier<T> factory, Map<String, String> metaInfo) {
+        this(interfaceClass.getName(), interfaceClass, factory, metaInfo);
     }
 
-    protected FactoryServiceObject(String name, Supplier<T> factory, Map<String, String> metaInfo) {
-        super(name, metaInfo);
+    protected FactoryServiceObject(String name, Class<T> interfaceClass, Supplier<T> factory, Map<String, String> metaInfo) {
+        super(name, interfaceClass, metaInfo);
         this.factory = factory;
-        this.objectClass = factory.get().getClass();
     }
 
     @Override
     public T object() {
         return factory.get();
-    }
-
-    @Override
-    public Class<?> objectClass() {
-        return objectClass;
     }
 
     /**
@@ -36,9 +28,10 @@ public class FactoryServiceObject<T> extends AbstractServiceObject<T> {
     public static class Builder<T> {
         protected Supplier<T> factory;
         protected final Map<String, String> metaInfo;
-        protected Class<T> objectClass;
+        protected Class<T> interfaceClass;
 
-        public Builder() {
+        public Builder(Class<T> interfaceClass) {
+            this.interfaceClass = interfaceClass;
             this.metaInfo = new HashMap<>();
         }
 
@@ -83,7 +76,7 @@ public class FactoryServiceObject<T> extends AbstractServiceObject<T> {
         public FactoryServiceObject<T> build() {
             if (factory == null)
                 throw new IllegalArgumentException();
-            return new FactoryServiceObject<>(SERVICE_NAME, factory, metaInfo);
+            return new FactoryServiceObject<>(interfaceClass, factory, metaInfo);
         }
     }
 }

@@ -4,7 +4,8 @@ import java.util.Map;
 
 public interface ServiceObject<T> extends Service {
 
-    String OBJECT = "OBJECT";   // 对象
+    String OBJECT = "OBJECT";           // 对象类名
+    String INTERFACE = "INTERFACE";     // 接口类名
 
     /**
      * 元信息
@@ -21,13 +22,9 @@ public interface ServiceObject<T> extends Service {
     T object();
 
     /**
-     * 对象 class
-     *
-     * 默认返回 object().getClass()
+     * 接口 class
      *
      * @return
      */
-    default Class<?> objectClass() {
-        return object().getClass();
-    }
+    Class<T> interfaceClass();
 }

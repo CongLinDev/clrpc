@@ -30,7 +30,7 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
         LOGGER.debug("Receive response (messageId={})", messageId);
         InvocationFuture future = futureHolder.getFuture(messageId);
 
-        if (future != null) {
+        if (future != null && future.isPending()) {
             ResponsePayload response = (ResponsePayload) payload;
             if (response.isError()) {
                 future.failStrategy().error(payload);

@@ -4,9 +4,9 @@ import conglin.clrpc.common.Initializable;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.transport.component.RequestSender;
-import conglin.clrpc.transport.message.RequestWrapper;
 
 public class SimpleProxy implements InvocationProxy, Initializable, ComponentContextAware {
 
@@ -32,11 +32,11 @@ public class SimpleProxy implements InvocationProxy, Initializable, ComponentCon
     /**
      * 异步调用函数 使用负载均衡策略
      *
-     * @param requestWrapper
+     * @param invocationContext
      * @return
      */
     @Override
-    public InvocationFuture call(RequestWrapper requestWrapper) {
-        return sender.sendRequest(requestWrapper);
+    public InvocationFuture call(InvocationContext invocationContext) {
+        return sender.sendRequest(invocationContext);
     }
 }

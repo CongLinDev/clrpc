@@ -14,16 +14,16 @@ public interface InstanceCondition extends Predicate<ServiceInstance> {
         }
 
         @Override
-        public void currentVersion(ServiceVersion min) {
+        public void currentVersion(ServiceVersion currentVersion) {
             
         }
     };
 
 
     /**
-     * 设置最小版本号
+     * 设置当前服务版本号
      * 
-     * @param min
+     * @param currentVersion
      */
-    void currentVersion(ServiceVersion min);
+    void currentVersion(ServiceVersion currentVersion);
 }

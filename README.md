@@ -44,7 +44,7 @@ class HelloServiceImpl implements HelloService {
 ProviderBootstrap bootstrap = new ProviderBootstrap();
 
 // 创建简单的服务对象
-ServiceObject<HelloService> serviceObject = new SimpleServiceObject.Builder<HelloService>()
+ServiceObject<HelloService> serviceObject = new SimpleServiceObject.Builder<>(HelloService.class)
         .name("HelloService")
         .object(new HelloServiceImpl())
         .build();
@@ -63,9 +63,8 @@ ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建简单的服务接口对象
-ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<HelloService>()
+ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<>(HelloService.class)
         .name("HelloService")
-        .interfaceClass(HelloService.class)
         .build();
 
 // 提前刷新需要订阅的服务
@@ -79,7 +78,7 @@ String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返
 HelloService asyncService = bootstrap.proxy(serviceInterface, true);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
-InvocationFuture future = AsyncObjectProxy.lastFuture(); // 获取该线程最新一次操作的产生的future对象
+InvocationFuture future = InvocationContext.lastFuture(); // 获取该线程最新一次操作的产生的future对象
 future.callback(new Callback(){ // 使用回调处理结果
     @Override
     public void success(Object res) {}
@@ -99,10 +98,10 @@ ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建服务接口对象
-ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<HelloService>()
+ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<>(HelloService.class)
         .name("HelloService")
-        .interfaceClass(HelloService.class)
         .build();
+
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
 
@@ -112,9 +111,9 @@ HelloService service = proxy.proxy(serviceInterface);
 proxy.begin(); // 事务开启
 
 service.hello("first request"); // 异步发送第一条请求
-InvocationFuture f1 = AsyncObjectProxy.lastFuture(); // 获取第一条请求产生的future对象
+InvocationFuture f1 = InvocationContext.lastFuture(); // 获取第一条请求产生的future对象
 service.hi("second request"); // 异步发送第二条请求
-InvocationFuture f2 = AsyncObjectProxy.lastFuture(); // 获取第二条请求产生的future对象
+InvocationFuture f2 = InvocationContext.lastFuture(); // 获取第二条请求产生的future对象
 
 InvocationFuture future = proxy.commit(); // 事务提交 返回事务 Future
 

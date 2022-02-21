@@ -1,12 +1,43 @@
-package conglin.clrpc.transport.message;
+package conglin.clrpc.service.context;
 
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.transport.message.RequestPayload;
 
 import java.util.function.Consumer;
 
-public class RequestWrapper {
+public class InvocationContext {
+
+    private static final ThreadLocal<InvocationFuture> localFuture = new ThreadLocal<>();
+
+    /**
+     * 返回当前线程最新一次操作产生的 future 对象
+     * 
+     * @return
+     */
+    public static InvocationFuture lastFuture() {
+        return localFuture.get();
+    }
+
+    /**
+     * 设置当前线程最新一次操作产生的 future 对象
+     * 
+     * @param future
+     */
+    public static void lastFuture(InvocationFuture future) {
+        localFuture.set(future);
+    }
+
+    /**
+     * removeFuture
+     * 
+     * @param future
+     */
+    public static void removeFuture() {
+        localFuture.remove();
+    }
 
     protected RequestPayload request;
 

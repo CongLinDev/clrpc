@@ -58,13 +58,17 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
         protected ServiceVersion version;
 
-        protected Class<T> interfaceClass;
+        protected final Class<T> interfaceClass;
 
         protected Class<? extends FailStrategy> failStrategyClass;
 
         protected Class<? extends InstanceCondition> instanceConditionClass;
 
         protected InstanceCondition instanceCondition;
+
+        public Builder(Class<T> interfaceClass) {
+            this.interfaceClass = interfaceClass;
+        }
 
         public Builder<T> name(String name) {
             this.name = name;
@@ -73,11 +77,6 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
         public Builder<T> version(ServiceVersion version) {
             this.version = version;
-            return this;
-        }
-
-        public Builder<T> interfaceClass(Class<T> interfaceClass) {
-            this.interfaceClass = interfaceClass;
             return this;
         }
 

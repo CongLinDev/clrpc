@@ -1,6 +1,7 @@
 package conglin.clrpc.service.instance.codec;
 
 import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.AbstractServiceObject;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.instance.AbstractServiceInstance;
@@ -13,7 +14,9 @@ public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
     public ServiceInstance fromContent(String content) {
         Map<String, String> serviceMetaInfo = UrlScheme.resolveParameters(content, "[&]", "[=]");
         String address = serviceMetaInfo.get(ServiceInstance.INSTANCE_ADDRESS);
-        return new AbstractServiceInstance(new AbstractServiceObject<>("", serviceMetaInfo) {
+        @SuppressWarnings("unchecked")
+        Class<Object> interfaceClass = (Class<Object>)ClassUtils.loadClass(serviceMetaInfo.get(ServiceObject.INTERFACE));
+        return new AbstractServiceInstance(new AbstractServiceObject<>("", interfaceClass, serviceMetaInfo) {
             @Override
             public Object object() {
                 return null;
@@ -21,17 +24,17 @@ public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
         }, address){
             @Override
             public String toString() {
-                return DefaultServiceInstanceCodec.this.toString(this);
+                return DefaultServiceInstanceCodec.this.toContent(this);
             }
         };
     }
 
-    protected String toString(AbstractServiceInstance serviceInstance) {
+    protected String toContent(AbstractServiceInstance serviceInstance) {
         return UrlScheme.toParameters(serviceInstance.serviceObject().metaInfo(), "&", "=");
     }
 
     @Override
-    public String toString(ServiceObject<?> serviceObject, String address) {
+    public String toContent(ServiceObject<?> serviceObject, String address) {
         serviceObject.metaInfo().putIfAbsent(ServiceInstance.INSTANCE_ADDRESS, address);
         return UrlScheme.toParameters(serviceObject.metaInfo(), "&", "=");
     }

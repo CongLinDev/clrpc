@@ -2,6 +2,7 @@ package conglin.clrpc.service;
 
 final public class ServiceVersion implements Comparable<ServiceVersion> {
 
+    private final static String VERSION_FORMATTER = "%d.%d.%d";
     private final static ServiceVersion DEFAULT_VERSION = new ServiceVersion(1, 0, 0);
 
     public static ServiceVersion defaultVersion() {
@@ -60,6 +61,6 @@ final public class ServiceVersion implements Comparable<ServiceVersion> {
 
     @Override
     public String toString() {
-        return getMajor() + "." + getMinor() + "." + getBuild();
+        return String.format(VERSION_FORMATTER, getMajor(), getMinor(), getBuild());
     }
 }

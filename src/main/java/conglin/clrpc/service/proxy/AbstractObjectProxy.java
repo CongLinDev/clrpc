@@ -1,12 +1,12 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 import conglin.clrpc.transport.message.RequestPayload;
-import conglin.clrpc.transport.message.RequestWrapper;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -79,12 +79,12 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @return future
      */
     public InvocationFuture call(InstanceCondition instanceCondition, RequestPayload request) {
-        RequestWrapper wrapper = new RequestWrapper();
-        wrapper.setRequest(request);
-        wrapper.setFailStrategyClass(failStrategyClass());
-        wrapper.setInstanceConsumer(instanceConsumer());
-        wrapper.setInstanceCondition(instanceCondition);
-        return super.call(wrapper);
+        InvocationContext invocationContext = new InvocationContext();
+        invocationContext.setRequest(request);
+        invocationContext.setFailStrategyClass(failStrategyClass());
+        invocationContext.setInstanceConsumer(instanceConsumer());
+        invocationContext.setInstanceCondition(instanceCondition);
+        return super.call(invocationContext);
     }
 
     /**

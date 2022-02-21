@@ -20,13 +20,13 @@ import conglin.clrpc.extension.transaction.TransactionProxy;
 import conglin.clrpc.extension.transaction.TransactionRequestPayload;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.SimpleProxy;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
-import conglin.clrpc.transport.message.RequestWrapper;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 /**
@@ -93,11 +93,11 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
      */
     public InvocationFuture call(InstanceCondition instanceCondition, TransactionRequestPayload request)
             throws TransactionException {
-        RequestWrapper wrapper = new RequestWrapper();
-        wrapper.setRequest(request);
-        wrapper.setInstanceCondition(instanceCondition);
-        wrapper.setInstanceConsumer(instance -> {
-            TransactionRequestPayload transactionRequest = (TransactionRequestPayload) wrapper.getRequest();
+        InvocationContext invocationContext = new InvocationContext();
+        invocationContext.setRequest(request);
+        invocationContext.setInstanceCondition(instanceCondition);
+        invocationContext.setInstanceConsumer(instance -> {
+            TransactionRequestPayload transactionRequest = (TransactionRequestPayload) invocationContext.getRequest();
             try {
                 helper.prepare(transactionRequest.transactionId(), transactionRequest.serialId(), instance.address());
             } catch (TransactionException e) {
@@ -105,7 +105,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
                         transactionRequest.transactionId(), transactionRequest.serialId(), e.getMessage());
             }
         });
-        InvocationFuture f = super.call(wrapper);
+        InvocationFuture f = super.call(invocationContext);
         if (!transactionFuture.combine(f)) {
             throw new TransactionException("Atomic request added failed. " + request);
         }
@@ -113,7 +113,7 @@ public class ZooKeeperTransactionProxy extends SimpleProxy implements Transactio
     }
 
     @Override
-    public InvocationFuture call(RequestWrapper requestWrapper) {
+    public InvocationFuture call(InvocationContext invocationContext) {
         throw new UnsupportedOperationException();
     }
 

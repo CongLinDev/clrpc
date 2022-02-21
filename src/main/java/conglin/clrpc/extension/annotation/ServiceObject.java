@@ -11,6 +11,14 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ServiceObject {
+
+    /**
+     * 接口类
+     * 
+     * @return
+     */
+    Class<?> interfaceClass();
+
     /**
      * name
      *

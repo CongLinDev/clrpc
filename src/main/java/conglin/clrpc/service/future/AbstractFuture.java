@@ -2,7 +2,6 @@ package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.ServiceException;
-import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.future.sync.SignalStateSync;
 import conglin.clrpc.service.future.sync.StateSync;
@@ -61,8 +60,9 @@ abstract public class AbstractFuture implements InvocationFuture {
             beforeDone(result);
             SYNCHRONIZER.signal();
             runCallback();
+        } else {
+            throw new UnsupportedOperationException();
         }
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -122,9 +122,8 @@ abstract public class AbstractFuture implements InvocationFuture {
     }
 
     @Override
-    public InvocationFuture failStrategy(Class<? extends FailStrategy> strategyClass) {
-        this.failStrategy = ClassUtils.loadObjectByParamType(strategyClass, FailStrategy.class,
-                new Class<?>[] { InvocationFuture.class }, new Object[] { this });
+    public InvocationFuture failStrategy(FailStrategy strategy) {
+        this.failStrategy = strategy;
         return this;
     }
 

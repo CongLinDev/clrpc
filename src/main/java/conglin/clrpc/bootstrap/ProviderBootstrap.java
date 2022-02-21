@@ -29,7 +29,7 @@ import conglin.clrpc.transport.publisher.Publisher;
  * <pre>
  *
  * ProviderBootstrap bootstrap = new ProviderBootstrap();
- * ServiceObject<Interface1> serviceObject = new SimpleServiceObject.Builder<Interface1>()
+ * ServiceObject<Interface1> serviceObject = new SimpleServiceObject.Builder<>(Interface1.class)
  *         .name("Service1")
  *         .object(new ServiceImpl1())
  *         .build();
@@ -77,7 +77,7 @@ public class ProviderBootstrap extends Bootstrap {
      */
     public ProviderBootstrap publish(ServiceObject<?> serviceObject) {
         serviceObjects.put(serviceObject.name(), serviceObject);
-        LOGGER.info("Publish service named {} with bean(class={}).", serviceObject.name(), serviceObject.objectClass());
+        LOGGER.info("Publish service named {} with interface(class={}).", serviceObject.name(), serviceObject.interfaceClass());
         return this;
     }
 

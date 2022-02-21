@@ -5,19 +5,19 @@ import conglin.clrpc.service.instance.ServiceInstance;
 
 public class DefaultInstanceCondition implements InstanceCondition {
 
-    private ServiceVersion minVersion;
+    private ServiceVersion currentVersion;
 
    
     @Override
-    public void currentVersion(ServiceVersion min) {
-        this.minVersion = min;
+    public void currentVersion(ServiceVersion currentVersion) {
+        this.currentVersion = currentVersion;
     }
 
     @Override
     public boolean test(ServiceInstance t) {
         if (t == null) return false;
-        if (minVersion == null) return true;
-        return minVersion.compareTo(t.version()) <= 0;
+        if (currentVersion == null) return true;
+        return currentVersion.compareTo(t.version()) <= 0;
     }
     
 }

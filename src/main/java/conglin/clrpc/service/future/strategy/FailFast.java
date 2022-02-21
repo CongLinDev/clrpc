@@ -38,6 +38,12 @@ final public class FailFast implements FailStrategy {
     }
 
     @Override
+    public boolean limit() {
+        future.done(new ResponsePayload(true, new ServiceTimeoutException()));
+        return false;
+    }
+
+    @Override
     public boolean error(Payload sourcePayload) {
         future.done(sourcePayload);
         return false;

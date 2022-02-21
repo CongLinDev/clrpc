@@ -52,8 +52,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
         ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
 
-        nettyBootstrap = new ServerBootstrap();
-        nettyBootstrap
+        nettyBootstrap = new ServerBootstrap()
                 .group(new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.boss", "1"))),
                         new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.worker", "4"))))
                 .channel(NioServerSocketChannel.class);
@@ -72,7 +71,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
                 Map<String, ServiceObject<?>> serviceObjects = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
                 ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
                 serviceObjects.values().forEach(serviceObject -> {
-                    String instanceInfo = serviceInstanceCodec.toString(serviceObject, localAddress);
+                    String instanceInfo = serviceInstanceCodec.toContent(serviceObject, localAddress);
                     serviceRegistry.register(serviceObject.name(), localAddress, instanceInfo);
                 });
                 LOGGER.info("Provider starts on {}", localAddress);

@@ -20,5 +20,5 @@ public interface ServiceInstanceCodec {
      * @param address
      * @return
      */
-    String toString(ServiceObject<?> serviceObject, String address);
+    String toContent(ServiceObject<?> serviceObject, String address);
 }

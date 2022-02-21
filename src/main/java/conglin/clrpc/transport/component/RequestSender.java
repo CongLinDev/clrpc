@@ -1,15 +1,15 @@
 package conglin.clrpc.transport.component;
 
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.InvocationFuture;
-import conglin.clrpc.transport.message.RequestWrapper;
 
 public interface RequestSender {
 
     /**
      * 发送请求信息
      *
-     * @param requestWrapper
+     * @param invocationContext
      * @return
      */
-    InvocationFuture sendRequest(RequestWrapper requestWrapper);
+    InvocationFuture sendRequest(InvocationContext invocationContext);
 }

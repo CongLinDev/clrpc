@@ -6,25 +6,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnnotationServiceObject<T> implements conglin.clrpc.service.ServiceObject<T> {
+    private final Class<T> interfaceClass;
     private final T object;
     private final String name;
     private final conglin.clrpc.service.ServiceVersion version;
     private final Map<String, String> metaInfo;
 
-    public AnnotationServiceObject(Class<T> serviceObjectClass) {
+    public AnnotationServiceObject(Class<?> serviceObjectClass) {
         ServiceObject serviceObject = serviceObjectClass.getAnnotation(ServiceObject.class);
         if (serviceObject == null) {
             throw new IllegalArgumentException(serviceObjectClass.getName() + "is not a service object");
         }
-
-        object = ClassUtils.loadObjectByType(serviceObjectClass, serviceObjectClass);
+        @SuppressWarnings("unchecked")
+        Class<T> interfaceClass = (Class<T>)serviceObject.interfaceClass();
+        if (!interfaceClass.isAssignableFrom(serviceObjectClass)) {
+            throw new IllegalArgumentException(interfaceClass.getName() + "is not assignable from " + serviceObjectClass.getName());
+        }
+        this.interfaceClass = interfaceClass;
+        // assert 
+        object = ClassUtils.loadObjectByType(serviceObjectClass, interfaceClass);
         if (object == null) {
             throw new IllegalArgumentException(serviceObjectClass.getName() + "is not a service object");
         }
 
         String name = serviceObject.name();
         if ("".equals(name)) {
-            name = serviceObjectClass.getName();
+            name = interfaceClass.getName();
         }
         this.name = name;
 
@@ -36,6 +43,10 @@ public class AnnotationServiceObject<T> implements conglin.clrpc.service.Service
         for (Entry entry : metaInfo.entries()) {
             metaInfoMap.put(entry.key(), entry.value());
         }
+        metaInfoMap.put(conglin.clrpc.service.ServiceObject.OBJECT, serviceObjectClass.getName());
+        metaInfoMap.put(conglin.clrpc.service.ServiceObject.INTERFACE, interfaceClass.getName());
+        metaInfoMap.put(conglin.clrpc.service.ServiceObject.SERVICE_NAME, name);
+        metaInfoMap.put(conglin.clrpc.service.ServiceObject.VERSION, this.version.toString());
         this.metaInfo = metaInfoMap;
     }
 
@@ -55,8 +66,8 @@ public class AnnotationServiceObject<T> implements conglin.clrpc.service.Service
     }
 
     @Override
-    public Class<?> objectClass() {
-        return object.getClass();
+    public Class<T> interfaceClass() {
+        return interfaceClass;
     }
 
     @Override

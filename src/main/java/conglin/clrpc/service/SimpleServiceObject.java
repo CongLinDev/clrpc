@@ -7,16 +7,16 @@ public class SimpleServiceObject<T> extends AbstractServiceObject<T> {
 
     protected final T object;
 
-    public SimpleServiceObject(T object, Map<String, String> metaInfo) {
-        super(object.getClass().getName(), metaInfo);
+    public SimpleServiceObject(Class<T> interfaceClass, T object, Map<String, String> metaInfo) {
+        super(interfaceClass, metaInfo);
         this.object = object;
-        metaInfo.putIfAbsent(ServiceObject.OBJECT, objectClass().getName());
+        metaInfo.put(ServiceObject.OBJECT, object.getClass().getName());
     }
 
-    public SimpleServiceObject(String name, T object, Map<String, String> metaInfo) {
-        super(name, metaInfo);
+    public SimpleServiceObject(String name, Class<T> interfaceClass, T object, Map<String, String> metaInfo) {
+        super(name, interfaceClass, metaInfo);
         this.object = object;
-        metaInfo.putIfAbsent(ServiceObject.OBJECT, objectClass().getName());
+        metaInfo.put(ServiceObject.OBJECT, object.getClass().getName());
     }
 
     @Override
@@ -24,14 +24,21 @@ public class SimpleServiceObject<T> extends AbstractServiceObject<T> {
         return object;
     }
 
+    @Override
+    public Class<T> interfaceClass() {
+        return interfaceClass;
+    }
+
     /**
      * builder
      */
     public static class Builder<T> {
+        protected Class<T> interfaceClass;
         protected T object;
         protected final Map<String, String> metaInfo;
 
-        public Builder() {
+        public Builder(Class<T> interfaceClass) {
+            this.interfaceClass = interfaceClass;
             this.metaInfo = new HashMap<>();
         }
 
@@ -76,7 +83,7 @@ public class SimpleServiceObject<T> extends AbstractServiceObject<T> {
         public SimpleServiceObject<T> build() {
             if (object == null)
                 throw new IllegalArgumentException();
-            return new SimpleServiceObject<>(object, metaInfo);
+            return new SimpleServiceObject<>(interfaceClass, object, metaInfo);
         }
     }
 }

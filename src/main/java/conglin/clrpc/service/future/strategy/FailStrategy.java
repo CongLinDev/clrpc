@@ -30,6 +30,13 @@ public interface FailStrategy {
     boolean timeout();
 
     /**
+     * 发生限流
+     * 
+     * @return 是否重试
+     */
+    boolean limit();
+
+    /**
      * 执行错误
      * 
      * @param sourcePayload

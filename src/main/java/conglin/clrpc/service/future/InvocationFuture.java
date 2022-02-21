@@ -72,12 +72,12 @@ public interface InvocationFuture extends Future<Object> {
     boolean isError();
 
     /**
-     * 绑定失败策略类
+     * 绑定失败策略
      * 
      * @param strategy
      * @return this
      */
-    InvocationFuture failStrategy(Class<? extends FailStrategy> strategyClass);
+    InvocationFuture failStrategy(FailStrategy strategy);
 
     /**
      * 获取失败策略

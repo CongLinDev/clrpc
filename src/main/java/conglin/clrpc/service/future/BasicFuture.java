@@ -2,17 +2,18 @@ package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.transport.message.*;
 
 public class BasicFuture extends AbstractFuture {
 
-    private final RequestPayload request;
+    private final InvocationContext invocationContext;
     private final long messageId;
     private ResponsePayload response;
 
-    public BasicFuture(long messageId, RequestPayload request) {
+    public BasicFuture(long messageId, InvocationContext invocationContext) {
         super();
-        this.request = request;
+        this.invocationContext = invocationContext;
         this.messageId = messageId;
     }
 
@@ -36,8 +37,8 @@ public class BasicFuture extends AbstractFuture {
      * 
      * @return
      */
-    public final RequestPayload request() {
-        return this.request;
+    public final InvocationContext context() {
+        return this.invocationContext;
     }
 
     /**

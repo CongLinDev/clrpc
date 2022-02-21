@@ -3,6 +3,7 @@ package conglin.clrpc.service.proxy;
 import java.util.function.Consumer;
 
 import conglin.clrpc.service.ServiceInterface;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
@@ -14,29 +15,11 @@ import conglin.clrpc.service.instance.condition.InstanceCondition;
  * 代理对象调用方法后 方法不阻塞直接返回默认值
  * 
  * 而 {@link InvocationFuture} 对象 保存在 当前线程的 {@code ThreadLocalMap} 中 可以调用
- * {@link AsyncObjectProxy#lastFuture()} 获得
+ * {@link InvocationFuture#lastFuture()} 获得
  * 
  * 需要注意的 {@code ThreadLocalMap} 只保存调用线程最新的 {@link InvocationFuture} 对象
  */
 public class AsyncObjectProxy extends AbstractObjectProxy {
-
-    private static final ThreadLocal<InvocationFuture> threadLocal = new ThreadLocal<>();
-
-    /**
-     * 返回当前线程最新一次操作产生的 future 对象
-     * 
-     * @return
-     */
-    public static InvocationFuture lastFuture() {
-        return threadLocal.get();
-    }
-
-    /**
-     * 移除当前线程最新一次操作产生的 future 对象
-     */
-    public static void removeFuture() {
-        threadLocal.remove();
-    }
 
     private final ServiceInterface<?> serviceInterface;
 
@@ -56,7 +39,7 @@ public class AsyncObjectProxy extends AbstractObjectProxy {
 
     @Override
     protected Object handleFuture(InvocationFuture future) throws Exception {
-        threadLocal.set(future);
+        InvocationContext.lastFuture(future);
         return null;
     }
 
