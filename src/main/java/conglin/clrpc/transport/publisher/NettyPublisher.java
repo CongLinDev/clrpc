@@ -1,6 +1,6 @@
 package conglin.clrpc.transport.publisher;
 
-import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -13,9 +13,11 @@ import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.instance.AbstractServiceInstance;
+import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
@@ -62,26 +64,33 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
         nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-        int servicePort = Integer.parseInt(properties.getProperty("provider.port", "0"));
+        String instanceId = properties.getProperty("provider.instance.id");
+        String instanceAddress = properties.getProperty("provider.instance.address");
+
         try {
-            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.localAddress(servicePort)).sync();
+            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(instanceAddress)).sync();
             if (channelFuture.isSuccess()) {
-                String localAddress = IPAddressUtils
-                        .addressString((InetSocketAddress) channelFuture.channel().localAddress());
                 Map<String, ServiceObject<?>> serviceObjects = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
                 ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
                 serviceObjects.values().forEach(serviceObject -> {
-                    String instanceInfo = serviceInstanceCodec.toContent(serviceObject, localAddress);
-                    serviceRegistry.register(serviceObject.name(), localAddress, instanceInfo);
+                    ServiceInstance instance = new AbstractServiceInstance(instanceId, instanceAddress, serviceObject) {
+                        @Override
+                        public String toString() {
+                            return serviceInstanceCodec.toContent(this);
+                        }
+                    };
+                    serviceRegistry.register(serviceObject.name(), instance.id(), instance.toString());
                 });
-                LOGGER.info("Provider starts on {}", localAddress);
+                LOGGER.info("Provider starts with {}", instanceAddress);
             } else {
                 LOGGER.error("Provider starts failed");
                 throw new InterruptedException();
             }
             channelFuture.channel().closeFuture().sync();
+        } catch (UnknownHostException e) {
+            LOGGER.error("Cannot resolved address {}.", instanceAddress);
         } catch (InterruptedException e) {
-            LOGGER.error("Cannot bind port {}.", servicePort);
+            LOGGER.error("Cannot bind address {}.", instanceAddress);
         }
     }
 

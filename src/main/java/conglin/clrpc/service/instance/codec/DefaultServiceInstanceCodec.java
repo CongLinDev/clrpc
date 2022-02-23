@@ -13,15 +13,18 @@ public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
     @Override
     public ServiceInstance fromContent(String content) {
         Map<String, String> serviceMetaInfo = UrlScheme.resolveParameters(content, "[&]", "[=]");
+        String instanceId = serviceMetaInfo.get(ServiceInstance.INSTANCE_ID);
         String address = serviceMetaInfo.get(ServiceInstance.INSTANCE_ADDRESS);
         @SuppressWarnings("unchecked")
-        Class<Object> interfaceClass = (Class<Object>)ClassUtils.loadClass(serviceMetaInfo.get(ServiceObject.INTERFACE));
-        return new AbstractServiceInstance(new AbstractServiceObject<>("", interfaceClass, serviceMetaInfo) {
-            @Override
-            public Object object() {
-                return null;
-            }
-        }, address){
+        Class<Object> interfaceClass = (Class<Object>) ClassUtils
+                .loadClass(serviceMetaInfo.get(ServiceObject.INTERFACE));
+        return new AbstractServiceInstance(instanceId, address,
+                new AbstractServiceObject<>("", interfaceClass, serviceMetaInfo) {
+                    @Override
+                    public Object object() {
+                        return null;
+                    }
+                }) {
             @Override
             public String toString() {
                 return DefaultServiceInstanceCodec.this.toContent(this);
@@ -29,13 +32,8 @@ public class DefaultServiceInstanceCodec implements ServiceInstanceCodec {
         };
     }
 
-    protected String toContent(AbstractServiceInstance serviceInstance) {
-        return UrlScheme.toParameters(serviceInstance.serviceObject().metaInfo(), "&", "=");
-    }
-
     @Override
-    public String toContent(ServiceObject<?> serviceObject, String address) {
-        serviceObject.metaInfo().putIfAbsent(ServiceInstance.INSTANCE_ADDRESS, address);
-        return UrlScheme.toParameters(serviceObject.metaInfo(), "&", "=");
+    public String toContent(ServiceInstance serviceInstance) {
+        return UrlScheme.toParameters(serviceInstance.serviceObject().metaInfo(), "&", "=");
     }
 }

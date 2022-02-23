@@ -8,7 +8,7 @@ import conglin.clrpc.transport.message.Message;
 public class RouterResult {
     private final ServiceInstance instance;
     private final Consumer<Message> sender;
-    
+
     /**
      * @param target
      * @param sender
@@ -25,8 +25,12 @@ public class RouterResult {
         return instance;
     }
 
+    /**
+     * 发送 message
+     * 
+     * @param message
+     */
     public void send(Message message) {
         sender.accept(message);
     }
-    
 }

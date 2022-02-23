@@ -1,6 +1,5 @@
 package conglin.clrpc.service.instance.codec;
 
-import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.instance.ServiceInstance;
 
 public interface ServiceInstanceCodec {
@@ -15,10 +14,9 @@ public interface ServiceInstanceCodec {
 
     /**
      * 转为 string
-     *
-     * @param serviceObject
-     * @param address
+     * 
+     * @param serviceInstance
      * @return
      */
-    String toContent(ServiceObject<?> serviceObject, String address);
+    String toContent(ServiceInstance serviceInstance);
 }

@@ -1,21 +1,30 @@
 package conglin.clrpc.service.instance;
 
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.ServiceVersion;
 
 abstract public class AbstractServiceInstance implements ServiceInstance {
 
     protected final ServiceObject<?> serviceObject;
 
+    protected final String id;
     protected final String address;
 
-    public AbstractServiceInstance(ServiceObject<?> serviceObject, String address) {
-        this.serviceObject = serviceObject;
+    public AbstractServiceInstance(String id, String address, ServiceObject<?> serviceObject) {
+        this.id = id == null ? address : id;
         this.address = address;
+        this.serviceObject = serviceObject;
+        serviceObject.metaInfo().putIfAbsent(ServiceInstance.INSTANCE_ID, id);
+        serviceObject.metaInfo().putIfAbsent(ServiceInstance.INSTANCE_ADDRESS, address);
     }
 
+    @Override
     public ServiceObject<?> serviceObject() {
         return serviceObject;
+    }
+
+    @Override
+    public String id() {
+        return id;
     }
 
     @Override
@@ -26,11 +35,6 @@ abstract public class AbstractServiceInstance implements ServiceInstance {
     @Override
     public String name() {
         return serviceObject.name();
-    }
-
-    @Override
-    public ServiceVersion version() {
-        return serviceObject.version();
     }
 
     @Override
