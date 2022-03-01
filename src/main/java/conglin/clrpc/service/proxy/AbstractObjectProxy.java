@@ -2,7 +2,6 @@ package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.InvocationContext;
-import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
@@ -33,9 +32,12 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
             };
         }
 
-        InvocationFuture future = call(getServiceName(methodDeclaringClass), methodName, args);
-        Object result = handleFuture(future);
-        return result == null ? ClassUtils.defaultValue(method.getReturnType()) : result;
+        InvocationContext invocationContext = call(getServiceName(methodDeclaringClass), methodName, args);
+        Object result = handleContext(invocationContext);
+        if (result == null) {
+            return ClassUtils.defaultValue(method.getReturnType());
+        }
+        return result;
     }
 
     /**
@@ -49,14 +51,14 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
     }
 
     /**
-     * 处理 future
+     * 处理 invocationContext
      * 
-     * @param future
+     * @param invocationContext
      * @return
      * @throws Exception
      */
-    protected Object handleFuture(InvocationFuture future) throws Exception {
-        return future.get();
+    protected Object handleContext(InvocationContext invocationContext) throws Exception {
+        return invocationContext.getFuture().get();
     }
 
     /**
@@ -65,9 +67,9 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @param serviceName 服务名
      * @param methodName  方法名
      * @param args        参数
-     * @return future
+     * @return InvocationContext
      */
-    public InvocationFuture call(String serviceName, String methodName, Object... args) {
+    public InvocationContext call(String serviceName, String methodName, Object... args) {
         return call(instanceCondition(), new RequestPayload(serviceName, methodName, args));
     }
 
@@ -76,15 +78,16 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * 
      * @param instanceCondition
      * @param request 请求payload
-     * @return future
+     * @return InvocationContext
      */
-    public InvocationFuture call(InstanceCondition instanceCondition, RequestPayload request) {
+    public InvocationContext call(InstanceCondition instanceCondition, RequestPayload request) {
         InvocationContext invocationContext = new InvocationContext();
         invocationContext.setRequest(request);
-        invocationContext.setFailStrategyClass(failStrategyClass());
+        invocationContext.setFailStrategy(failStrategy());
         invocationContext.setInstanceConsumer(instanceConsumer());
         invocationContext.setInstanceCondition(instanceCondition);
-        return super.call(invocationContext);
+        super.call(invocationContext);
+        return invocationContext;
     }
 
     /**
@@ -92,7 +95,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      *
      * @return
      */
-    abstract protected Class<? extends FailStrategy> failStrategyClass();
+    abstract protected FailStrategy failStrategy();
 
     /**
      * instanceConsumer

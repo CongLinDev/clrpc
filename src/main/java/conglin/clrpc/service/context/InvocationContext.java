@@ -1,24 +1,26 @@
 package conglin.clrpc.service.context;
 
+import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 import conglin.clrpc.transport.message.RequestPayload;
+import conglin.clrpc.transport.message.ResponsePayload;
 
 import java.util.function.Consumer;
 
 public class InvocationContext {
 
-    private static final ThreadLocal<InvocationFuture> localFuture = new ThreadLocal<>();
+    private static final ThreadLocal<InvocationContext> localContext = new ThreadLocal<>();
 
     /**
      * 返回当前线程最新一次操作产生的 future 对象
      * 
      * @return
      */
-    public static InvocationFuture lastFuture() {
-        return localFuture.get();
+    public static InvocationContext lastContext() {
+        return localContext.get();
     }
 
     /**
@@ -26,8 +28,8 @@ public class InvocationContext {
      * 
      * @param future
      */
-    public static void lastFuture(InvocationFuture future) {
-        localFuture.set(future);
+    public static void lastContext(InvocationContext context) {
+        localContext.set(context);
     }
 
     /**
@@ -35,38 +37,34 @@ public class InvocationContext {
      * 
      * @param future
      */
-    public static void removeFuture() {
-        localFuture.remove();
+    public static void removeContext() {
+        localContext.remove();
     }
 
-    protected RequestPayload request;
+    protected final InvocationFuture future;
+    private final long invokeBeginTime;
+    protected RequestPayload request; // init in proxy
+    protected InstanceCondition instanceCondition; // init in proxy
+    protected Consumer<ServiceInstance> instanceConsumer; // init in proxy
+    protected FailStrategy failStrategy; // init in proxy
 
-    protected Class<? extends FailStrategy> failStrategyClass;
+    protected Long identifier; // init in sender
+    protected ResponsePayload response; // init in response
+    private long invokeEndTime;  // init in response
 
-    protected InstanceCondition instanceCondition;
-
-    protected Consumer<ServiceInstance> instanceConsumer;
+    public InvocationContext() {
+        invokeBeginTime = System.currentTimeMillis();
+        future = new BasicFuture();
+    }
 
     public RequestPayload getRequest() {
         return request;
     }
 
     public void setRequest(RequestPayload request) {
-        this.request = request;
-    }
-
-    /**
-     * @return the failStrategyClass
-     */
-    public Class<? extends FailStrategy> getFailStrategyClass() {
-        return failStrategyClass;
-    }
-
-    /**
-     * @param failStrategyClass the failStrategyClass to set
-     */
-    public void setFailStrategyClass(Class<? extends FailStrategy> failStrategyClass) {
-        this.failStrategyClass = failStrategyClass;
+        if (this.request == null) {
+            this.request = request;
+        }
     }
 
     /**
@@ -75,7 +73,7 @@ public class InvocationContext {
     public InstanceCondition getInstanceCondition() {
         return instanceCondition;
     }
-    
+
     /**
      * @param instanceCondition the instanceCondition to set
      */
@@ -90,4 +88,73 @@ public class InvocationContext {
     public void setInstanceConsumer(Consumer<ServiceInstance> instanceConsumer) {
         this.instanceConsumer = instanceConsumer;
     }
+
+    /**
+     * @return the response
+     */
+    public ResponsePayload getResponse() {
+        return response;
+    }
+
+    /**
+     * @param response the response to set
+     */
+    public void setResponse(ResponsePayload response) {
+        if (this.future.isPending()) {
+            this.response = response;
+            this.invokeEndTime = System.currentTimeMillis();
+            this.future.done(response.isError(), response.result());
+        }
+    }
+
+    /**
+     * @return the future
+     */
+    public InvocationFuture getFuture() {
+        return future;
+    }
+
+    /**
+     * @return the identifier
+     */
+    public Long getIdentifier() {
+        return identifier;
+    }
+
+    /**
+     * @param identifier the identifier to set
+     */
+    public void setIdentifier(Long identifier) {
+        if (this.identifier == null) {
+            this.identifier = identifier;
+        }
+    }
+
+    /**
+     * @return the failStrategy
+     */
+    public FailStrategy getFailStrategy() {
+        return failStrategy;
+    }
+
+    /**
+     * @param failStrategy the failStrategy to set
+     */
+    public void setFailStrategy(FailStrategy failStrategy) {
+        this.failStrategy = failStrategy;
+    }
+
+    /**
+     * @return the invokeBeginTime
+     */
+    public long getInvokeBeginTime() {
+        return invokeBeginTime;
+    }
+
+    /**
+     * @return the invokeEndTime
+     */
+    public long getInvokeEndTime() {
+        return invokeEndTime;
+    } 
 }

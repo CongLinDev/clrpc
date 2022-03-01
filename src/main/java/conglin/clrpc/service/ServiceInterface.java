@@ -13,11 +13,11 @@ public interface ServiceInterface<T> extends Service {
     Class<T> interfaceClass();
 
     /**
-     * failStrategyClass
+     * failStrategy
      * 
      * @return
      */
-    Class<? extends FailStrategy> failStrategyClass();
+    FailStrategy failStrategy();
 
     /**
      * instanceCondition

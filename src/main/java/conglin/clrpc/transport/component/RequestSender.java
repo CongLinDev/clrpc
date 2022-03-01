@@ -1,7 +1,6 @@
 package conglin.clrpc.transport.component;
 
 import conglin.clrpc.service.context.InvocationContext;
-import conglin.clrpc.service.future.InvocationFuture;
 
 public interface RequestSender {
 
@@ -11,5 +10,5 @@ public interface RequestSender {
      * @param invocationContext
      * @return
      */
-    InvocationFuture sendRequest(InvocationContext invocationContext);
+    void sendRequest(InvocationContext invocationContext);
 }

@@ -1,4 +1,6 @@
 package conglin.clrpc.transport.message;
 
-public record Message(Long messageId, Payload payload) {
+import java.io.Serializable;
+
+public record Message(Long messageId, Payload payload) implements Serializable {
 }

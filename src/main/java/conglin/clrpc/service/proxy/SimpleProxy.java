@@ -5,7 +5,6 @@ import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.context.InvocationContext;
-import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.transport.component.RequestSender;
 
 public class SimpleProxy implements InvocationProxy, Initializable, ComponentContextAware {
@@ -36,7 +35,7 @@ public class SimpleProxy implements InvocationProxy, Initializable, ComponentCon
      * @return
      */
     @Override
-    public InvocationFuture call(InvocationContext invocationContext) {
-        return sender.sendRequest(invocationContext);
+    public void call(InvocationContext invocationContext) {
+        sender.sendRequest(invocationContext);
     }
 }

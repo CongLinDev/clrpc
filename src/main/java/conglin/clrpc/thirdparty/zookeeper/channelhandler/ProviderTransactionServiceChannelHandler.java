@@ -1,6 +1,5 @@
 package conglin.clrpc.thirdparty.zookeeper.channelhandler;
 
-import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
 import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.extension.transaction.CommonTransactionResult;
 import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.TransactionHelper;
@@ -33,9 +31,12 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
 
     protected TransactionHelper helper;
 
+    protected String instaceId;
+
     @Override
     public void init() {
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        this.instaceId = properties.getProperty("provider.instance.id");
         String urlString = properties.getProperty("extension.atomicity.url");
         helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
         ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
@@ -60,9 +61,8 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
         long transactionId = request.transactionId();
         int serialId = request.serialId();
         LOGGER.debug("Receive transaction request(transactionId={} serialId={})", transactionId, serialId);
-        final String serviceAddress = IPAddressUtils.addressString((InetSocketAddress) pipeline().channel().localAddress());
         try {
-            if (!helper.isOccupied(transactionId, serialId, serviceAddress)) { // 是否占有该请求处理权限
+            if (!helper.isOccupied(transactionId, serialId, instaceId)) { // 是否占有该请求处理权限
                 // 直接丢弃
                 LOGGER.debug("Ignore transaction request(transactionId={} serialId={})", transactionId, serialId);
                 return null;
@@ -74,7 +74,7 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
             // 处理事务
             // 预提交事务
             TransactionResult transactionResult = jdkReflectInvoke(serviceObject.object(), request);
-            if (!helper.signSuccess(transactionId, serialId, serviceAddress)) { // 标记预提交成功
+            if (!helper.signSuccess(transactionId, serialId, instaceId)) { // 标记预提交成功
                 // 标记操作失败的话直接丢弃请求
                 return null;
             }
@@ -85,19 +85,19 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
         } catch (UnsupportedServiceException e) {
             LOGGER.error("Transaction request(transactionId={} serialId={}) unsupported: {}", transactionId, serialId, e.getMessage());
             // 标记失败，未找到服务对象
-            signFailed(transactionId, serialId, serviceAddress);
+            signFailed(transactionId, serialId, instaceId);
             return new ResponsePayload(true, e);
         } catch (ServiceExecutionException e) {
             // 预提交失败
             LOGGER.error("Transaction request(transactionId={} serialId={}) execute failed: {}", transactionId, serialId, e.getMessage());
             // 标记失败，由服务消费者在下次定时轮询时重新请求
-            signFailed(transactionId, serialId, serviceAddress);
+            signFailed(transactionId, serialId, instaceId);
             return new ResponsePayload(true, e);
         } catch (TransactionException e) {
             // 预提交失败
             LOGGER.error("Transaction request(transactionId={} serialId={}) watch failed: {}", transactionId, serialId, e.getMessage());
             // 标记失败，由服务消费者在下次定时轮询时重新请求
-            signFailed(transactionId, serialId, serviceAddress);
+            signFailed(transactionId, serialId, instaceId);
             return new ResponsePayload(true, e);
         }
     }

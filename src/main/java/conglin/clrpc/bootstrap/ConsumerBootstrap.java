@@ -14,8 +14,8 @@ import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.future.DefaultFutureHolder;
-import conglin.clrpc.service.future.FutureHolder;
+import conglin.clrpc.service.context.DefaultInvocationContextHolder;
+import conglin.clrpc.service.context.InvocationContextHolder;
 import conglin.clrpc.service.proxy.AbstractObjectProxy;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.InvocationProxy;
@@ -61,7 +61,7 @@ public class ConsumerBootstrap extends Bootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
-    private final FutureHolder<Long> futureHolder;
+    private final InvocationContextHolder<Long> contextHolder;
     private final Router router;
     private final RequestSender requestSender;
 
@@ -73,7 +73,7 @@ public class ConsumerBootstrap extends Bootstrap {
 
     public ConsumerBootstrap(Properties properites) {
         super(properites);
-        this.futureHolder = new DefaultFutureHolder();
+        this.contextHolder = new DefaultInvocationContextHolder();
         String discoveryClassName = properties().getProperty("registry.discovery-class");
         String registryUrl = properties().getProperty("registry.url");
         ServiceDiscovery serviceDiscovery = ClassUtils.loadObjectByType(discoveryClassName, ServiceDiscovery.class,
@@ -155,7 +155,7 @@ public class ConsumerBootstrap extends Bootstrap {
     public void start(BootOption option) {
         LOGGER.info("ConsumerBootstrap is starting.");
         initContext(option);
-        ObjectLifecycleUtils.assemble(futureHolder, context);
+        ObjectLifecycleUtils.assemble(contextHolder, context);
         ObjectLifecycleUtils.assemble(router, context);
         ObjectLifecycleUtils.assemble(requestSender, context);
     }
@@ -165,8 +165,8 @@ public class ConsumerBootstrap extends Bootstrap {
      */
     public void stop() {
         LOGGER.info("Consumer is stopping.");
-        futureHolder.waitForUncompletedFuture();
-        ObjectLifecycleUtils.destroy(futureHolder);
+        contextHolder.waitForUncompletedInvocation();
+        ObjectLifecycleUtils.destroy(contextHolder);
         ObjectLifecycleUtils.destroy(router);
         ObjectLifecycleUtils.destroy(requestSender);
         context = null;
@@ -203,7 +203,7 @@ public class ConsumerBootstrap extends Bootstrap {
         // protocol
         context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
         // future holder
-        context.put(ComponentContextEnum.FUTURE_HOLDER, futureHolder);
+        context.put(ComponentContextEnum.INVOCATION_CONTEXT_HOLDER, contextHolder);
         // router
         context.put(ComponentContextEnum.ROUTER, router);
         // request sender

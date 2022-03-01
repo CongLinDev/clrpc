@@ -1,11 +1,10 @@
 package conglin.clrpc.transport.message;
 
 import java.io.Serial;
-import java.io.Serializable;
 
 import conglin.clrpc.common.exception.ServiceException;
 
-public class ResponsePayload implements Payload, Serializable {
+public class ResponsePayload implements Payload {
 
     @Serial
     private static final long serialVersionUID = 7123186624198529783L;

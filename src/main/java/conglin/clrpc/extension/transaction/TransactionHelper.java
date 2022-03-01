@@ -1,7 +1,12 @@
 package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.common.Callback;
-
+/**
+ * 
+ * consumer     begin -> prepare                                                     (waiting all responses) -> commit/abort
+ *                          \|/                                                               /|\                    \|/
+ * provider             isOccupied(return true) -> (pre-commit) -> signSuccess/signFailed -> watch         (do commit/rollback action)
+ */
 public interface TransactionHelper {
 
     /**

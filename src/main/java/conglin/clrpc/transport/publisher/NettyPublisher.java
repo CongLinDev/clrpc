@@ -51,22 +51,24 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
 
     @Override
     public void init() {
-        ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        String instanceAddress = properties.getProperty("provider.instance.address");
+        String instanceId = properties.getProperty("provider.instance.id", instanceAddress);
+        if (instanceId == instanceAddress) {
+            properties.setProperty("provider.instance.id", instanceId);
+        }
 
+        ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
+        
         nettyBootstrap = new ServerBootstrap()
-                .group(new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.boss", "1"))),
-                        new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.thread.worker", "4"))))
+                .group(new NioEventLoopGroup(1),
+                        new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.io-thread.number", "4"))))
                 .channel(NioServerSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         DefaultChannelInitializer initializer = new DefaultChannelInitializer();
         ObjectLifecycleUtils.assemble(initializer, getContext());
         nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-        String instanceId = properties.getProperty("provider.instance.id");
-        String instanceAddress = properties.getProperty("provider.instance.address");
-
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(instanceAddress)).sync();
             if (channelFuture.isSuccess()) {

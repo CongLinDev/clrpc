@@ -1,7 +1,8 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.future.strategy.FailFast;
 import conglin.clrpc.service.future.strategy.FailStrategy;
+import conglin.clrpc.service.instance.condition.DefaultInstanceCondition;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 public class SimpleServiceInterface<T> implements ServiceInterface<T> {
@@ -12,16 +13,16 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
     protected final Class<T> interfaceClass;
 
-    protected final Class<? extends FailStrategy> failStrategyClass;
+    protected final FailStrategy failStrategy;
 
     protected final InstanceCondition instanceCondition;
 
     protected SimpleServiceInterface(String name, ServiceVersion version, Class<T> interfaceClass,
-            Class<? extends FailStrategy> failStrategyClass, InstanceCondition instanceCondition) {
+            FailStrategy failStrategy, InstanceCondition instanceCondition) {
         this.name = name;
         this.version = version == null ? ServiceVersion.defaultVersion() : version;
         this.interfaceClass = interfaceClass;
-        this.failStrategyClass = failStrategyClass;
+        this.failStrategy = failStrategy;
         this.instanceCondition = instanceCondition;
     }
 
@@ -41,8 +42,8 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
     }
 
     @Override
-    public Class<? extends FailStrategy> failStrategyClass() {
-        return failStrategyClass;
+    public FailStrategy failStrategy() {
+        return failStrategy;
     }
 
     @Override
@@ -60,9 +61,7 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
         protected final Class<T> interfaceClass;
 
-        protected Class<? extends FailStrategy> failStrategyClass;
-
-        protected Class<? extends InstanceCondition> instanceConditionClass;
+        protected FailStrategy failStrategy;
 
         protected InstanceCondition instanceCondition;
 
@@ -80,13 +79,8 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             return this;
         }
 
-        public Builder<T> failStrategyClass(Class<? extends FailStrategy> failStrategyClass) {
-            this.failStrategyClass = failStrategyClass;
-            return this;
-        }
-
-        public Builder<T> instanceConditionClass(Class<? extends InstanceCondition> instanceConditionClass) {
-            this.instanceConditionClass = instanceConditionClass;
+        public Builder<T> failStrategy(FailStrategy failStrategy) {
+            this.failStrategy = failStrategy;
             return this;
         }
 
@@ -105,11 +99,14 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             if (version == null) {
                 version = ServiceVersion.defaultVersion();
             }
-            if (instanceCondition == null && instanceConditionClass != null) {
-                instanceCondition = ClassUtils.loadObjectByType(instanceConditionClass, InstanceCondition.class);
-                instanceCondition.currentVersion(version);
+            if (instanceCondition == null) {
+                instanceCondition = new DefaultInstanceCondition();
             }
-            return new SimpleServiceInterface<>(name, version, interfaceClass, failStrategyClass, instanceCondition);
+            instanceCondition.currentVersion(version);
+            if (failStrategy == null) {
+                failStrategy = new FailFast();
+            }
+            return new SimpleServiceInterface<>(name, version, interfaceClass, failStrategy, instanceCondition);
         }
     }
 }

@@ -1,7 +1,6 @@
 package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -42,18 +41,12 @@ public interface InvocationFuture extends Future<Object> {
     }
 
     /**
-     * 该 {@link InvocationFuture} 的标识符
+     * 认该 {@link InvocationFuture} 完成
      * 
-     * @return
-     */
-    long identifier();
-
-    /**
-     * 确认该 {@link InvocationFuture} 完成
-     * 
+     * @param error 是否错误
      * @param result
      */
-    void done(Object result);
+    void done(boolean error, Object result);
 
     /**
      * 是否等待中
@@ -70,19 +63,4 @@ public interface InvocationFuture extends Future<Object> {
      * @return
      */
     boolean isError();
-
-    /**
-     * 绑定失败策略
-     * 
-     * @param strategy
-     * @return this
-     */
-    InvocationFuture failStrategy(FailStrategy strategy);
-
-    /**
-     * 获取失败策略
-     * 
-     * @param strategy
-     */
-    FailStrategy failStrategy();
 }

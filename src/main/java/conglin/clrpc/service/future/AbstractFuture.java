@@ -2,7 +2,6 @@ package conglin.clrpc.service.future;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.ServiceException;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.future.sync.SignalStateSync;
 import conglin.clrpc.service.future.sync.StateSync;
 
@@ -15,7 +14,6 @@ abstract public class AbstractFuture implements InvocationFuture {
     private final StateSync SYNCHRONIZER; // 同步器
 
     private Callback futureCallback; // 回调
-    private FailStrategy failStrategy; // 失败策略
     private boolean error; // 是否出错，只有在该future已经完成的情况下，该变量才有效
 
     public AbstractFuture() {
@@ -55,10 +53,13 @@ abstract public class AbstractFuture implements InvocationFuture {
     abstract protected Object doGet() throws ServiceException;
 
     @Override
-    public void done(Object result) {
+    public void done(boolean error, Object result) {
         if (isPending()) {
             beforeDone(result);
             SYNCHRONIZER.signal();
+            if (error) {
+                signError();
+            }
             runCallback();
         } else {
             throw new UnsupportedOperationException();
@@ -119,17 +120,6 @@ abstract public class AbstractFuture implements InvocationFuture {
             futureCallback = (futureCallback == null) ? callback : futureCallback.andThen(callback);
         }
         return this;
-    }
-
-    @Override
-    public InvocationFuture failStrategy(FailStrategy strategy) {
-        this.failStrategy = strategy;
-        return this;
-    }
-
-    @Override
-    public FailStrategy failStrategy() {
-        return this.failStrategy;
     }
 
     protected void runCallback(Callback callback) {

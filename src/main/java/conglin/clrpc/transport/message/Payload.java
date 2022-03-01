@@ -1,9 +1,11 @@
 package conglin.clrpc.transport.message;
 
+import java.io.Serializable;
+
 /**
  * 消息 payload 接口
  */
-public interface Payload {
+public interface Payload extends Serializable {
 
     /**
      * 继承该类的子类，必须设定一个消息类型码 默认为7个比特位

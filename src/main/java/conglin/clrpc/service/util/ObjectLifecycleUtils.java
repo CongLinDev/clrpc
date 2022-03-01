@@ -70,4 +70,17 @@ public class ObjectLifecycleUtils {
             return false;
         }
     }
+
+    /**
+     * isDestroyed
+     *
+     * @param object
+     * @return
+     */
+    public static boolean isDestroyed(Object object) {
+        if (object instanceof Destroyable) {
+            return ((Destroyable)object).isDestroyed();
+        }
+        return true;
+    }
 }

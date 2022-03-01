@@ -1,14 +1,25 @@
 package conglin.clrpc.common.loadbalance;
 
-import conglin.clrpc.common.object.Pair;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.*;
-import java.util.stream.Collectors;
+import conglin.clrpc.common.object.Pair;
 
 
 /**
@@ -279,7 +290,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         while ((entry = circle.higherEntry(position)) != null // 下一个节点不为空
                 && (position = entry.getKey()) <= tail) { // 且下一个节点确保在范围内
             Node<K, V> node = entry.getValue();
-            if (node.getEpoch() + 1 == currentEpoch) { // 只移除上一代未更新的节点
+            if (node.getEpoch() < currentEpoch) { // 只移除未更新的节点
                 circle.remove(position);
                 LOGGER.debug("Remove invalid node(position={}, key={})", position, node.getKey());
                 destructor.accept(type, node.getValue());
@@ -376,7 +387,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
 
     static class Node<K, V> {
 
-        protected AtomicInteger epoch;
+        protected volatile int epoch;
 
         protected K key;
 
@@ -387,7 +398,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         }
 
         public Node(int epoch, K key, V value) {
-            this.epoch = new AtomicInteger(epoch);
+            this.epoch = epoch;
             this.key = key;
             this.value = value;
         }
@@ -398,7 +409,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
          * @return
          */
         public int getEpoch() {
-            return epoch.get();
+            return epoch;
         }
 
         /**
@@ -408,7 +419,12 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
          * @return
          */
         public boolean setEpoch(int epoch) {
-            return this.epoch.compareAndSet(epoch - 1, epoch);
+            if (this.epoch < epoch) {
+                this.epoch = epoch;
+                return true;
+            } else {
+                return false;
+            }
         }
 
         /**

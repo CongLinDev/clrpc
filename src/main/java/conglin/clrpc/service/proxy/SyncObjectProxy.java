@@ -21,8 +21,8 @@ public class SyncObjectProxy extends AbstractObjectProxy {
     }
 
     @Override
-    protected Class<? extends FailStrategy> failStrategyClass() {
-        return serviceInterface.failStrategyClass();
+    protected FailStrategy failStrategy() {
+        return serviceInterface.failStrategy();
     }
 
     @Override

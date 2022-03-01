@@ -2,7 +2,8 @@ package conglin.clrpc.service.handler;
 
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.future.FutureHolder;
+import conglin.clrpc.service.context.InvocationContext;
+import conglin.clrpc.service.context.InvocationContextHolder;
 import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.ResponsePayload;
@@ -13,7 +14,7 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBasicServiceChannelHandler.class);
 
-    protected FutureHolder<Long> futureHolder;
+    protected InvocationContextHolder<Long> contextHolder;
 
     @Override
     protected boolean accept(Payload payload) {
@@ -22,25 +23,30 @@ public class ConsumerBasicServiceChannelHandler extends ConsumerAbstractServiceC
 
     @Override
     public void init() {
-        futureHolder = getContext().getWith(ComponentContextEnum.FUTURE_HOLDER);
+        contextHolder = getContext().getWith(ComponentContextEnum.INVOCATION_CONTEXT_HOLDER);
     }
 
     @Override
     protected Object execute(Long messageId, Payload payload) {
         LOGGER.debug("Receive response (messageId={})", messageId);
-        InvocationFuture future = futureHolder.getFuture(messageId);
+        InvocationContext invocationContext = contextHolder.get(messageId);
+        if (invocationContext == null) {
+            LOGGER.error("Can not find binding invocationContext (messageId={})", messageId);
+            return null;
+        }
 
-        if (future != null && future.isPending()) {
+        InvocationFuture future = invocationContext.getFuture();
+        if (future.isPending()) {
             ResponsePayload response = (ResponsePayload) payload;
             if (response.isError()) {
-                future.failStrategy().error(payload);
+                invocationContext.getFailStrategy().error(invocationContext, payload);
             } else {
-                future.done(payload);
+                invocationContext.setResponse(response);
             }
-            return future;
+            return invocationContext;
         } else {
-            LOGGER.error("Can not find binding future (messageId={})", messageId);
-            return null;
+            LOGGER.error("Can not find binding invocationContext (messageId={})", messageId);
+            return invocationContext;
         }
     }
 }

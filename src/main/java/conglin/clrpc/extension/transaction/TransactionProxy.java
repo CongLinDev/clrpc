@@ -1,7 +1,7 @@
 package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.future.InvocationFuture;
+import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 import conglin.clrpc.service.proxy.InvocationProxy;
 
@@ -23,10 +23,10 @@ public interface TransactionProxy extends InvocationProxy {
      * @param serviceName 服务名
      * @param method      服务方法
      * @param args        服务参数
-     * @return sub future
+     * @return sub InvocationContext
      * @throws TransactionException
      */
-    InvocationFuture call(String serviceName, String method, Object... args) throws TransactionException;
+    InvocationContext call(String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 发送事务内部的一条原子性请求
@@ -35,37 +35,37 @@ public interface TransactionProxy extends InvocationProxy {
      * @param serviceName 服务名
      * @param method      服务方法
      * @param args        服务参数
-     * @return sub future
+     * @return sub InvocationContext
      * @throws TransactionException
      */
-    InvocationFuture call(InstanceCondition instanceCondition, String serviceName, String method, Object... args) throws TransactionException;
+    InvocationContext call(InstanceCondition instanceCondition, String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 提交事务
      * 
-     * @return transaction future
+     * @return transaction context
      * @throws TransactionException
      */
-    InvocationFuture commit() throws TransactionException;
+    TransactionInvocationContext commit() throws TransactionException;
 
     /**
      * 提交事务
      * 
      * @param timeout
      * @param unit
-     * @return
+     * @return transaction context
      * @throws TransactionException
      * @throws TimeoutException
      */
-    InvocationFuture commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException;
+    TransactionInvocationContext commit(long timeout, TimeUnit unit) throws TransactionException, TimeoutException;
 
     /**
      * 中止事务
      * 
-     * @return transaction future
+     * @return transaction context
      * @throws TransactionException
      */
-    InvocationFuture abort() throws TransactionException;
+    TransactionInvocationContext abort() throws TransactionException;
 
     /**
      * 获取异步原子请求代理

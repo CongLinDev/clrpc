@@ -78,8 +78,8 @@ String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返
 HelloService asyncService = bootstrap.proxy(serviceInterface, true);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
-InvocationFuture future = InvocationContext.lastFuture(); // 获取该线程最新一次操作的产生的future对象
-future.callback(new Callback(){ // 使用回调处理结果
+InvocationFuture future = InvocationContext.lastContext().getFuture(); // 获取该线程最新一次操作的产生的future对象
+future.callback(new Callback() { // 使用回调处理结果
     @Override
     public void success(Object res) {}
     @Override
@@ -111,11 +111,11 @@ HelloService service = proxy.proxy(serviceInterface);
 proxy.begin(); // 事务开启
 
 service.hello("first request"); // 异步发送第一条请求
-InvocationFuture f1 = InvocationContext.lastFuture(); // 获取第一条请求产生的future对象
+InvocationFuture f1 = InvocationContext.lastContext().getFuture(); // 获取第一条请求产生的future对象
 service.hi("second request"); // 异步发送第二条请求
-InvocationFuture f2 = InvocationContext.lastFuture(); // 获取第二条请求产生的future对象
+InvocationFuture f2 = InvocationContext.lastContext().getFuture(); // 获取第二条请求产生的future对象
 
-InvocationFuture future = proxy.commit(); // 事务提交 返回事务 Future
+TransactionInvocationContext context = proxy.commit(); // 事务提交 返回事务 上下文
 
 // 关闭服务消费者
 bootstrap.stop();
@@ -133,20 +133,19 @@ bootstrap.stop();
 
 ### Config Items
 
-|              Field               |  Type   | Required |           Default            |            Remark             |
-| :------------------------------: | :-----: | :------: | :--------------------------: | :---------------------------: |
-|           registry.url           | String  |   True   |                              |         注册中心地址          |
-|     registry.register-class      | String  |   True   |                              |           注册类名            |
-|     registry.discovery-class     | String  |   True   |                              |           发现类名            |
-|       provider.instance.id       | String  |  False   | ${provider.instance.address} |         服务提供者id          |
-|    provider.instance.address     | String  |   True   |                              |        服务提供者地址         |
-|       provider.thread.boss       | Integer |  False   |              1               |  服务提供者的bossGroup线程数  |
-|      provider.thread.worker      | Integer |  False   |              4               | 服务提供者的workerGroup线程数 |
-| provider.channel.handler-factory | String  |  False   |            `null`            |     自定义处理器工厂类名      |
-|      consumer.thread.worker      | Integer |  False   |              4               | 服务使用者的workerGroup线程数 |
-|   consumer.retry.check-period    | Integer |  False   |             3000             |       重试机制执行周期        |
-| consumer.retry.initial-threshold | Integer |  False   |             3000             |       初始重试时间门槛        |
-| consumer.channel.handler-factory | String  |  False   |            `null`            |     自定义处理器工厂类名      |
+|              Field               |  Type   | Required |           Default            |        Remark        |
+| :------------------------------: | :-----: | :------: | :--------------------------: | :------------------: |
+|           registry.url           | String  |   True   |                              |     注册中心地址     |
+|     registry.register-class      | String  |   True   |                              |       注册类名       |
+|     registry.discovery-class     | String  |   True   |                              |       发现类名       |
+|       provider.instance.id       | String  |  False   | ${provider.instance.address} |     服务提供者id     |
+|    provider.instance.address     | String  |   True   |                              |    服务提供者地址    |
+|    provider.io-thread.number     | Integer |  False   |              4               | 服务提供者的IO线程数 |
+| provider.channel.handler-factory | String  |  False   |            `null`            | 自定义处理器工厂类名 |
+|    consumer.io-thread.number     | Integer |  False   |              4               | 服务使用者的IO线程数 |
+|   consumer.retry.check-period    | Integer |  False   |             3000             |   重试机制执行周期   |
+| consumer.retry.initial-threshold | Integer |  False   |             3000             |   初始重试时间门槛   |
+| consumer.channel.handler-factory | String  |  False   |            `null`            | 自定义处理器工厂类名 |
 
 ### Extension config Items
 
@@ -193,7 +192,7 @@ bootstrap.stop();
 
 ## Object Lifecycle
 
-使用者可以通过提供无参构造函数并实现以下接口来保证自己的扩展对象拥有 **clrpc** 对象生命周期。
+使用者可以通过提供对象或提供存在无参构造函数的类并实现以下接口来保证自己的扩展对象拥有 **clrpc** 对象生命周期。
 
 1. 使用前
    1. conglin.clrpc.service.context.ComponentContextAware

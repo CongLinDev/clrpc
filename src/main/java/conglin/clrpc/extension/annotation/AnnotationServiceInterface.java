@@ -8,7 +8,7 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
 
     private final Class<T> serviceInterfaceClass;
     private final String name;
-    private final Class<? extends FailStrategy> failStrategyClass;
+    private final FailStrategy failStrategy;
     private final conglin.clrpc.service.ServiceVersion version;
     private final InstanceCondition instanceCondition;
 
@@ -26,7 +26,7 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
         }
         this.name = name;
 
-        this.failStrategyClass = serviceInterface.failStrategy();
+        this.failStrategy = ClassUtils.loadObjectByType(serviceInterface.failStrategy(), FailStrategy.class);
         ServiceVersion serviceVersion = serviceInterface.version();
         this.version = new conglin.clrpc.service.ServiceVersion(serviceVersion.major(), serviceVersion.minor(), serviceVersion.build());
 
@@ -45,8 +45,8 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
     }
 
     @Override
-    public Class<? extends FailStrategy> failStrategyClass() {
-        return failStrategyClass;
+    public FailStrategy failStrategy() {
+        return failStrategy;
     }
 
     @Override

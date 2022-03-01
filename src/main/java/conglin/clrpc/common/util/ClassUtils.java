@@ -107,6 +107,7 @@ public final class ClassUtils {
      * @return
      */
     public static <T> T loadObjectByType(Class<?> targetClass, Class<T> superClass, Object... args) {
+        if (targetClass == null) return null;
         try {
             Class<? extends T> clazz = targetClass.asSubclass(superClass);
             Constructor<? extends T> constructor = clazz.getDeclaredConstructor(getClasses(args));

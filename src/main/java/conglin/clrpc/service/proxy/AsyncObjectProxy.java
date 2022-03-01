@@ -33,13 +33,13 @@ public class AsyncObjectProxy extends AbstractObjectProxy {
     }
 
     @Override
-    protected Class<? extends FailStrategy> failStrategyClass() {
-        return serviceInterface.failStrategyClass();
+    protected FailStrategy failStrategy() {
+        return serviceInterface.failStrategy();
     }
 
     @Override
-    protected Object handleFuture(InvocationFuture future) throws Exception {
-        InvocationContext.lastFuture(future);
+    protected Object handleContext(InvocationContext invocationContext) throws Exception {
+        InvocationContext.lastContext(invocationContext);
         return null;
     }
 

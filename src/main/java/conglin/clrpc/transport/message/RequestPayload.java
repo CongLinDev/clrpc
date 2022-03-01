@@ -1,11 +1,10 @@
 package conglin.clrpc.transport.message;
 
 import java.io.Serial;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class RequestPayload implements Payload, Serializable {
+public class RequestPayload implements Payload {
 
     @Serial
     private static final long serialVersionUID = 8095197377322231798L;

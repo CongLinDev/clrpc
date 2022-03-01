@@ -3,7 +3,6 @@ package conglin.clrpc.service.context;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.definition.role.Role;
-import conglin.clrpc.service.future.FutureHolder;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
@@ -19,7 +18,7 @@ public enum ComponentContextEnum {
     ROUTER(Router.class),
     PROPERTIES(Properties.class),
     REQUEST_SENDER(RequestSender.class),
-    FUTURE_HOLDER(FutureHolder.class),
+    INVOCATION_CONTEXT_HOLDER(InvocationContextHolder.class),
     SERVICE_OBJECT_HOLDER(Map.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class),
     PROTOCOL_DEFINITION(ProtocolDefinition.class);
