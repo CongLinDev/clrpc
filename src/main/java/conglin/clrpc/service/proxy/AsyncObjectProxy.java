@@ -5,9 +5,9 @@ import java.util.function.Consumer;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.future.InvocationFuture;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.service.strategy.FailStrategy;
 
 /**
  * 异步对象代理

@@ -2,9 +2,9 @@ package conglin.clrpc.service.context;
 
 import conglin.clrpc.service.future.BasicFuture;
 import conglin.clrpc.service.future.InvocationFuture;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.service.strategy.FailStrategy;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
 

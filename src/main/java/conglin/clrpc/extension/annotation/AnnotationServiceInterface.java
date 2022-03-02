@@ -1,8 +1,8 @@
 package conglin.clrpc.extension.annotation;
 
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.service.strategy.FailStrategy;
 
 public class AnnotationServiceInterface<T> implements conglin.clrpc.service.ServiceInterface<T> {
 

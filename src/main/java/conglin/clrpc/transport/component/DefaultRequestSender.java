@@ -17,7 +17,7 @@ import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.context.InvocationContextHolder;
-import conglin.clrpc.service.future.strategy.FailStrategy;
+import conglin.clrpc.service.strategy.FailStrategy;
 import conglin.clrpc.transport.message.Message;
 import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.transport.router.Router;

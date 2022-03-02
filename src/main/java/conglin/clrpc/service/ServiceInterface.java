@@ -1,7 +1,7 @@
 package conglin.clrpc.service;
 
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.service.strategy.FailStrategy;
 
 public interface ServiceInterface<T> extends Service {
 

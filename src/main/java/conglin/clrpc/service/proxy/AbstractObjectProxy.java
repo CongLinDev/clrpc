@@ -2,9 +2,9 @@ package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.service.context.InvocationContext;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.service.strategy.FailStrategy;
 import conglin.clrpc.transport.message.RequestPayload;
 
 import java.lang.reflect.InvocationHandler;

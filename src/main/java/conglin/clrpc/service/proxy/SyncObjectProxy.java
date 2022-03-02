@@ -3,9 +3,9 @@ package conglin.clrpc.service.proxy;
 import java.util.function.Consumer;
 
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.future.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
+import conglin.clrpc.service.strategy.FailStrategy;
 
 /**
  * 同步对象代理
