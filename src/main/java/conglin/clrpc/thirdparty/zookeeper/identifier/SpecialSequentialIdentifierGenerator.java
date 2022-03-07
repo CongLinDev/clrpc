@@ -23,7 +23,7 @@ public class SpecialSequentialIdentifierGenerator extends SequentialIdentifierGe
     @Override
     public long generate(String key) {
         if (keeperInstance != null) {
-            String sequentialNode = rootPath + "/" + key;
+            String sequentialNode = buildPath(key);
             String nodeSequentialId = ZooKeeperUtils.createNode(keeperInstance.instance(), sequentialNode, "", CreateMode.EPHEMERAL_SEQUENTIAL);
             String id = nodeSequentialId.substring(nodeSequentialId.lastIndexOf('/') + 3, nodeSequentialId.length());
             return Long.parseLong(id);

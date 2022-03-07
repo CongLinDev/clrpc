@@ -11,17 +11,10 @@ import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
  */
 final public class FailFast implements FailStrategy {
 
-    private static final long threshold = 5000L;
-
     @Override
     public boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
         context.setResponse(new ResponsePayload(true, exception));
         return false;
-    }
-
-    @Override
-    public boolean isTimeout(InvocationContext context) {
-        return context.getInvokeBeginTime() + threshold < System.currentTimeMillis();
     }
 
     @Override

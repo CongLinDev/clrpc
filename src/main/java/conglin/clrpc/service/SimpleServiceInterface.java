@@ -17,10 +17,13 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
 
     protected final InstanceCondition instanceCondition;
 
+    protected final long timeoutThreshold;
+
     protected SimpleServiceInterface(String name, ServiceVersion version, Class<T> interfaceClass,
-            FailStrategy failStrategy, InstanceCondition instanceCondition) {
+            long timeoutThreshold, FailStrategy failStrategy, InstanceCondition instanceCondition) {
         this.name = name;
         this.version = version == null ? ServiceVersion.defaultVersion() : version;
+        this.timeoutThreshold = timeoutThreshold;
         this.interfaceClass = interfaceClass;
         this.failStrategy = failStrategy;
         this.instanceCondition = instanceCondition;
@@ -51,6 +54,11 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
         return instanceCondition;
     }
 
+    @Override
+    public long timeoutThreshold() {
+        return timeoutThreshold;
+    }
+
     /**
      * builder
      */
@@ -64,6 +72,8 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
         protected FailStrategy failStrategy;
 
         protected InstanceCondition instanceCondition;
+
+        protected long timeoutThreshold;
 
         public Builder(Class<T> interfaceClass) {
             this.interfaceClass = interfaceClass;
@@ -89,6 +99,11 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             return this;
         }
 
+        public Builder<T> timeoutThreshold(long timeoutThreshold) {
+            this.timeoutThreshold = timeoutThreshold;
+            return this;
+        }
+
         public ServiceInterface<T> build() {
             if (interfaceClass == null) {
                 throw new IllegalArgumentException();
@@ -106,7 +121,7 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             if (failStrategy == null) {
                 failStrategy = new FailFast();
             }
-            return new SimpleServiceInterface<>(name, version, interfaceClass, failStrategy, instanceCondition);
+            return new SimpleServiceInterface<>(name, version, interfaceClass, timeoutThreshold, failStrategy, instanceCondition);
         }
     }
 }

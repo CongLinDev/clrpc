@@ -18,14 +18,6 @@ public interface FailStrategy {
     boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception);
 
     /**
-     * 是否超时
-     * 
-     * @param context
-     * @return
-     */
-    boolean isTimeout(InvocationContext context);
-
-    /**
      * 发生超时
      * 
      * @param context

@@ -1,14 +1,11 @@
 package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.context.InvocationContext;
-import conglin.clrpc.service.instance.condition.InstanceCondition;
-import conglin.clrpc.service.proxy.InvocationProxy;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public interface TransactionProxy extends InvocationProxy {
+public interface TransactionProxy {
 
     /**
      * 开始一个事务，默认非顺序执行
@@ -16,29 +13,6 @@ public interface TransactionProxy extends InvocationProxy {
      * @throws TransactionException
      */
     void begin() throws TransactionException;
-
-    /**
-     * 发送事务内部的一条原子性请求
-     * 
-     * @param serviceName 服务名
-     * @param method      服务方法
-     * @param args        服务参数
-     * @return sub InvocationContext
-     * @throws TransactionException
-     */
-    InvocationContext call(String serviceName, String method, Object... args) throws TransactionException;
-
-    /**
-     * 发送事务内部的一条原子性请求
-     * 
-     * @param instanceCondition instance condition
-     * @param serviceName 服务名
-     * @param method      服务方法
-     * @param args        服务参数
-     * @return sub InvocationContext
-     * @throws TransactionException
-     */
-    InvocationContext call(InstanceCondition instanceCondition, String serviceName, String method, Object... args) throws TransactionException;
 
     /**
      * 提交事务

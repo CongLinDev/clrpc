@@ -70,25 +70,22 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @return InvocationContext
      */
     public InvocationContext call(String serviceName, String methodName, Object... args) {
-        return call(instanceCondition(), new RequestPayload(serviceName, methodName, args));
-    }
-
-    /**
-     * 异步调用函数 使用负载均衡策略
-     * 
-     * @param instanceCondition
-     * @param request 请求payload
-     * @return InvocationContext
-     */
-    public InvocationContext call(InstanceCondition instanceCondition, RequestPayload request) {
         InvocationContext invocationContext = new InvocationContext();
-        invocationContext.setRequest(request);
+        invocationContext.setRequest(new RequestPayload(serviceName, methodName, args));
         invocationContext.setFailStrategy(failStrategy());
         invocationContext.setInstanceConsumer(instanceConsumer());
-        invocationContext.setInstanceCondition(instanceCondition);
+        invocationContext.setInstanceCondition(instanceCondition());
+        invocationContext.setTimeoutThreshold(timeoutThreshold());
         super.call(invocationContext);
         return invocationContext;
     }
+    
+    /**
+     * 超时时间
+     * 
+     * @return 超时阈值 单位为 ms
+     */
+    abstract protected long timeoutThreshold();
 
     /**
      * fail strategy

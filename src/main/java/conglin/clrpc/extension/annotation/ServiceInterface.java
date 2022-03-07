@@ -26,6 +26,16 @@ public @interface ServiceInterface {
      */
     String name() default "";
 
+
+    /**
+     * 超时时间 
+     * 
+     * timeoutThreshold() <= 0时 永不超时
+     * 
+     * @return 超时阈值 单位为 ms
+     */
+    long timeoutThreshold() default 0L;
+
     /**
      * 失败策略
      * 

@@ -77,7 +77,8 @@ public class ProviderBootstrap extends Bootstrap {
      */
     public ProviderBootstrap publish(ServiceObject<?> serviceObject) {
         serviceObjects.put(serviceObject.name(), serviceObject);
-        LOGGER.info("Publish service named {} with interface(class={}).", serviceObject.name(), serviceObject.interfaceClass());
+        LOGGER.info("Publish service named {} with interface(class={}).", serviceObject.name(),
+                serviceObject.interfaceClass());
         return this;
     }
 
@@ -140,4 +141,8 @@ public class ProviderBootstrap extends Bootstrap {
         return context;
     }
 
+    @Override
+    protected ComponentContext componentContext() {
+        return context;
+    }
 }

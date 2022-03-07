@@ -25,7 +25,7 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService implement
 
     @Override
     public void publish(String type, String value) {
-        String path = rootPath + "/" + type;
+        String path = buildPath(type);
         if(ZooKeeperUtils.isNotExistNode(keeperInstance.instance(), path)) {
             ZooKeeperUtils.createNode(keeperInstance.instance(), path, value);
         }
@@ -34,13 +34,13 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService implement
     @Override
     public void register(String type, String key, String value) {
         // 创建服务提供者节点
-        String providerNode = rootPath + "/" + type + "/provider" + (key.startsWith("/") ? key : "/" + key);
+        String providerNode = buildPath(type, "provider", key);
         ZooKeeperUtils.createNode(keeperInstance.instance(), providerNode, value, CreateMode.EPHEMERAL);
     }
 
     @Override
     public void unregister(String type, String key) {
-        String providerNode = rootPath + "/" + type + "/provider" + (key.startsWith("/") ? key : "/" + key);
+        String providerNode = buildPath(type, "provider", key);
         ZooKeeperUtils.deleteNode(keeperInstance.instance(), providerNode);
         LOGGER.debug("Unregister a service provider which provides {}.", type);
     }

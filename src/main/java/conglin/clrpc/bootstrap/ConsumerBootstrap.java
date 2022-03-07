@@ -18,7 +18,6 @@ import conglin.clrpc.service.context.DefaultInvocationContextHolder;
 import conglin.clrpc.service.context.InvocationContextHolder;
 import conglin.clrpc.service.proxy.AbstractObjectProxy;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
-import conglin.clrpc.service.proxy.InvocationProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.component.DefaultRequestSender;
@@ -71,8 +70,8 @@ public class ConsumerBootstrap extends Bootstrap {
         this(null);
     }
 
-    public ConsumerBootstrap(Properties properites) {
-        super(properites);
+    public ConsumerBootstrap(Properties properties) {
+        super(properties);
         this.contextHolder = new DefaultInvocationContextHolder();
         String discoveryClassName = properties().getProperty("registry.discovery-class");
         String registryUrl = properties().getProperty("registry.url");
@@ -136,18 +135,6 @@ public class ConsumerBootstrap extends Bootstrap {
     }
 
     /**
-     * 返回一个自定义代理，该代理必须提供一个无参函数
-     *
-     * @param clazz
-     * @return
-     */
-    public InvocationProxy proxy(Class<? extends InvocationProxy> clazz) {
-        InvocationProxy proxy = ClassUtils.loadObjectByType(clazz, InvocationProxy.class);
-        ObjectLifecycleUtils.assemble(proxy, context);
-        return proxy;
-    }
-
-    /**
      * 启动
      *
      * @param option 启动选项
@@ -208,6 +195,11 @@ public class ConsumerBootstrap extends Bootstrap {
         context.put(ComponentContextEnum.ROUTER, router);
         // request sender
         context.put(ComponentContextEnum.REQUEST_SENDER, requestSender);
+    }
+
+    @Override
+    protected ComponentContext componentContext() {
+        return context;
     }
 
 }

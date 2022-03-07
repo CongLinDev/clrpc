@@ -10,5 +10,5 @@ public interface RequestSender {
      * @param invocationContext
      * @return
      */
-    void sendRequest(InvocationContext invocationContext);
+    void send(InvocationContext invocationContext);
 }

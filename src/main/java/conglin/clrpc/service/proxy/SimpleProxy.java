@@ -36,6 +36,6 @@ public class SimpleProxy implements InvocationProxy, Initializable, ComponentCon
      */
     @Override
     public void call(InvocationContext invocationContext) {
-        sender.sendRequest(invocationContext);
+        sender.send(invocationContext);
     }
 }

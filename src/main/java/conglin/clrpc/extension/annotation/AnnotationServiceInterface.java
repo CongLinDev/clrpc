@@ -11,7 +11,8 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
     private final FailStrategy failStrategy;
     private final conglin.clrpc.service.ServiceVersion version;
     private final InstanceCondition instanceCondition;
-
+    private final long timeoutThreshold;
+    
     public AnnotationServiceInterface(Class<T> serviceInterfaceClass) {
         this.serviceInterfaceClass = serviceInterfaceClass;
 
@@ -25,6 +26,8 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
             name = serviceInterfaceClass.getName();
         }
         this.name = name;
+
+        this.timeoutThreshold = serviceInterface.timeoutThreshold();
 
         this.failStrategy = ClassUtils.loadObjectByType(serviceInterface.failStrategy(), FailStrategy.class);
         ServiceVersion serviceVersion = serviceInterface.version();
@@ -57,5 +60,10 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
     @Override
     public InstanceCondition instanceCondition() {
         return instanceCondition;
+    }
+
+    @Override
+    public long timeoutThreshold() {
+        return timeoutThreshold;
     }
 }

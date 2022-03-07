@@ -68,12 +68,12 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
     }
 
     @Override
-    public void sendRequest(InvocationContext invocationContext) {
+    public void send(InvocationContext invocationContext) {
         Long messageId = identifierGenerator.generate();
         invocationContext.setIdentifier(messageId);
         contextHolder.put(messageId, invocationContext);
         try {
-            doSendRequest(invocationContext);
+            doSend(invocationContext);
         } catch (NoAvailableServiceInstancesException e) {
             if (!invocationContext.getFailStrategy().noTarget(invocationContext, e)
                     && !invocationContext.getFuture().isPending()) {
@@ -99,7 +99,7 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
      * @param invocationContext
      * @throws NoAvailableServiceInstancesException
      */
-    protected void doSendRequest(InvocationContext invocationContext)
+    protected void doSend(InvocationContext invocationContext)
             throws NoAvailableServiceInstancesException {
         RouterCondition condition = new RouterCondition();
         condition.setServiceName(invocationContext.getRequest().serviceName());
@@ -125,10 +125,11 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
                         continue;
                     }
 
-                    FailStrategy failStrategy = invocationContext.getFailStrategy();
-                    if (!failStrategy.isTimeout(invocationContext))
+                    if (!invocationContext.isTimeout()) {
                         continue;
+                    }
 
+                    FailStrategy failStrategy = invocationContext.getFailStrategy();
                     if (!failStrategy.timeout(invocationContext) && !invocationContext.getFuture().isPending()) {
                         iterator.remove();
                         continue;
@@ -136,7 +137,7 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
 
                     // retry
                     try {
-                        doSendRequest(invocationContext); // retry
+                        doSend(invocationContext); // retry
                         LOGGER.warn("Service response(identifier={}) is too slow. Retry...",
                                 invocationContext.getIdentifier());
                     } catch (NoAvailableServiceInstancesException e) {

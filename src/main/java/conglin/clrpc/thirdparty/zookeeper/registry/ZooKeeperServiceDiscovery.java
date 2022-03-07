@@ -28,7 +28,7 @@ public class ZooKeeperServiceDiscovery extends AbstractZooKeeperService implemen
 
     @Override
     public void publish(String type, String value) {
-        String path = rootPath + "/" + type;
+        String path = buildPath(type);
         if (ZooKeeperUtils.isNotExistNode(keeperInstance.instance(), path)) {
             ZooKeeperUtils.createNode(keeperInstance.instance(), path, value);
         }
@@ -36,21 +36,21 @@ public class ZooKeeperServiceDiscovery extends AbstractZooKeeperService implemen
 
     @Override
     public void discover(String type, BiConsumer<String, Collection<Pair<String, String>>> updater) {
-        String providerNodes = rootPath + "/" + type + "/provider";
+        String providerNodes = buildPath(type, "provider");
         ZooKeeperUtils.watchChildrenList(keeperInstance.instance(), providerNodes, values -> updater.accept(type, values));
     }
 
     @Override
     public void register(String type, String key, String value) {
         // 创建服务提供者节点
-        String consumerNode = rootPath + "/" + type + "/consumer" + (key.startsWith("/") ? key : "/" + key);
+        String consumerNode = buildPath(type, "consumer", key);
         ZooKeeperUtils.createNode(keeperInstance.instance(), consumerNode, value, CreateMode.EPHEMERAL);
         LOGGER.debug("Register a service consumer which consumers {}.", type);
     }
 
     @Override
     public void unregister(String type, String key) {
-        String consumerNode = rootPath + "/" + type + "/consumer" + (key.startsWith("/") ? key : "/" + key);
+        String consumerNode = buildPath(type, "consumer", key);
         ZooKeeperUtils.deleteNode(keeperInstance.instance(), consumerNode);
 
         LOGGER.debug("Unregister a service consumer which consumers {}.", type);

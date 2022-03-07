@@ -6,18 +6,12 @@ import conglin.clrpc.transport.message.ResponsePayload;
 import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
 
 final public class FailSafe implements FailStrategy {
-    private static final long threshold = 5000L;
     private static final ResponsePayload RESPONSE = new ResponsePayload(false, null);
 
     @Override
     public boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
         context.setResponse(RESPONSE);
         return false;
-    }
-
-    @Override
-    public boolean isTimeout(InvocationContext context) {
-        return context.getInvokeBeginTime() + threshold < System.currentTimeMillis();
     }
 
     @Override

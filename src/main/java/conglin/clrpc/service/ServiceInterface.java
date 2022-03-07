@@ -20,6 +20,13 @@ public interface ServiceInterface<T> extends Service {
     FailStrategy failStrategy();
 
     /**
+     * 超时时间
+     * 
+     * @return 超时阈值 单位为 ms
+     */
+    long timeoutThreshold();
+
+    /**
      * instanceCondition
      * 
      * @return

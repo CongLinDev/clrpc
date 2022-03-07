@@ -52,4 +52,9 @@ public class AsyncObjectProxy extends AbstractObjectProxy {
     protected InstanceCondition instanceCondition() {
         return serviceInterface.instanceCondition();
     }
+
+    @Override
+    protected long timeoutThreshold() {
+        return serviceInterface.timeoutThreshold();
+    }
 }

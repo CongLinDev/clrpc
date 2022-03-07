@@ -53,10 +53,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
     public void init() {
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         String instanceAddress = properties.getProperty("provider.instance.address");
-        String instanceId = properties.getProperty("provider.instance.id", instanceAddress);
-        if (instanceId == instanceAddress) {
-            properties.setProperty("provider.instance.id", instanceId);
-        }
+        String instanceId = properties.getProperty("provider.instance.id");
 
         ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
         

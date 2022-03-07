@@ -39,4 +39,9 @@ public class SyncObjectProxy extends AbstractObjectProxy {
     protected InstanceCondition instanceCondition() {
         return serviceInterface.instanceCondition();
     }
+
+    @Override
+    protected long timeoutThreshold() {
+        return serviceInterface.timeoutThreshold();
+    }
 }

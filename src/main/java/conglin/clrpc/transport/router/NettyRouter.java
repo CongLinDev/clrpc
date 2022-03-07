@@ -1,6 +1,5 @@
 package conglin.clrpc.transport.router;
 
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Properties;
@@ -17,8 +16,8 @@ import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
@@ -60,9 +59,9 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
         ObjectLifecycleUtils.assemble(loadBalancer, getContext());
         ObjectLifecycleUtils.assemble(serviceDiscovery, getContext());
         serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
-        Properties properites = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         nettyBootstrap = new Bootstrap()
-                .group(new NioEventLoopGroup(Integer.parseInt(properites.getProperty("consumer.io-thread.number", "4"))))
+                .group(new NioEventLoopGroup(Integer.parseInt(properties.getProperty("consumer.io-thread.number", "4"))))
                 .channel(NioSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         DefaultChannelInitializer initializer = new DefaultChannelInitializer();
@@ -93,10 +92,10 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
-                String localAddress = IPAddressUtils
-                        .addressString((InetSocketAddress) channelFuture.channel().localAddress());
-                serviceDiscovery.register(serviceName, localAddress, "{}");
-                LOGGER.info("Consumer starts on {}", localAddress);
+                Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+                String instanceId = properties.getProperty("consumer.instance.id");
+                serviceDiscovery.register(serviceName, instanceId, "{}");
+                LOGGER.info("Consumer {} starts.", instanceId);
                 return channelFuture.channel();
             } else {
                 LOGGER.error("Provider starts failed");

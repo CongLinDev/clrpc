@@ -47,6 +47,7 @@ public class InvocationContext {
     protected InstanceCondition instanceCondition; // init in proxy
     protected Consumer<ServiceInstance> instanceConsumer; // init in proxy
     protected FailStrategy failStrategy; // init in proxy
+    protected long timeoutThreshold;    // init in proxy
 
     protected Long identifier; // init in sender
     protected ResponsePayload response; // init in response
@@ -87,6 +88,30 @@ public class InvocationContext {
 
     public void setInstanceConsumer(Consumer<ServiceInstance> instanceConsumer) {
         this.instanceConsumer = instanceConsumer;
+    }
+
+    /**
+     * @return the timeoutThreshold
+     */
+    public long getTimeoutThreshold() {
+        return timeoutThreshold;
+    }
+
+    /**
+     * @param timeoutThreshold the timeoutThreshold to set
+     */
+    public void setTimeoutThreshold(long timeoutThreshold) {
+        this.timeoutThreshold = timeoutThreshold;
+    }
+
+    /**
+     * 是否超时
+     * 
+     * @return
+     */
+    public boolean isTimeout() {
+        if (timeoutThreshold <= 0) return false;
+        return System.currentTimeMillis() > timeoutThreshold + invokeBeginTime;
     }
 
     /**

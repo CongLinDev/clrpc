@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.definition.role.Role;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.util.ObjectLifecycleUtils;
 
 /**
  * 抽象的 Bootstrap
@@ -23,7 +26,8 @@ abstract public class Bootstrap {
     public Bootstrap(Properties properties) {
         if (properties == null) {
             properties = new Properties();
-            try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties")) {
+            try (InputStream inputStream = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream("config.properties")) {
                 properties.load(inputStream);
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
@@ -56,4 +60,25 @@ abstract public class Bootstrap {
      * @return
      */
     abstract public Role role();
+
+    /**
+     * 返回一个自定义对象，并对对象进行初始化
+     * 
+     * 该方法用于扩展功能
+     *
+     * @param clazz 必须提供一个无参构造函数
+     * @return
+     */
+    public Object object(Class<?> clazz) {
+        Object proxy = ClassUtils.loadObject(clazz);
+        ObjectLifecycleUtils.assemble(proxy, componentContext());
+        return proxy;
+    }
+
+    /**
+     * 获取 {@link ComponentContext}
+     * 
+     * @return
+     */
+    abstract protected ComponentContext componentContext();
 }

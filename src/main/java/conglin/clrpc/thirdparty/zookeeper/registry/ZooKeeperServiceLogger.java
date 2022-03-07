@@ -60,11 +60,11 @@ public class ZooKeeperServiceLogger extends AbstractZooKeeperService implements 
 
     @Override
     public void put(String key, Calculable<?> calculable) {
-        holder.put(rootPath + "/" + key + "/log", calculable);
+        holder.put(buildPath(key, "log"), calculable);
     }
 
     @Override
     public void remove(String key) {
-        holder.remove(rootPath + "/" + key);
+        holder.remove(buildPath(key));
     }
 }

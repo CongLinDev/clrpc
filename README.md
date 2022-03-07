@@ -18,13 +18,13 @@
 
 ```java
 // define a service interface
-interface HelloService {
+interface EchoService {
     String hello(String arg);
     String hi(String arg);
 }
 
-// implements interface HelloService
-class HelloServiceImpl implements HelloService {
+// implements interface EchoService
+class EchoServiceImpl implements EchoService {
     @Override
     public String hello(String arg) {
         return "Hello " + arg;
@@ -44,9 +44,9 @@ class HelloServiceImpl implements HelloService {
 ProviderBootstrap bootstrap = new ProviderBootstrap();
 
 // 创建简单的服务对象
-ServiceObject<HelloService> serviceObject = new SimpleServiceObject.Builder<>(HelloService.class)
-        .name("HelloService")
-        .object(new HelloServiceImpl())
+ServiceObject<EchoService> serviceObject = new SimpleServiceObject.Builder<>(EchoService.class)
+        .name("EchoService")
+        .object(new EchoServiceImpl())
         .build();
 
 // 发布服务并开启服务
@@ -63,19 +63,19 @@ ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建简单的服务接口对象
-ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<>(HelloService.class)
-        .name("HelloService")
+ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Builder<>(EchoService.class)
+        .name("EchoService")
         .build();
 
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
 
 //使用同步服务
-HelloService syncService = bootstrap.proxy(serviceInterface, false);
+EchoService syncService = bootstrap.proxy(serviceInterface, false);
 String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
 // 使用异步服务
-HelloService asyncService = bootstrap.proxy(serviceInterface, true);
+EchoService asyncService = bootstrap.proxy(serviceInterface, true);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
 InvocationFuture future = InvocationContext.lastContext().getFuture(); // 获取该线程最新一次操作的产生的future对象
@@ -98,15 +98,15 @@ ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
 bootstrap.start(new CommonOption());
 // 创建服务接口对象
-ServiceInterface<HelloService> serviceInterface = new SimpleServiceInterface.Builder<>(HelloService.class)
-        .name("HelloService")
+ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Builder<>(EchoService.class)
+        .name("EchoService")
         .build();
 
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
 
-TransactionProxy proxy = (TransactionProxy)bootstrap.proxy(ZooKeeperTransactionProxy.class);
-HelloService service = proxy.proxy(serviceInterface);
+TransactionProxy proxy = (TransactionProxy)bootstrap.object(ZooKeeperTransactionProxy.class);
+EchoService service = proxy.proxy(serviceInterface); // get proxy from TransactionProxy instead of bootstrap
 
 proxy.begin(); // 事务开启
 
@@ -117,8 +117,41 @@ InvocationFuture f2 = InvocationContext.lastContext().getFuture(); // 获取第�
 
 TransactionInvocationContext context = proxy.commit(); // 事务提交 返回事务 上下文
 
+// 销毁 TransactionProxy
+ObjectLifecycleUtils.destroy(proxy);
 // 关闭服务消费者
 bootstrap.stop();
+```
+
+### Annotations Supports
+
+```java
+@ServiceInterface(name = "EchoService")
+interface EchoService {
+    String hello(String arg);
+    String hi(String arg);
+}
+
+@ServiceObject(interfaceClass = EchoService.class, name = "EchoService")
+class EchoServiceImpl implements EchoService {
+    @Override
+    public String hello(String arg) {
+        return "Hello " + arg;
+    }
+
+    @Override
+    public String hi(String arg) {
+        return "Hi " + arg;
+    }
+}
+```
+
+```java
+// build ServiceInterface
+ServiceInterface<EchoService> serviceInterface = new AnnotationServiceInterface<>(EchoService.class);
+
+// build ServiceObject
+ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoServiceImpl.class);
 ```
 
 ## Config
@@ -133,19 +166,20 @@ bootstrap.stop();
 
 ### Config Items
 
-|              Field               |  Type   | Required |           Default            |        Remark        |
-| :------------------------------: | :-----: | :------: | :--------------------------: | :------------------: |
-|           registry.url           | String  |   True   |                              |     注册中心地址     |
-|     registry.register-class      | String  |   True   |                              |       注册类名       |
-|     registry.discovery-class     | String  |   True   |                              |       发现类名       |
-|       provider.instance.id       | String  |  False   | ${provider.instance.address} |     服务提供者id     |
-|    provider.instance.address     | String  |   True   |                              |    服务提供者地址    |
-|    provider.io-thread.number     | Integer |  False   |              4               | 服务提供者的IO线程数 |
-| provider.channel.handler-factory | String  |  False   |            `null`            | 自定义处理器工厂类名 |
-|    consumer.io-thread.number     | Integer |  False   |              4               | 服务使用者的IO线程数 |
-|   consumer.retry.check-period    | Integer |  False   |             3000             |   重试机制执行周期   |
-| consumer.retry.initial-threshold | Integer |  False   |             3000             |   初始重试时间门槛   |
-| consumer.channel.handler-factory | String  |  False   |            `null`            | 自定义处理器工厂类名 |
+|              Field               |  Type   | Required | Default |        Remark        |
+| :------------------------------: | :-----: | :------: | :-----: | :------------------: |
+|           registry.url           | String  |   True   |         |     注册中心地址     |
+|     registry.register-class      | String  |   True   |         |       注册类名       |
+|     registry.discovery-class     | String  |   True   |         |       发现类名       |
+|       provider.instance.id       | String  |   True   |         |     服务提供者id     |
+|    provider.instance.address     | String  |   True   |         |    服务提供者地址    |
+|    provider.io-thread.number     | Integer |  False   |    4    | 服务提供者的IO线程数 |
+| provider.channel.handler-factory | String  |  False   | `null`  | 自定义处理器工厂类名 |
+|       consumer.instance.id       | String  |   True   |         |     服务消费者id     |
+|    consumer.io-thread.number     | Integer |  False   |    4    | 服务使用者的IO线程数 |
+|   consumer.retry.check-period    | Integer |  False   |  3000   |   重试机制执行周期   |
+| consumer.retry.initial-threshold | Integer |  False   |  3000   |   初始重试时间门槛   |
+| consumer.channel.handler-factory | String  |  False   | `null`  | 自定义处理器工厂类名 |
 
 ### Extension config Items
 
