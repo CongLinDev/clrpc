@@ -33,6 +33,7 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
      */
     public SnowFlakeIdentifierGenerator(long startTimeStamp, int applicationId) {
         this.startTimeStamp = startTimeStamp;
+        this.lastTimeStamp = startTimeStamp;
 
         // 取低10位，放入 this.applicationId 中
         this.applicationId = ((applicationId & 0x3ff) << 12);
@@ -56,13 +57,11 @@ public class SnowFlakeIdentifierGenerator implements IdentifierGenerator {
      */
     private int updateTimeStamp() {
         long currentTimeStamp = System.currentTimeMillis();
-        if (currentTimeStamp != lastTimeStamp) {
-            lastTimeStamp = currentTimeStamp;
-            serialId.set(0);
-            return 0;
-        } else {
-            return serialId.getAndIncrement() & 0xfff;
-        }
+        if (currentTimeStamp == lastTimeStamp)
+            return serialId.incrementAndGet() & 0xfff;
+        lastTimeStamp = currentTimeStamp;
+        serialId.set(0);
+        return 0;
     }
 
     @Override

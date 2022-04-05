@@ -95,7 +95,7 @@ public class ProviderBootstrap extends Bootstrap {
     public void start(BootOption option) {
         LOGGER.info("Provider is starting.");
         ComponentContext context = initContext(option);
-        ObjectLifecycleUtils.assemble(serviceObjects);
+        ObjectLifecycleUtils.assemble(serviceObjects, context);
         ObjectLifecycleUtils.assemble(publisher, context);
     }
 

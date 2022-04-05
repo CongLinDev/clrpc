@@ -2,7 +2,7 @@ package conglin.clrpc.thirdparty.bootstrap.option;
 
 import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.identifier.RandomIdentifierGenerator;
+import conglin.clrpc.common.identifier.SnowFlakeIdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.instance.codec.DefaultServiceInstanceCodec;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
@@ -15,7 +15,7 @@ public class CommonOption extends BootOption {
     public IdentifierGenerator identifierGenerator() {
         IdentifierGenerator object = super.identifierGenerator();
         if (object == null) {
-            object = new RandomIdentifierGenerator();
+            object = new SnowFlakeIdentifierGenerator(0);
             identifierGenerator(object);
         }
         return object;

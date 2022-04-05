@@ -1,47 +1,22 @@
 package conglin.clrpc.service.proxy;
 
-import java.util.function.Consumer;
-
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.instance.ServiceInstance;
-import conglin.clrpc.service.instance.condition.InstanceCondition;
-import conglin.clrpc.service.strategy.FailStrategy;
+import conglin.clrpc.service.context.InvocationContext;
 
 /**
  * 同步对象代理
  * 
  * 代理对象调用方法后 方法阻塞直至返回结果
  */
-public class SyncObjectProxy extends AbstractObjectProxy {
-
-    private final ServiceInterface<?> serviceInterface;
+public class SyncObjectProxy extends ServiceInterfaceObjectProxy {
 
     public SyncObjectProxy(ServiceInterface<?> serviceInterface) {
-        this.serviceInterface = serviceInterface;
+        super(serviceInterface);
     }
 
     @Override
-    protected FailStrategy failStrategy() {
-        return serviceInterface.failStrategy();
+    protected Object handleContext(InvocationContext invocationContext) throws Exception {
+        return invocationContext.getFuture().get();
     }
 
-    @Override
-    protected String getServiceName(Class<?> methodDeclaringClass) {
-        return serviceInterface.name();
-    }
-
-    @Override
-    protected Consumer<ServiceInstance> instanceConsumer() {
-        return null;
-    }
-
-    @Override
-    protected InstanceCondition instanceCondition() {
-        return serviceInterface.instanceCondition();
-    }
-
-    @Override
-    protected long timeoutThreshold() {
-        return serviceInterface.timeoutThreshold();
-    }
 }

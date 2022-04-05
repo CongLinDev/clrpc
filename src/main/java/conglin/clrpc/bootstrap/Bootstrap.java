@@ -70,9 +70,9 @@ abstract public class Bootstrap {
      * @return
      */
     public Object object(Class<?> clazz) {
-        Object proxy = ClassUtils.loadObject(clazz);
-        ObjectLifecycleUtils.assemble(proxy, componentContext());
-        return proxy;
+        Object object = ClassUtils.loadObject(clazz);
+        ObjectLifecycleUtils.assemble(object, componentContext());
+        return object;
     }
 
     /**

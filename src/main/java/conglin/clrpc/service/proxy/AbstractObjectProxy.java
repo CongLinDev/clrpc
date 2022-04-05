@@ -51,17 +51,6 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
     }
 
     /**
-     * 处理 invocationContext
-     * 
-     * @param invocationContext
-     * @return
-     * @throws Exception
-     */
-    protected Object handleContext(InvocationContext invocationContext) throws Exception {
-        return invocationContext.getFuture().get();
-    }
-
-    /**
      * 异步调用函数 使用负载均衡策略
      * 
      * @param serviceName 服务名
@@ -79,6 +68,15 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
         super.call(invocationContext);
         return invocationContext;
     }
+
+    /**
+     * 处理 invocationContext
+     * 
+     * @param invocationContext
+     * @return
+     * @throws Exception
+     */
+    abstract protected Object handleContext(InvocationContext invocationContext) throws Exception;
     
     /**
      * 超时时间
