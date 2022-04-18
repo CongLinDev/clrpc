@@ -16,8 +16,8 @@ import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.context.DefaultInvocationContextHolder;
 import conglin.clrpc.service.context.InvocationContextHolder;
-import conglin.clrpc.service.proxy.AbstractObjectProxy;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
+import conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.component.DefaultRequestSender;
@@ -114,7 +114,7 @@ public class ConsumerBootstrap extends Bootstrap {
      */
     @SuppressWarnings("unchecked")
     public <T> T proxy(ServiceInterface<T> serviceInterface, boolean async) {
-        AbstractObjectProxy proxy = async ? new AsyncObjectProxy(serviceInterface)
+        ServiceInterfaceObjectProxy proxy = async ? new AsyncObjectProxy(serviceInterface)
                 : new SyncObjectProxy(serviceInterface);
         ObjectLifecycleUtils.assemble(proxy, context);
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),

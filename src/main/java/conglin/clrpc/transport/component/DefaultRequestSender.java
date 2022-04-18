@@ -110,6 +110,7 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
             invocationContext.getInstanceConsumer().accept(routerResult.getInstance());
         }
         routerResult.send(new Message(invocationContext.getIdentifier(), invocationContext.getRequest()));
+        LOGGER.debug("Send request for messageId={}", invocationContext.getIdentifier());
     }
 
     private Timer checkFuture() {

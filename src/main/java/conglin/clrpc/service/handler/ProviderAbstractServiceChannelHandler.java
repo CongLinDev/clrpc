@@ -12,7 +12,6 @@ import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +26,6 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
 
     private ComponentContext context;
 
-    private ChannelPipeline pipeline;
-
     @Override
     public void setContext(ComponentContext context) {
         this.context = context;
@@ -37,12 +34,6 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
     @Override
     public ComponentContext getContext() {
         return context;
-    }
-
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-        this.pipeline = ctx.pipeline();
     }
 
     @Override
@@ -56,15 +47,6 @@ abstract public class ProviderAbstractServiceChannelHandler extends SimpleChanne
         } else {
             ctx.fireChannelRead(msg);
         }
-    }
-
-    /**
-     * pipeline
-     *
-     * @return
-     */
-    protected ChannelPipeline pipeline() {
-        return pipeline;
     }
 
     /**

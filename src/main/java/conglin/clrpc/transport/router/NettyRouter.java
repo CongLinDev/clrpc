@@ -77,7 +77,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
                 condition.getInstanceCondition());
         if (pair == null)
             throw new NoAvailableServiceInstancesException(condition);
-        return new RouterResult(pair.getFirst(), pair.getSecond().pipeline()::fireChannelRead);
+        return new RouterResult(pair.getFirst(), pair.getSecond()::writeAndFlush);
     }
 
     /**

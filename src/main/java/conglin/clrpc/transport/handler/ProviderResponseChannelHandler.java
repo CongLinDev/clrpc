@@ -16,7 +16,7 @@ public class ProviderResponseChannelHandler
     protected void channelRead0(ChannelHandlerContext ctx, Message msg)
             throws Exception {
         if (msg.payload() instanceof ResponsePayload) {
-            ctx.writeAndFlush(msg);
+            ctx.pipeline().writeAndFlush(msg);
             LOGGER.debug("Send response which messageId={}", msg.messageId());
         } else {
             ctx.fireChannelRead(msg);

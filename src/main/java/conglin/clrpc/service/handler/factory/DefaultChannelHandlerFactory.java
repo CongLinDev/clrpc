@@ -6,7 +6,6 @@ import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
-import conglin.clrpc.transport.handler.ConsumerRequestChannelHandler;
 import conglin.clrpc.transport.handler.ProviderResponseChannelHandler;
 import conglin.clrpc.transport.handler.codec.UniProtocolCodec;
 import io.netty.channel.Channel;
@@ -35,9 +34,6 @@ import java.util.List;
  *  |               .                                   .               |
  *  |               .                                  \|/              |
  *  |               |                                   |               |
- *  |  +------------+--------------+                    |               |
- *  |  |   RequestChannelHandler   |                    |               |
- *  |  +------------+--------------+                   \|/              |
  *  |              /|\                                  .               |
  *  |  +------------+--------------+                    |               |
  *  |  | BasicServiceChannelHandler|                    |               |
@@ -137,7 +133,6 @@ public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactor
         Role role = getContext().getWith(ComponentContextEnum.ROLE);
         if (role.isConsumer()) {
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
-            channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerRequestChannelHandler(), ChannelHandlerPhase.HANDLE, 2));
         } else if (role.isProvider()) {
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderResponseChannelHandler(), ChannelHandlerPhase.HANDLE, 2));

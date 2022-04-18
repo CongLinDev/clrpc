@@ -30,7 +30,7 @@ public class AnnotationServiceObject<T> implements conglin.clrpc.service.Service
         }
 
         String name = serviceObject.name();
-        if ("".equals(name)) {
+        if (name.isEmpty()) {
             name = interfaceClass.getName();
         }
         this.name = name;

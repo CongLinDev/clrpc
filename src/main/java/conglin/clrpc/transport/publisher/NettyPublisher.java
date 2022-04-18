@@ -68,23 +68,22 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(instanceAddress)).sync();
-            if (channelFuture.isSuccess()) {
-                Map<String, ServiceObject<?>> serviceObjects = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
-                ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
-                serviceObjects.values().forEach(serviceObject -> {
-                    ServiceInstance instance = new AbstractServiceInstance(instanceId, instanceAddress, serviceObject) {
-                        @Override
-                        public String toString() {
-                            return serviceInstanceCodec.toContent(this);
-                        }
-                    };
-                    serviceRegistry.register(serviceObject.name(), instance.id(), instance.toString());
-                });
-                LOGGER.info("Provider starts with {}", instanceAddress);
-            } else {
-                LOGGER.error("Provider starts failed");
-                throw new InterruptedException();
+            if (!channelFuture.isSuccess()) {
+                LOGGER.error("Provider starts failed", channelFuture.cause());
+                throw new RuntimeException(channelFuture.cause());
             }
+            Map<String, ServiceObject<?>> serviceObjects = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
+            ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
+            for (ServiceObject<?> serviceObject : serviceObjects.values()) {
+                ServiceInstance instance = new AbstractServiceInstance(instanceId, instanceAddress, serviceObject) {
+                    @Override
+                    public String toString() {
+                        return serviceInstanceCodec.toContent(this);
+                    }
+                };
+                serviceRegistry.register(serviceObject.name(), instance.id(), instance.toString());
+            }
+            LOGGER.info("Provider starts with {}", instanceAddress);
             channelFuture.channel().closeFuture().sync();
         } catch (UnknownHostException e) {
             LOGGER.error("Cannot resolved address {}.", instanceAddress);
