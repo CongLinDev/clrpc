@@ -1,47 +1,132 @@
 package conglin.clrpc.thirdparty.zookeeper.registry;
 
-import org.apache.zookeeper.CreateMode;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
+import org.apache.zookeeper.CreateMode;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Initializable;
+import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.registry.ServiceRegistry;
+import conglin.clrpc.service.ServiceInterface;
+import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.context.ComponentContext;
+import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.instance.AbstractServiceInstance;
+import conglin.clrpc.service.instance.ServiceInstance;
+import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
+import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
 
-/**
- * 注册服务类 默认情况下使用ZooKeeper注册服务 根路径 {root-path} 默认为 /clrpc （可在配置文件中更改）
- * 
- * 例如：对于一个服务 UserService 其路径为 /{root-path}/service/UserService 在该路径下有两个结点
- * /provider 和 /consumer 其子节点分别记录服务提供者的IP和服务消费者的IP
- */
-public class ZooKeeperServiceRegistry extends AbstractZooKeeperService implements ServiceRegistry {
+public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
+        implements ServiceRegistry, ComponentContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperServiceRegistry.class);
+
+    private ComponentContext componentContext;
+
+    private String instanceId;
+    private String instanceAddress;
+
+    private ServiceInstanceCodec serviceInstanceCodec;
 
     public ZooKeeperServiceRegistry(UrlScheme url) {
         super(url, "service");
     }
 
     @Override
-    public void publish(String type, String value) {
-        String path = buildPath(type);
-        if(ZooKeeperUtils.isNotExistNode(keeperInstance.instance(), path)) {
-            ZooKeeperUtils.createNode(keeperInstance.instance(), path, value);
+    public ComponentContext getContext() {
+        return componentContext;
+    }
+
+    @Override
+    public void setContext(ComponentContext context) {
+        this.componentContext = context;
+    }
+
+    @Override
+    public void init() {
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        this.instanceAddress = properties.getProperty("provider.instance.address");
+        this.instanceId = properties.getProperty("provider.instance.id");
+        if (instanceId == null) {
+            throw new IllegalArgumentException("properties 'provider.instance.id' must not be null");
+        }
+        this.serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
+    }
+
+    @Override
+    public void registerProvider(ServiceObject<?> serviceObject) {
+        ServiceInstance instance = new AbstractServiceInstance(instanceId, instanceAddress, serviceObject) {
+            @Override
+            public String toString() {
+                return serviceInstanceCodec.toContent(this);
+            }
+        };
+        String providerNode = buildPath(serviceObject.name(), "provider", instanceId);
+        if (ZooKeeperUtils.createNode(keeperInstance.instance(), providerNode, instance.toString(),
+                CreateMode.EPHEMERAL) != null) {
+            LOGGER.debug("register provider(id={}, name={}) successfully.", instanceId, serviceObject.name());
+        } else {
+            LOGGER.error("register provider(id={}, name={}) failed.", instanceId, serviceObject.name());
         }
     }
 
     @Override
-    public void register(String type, String key, String value) {
-        // 创建服务提供者节点
-        String providerNode = buildPath(type, "provider", key);
-        ZooKeeperUtils.createNode(keeperInstance.instance(), providerNode, value, CreateMode.EPHEMERAL);
+    public void unregisterProvider(ServiceObject<?> serviceObject) {
+        String providerNode = buildPath(serviceObject.name(), "provider", instanceId);
+        if (ZooKeeperUtils.deleteNode(keeperInstance.instance(), providerNode) != null) {
+            LOGGER.debug("Unregister provider(id={}, name={}) successfully.", instanceId, serviceObject.name());
+        } else {
+            LOGGER.error("Unregister provider(id={}, name={}) failed.", instanceId, serviceObject.name());
+        }
     }
 
     @Override
-    public void unregister(String type, String key) {
-        String providerNode = buildPath(type, "provider", key);
-        ZooKeeperUtils.deleteNode(keeperInstance.instance(), providerNode);
-        LOGGER.debug("Unregister a service provider which provides {}.", type);
+    public void subscribeProvider(ServiceInterface<?> serviceInterface,
+            Consumer<Collection<ServiceInstance>> callback) {
+        String providerNodes = buildPath(serviceInterface.name(), "provider");
+        ZooKeeperUtils.watchChildrenList(keeperInstance.instance(), providerNodes,
+                values -> callback.accept(
+                        values.stream()
+                                .map(Pair::getSecond)
+                                .map(serviceInstanceCodec::fromContent)
+                                .collect(Collectors.toList())));
+    }
+
+    @Override
+    public void registerConsumer(ServiceInterface<?> serviceInterface) {
+        String consumerNode = buildPath(serviceInterface.name(), "consumer", instanceId);
+        if (ZooKeeperUtils.createNode(keeperInstance.instance(), consumerNode, "",
+                CreateMode.EPHEMERAL) != null) {
+            LOGGER.debug("register consumer(id={}, name={}) successfully.", instanceId, serviceInterface.name());
+        } else {
+            LOGGER.error("register consumer(id={}, name={}) failed.", instanceId, serviceInterface.name());
+        }
+    }
+
+    @Override
+    public void unregisterConsumer(ServiceInterface<?> serviceInterface) {
+        String consumerNode = buildPath(serviceInterface.name(), "consumer", instanceId);
+        if (ZooKeeperUtils.deleteNode(keeperInstance.instance(), consumerNode) != null) {
+            LOGGER.debug("Unregister consumer(id={}, name={}) successfully.", instanceId, serviceInterface.name());
+        } else {
+            LOGGER.error("Unregister consumer(id={}, name={}) failed.", instanceId, serviceInterface.name());
+        }
+    }
+
+    public List<ServiceInstance> listProviders(ServiceInterface<?> serviceInterface) {
+        String providerNodes = buildPath(serviceInterface.name(), "provider");
+        return ZooKeeperUtils.listChildrenData(keeperInstance.instance(), providerNodes)
+                .stream()
+                .map(serviceInstanceCodec::fromContent)
+                .collect(Collectors.toList());
     }
 }

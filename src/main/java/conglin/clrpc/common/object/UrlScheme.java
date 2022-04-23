@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  */
 final public class UrlScheme {
 
-    private static final Pattern pattern = Pattern.compile("(\\S+)://(\\S+):(\\d+)(\\S*)\\?(\\S+)");
+    private static final Pattern pattern = Pattern.compile("(\\S+)://(\\S+):(\\d+)([/a-zA-Z0-9]*)(?:\\?([^\\?]*))?");
 
     private final String url;
 
@@ -40,7 +40,7 @@ final public class UrlScheme {
      */
     public static Map<String, String> resolveParameters(String parameterString, String paramsSplitRegex,
             String keyValueSplitRegex) {
-        if (parameterString == null || "".equals(parameterString)) {
+        if (parameterString == null || parameterString.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -105,8 +105,8 @@ final public class UrlScheme {
         this.protocol = matcher.group(1);
         this.host = matcher.group(2);
         this.port = matcher.group(3);
-        this.path = matcher.group(4).equals("") ? "/" : matcher.group(4);
-        this.query = matcher.group(5);
+        this.path = matcher.group(4).isEmpty() ? "/" : matcher.group(4);
+        this.query = matcher.group(5) == null ? "" : matcher.group(5);
         this.parameters = resolveParameters(query, "[&]", "[=]");
     }
 

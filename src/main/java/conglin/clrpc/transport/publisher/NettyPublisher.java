@@ -10,15 +10,12 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.DestroyFailedException;
-import conglin.clrpc.common.registry.ServiceRegistry;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.instance.AbstractServiceInstance;
-import conglin.clrpc.service.instance.ServiceInstance;
-import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
+import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -30,14 +27,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class NettyPublisher implements Publisher, Initializable, ComponentContextAware, Destroyable {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyPublisher.class);
 
-    private final ServiceRegistry serviceRegistry;
+    private ServiceRegistry serviceRegistry;
 
     private ComponentContext context;
     private ServerBootstrap nettyBootstrap;
-
-    public NettyPublisher(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-    }
 
     @Override
     public void setContext(ComponentContext context) {
@@ -51,37 +44,34 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
 
     @Override
     public void init() {
-        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        String instanceAddress = properties.getProperty("provider.instance.address");
-        String instanceId = properties.getProperty("provider.instance.id");
+        this.serviceRegistry = getContext().getWith(ComponentContextEnum.SERVICE_REGISTRY);
 
+        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
-        
+
         nettyBootstrap = new ServerBootstrap()
                 .group(new NioEventLoopGroup(1),
-                        new NioEventLoopGroup(Integer.parseInt(properties.getProperty("provider.io-thread.number", "4"))))
+                        new NioEventLoopGroup(
+                                Integer.parseInt(properties.getProperty("provider.io-thread.number", "4"))))
                 .channel(NioServerSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         DefaultChannelInitializer initializer = new DefaultChannelInitializer();
         ObjectLifecycleUtils.assemble(initializer, getContext());
         nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+        String instanceAddress = properties.getProperty("provider.instance.address");
         try {
-            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(instanceAddress)).sync();
+            ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(instanceAddress))
+                    .sync();
             if (!channelFuture.isSuccess()) {
                 LOGGER.error("Provider starts failed", channelFuture.cause());
                 throw new RuntimeException(channelFuture.cause());
             }
-            Map<String, ServiceObject<?>> serviceObjects = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
-            ServiceInstanceCodec serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
+            Map<String, ServiceObject<?>> serviceObjects = getContext()
+                    .getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
             for (ServiceObject<?> serviceObject : serviceObjects.values()) {
-                ServiceInstance instance = new AbstractServiceInstance(instanceId, instanceAddress, serviceObject) {
-                    @Override
-                    public String toString() {
-                        return serviceInstanceCodec.toContent(this);
-                    }
-                };
-                serviceRegistry.register(serviceObject.name(), instance.id(), instance.toString());
+                serviceRegistry.registerProvider(serviceObject);
             }
             LOGGER.info("Provider starts with {}", instanceAddress);
             channelFuture.channel().closeFuture().sync();

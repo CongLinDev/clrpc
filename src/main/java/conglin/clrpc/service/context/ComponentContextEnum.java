@@ -4,6 +4,7 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
+import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import conglin.clrpc.transport.router.Router;
@@ -21,7 +22,8 @@ public enum ComponentContextEnum {
     INVOCATION_CONTEXT_HOLDER(InvocationContextHolder.class),
     SERVICE_OBJECT_HOLDER(Map.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class),
-    PROTOCOL_DEFINITION(ProtocolDefinition.class);
+    PROTOCOL_DEFINITION(ProtocolDefinition.class),
+    SERVICE_REGISTRY(ServiceRegistry.class);
 
 
     private final Class<?> clazz;

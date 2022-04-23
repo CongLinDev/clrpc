@@ -1,5 +1,7 @@
 package conglin.clrpc.transport.router;
 
+import conglin.clrpc.service.ServiceInterface;
+
 public interface Router {
     /**
      * choose
@@ -14,7 +16,7 @@ public interface Router {
     /**
      * 订阅服务
      * 
-     * @param serviceName
+     * @param serviceInterface
      */
-    void subscribe(String serviceName);
+    void subscribe(ServiceInterface<?> serviceInterface);
 }

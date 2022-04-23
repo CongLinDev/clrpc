@@ -50,7 +50,8 @@ ServiceObject<EchoService> serviceObject = new SimpleServiceObject.Builder<>(Ech
         .build();
 
 // 发布服务并开启服务
-bootstrap.publish(serviceObject) // 发布服务对象
+bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc"))) // 设置注册中心
+        .publish(serviceObject) // 发布服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start(new CommonOption());
 ```
@@ -61,7 +62,8 @@ bootstrap.publish(serviceObject) // 发布服务对象
 // 创建服务消费者
 ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
-bootstrap.start(new CommonOption());
+bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc")))
+        .start(new CommonOption());
 // 创建简单的服务接口对象
 ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Builder<>(EchoService.class)
         .name("EchoService")
@@ -96,7 +98,8 @@ bootstrap.stop();
 // 创建服务消费者
 ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
-bootstrap.start(new CommonOption());
+bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc")))
+        .start(new CommonOption());
 // 创建服务接口对象
 ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Builder<>(EchoService.class)
         .name("EchoService")
@@ -168,9 +171,6 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 |              Field               |  Type   | Required | Default |        Remark        |
 | :------------------------------: | :-----: | :------: | :-----: | :------------------: |
-|           registry.url           | String  |   True   |         |     注册中心地址     |
-|     registry.register-class      | String  |   True   |         |       注册类名       |
-|     registry.discovery-class     | String  |   True   |         |       发现类名       |
 |       provider.instance.id       | String  |   True   |         |     服务提供者id     |
 |    provider.instance.address     | String  |   True   |         |    服务提供者地址    |
 |    provider.io-thread.number     | Integer |  False   |    4    | 服务提供者的IO线程数 |
@@ -190,7 +190,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 #### About customized address url
 
-配置项中的 `registry.url` 为必填项，其url解析规则如下：
+配置项中的 `extension.logger.url` 为必填项，其url解析规则如下：
 
 `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000`
 

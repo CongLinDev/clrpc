@@ -1,9 +1,7 @@
 package conglin.clrpc.transport.router;
 
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +12,13 @@ import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.object.Pair;
-import conglin.clrpc.common.registry.ServiceDiscovery;
 import conglin.clrpc.common.util.IPAddressUtils;
+import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.instance.ServiceInstance;
-import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
+import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.handler.DefaultChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
@@ -32,14 +30,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public class NettyRouter implements Router, ComponentContextAware, Initializable, Destroyable {
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyRouter.class);
 
-    private final ServiceDiscovery serviceDiscovery;
+    private ServiceRegistry serviceRegistry;
     private final LoadBalancer<String, ServiceInstance, Channel> loadBalancer;
     private Bootstrap nettyBootstrap;
-    private ServiceInstanceCodec serviceInstanceCodec;
     private ComponentContext context;
 
-    public NettyRouter(ServiceDiscovery serviceDiscovery) {
-        this.serviceDiscovery = serviceDiscovery;
+    public NettyRouter() {
         this.loadBalancer = new ConsistentHashLoadBalancer<String, ServiceInstance, Channel>(this::connectProvider,
                 this::disconnectProvider);
     }
@@ -56,12 +52,15 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
 
     @Override
     public void init() {
-        ObjectLifecycleUtils.assemble(loadBalancer, getContext());
-        ObjectLifecycleUtils.assemble(serviceDiscovery, getContext());
-        serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
+        serviceRegistry = getContext().getWith(ComponentContextEnum.SERVICE_REGISTRY);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+
+        ObjectLifecycleUtils.assemble(loadBalancer, getContext());
+        ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
+
         nettyBootstrap = new Bootstrap()
-                .group(new NioEventLoopGroup(Integer.parseInt(properties.getProperty("consumer.io-thread.number", "4"))))
+                .group(new NioEventLoopGroup(
+                        Integer.parseInt(properties.getProperty("consumer.io-thread.number", "4"))))
                 .channel(NioSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         DefaultChannelInitializer initializer = new DefaultChannelInitializer();
@@ -92,10 +91,6 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
             if (channelFuture.isSuccess()) {
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
-                Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-                String instanceId = properties.getProperty("consumer.instance.id");
-                serviceDiscovery.register(serviceName, instanceId, "{}");
-                LOGGER.info("Consumer {} starts.", instanceId);
                 return channelFuture.channel();
             } else {
                 LOGGER.error("Provider starts failed");
@@ -114,7 +109,6 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
      * @param channel
      */
     public void disconnectProvider(String serviceName, Channel channel) {
-        serviceDiscovery.unregister(serviceName, channel.localAddress().toString());
         channel.close();
     }
 
@@ -128,7 +122,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
 
     @Override
     public void destroy() throws DestroyFailedException {
-        ObjectLifecycleUtils.destroy(serviceDiscovery);
+        ObjectLifecycleUtils.destroy(serviceRegistry);
         disconnectAllProviderNode();
         nettyBootstrap.config().group().shutdownGracefully();
         ObjectLifecycleUtils.destroy(loadBalancer);
@@ -140,22 +134,10 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     }
 
     @Override
-    public void subscribe(String serviceName) {
-        if (!loadBalancer.hasType(serviceName)) {
-            serviceDiscovery.discover(serviceName, this::updateConnectedProvider);
+    public void subscribe(ServiceInterface<?> serviceInterface) {
+        if (!loadBalancer.hasType(serviceInterface.name())) {
+            serviceRegistry.subscribeProvider(serviceInterface,
+                    instances -> loadBalancer.update(serviceInterface.name(), instances));
         }
-    }
-
-    /**
-     * 更新 Connected Provider
-     * @param serviceName
-     * @param providers
-     */
-    public void updateConnectedProvider(String serviceName, Collection<Pair<String, String>> providers) {
-        Collection<ServiceInstance> instances = providers.stream()
-                .map(Pair::getSecond)
-                .map(serviceInstanceCodec::fromContent)
-                .collect(Collectors.toList());
-        loadBalancer.update(serviceName, instances);
     }
 }

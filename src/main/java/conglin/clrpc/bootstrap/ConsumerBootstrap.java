@@ -7,9 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.registry.ServiceDiscovery;
-import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
@@ -19,6 +16,7 @@ import conglin.clrpc.service.context.InvocationContextHolder;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
+import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.component.DefaultRequestSender;
 import conglin.clrpc.transport.component.RequestSender;
@@ -34,7 +32,7 @@ import conglin.clrpc.transport.router.Router;
  *
  * <pre>
  * ConsumerBootstrap bootstrap = new ConsumerBootstrap();
- * bootstrap.start(new BootOption());
+ * bootstrap.registry(new ServiceRegistry(){...}).start(new BootOption());
  *
  * // 构造ServiceInterface
  * ServiceInterface<Interface1> serviceInterface1 = new SimpleServiceInterface.Builder<>(Interface1.class)
@@ -64,6 +62,7 @@ public class ConsumerBootstrap extends Bootstrap {
     private final Router router;
     private final RequestSender requestSender;
 
+    private ServiceRegistry serviceRegistry;
     private ComponentContext context;
 
     public ConsumerBootstrap() {
@@ -73,12 +72,21 @@ public class ConsumerBootstrap extends Bootstrap {
     public ConsumerBootstrap(Properties properties) {
         super(properties);
         this.contextHolder = new DefaultInvocationContextHolder();
-        String discoveryClassName = properties().getProperty("registry.discovery-class");
-        String registryUrl = properties().getProperty("registry.url");
-        ServiceDiscovery serviceDiscovery = ClassUtils.loadObjectByType(discoveryClassName, ServiceDiscovery.class,
-                new UrlScheme(registryUrl));
-        this.router = new NettyRouter(serviceDiscovery);
+        this.router = new NettyRouter();
         requestSender = new DefaultRequestSender();
+    }
+
+    /**
+     * 设置注册中心
+     * 
+     * @param serviceRegistry
+     * @return
+     */
+    public ConsumerBootstrap registry(ServiceRegistry serviceRegistry) {
+        if (this.serviceRegistry != null)
+            throw new UnsupportedOperationException();
+        this.serviceRegistry = serviceRegistry;
+        return this;
     }
 
     @Override
@@ -128,9 +136,8 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return this
      */
     public ConsumerBootstrap subscribe(ServiceInterface<?> serviceInterface) {
-        String serviceName = serviceInterface.name();
-        LOGGER.debug("Refresh service=({}) provider.", serviceName);
-        router.subscribe(serviceName);
+        LOGGER.debug("Refresh service=({}) provider.", serviceInterface.name());
+        router.subscribe(serviceInterface);
         return this;
     }
 
@@ -177,6 +184,9 @@ public class ConsumerBootstrap extends Bootstrap {
      */
     private void initContext(BootOption option) {
         context = new ComponentContext();
+        assert serviceRegistry != null;
+        // registry
+        context.put(ComponentContextEnum.SERVICE_REGISTRY, serviceRegistry);
         // 设置角色
         context.put(ComponentContextEnum.ROLE, role());
         // 设置属性配置器

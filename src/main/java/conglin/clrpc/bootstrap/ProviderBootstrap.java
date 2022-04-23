@@ -8,13 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.registry.ServiceRegistry;
-import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.publisher.NettyPublisher;
 import conglin.clrpc.transport.publisher.Publisher;
@@ -33,7 +31,8 @@ import conglin.clrpc.transport.publisher.Publisher;
  *         .name("Service1")
  *         .object(new ServiceImpl1())
  *         .build();
- * bootstrap.publish(serviceObject).hookStop().start(new BootOption());
+ * bootstrap.registry(new ServiceRegistry(){...})
+ *          .publish(serviceObject).hookStop().start(new BootOption());
  *
  * </pre>
  *
@@ -47,7 +46,7 @@ public class ProviderBootstrap extends Bootstrap {
 
     private final Publisher publisher;
     private final Map<String, ServiceObject<?>> serviceObjects;
-
+    private ServiceRegistry serviceRegistry;
     private ComponentContext context;
 
     public ProviderBootstrap() {
@@ -62,11 +61,7 @@ public class ProviderBootstrap extends Bootstrap {
     public ProviderBootstrap(Properties properties) {
         super(properties);
         serviceObjects = new HashMap<>();
-        String registryClassName = properties().getProperty("registry.register-class");
-        String registryUrl = properties().getProperty("registry.url");
-        ServiceRegistry serviceRegistry = ClassUtils.loadObjectByType(registryClassName, ServiceRegistry.class,
-                new UrlScheme(registryUrl));
-        publisher = new NettyPublisher(serviceRegistry);
+        publisher = new NettyPublisher();
     }
 
     /**
@@ -85,6 +80,20 @@ public class ProviderBootstrap extends Bootstrap {
     @Override
     final public Role role() {
         return Role.PROVIDER;
+    }
+
+
+    /**
+     * 设置注册中心
+     * 
+     * @param serviceRegistry
+     * @return
+     */
+    public ProviderBootstrap registry(ServiceRegistry serviceRegistry) {
+        if (this.serviceRegistry != null)
+            throw new UnsupportedOperationException();
+        this.serviceRegistry = serviceRegistry;
+        return this;
     }
 
     /**
@@ -127,6 +136,9 @@ public class ProviderBootstrap extends Bootstrap {
      */
     private ComponentContext initContext(BootOption option) {
         context = new ComponentContext();
+        // registery
+        assert serviceRegistry != null;
+        context.put(ComponentContextEnum.SERVICE_REGISTRY, this.serviceRegistry);
         context.put(ComponentContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjects);
         // 设置角色
         context.put(ComponentContextEnum.ROLE, role());
