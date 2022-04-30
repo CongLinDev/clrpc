@@ -3,6 +3,7 @@ package conglin.clrpc.service.context;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.definition.role.Role;
+import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.transport.component.RequestSender;
@@ -23,7 +24,8 @@ public enum ComponentContextEnum {
     SERVICE_OBJECT_HOLDER(Map.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class),
     PROTOCOL_DEFINITION(ProtocolDefinition.class),
-    SERVICE_REGISTRY(ServiceRegistry.class);
+    SERVICE_REGISTRY(ServiceRegistry.class),
+    CHANNEL_HANDLER_FACTORY(ChannelHandlerFactory.class);
 
 
     private final Class<?> clazz;
@@ -39,7 +41,7 @@ public enum ComponentContextEnum {
      * @return
      */
     public boolean accept(Object obj) {
-        return clazz.isAssignableFrom(obj.getClass());
+        return obj == null || clazz.isAssignableFrom(obj.getClass());
     }
 
     /**

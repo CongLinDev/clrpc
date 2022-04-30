@@ -150,6 +150,8 @@ public class ProviderBootstrap extends Bootstrap {
         context.put(ComponentContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         // protocol
         context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
+        // channelHandlerFactory
+        context.put(ComponentContextEnum.CHANNEL_HANDLER_FACTORY, option.channelHandlerFactory());
         return context;
     }
 

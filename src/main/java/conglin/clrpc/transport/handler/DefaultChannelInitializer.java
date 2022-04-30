@@ -1,13 +1,10 @@
 package conglin.clrpc.transport.handler;
 
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
@@ -21,7 +18,8 @@ import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
-public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel> implements ComponentContextAware, Initializable {
+public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
+        implements ComponentContextAware, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultChannelInitializer.class);
 
@@ -40,10 +38,12 @@ public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
 
     @Override
     public void init() {
-        Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        Role role = getContext().getWith(ComponentContextEnum.ROLE);
-        String factoryClassName = properties.getProperty(role.item(".channel.handler-factory"));
-        channelHandlerFactory = newChannelHandlerFactory(factoryClassName);
+        channelHandlerFactory = getContext().getWith(ComponentContextEnum.CHANNEL_HANDLER_FACTORY);
+        if (channelHandlerFactory == null) {
+            // fallback default factory
+            channelHandlerFactory = new DefaultChannelHandlerFactory();
+        }
+        ObjectLifecycleUtils.assemble(channelHandlerFactory, getContext());
     }
 
     @Override
@@ -82,7 +82,7 @@ public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
      * 反射创建 {@link ChannelHandlerFactory}
      * 
      * @param qualifiedClassName 全限定名
-     * @param context 上下文
+     * @param context            上下文
      * @return 工厂对象
      */
     protected ChannelHandlerFactory newChannelHandlerFactory(String qualifiedClassName) {
@@ -92,7 +92,7 @@ public class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>
         }
         if (factory == null) {
             // fallback default factory
-           factory = new DefaultChannelHandlerFactory();
+            factory = new DefaultChannelHandlerFactory();
         }
         ObjectLifecycleUtils.assemble(factory, getContext());
         return factory;

@@ -205,6 +205,8 @@ public class ConsumerBootstrap extends Bootstrap {
         context.put(ComponentContextEnum.ROUTER, router);
         // request sender
         context.put(ComponentContextEnum.REQUEST_SENDER, requestSender);
+        // channelHandlerFactory
+        context.put(ComponentContextEnum.CHANNEL_HANDLER_FACTORY, option.channelHandlerFactory());
     }
 
     @Override

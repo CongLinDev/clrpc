@@ -1,4 +1,4 @@
-package conglin.clrpc.thirdparty.zookeeper.channelhandler;
+package conglin.clrpc.extension.transaction.channelhandler;
 
 import java.util.Properties;
 
@@ -18,16 +18,15 @@ import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
-import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import io.netty.channel.ChannelHandlerContext;
 
-public class ProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler implements Initializable {
+abstract public class AbstractProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler implements Initializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderTransactionServiceChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProviderTransactionServiceChannelHandler.class);
 
     protected TransactionHelper helper;
 
@@ -38,7 +37,7 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         this.instanceId = properties.getProperty("provider.instance.id");
         String urlString = properties.getProperty("extension.atomicity.url");
-        helper = new ZooKeeperTransactionHelper(new UrlScheme(urlString));
+        helper = newTransactionHelper(new UrlScheme(urlString));
         ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
     }
@@ -118,4 +117,12 @@ public class ProviderTransactionServiceChannelHandler extends ProviderAbstractSe
         }
         return new CommonTransactionResult(result);
     }
+
+    /**
+     * 创建一个 {@link TransactionHelper}
+     * 
+     * @param urlScheme
+     * @return
+     */
+    abstract protected TransactionHelper newTransactionHelper(UrlScheme urlScheme);
 }

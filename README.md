@@ -174,23 +174,20 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 |       provider.instance.id       | String  |   True   |         |     服务提供者id     |
 |    provider.instance.address     | String  |   True   |         |    服务提供者地址    |
 |    provider.io-thread.number     | Integer |  False   |    4    | 服务提供者的IO线程数 |
-| provider.channel.handler-factory | String  |  False   | `null`  | 自定义处理器工厂类名 |
 |       consumer.instance.id       | String  |   True   |         |     服务消费者id     |
 |    consumer.io-thread.number     | Integer |  False   |    4    | 服务使用者的IO线程数 |
 |   consumer.retry.check-period    | Integer |  False   |  3000   |   重试机制执行周期   |
 | consumer.retry.initial-threshold | Integer |  False   |  3000   |   初始重试时间门槛   |
-| consumer.channel.handler-factory | String  |  False   | `null`  | 自定义处理器工厂类名 |
 
 ### Extension config Items
 
 |          Field          |  Type  | Required | Default |             Remark             |
 | :---------------------: | :----: | :------: | :-----: | :----------------------------: |
-|  extension.logger.url   | String |   True   |         | 日志中心地址，目前用于记录日志 |
 | extension.atomicity.url | String |   True   |         | 原子服务地址，目前用于事务管理 |
 
 #### About customized address url
 
-配置项中的 `extension.logger.url` 为必填项，其url解析规则如下：
+配置项中的 `extension.atomicity.url` 为必填项，其url解析规则如下：
 
 `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000`
 
@@ -220,9 +217,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 **clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
 
-使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，并声明在配置文件中，即可完成对消息处理的扩展。
-
-自定义的 `ChannelHandlerFactory` 类，必须提供一个无参构造函数。**clrpc** 保证 `ChannelHandlerFactory#handlers()` 的返回对象具有生命周期[Object Lifecycle](#object-lifecycle)。
+使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，在启动时通过`conglin.clrpc.bootstrap.option.BootOption#channelHandlerFactory(ChannelHandlerFactory)` 传入即可完成对消息处理的扩展。
 
 ## Object Lifecycle
 

@@ -18,16 +18,6 @@ public enum Role {
     }
 
     /**
-     * 补全配置项
-     * 
-     * @param suffix
-     * @return
-     */
-    public String item(String suffix) {
-        return role + suffix;
-    }
-
-    /**
      * 是否是 Consumer
      * 
      * @return

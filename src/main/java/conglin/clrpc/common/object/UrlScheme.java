@@ -70,10 +70,12 @@ final public class UrlScheme {
 
         StringBuilder builder = new StringBuilder();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            builder.append(entry.getKey()).append(keyValueJoin).append(entry.getValue() == null ? "" : entry.getValue()).append(paramsJoin);
+            builder.append(entry.getKey())
+                    .append(keyValueJoin)
+                    .append(entry.getValue() == null ? "" : entry.getValue())
+                    .append(paramsJoin);
         }
-        builder.delete(builder.length() - paramsJoin.length(), builder.length());
-        return builder.toString();
+        return builder.substring(0, builder.length() - paramsJoin.length());
     }
 
     /**
@@ -215,5 +217,15 @@ final public class UrlScheme {
     @Override
     public String toString() {
         return getUrl();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj instanceof UrlScheme urlScheme) {
+            return getUrl().equals(urlScheme.getUrl());
+        }
+        return false;
     }
 }
