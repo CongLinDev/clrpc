@@ -91,12 +91,13 @@ public interface LoadBalancer<T, K, V> {
     /**
      * 根据type和random返回第一个符合条件的指定对象
      *
-     * @param type      类型
-     * @param random    随机数
-     * @param predicate 条件
+     * @param type           类型
+     * @param random         随机数
+     * @param keyPredicate   条件
+     * @param valuePredicate 条件
      * @return
      */
-    Pair<K, V> getEntity(T type, int random, Predicate<K> predicate);
+    Pair<K, V> getEntity(T type, int random, Predicate<K> keyPredicate, Predicate<V> valuePredicate);
 
     /**
      * 获取所有类型

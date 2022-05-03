@@ -20,19 +20,18 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String methodName = method.getName();
         Class<?> methodDeclaringClass = method.getDeclaringClass();
         if (Object.class == methodDeclaringClass) {
-            return switch (methodName) {
+            return switch (method.getName()) {
                 case "equals" -> proxy == args[0];
                 case "hashCode" -> System.identityHashCode(proxy);
                 case "toString" -> proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
                         + ", with InvocationHandler " + this;
-                default -> throw new IllegalStateException(methodName);
+                default -> throw new IllegalStateException(method.getName());
             };
         }
 
-        InvocationContext invocationContext = call(getServiceName(methodDeclaringClass), methodName, args);
+        InvocationContext invocationContext = call(getServiceName(methodDeclaringClass), getMethodName(method), args);
         Object result = handleContext(invocationContext);
         if (result == null) {
             return ClassUtils.defaultValue(method.getReturnType());
@@ -48,6 +47,16 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      */
     protected String getServiceName(Class<?> methodDeclaringClass) {
         return methodDeclaringClass.getName();
+    }
+
+    /**
+     * 获取方法名
+     * 
+     * @param method
+     * @return
+     */
+    protected String getMethodName(Method method) {
+        return method.getName();
     }
 
     /**

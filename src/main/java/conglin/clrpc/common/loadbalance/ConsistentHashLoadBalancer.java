@@ -184,8 +184,8 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
     }
 
     @Override
-    public Pair<K, V> getEntity(T type, int random, Predicate<K> predicate) {
-        Node<K, V> n = getNode(type, random, node -> predicate.test(node.getKey()));
+    public Pair<K, V> getEntity(T type, int random, Predicate<K> keyPredicate, Predicate<V> valuePredicate) {
+        Node<K, V> n = getNode(type, random, node -> keyPredicate.test(node.getKey()) && valuePredicate.test(node.getValue()));
         if (n == null) return null;
         return new Pair<>(n.getKey(), n.getValue());
     }

@@ -2,8 +2,9 @@ package conglin.clrpc.transport.component;
 
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +40,7 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
 
     protected Router router;
 
-    private Timer timer;
-
-    // 初始重试后的 threshold
-    private int INITIAL_THRESHOLD;
-    // 检查周期
-    private int CHECK_PERIOD;
+    private ScheduledExecutorService scheduledExecutorService;
 
     @Override
     public void init() {
@@ -52,9 +48,51 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
         this.contextHolder = getContext().getWith(ComponentContextEnum.INVOCATION_CONTEXT_HOLDER);
         this.router = getContext().getWith(ComponentContextEnum.ROUTER);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        this.CHECK_PERIOD = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
-        this.INITIAL_THRESHOLD = Integer.parseInt(properties.getProperty("consumer.retry.initial-threshold", "3000"));
-        this.timer = CHECK_PERIOD > 0 ? checkFuture() : null;
+        long checkPeriod = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
+        long initialThreshold = Integer.parseInt(properties.getProperty("consumer.retry.initial-threshold", "3000"));
+
+        if (checkPeriod > 0) {
+            this.scheduledExecutorService = new ScheduledThreadPoolExecutor(1, runnable -> {
+                Thread t = new Thread(runnable);
+                t.setDaemon(true);
+                t.setName("check-uncompleted-future");
+                return t;
+            });
+            this.scheduledExecutorService.scheduleWithFixedDelay(() -> {
+                LOGGER.debug("check uncompleted future task is beginning");
+                Iterator<InvocationContext> iterator = contextHolder.iterator();
+                while (iterator.hasNext()) {
+                    InvocationContext invocationContext = iterator.next();
+                    if (!invocationContext.getFuture().isPending()) {
+                        iterator.remove();
+                        continue;
+                    }
+    
+                    if (!invocationContext.isTimeout()) {
+                        continue;
+                    }
+    
+                    FailStrategy failStrategy = invocationContext.getFailStrategy();
+                    if (!failStrategy.timeout(invocationContext) && !invocationContext.getFuture().isPending()) {
+                        iterator.remove();
+                        continue;
+                    }
+    
+                    // retry
+                    try {
+                        doSend(invocationContext); // retry
+                        LOGGER.warn("Service response(identifier={}) is too slow. Retry...",
+                                invocationContext.getIdentifier());
+                    } catch (NoAvailableServiceInstancesException e) {
+                        if (!failStrategy.noTarget(invocationContext, e)
+                                && !invocationContext.getFuture().isPending()) {
+                            iterator.remove();
+                        }
+                    }
+                }
+                LOGGER.debug("check uncompleted future task is done");
+            }, initialThreshold, checkPeriod, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
@@ -84,13 +122,12 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
 
     @Override
     public boolean isDestroyed() {
-        return timer != null;
+        return this.scheduledExecutorService == null || this.scheduledExecutorService.isShutdown();
     }
 
     @Override
     public void destroy() throws DestroyFailedException {
-        timer.cancel();
-        timer = null;
+        this.scheduledExecutorService.shutdown();
     }
 
     /**
@@ -111,45 +148,5 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
         }
         routerResult.send(new Message(invocationContext.getIdentifier(), invocationContext.getRequest()));
         LOGGER.debug("Send request for messageId={}", invocationContext.getIdentifier());
-    }
-
-    private Timer checkFuture() {
-        Timer timer = new Timer("check-uncompleted-future", true);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Iterator<InvocationContext> iterator = contextHolder.iterator();
-                while (iterator.hasNext()) {
-                    InvocationContext invocationContext = iterator.next();
-                    if (!invocationContext.getFuture().isPending()) {
-                        iterator.remove();
-                        continue;
-                    }
-
-                    if (!invocationContext.isTimeout()) {
-                        continue;
-                    }
-
-                    FailStrategy failStrategy = invocationContext.getFailStrategy();
-                    if (!failStrategy.timeout(invocationContext) && !invocationContext.getFuture().isPending()) {
-                        iterator.remove();
-                        continue;
-                    }
-
-                    // retry
-                    try {
-                        doSend(invocationContext); // retry
-                        LOGGER.warn("Service response(identifier={}) is too slow. Retry...",
-                                invocationContext.getIdentifier());
-                    } catch (NoAvailableServiceInstancesException e) {
-                        if (!failStrategy.noTarget(invocationContext, e)
-                                && !invocationContext.getFuture().isPending()) {
-                            iterator.remove();
-                        }
-                    }
-                }
-            }
-        }, INITIAL_THRESHOLD, CHECK_PERIOD);
-        return timer;
     }
 }

@@ -15,6 +15,11 @@ public class Pair<P, Q> {
         this.q = q;
     }
 
+    public Pair(Pair<? extends P, ? extends Q> pair) {
+        this.p = pair.getFirst();
+        this.q = pair.getSecond();
+    }
+
     /**
      * 获得第一个值
      * 

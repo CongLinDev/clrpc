@@ -73,7 +73,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
         String serviceName = condition.getServiceName();
 
         Pair<ServiceInstance, Channel> pair = loadBalancer.getEntity(serviceName, condition.getRandom(),
-                condition.getInstanceCondition());
+                condition.getInstanceCondition(), Channel::isActive);
         if (pair == null)
             throw new NoAvailableServiceInstancesException(condition);
         return new RouterResult(pair.getFirst(), pair.getSecond()::writeAndFlush);
