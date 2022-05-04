@@ -41,12 +41,13 @@ public interface InvocationFuture extends Future<Object> {
     }
 
     /**
-     * 认该 {@link InvocationFuture} 完成
+     * 标记 {@link InvocationFuture} 完成
      * 
-     * @param error 是否错误
-     * @param result
+     * @param needSignError 是否需要标记为错误
+     * @param result        结果
+     * @return 是否成功
      */
-    void done(boolean error, Object result);
+    boolean done(boolean needSignError, Object result);
 
     /**
      * 是否等待中

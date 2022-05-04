@@ -13,9 +13,11 @@ public class SignalStateSync implements StateSync {
 
     @Override
     public void await() throws InterruptedException {
-        while (isPending()) {
+        if (isPending()) {
             synchronized (this) {
-                wait();
+                while (isPending()) {
+                    wait();
+                }
             }
         }
     }
@@ -24,7 +26,9 @@ public class SignalStateSync implements StateSync {
     public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
         if (isPending()) {
             synchronized (this) {
-                wait(unit.toMillis(timeout));
+                if (isPending()) {
+                    wait(unit.toMillis(timeout));
+                }
             }
             return !isPending();
         }
@@ -33,10 +37,9 @@ public class SignalStateSync implements StateSync {
 
     @Override
     public void signal() {
-        if (!isPending()) return;
+        if (isPending()) return;
         synchronized (this) {
-            if (isPending()) {
-                state(DONE);
+            if (!isPending()) {
                 notifyAll();
             }
         }

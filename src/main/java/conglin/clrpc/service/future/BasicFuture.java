@@ -1,5 +1,7 @@
 package conglin.clrpc.service.future;
 
+import java.util.concurrent.CancellationException;
+
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.ServiceException;
 
@@ -13,6 +15,9 @@ public class BasicFuture extends AbstractFuture {
 
     @Override
     protected Object doGet() throws ServiceException {
+        if (isCancelled()) {
+            throw new CancellationException();
+        }
         if (isError()) {
             throw (ServiceException) result;
         }
@@ -20,8 +25,8 @@ public class BasicFuture extends AbstractFuture {
     }
 
     @Override
-    protected void beforeDone(Object result) {
-        super.beforeDone(result);
+    protected void beforeRunCallback(Object result) {
+        super.beforeRunCallback(result);
         this.result = result;
     }
 

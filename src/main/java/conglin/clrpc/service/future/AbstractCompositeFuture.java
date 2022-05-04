@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
@@ -88,7 +87,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
             } catch (InterruptedException | ExecutionException e) {
                 return e;
             }
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     @Override

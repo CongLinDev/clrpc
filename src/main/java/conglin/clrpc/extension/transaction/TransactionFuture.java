@@ -6,7 +6,7 @@ import conglin.clrpc.service.future.AbstractCompositeFuture;
 import conglin.clrpc.service.future.InvocationFuture;
 
 public class TransactionFuture extends AbstractCompositeFuture {
-    protected final Callback subFutureCallback;
+    private final Callback subFutureCallback;
 
     /**
      * 构造一个事务Future
@@ -20,7 +20,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
             @Override
             public void success(Object result) {
                 // 进入该方法的时候，说明事务已经提交，不会被取消或中止
-                if (!TransactionFuture.this.isError() && checkCompleteFuture()) {
+                if (checkCompleteFuture()) {
                     TransactionFuture.this.done(false, null); // 全部的子Future完成后调用组合Future完成
                 }
             }
@@ -31,6 +31,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
                 // 而当原子请求执行错误时，不会向服务消费者发送回复
                 TransactionFuture.this.signError();
                 if (checkCompleteFuture()) {
+                    // error 由外部单独标记
                     TransactionFuture.this.done(false, null); // 全部的子Future完成后调用组合Future完成
                 }
             }

@@ -53,26 +53,36 @@ abstract public class AbstractFuture implements InvocationFuture {
     abstract protected Object doGet() throws ServiceException;
 
     @Override
-    public void done(boolean error, Object result) {
-        if (isPending()) {
-            beforeDone(result);
-            SYNCHRONIZER.signal();
-            if (error) {
+    public boolean done(boolean needSignError, Object result) {
+        if (SYNCHRONIZER.done()) {
+            if (needSignError) {
                 signError();
             }
+            beforeRunCallback(result);
             runCallback();
-        } else {
-            throw new UnsupportedOperationException();
+            afterRunCallback(result);
+            SYNCHRONIZER.signal();
+            return true;
         }
+        return false;
     }
 
     /**
-     * 完成前一刻需要做的工作
+     * {@link AbstractFuture#runCallback()} 前需要做的事情
      * 
      * @param result
      */
-    protected void beforeDone(Object result) {
+    protected void beforeRunCallback(Object result) {
         // 默认不做任何事情
+    }
+
+    /**
+     * {@link AbstractFuture#runCallback()} 后需要做的事情
+     * 
+     * @param result
+     */
+    protected void afterRunCallback(Object result) {
+
     }
 
     @Override
@@ -114,10 +124,10 @@ abstract public class AbstractFuture implements InvocationFuture {
 
     @Override
     public InvocationFuture callback(Callback callback) {
-        if (isDone()) {
-            runCallback(callback);
-        } else {
+        if (isPending()) {
             futureCallback = (futureCallback == null) ? callback : futureCallback.andThen(callback);
+        } else if (isDone()) {
+            runCallback(callback);
         }
         return this;
     }

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.apache.zookeeper.CreateMode;
@@ -98,7 +97,7 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
                         values.stream()
                                 .map(Pair::getSecond)
                                 .map(serviceInstanceCodec::fromContent)
-                                .collect(Collectors.toList())));
+                                .toList()));
     }
 
     @Override
@@ -127,6 +126,6 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
         return ZooKeeperUtils.listChildrenData(keeperInstance.instance(), providerNodes)
                 .stream()
                 .map(serviceInstanceCodec::fromContent)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

@@ -2,7 +2,6 @@ package conglin.clrpc.transport.protocol;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import conglin.clrpc.transport.message.Payload;
@@ -69,7 +68,7 @@ public class DefaultProtocolDefinition implements ProtocolDefinition {
      * @return
      */
     public List<Class<?>> listPayloadClasses() {
-        return Stream.of(payloadClasses).filter(Objects::nonNull).collect(Collectors.toList());
+        return Stream.of(payloadClasses).filter(Objects::nonNull).toList();
     }
 
     /**

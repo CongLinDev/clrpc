@@ -14,7 +14,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +117,7 @@ public class ConsistentHashLoadBalancer<T, K, V> implements LoadBalancer<T, K, V
         if (function == null)
             return Collections.emptyList();
         return circle.values().stream().map(Node::getValue).filter(Objects::nonNull).map(function)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

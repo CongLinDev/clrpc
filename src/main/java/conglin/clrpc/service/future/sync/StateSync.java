@@ -84,7 +84,15 @@ public interface StateSync {
      * 取消
      */
     default boolean cancel() {
-        final int currentState = state();
-        return isPending() && casState(currentState, CANCELLED);
+        return casState(PENDING, CANCELLED);
+    }
+
+    /**
+     * 完成
+     * 
+     * @return
+     */
+    default boolean done() {
+        return casState(PENDING, DONE);
     }
 }
