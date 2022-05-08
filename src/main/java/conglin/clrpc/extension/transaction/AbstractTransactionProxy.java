@@ -44,6 +44,8 @@ abstract public class AbstractTransactionProxy
 
     protected TransactionInvocationContext transactionInvocationContext;
 
+    private String instanceId;
+
     /**
      * 获取helper
      * 
@@ -56,6 +58,10 @@ abstract public class AbstractTransactionProxy
     public void init() {
         this.identifierGenerator = getContext().getWith(ComponentContextEnum.IDENTIFIER_GENERATOR);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        this.instanceId = properties.getProperty("consumer.instance.id");
+        if (instanceId == null) {
+            throw new IllegalArgumentException("properties 'consumer.instance.id' must not be null");
+        }
         helper = getTransactionHelper(new UrlScheme(properties.getProperty("extension.atomicity.url")));
         ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
@@ -79,7 +85,7 @@ abstract public class AbstractTransactionProxy
         long currentTransactionId = identifierGenerator.generate(); // 生成一个新的ID
         transactionInvocationContext = new TransactionInvocationContext(currentTransactionId);
         LOGGER.debug("Transaction id={} will begin.", currentTransactionId);
-        helper.begin(currentTransactionId); // 开启事务
+        helper.begin(currentTransactionId, instanceId); // 开启事务
     }
 
     @Override
@@ -88,12 +94,13 @@ abstract public class AbstractTransactionProxy
             throw new TransactionException("Transaction does not begin with this proxy");
         }
 
+        transactionInvocationContext.getFuture().combineDone();
         if (transactionInvocationContext.getFuture().isDone()) {
             if (transactionInvocationContext.getFuture().isError()) {
-                helper.abort(transactionInvocationContext.getIdentifier());
+                helper.abort(transactionInvocationContext.getIdentifier(), instanceId);
                 transactionInvocationContext.abort();
             } else {
-                helper.commit(transactionInvocationContext.getIdentifier());
+                helper.commit(transactionInvocationContext.getIdentifier(), instanceId);
                 transactionInvocationContext.commit();
             }
         } else {
@@ -101,7 +108,7 @@ abstract public class AbstractTransactionProxy
                 transactionInvocationContext.getFuture().get();
                 return commit();
             } catch (Exception e) {
-                helper.abort(transactionInvocationContext.getIdentifier());
+                helper.abort(transactionInvocationContext.getIdentifier(), instanceId);
                 transactionInvocationContext.abort();
             }
         }
@@ -118,12 +125,13 @@ abstract public class AbstractTransactionProxy
             throw new TransactionException("Transaction does not begin with this proxy");
         }
 
+        transactionInvocationContext.getFuture().combineDone();
         if (transactionInvocationContext.getFuture().isDone()) {
             if (transactionInvocationContext.getFuture().isError()) {
-                helper.abort(transactionInvocationContext.getIdentifier());
+                helper.abort(transactionInvocationContext.getIdentifier(), instanceId);
                 transactionInvocationContext.abort();
             } else {
-                helper.commit(transactionInvocationContext.getIdentifier());
+                helper.commit(transactionInvocationContext.getIdentifier(), instanceId);
                 transactionInvocationContext.commit();
             }
         } else {
@@ -131,7 +139,7 @@ abstract public class AbstractTransactionProxy
                 transactionInvocationContext.getFuture().get(timeout, unit);
                 return commit(timeout, unit);
             } catch (InterruptedException | ExecutionException e) {
-                helper.abort(transactionInvocationContext.getIdentifier());
+                helper.abort(transactionInvocationContext.getIdentifier(), instanceId);
                 transactionInvocationContext.abort();
             }
         }
@@ -147,7 +155,8 @@ abstract public class AbstractTransactionProxy
             throw new TransactionException("Transaction does not begin with this proxy");
         }
         LOGGER.debug("Transaction id={} will abort.", transactionInvocationContext.getIdentifier());
-        helper.abort(transactionInvocationContext.getIdentifier());
+        transactionInvocationContext.getFuture().combineDone();
+        helper.abort(transactionInvocationContext.getIdentifier(), instanceId);
         transactionInvocationContext.abort();
         TransactionInvocationContext c = transactionInvocationContext;
         transactionInvocationContext = null; // 提交后该代理对象可以进行重用
@@ -214,16 +223,17 @@ abstract public class AbstractTransactionProxy
                     invocationContext.setInstanceCondition(instanceCondition());
                     invocationContext.setTimeoutThreshold(timeoutThreshold());
 
-                    Consumer<ServiceInstance> proxyBindingInstanceProxy = instanceConsumer();
+                    Consumer<ServiceInstance> proxyBindingInstanceConsumer = instanceConsumer();
                     invocationContext.setInstanceConsumer(instance -> {
                         try {
                             helper.prepare(request.transactionId(), request.serialId(), instance.id());
                         } catch (TransactionException e) {
                             LOGGER.error("Transaction message(transactionId={}, serialId={}) prepare failed. {}",
                                     request.transactionId(), request.serialId(), e.getMessage());
+                            invocationContext.getFuture().done(true, e);
                         }
-                        if (proxyBindingInstanceProxy != null) {
-                            proxyBindingInstanceProxy.accept(instance);
+                        if (proxyBindingInstanceConsumer != null) {
+                            proxyBindingInstanceConsumer.accept(instance);
                         }
                     });
                     call(invocationContext);

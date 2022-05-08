@@ -67,17 +67,17 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
                         iterator.remove();
                         continue;
                     }
-    
+
                     if (!invocationContext.isTimeout()) {
                         continue;
                     }
-    
+
                     FailStrategy failStrategy = invocationContext.getFailStrategy();
                     if (!failStrategy.timeout(invocationContext) && !invocationContext.getFuture().isPending()) {
                         iterator.remove();
                         continue;
                     }
-    
+
                     // retry
                     try {
                         doSend(invocationContext); // retry
@@ -88,6 +88,10 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
                                 && !invocationContext.getFuture().isPending()) {
                             iterator.remove();
                         }
+                    } catch (Exception e) {
+                        LOGGER.warn(
+                                "Service response(identifier={}) is too slow. but we catch an exception and we will do nothing",
+                                invocationContext.getIdentifier(), e);
                     }
                 }
                 LOGGER.debug("check uncompleted future task is done");
@@ -117,6 +121,10 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
                     && !invocationContext.getFuture().isPending()) {
                 contextHolder.remove(messageId);
             }
+        } catch (Exception e) {
+            LOGGER.warn(
+                    "we catch an exception and we will do nothing",
+                    invocationContext.getIdentifier(), e);
         }
     }
 

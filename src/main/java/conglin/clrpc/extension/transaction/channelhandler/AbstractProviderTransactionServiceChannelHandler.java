@@ -75,7 +75,7 @@ abstract public class AbstractProviderTransactionServiceChannelHandler extends P
                 return null;
             }
             // 监视节点
-            helper.watch(transactionId, serialId, transactionResult.callback());
+            helper.watch(transactionId, transactionResult.callback());
             // 发送预提交结果
             return new ResponsePayload(transactionResult.result());
         } catch (UnsupportedServiceException e) {

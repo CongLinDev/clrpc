@@ -49,6 +49,7 @@ public class TransactionInvocationContext {
     public void commit() {
         if (getState() == TransactionState.PREPARE) {
             state = TransactionState.COMMIT;
+            future.combineDone();
         }
     }
     /**
@@ -57,6 +58,7 @@ public class TransactionInvocationContext {
     public void abort() {
         if (getState() == TransactionState.PREPARE) {
             state = TransactionState.ABORT;
+            future.combineDone();
         }
     }
 }

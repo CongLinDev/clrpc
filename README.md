@@ -231,14 +231,14 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ## Method Lookup
 
-**clrpc** 同时支持 Provider 处以下两种方式的方法查询。
+**clrpc** Provider 处同时支持以下两种方式的方法查询。
 
 1. 第一种为普通方式：该方式使用 `java.lang.Class#getMethod(String, Class<?>[])` 在执行时查找对应的 `Method`。
 2. 第二种为 **clrpc** 自定义方式（不支持用户自定义）：该方式使用缓存的方式保存服务 `Method`。
    1. 当用户发布对应的服务时，会对该服务下的所有 `Method` 进行分类缓存。
-   2. 分类的规则为重载的 `Method` 且其参数个数相同，例如 `#hello(String, Object)` 的缓存key为 `$hello$2`。
-   3. 对于缓存key相同的 `Method` ，根据其方法参数类型继承顺序进行排序，例如 `#hello(String, Integer)` 将排在 `#hello(String, Object)` 前面。
-   4. 执行时根据请求参数类型按顺序匹配 `Method` 类型。
+   2. 分类的规则为重载的 `Method` 且其参数个数，例如 `#hello(String, Object)` 的缓存key为 `$hello$2`。
+   3. 对于缓存key相同的 `Method` ，根据其 `Method` 参数类型继承顺序进行排序，例如 `#hello(String, Integer)` 将排在 `#hello(String, Object)` 前面。
+   4. 执行时根据请求参数类型按顺序匹配 `Method` 参数类型。
 
 Customer 处需要配合代理来选择使用哪种方式。对于 `conglin.clrpc.service.proxy.AbstractObjectProxy` 及其子类默认使用第二种方式。若需要更换方法查询方式，对方法 `conglin.clrpc.service.proxy.AbstractObjectProxy#getMethodName(Method)` 重写即可。
 

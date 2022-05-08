@@ -9,6 +9,8 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     private final List<InvocationFuture> futures;
 
+    private boolean combineDone;
+
     /**
      * 构造一个空的复合Future
      */
@@ -24,6 +26,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     public AbstractCompositeFuture(Collection<? extends InvocationFuture> futures) {
         super();
         this.futures = (futures == null) ? new ArrayList<>() : new ArrayList<>(futures);
+        combineDone = false;
     }
 
     /**
@@ -49,6 +52,22 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     /**
+     * 标记合并完成
+     */
+    public void combineDone() {
+        combineDone = true;
+
+        for (InvocationFuture f : futures) {
+            if (f.isPending())
+                return;
+            if (f.isError()) {
+                signError();
+            }
+        }
+        done(false, null);
+    }
+
+    /**
      * 合并前的操作
      * 
      * @param future
@@ -70,6 +89,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
      * @return
      */
     protected boolean checkCompleteFuture() {
+        if (!combineDone) return false;
         // 忽略集合中已经取消的 Future 默认为执行完成
         for (InvocationFuture f : futures) {
             if (f.isPending())
