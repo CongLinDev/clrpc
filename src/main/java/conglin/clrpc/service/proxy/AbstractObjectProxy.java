@@ -1,6 +1,7 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
@@ -56,7 +57,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @return
      */
     protected String getMethodName(Method method) {
-        return method.getName();
+        return ServiceObjectHolder.ServiceObjectWrapper.customMethodName(method);
     }
 
     /**

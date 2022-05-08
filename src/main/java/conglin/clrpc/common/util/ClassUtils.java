@@ -1,12 +1,16 @@
 package conglin.clrpc.common.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ClassUtils {
 
@@ -107,7 +111,8 @@ public final class ClassUtils {
      * @return
      */
     public static <T> T loadObjectByType(Class<?> targetClass, Class<T> superClass, Object... args) {
-        if (targetClass == null) return null;
+        if (targetClass == null)
+            return null;
         try {
             Class<? extends T> clazz = targetClass.asSubclass(superClass);
             Constructor<? extends T> constructor = clazz.getDeclaredConstructor(getClasses(args));
@@ -299,7 +304,8 @@ public final class ClassUtils {
      * @return
      */
     public static Class<?> loadClass(String className) {
-        if (className == null || "".equals(className)) return Object.class;
+        if (className == null || className.isEmpty())
+            return Object.class;
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {

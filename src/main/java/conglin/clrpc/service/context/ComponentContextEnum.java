@@ -3,6 +3,7 @@ package conglin.clrpc.service.context;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.definition.role.Role;
+import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.registry.ServiceRegistry;
@@ -10,7 +11,6 @@ import conglin.clrpc.transport.component.RequestSender;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import conglin.clrpc.transport.router.Router;
 
-import java.util.Map;
 import java.util.Properties;
 
 public enum ComponentContextEnum {
@@ -21,7 +21,7 @@ public enum ComponentContextEnum {
     PROPERTIES(Properties.class),
     REQUEST_SENDER(RequestSender.class),
     INVOCATION_CONTEXT_HOLDER(InvocationContextHolder.class),
-    SERVICE_OBJECT_HOLDER(Map.class),
+    SERVICE_OBJECT_HOLDER(ServiceObjectHolder.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class),
     PROTOCOL_DEFINITION(ProtocolDefinition.class),
     SERVICE_REGISTRY(ServiceRegistry.class),

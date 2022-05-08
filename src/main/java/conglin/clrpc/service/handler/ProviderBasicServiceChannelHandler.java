@@ -2,7 +2,6 @@ package conglin.clrpc.service.handler;
 
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
-import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.transport.message.Payload;
 import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
@@ -21,10 +20,7 @@ public class ProviderBasicServiceChannelHandler extends ProviderAbstractServiceC
     @Override
     protected ResponsePayload execute(Payload payload) {
         try {
-            RequestPayload request = (RequestPayload)payload;
-            ServiceObject<?> serviceObject = findServiceBean(request.serviceName());
-            Object result = jdkReflectInvoke(serviceObject.object(), request);
-            return new ResponsePayload(result);
+            return new ResponsePayload(invoke((RequestPayload) payload));
         } catch (UnsupportedServiceException | ServiceExecutionException e) {
             LOGGER.error("Request failed: ", e);
             return new ResponsePayload(true, e);

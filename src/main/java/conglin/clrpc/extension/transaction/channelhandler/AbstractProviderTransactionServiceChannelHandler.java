@@ -14,12 +14,10 @@ import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.TransactionHelper;
 import conglin.clrpc.extension.transaction.TransactionRequestPayload;
 import conglin.clrpc.extension.transaction.TransactionResult;
-import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.ProviderAbstractServiceChannelHandler;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.message.Payload;
-import conglin.clrpc.transport.message.RequestPayload;
 import conglin.clrpc.transport.message.ResponsePayload;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import io.netty.channel.ChannelHandlerContext;
@@ -68,11 +66,10 @@ abstract public class AbstractProviderTransactionServiceChannelHandler extends P
             }
             // 开始处理请求
             LOGGER.debug("Transaction request(transactionId={} serialId={}) will be executed.", transactionId, serialId);
-            // 查询服务对象
-            ServiceObject<?> serviceObject = findServiceBean(request.serviceName());
-            // 处理事务
+
             // 预提交事务
-            TransactionResult transactionResult = jdkReflectInvoke(serviceObject.object(), request);
+            TransactionResult transactionResult = buildTransactionResult(invoke(request));
+
             if (!helper.signSuccess(transactionId, serialId, instanceId)) { // 标记预提交成功
                 // 标记操作失败的话直接丢弃请求
                 return null;
@@ -109,13 +106,17 @@ abstract public class AbstractProviderTransactionServiceChannelHandler extends P
         }
     }
 
-    @Override
-    protected TransactionResult jdkReflectInvoke(Object serviceBean, RequestPayload request) throws ServiceExecutionException {
-        Object result = super.jdkReflectInvoke(serviceBean, request);
-        if (result instanceof TransactionResult) {
-            return (TransactionResult) result;
+    /**
+     * 构建 {@link TransactionResult}
+     * 
+     * @param object
+     * @return
+     */
+    protected TransactionResult buildTransactionResult(Object object) {
+        if (object instanceof TransactionResult) {
+            return (TransactionResult) object;
         }
-        return new CommonTransactionResult(result);
+        return new CommonTransactionResult(object);
     }
 
     /**

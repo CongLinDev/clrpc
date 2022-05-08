@@ -1,7 +1,6 @@
 package conglin.clrpc.transport.publisher;
 
 import java.net.UnknownHostException;
-import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.IPAddressUtils;
-import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
@@ -68,11 +67,8 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
                 LOGGER.error("Provider starts failed", channelFuture.cause());
                 throw new RuntimeException(channelFuture.cause());
             }
-            Map<String, ServiceObject<?>> serviceObjects = getContext()
-                    .getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
-            for (ServiceObject<?> serviceObject : serviceObjects.values()) {
-                serviceRegistry.registerProvider(serviceObject);
-            }
+            ServiceObjectHolder serviceObjectHolder = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
+            serviceObjectHolder.forEach(serviceRegistry::registerProvider);
             LOGGER.info("Provider starts with {}", instanceAddress);
             channelFuture.channel().closeFuture().sync();
         } catch (UnknownHostException e) {

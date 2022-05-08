@@ -1,7 +1,5 @@
 package conglin.clrpc.bootstrap;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -10,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceObject;
+import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.registry.ServiceRegistry;
@@ -45,7 +44,7 @@ public class ProviderBootstrap extends Bootstrap {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBootstrap.class);
 
     private final Publisher publisher;
-    private final Map<String, ServiceObject<?>> serviceObjects;
+    private final ServiceObjectHolder serviceObjectHolder;
     private ServiceRegistry serviceRegistry;
     private ComponentContext context;
 
@@ -60,7 +59,7 @@ public class ProviderBootstrap extends Bootstrap {
      */
     public ProviderBootstrap(Properties properties) {
         super(properties);
-        serviceObjects = new HashMap<>();
+        serviceObjectHolder = new ServiceObjectHolder();
         publisher = new NettyPublisher();
     }
 
@@ -71,7 +70,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return
      */
     public ProviderBootstrap publish(ServiceObject<?> serviceObject) {
-        serviceObjects.put(serviceObject.name(), serviceObject);
+        serviceObjectHolder.putServiceObject(serviceObject);
         LOGGER.info("Publish service named {} with interface(class={}).", serviceObject.name(),
                 serviceObject.interfaceClass());
         return this;
@@ -104,7 +103,7 @@ public class ProviderBootstrap extends Bootstrap {
     public void start(BootOption option) {
         LOGGER.info("Provider is starting.");
         ComponentContext context = initContext(option);
-        ObjectLifecycleUtils.assemble(serviceObjects, context);
+        ObjectLifecycleUtils.assemble(serviceObjectHolder, context);
         ObjectLifecycleUtils.assemble(publisher, context);
     }
 
@@ -113,7 +112,7 @@ public class ProviderBootstrap extends Bootstrap {
      */
     public void stop() {
         LOGGER.info("Provider is stopping.");
-        ObjectLifecycleUtils.destroy(serviceObjects);
+        ObjectLifecycleUtils.destroy(serviceObjectHolder);
         ObjectLifecycleUtils.destroy(publisher);
         context = null;
     }
@@ -139,7 +138,7 @@ public class ProviderBootstrap extends Bootstrap {
         // registery
         assert serviceRegistry != null;
         context.put(ComponentContextEnum.SERVICE_REGISTRY, this.serviceRegistry);
-        context.put(ComponentContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjects);
+        context.put(ComponentContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjectHolder);
         // 设置角色
         context.put(ComponentContextEnum.ROLE, role());
         // 设置属性配置器
