@@ -22,9 +22,11 @@ import conglin.clrpc.transport.message.ResponsePayload;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import io.netty.channel.ChannelHandlerContext;
 
-abstract public class AbstractProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler implements Initializable {
+abstract public class AbstractProviderTransactionServiceChannelHandler extends ProviderAbstractServiceChannelHandler
+        implements Initializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProviderTransactionServiceChannelHandler.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(AbstractProviderTransactionServiceChannelHandler.class);
 
     protected TransactionHelper helper;
 
@@ -58,51 +60,76 @@ abstract public class AbstractProviderTransactionServiceChannelHandler extends P
         long transactionId = request.transactionId();
         int serialId = request.serialId();
         LOGGER.debug("Receive transaction request(transactionId={} serialId={})", transactionId, serialId);
+
+        if (!isOccupied(transactionId, serialId, instanceId)) {
+            // 直接丢弃
+            LOGGER.debug("Ignore transaction request(transactionId={} serialId={})", transactionId, serialId);
+            return null;
+        }
+
+        // 开始处理请求
+        LOGGER.debug("Transaction request(transactionId={} serialId={}) will be executed.", transactionId, serialId);
+        TransactionResult transactionResult = null;
         try {
-            if (!helper.isOccupied(transactionId, serialId, instanceId)) { // 是否占有该请求处理权限
-                // 直接丢弃
-                LOGGER.debug("Ignore transaction request(transactionId={} serialId={})", transactionId, serialId);
-                return null;
-            }
-            // 开始处理请求
-            LOGGER.debug("Transaction request(transactionId={} serialId={}) will be executed.", transactionId, serialId);
-
             // 预提交事务
-            TransactionResult transactionResult = buildTransactionResult(invoke(request));
-
-            if (!helper.signSuccess(transactionId, serialId, instanceId)) { // 标记预提交成功
-                // 标记操作失败的话直接丢弃请求
-                return null;
+            transactionResult = buildTransactionResult(invoke(request));
+        } catch (UnsupportedServiceException | ServiceExecutionException e) {
+            // 预提交失败
+            LOGGER.error("Transaction request(transactionId={} serialId={}) execute failed: {}", transactionId,
+                    serialId, e.getMessage());
+            if (signFailed(transactionId, serialId, instanceId)) {
+                return new ResponsePayload(true, e);
             }
+            return null; // 直接丢弃，等待重试
+        }
+
+        // 标记预提交成功
+        if (!signSuccess(transactionId, serialId, instanceId)) {
+            transactionResult.callback().fail(null);
+            return null; // 直接丢弃，等待重试
+        }
+
+        try {
             // 监视节点
             helper.watch(transactionId, transactionResult.callback());
             // 发送预提交结果
             return new ResponsePayload(transactionResult.result());
-        } catch (UnsupportedServiceException e) {
-            LOGGER.error("Transaction request(transactionId={} serialId={}) unsupported: {}", transactionId, serialId, e.getMessage());
-            // 标记失败，未找到服务对象
-            signFailed(transactionId, serialId, instanceId);
-            return new ResponsePayload(true, e);
-        } catch (ServiceExecutionException e) {
-            // 预提交失败
-            LOGGER.error("Transaction request(transactionId={} serialId={}) execute failed: {}", transactionId, serialId, e.getMessage());
-            // 标记失败，由服务消费者在下次定时轮询时重新请求
-            signFailed(transactionId, serialId, instanceId);
-            return new ResponsePayload(true, e);
         } catch (TransactionException e) {
-            // 预提交失败
-            LOGGER.error("Transaction request(transactionId={} serialId={}) watch failed: {}", transactionId, serialId, e.getMessage());
-            // 标记失败，由服务消费者在下次定时轮询时重新请求
-            signFailed(transactionId, serialId, instanceId);
-            return new ResponsePayload(true, e);
+            // 监视失败
+            LOGGER.error("Transaction request(transactionId={} serialId={}) watch failed: {}", transactionId, serialId,
+                    e.getMessage());
+            transactionResult.callback().fail(null);
+            return new ResponsePayload(true, e); // 返回失败信息
         }
     }
 
-    private void signFailed(long transactionId, int serialId, String target) {
+    private boolean signFailed(long transactionId, int serialId, String target) {
         try {
-            helper.signFailed(transactionId, serialId, target);
+            return helper.signFailed(transactionId, serialId, target);
         } catch (TransactionException e) {
-            LOGGER.error("Transaction request(transactionId={} serialId={}) signFailed failed: {}", transactionId, serialId, e.getMessage());
+            LOGGER.warn("Transaction request(transactionId={} serialId={}) signFailed failed: {}", transactionId,
+                    serialId, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean signSuccess(long transactionId, int serialId, String target) {
+        try {
+            return helper.signSuccess(transactionId, serialId, target);
+        } catch (TransactionException e) {
+            LOGGER.warn("Transaction request(transactionId={} serialId={}) signSuccess failed: {}", transactionId,
+                    serialId, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean isOccupied(long transactionId, int serialId, String target) {
+        try {
+            return helper.isOccupied(transactionId, serialId, target);
+        } catch (TransactionException e) {
+            LOGGER.warn("Transaction request(transactionId={} serialId={}) isOccupied failed: {}", transactionId,
+                    serialId, e.getMessage());
+            return false;
         }
     }
 

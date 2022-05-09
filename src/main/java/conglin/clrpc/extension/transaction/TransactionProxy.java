@@ -44,9 +44,7 @@ public interface TransactionProxy {
     /**
      * 获取异步原子请求代理
      * 
-     * 使用该代理的效果等同于 {@link TransactionProxy#call(String, String, Object...)}
-     * 
-     * 需要注意的是 该方法产生的对象与 {@code TransactionProxy} 对象深度绑定
+     * 需要注意的是 该方法产生的对象与当前 {@link TransactionProxy} 对象深度绑定
      * 
      * @param <T>
      * @param serviceInterface

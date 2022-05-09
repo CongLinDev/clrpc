@@ -5,6 +5,7 @@ import conglin.clrpc.transport.message.Payload;
 public interface ProtocolDefinition {
     /**
      * 版本
+     * 
      * @return
      */
     int version();
@@ -18,7 +19,6 @@ public interface ProtocolDefinition {
      */
     int getTypeByPayload(Class<? extends Payload> payloadClass) throws UnknownPayloadTypeException;
 
-
     /**
      * payload type
      * 
@@ -27,7 +27,6 @@ public interface ProtocolDefinition {
      * @throws UnknownPayloadTypeException
      */
     Class<? extends Payload> getPayloadByType(int type) throws UnknownPayloadTypeException;
-
 
     /**
      * 设置 payload type

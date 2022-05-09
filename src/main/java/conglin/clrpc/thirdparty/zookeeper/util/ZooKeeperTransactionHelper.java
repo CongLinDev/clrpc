@@ -79,12 +79,12 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
 
     @Override
     public void watch(String path, Callback callback) throws TransactionException {
-        String subNodePath = buildPath(path);
+        String nodePath = buildPath(path);
         String prepareStatePrefix = buildValue(TransactionState.PREPARE.name());
         String commitStatePrefix = buildValue(TransactionState.COMMIT.name());
         String abortStatePrefix = buildValue(TransactionState.ABORT.name());
         Watcher watcher = event -> {
-            String newState = ZooKeeperUtils.watchNode(keeperInstance.instance(), subNodePath, null);
+            String newState = ZooKeeperUtils.watchNode(keeperInstance.instance(), nodePath, null);
             if (Event.EventType.NodeDataChanged == event.getType()) {       // 节点被修改，说明状态改变
                 if (newState.startsWith(commitStatePrefix)) {
                     LOGGER.debug("Transaction state is COMMIT and execute success(). path={} value={}", path, newState);
@@ -105,10 +105,11 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
             }
         };
 
-        String currentState = ZooKeeperUtils.watchNode(keeperInstance.instance(), subNodePath, watcher);
+        String currentState = ZooKeeperUtils.watchNode(keeperInstance.instance(), nodePath, watcher);
 
         if (currentState == null) {
             LOGGER.debug("Transaction state is null and execute fail(). path={}", path);
+            ZooKeeperUtils.removeWatcher(keeperInstance.instance(), nodePath, watcher, WatcherType.Data);
             callback.fail(null);
             return;
         }
@@ -117,7 +118,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
             return;
 
         // 请求已经被处理了
-        ZooKeeperUtils.removeWatcher(keeperInstance.instance(), subNodePath, watcher, WatcherType.Data);
+        ZooKeeperUtils.removeWatcher(keeperInstance.instance(), nodePath, watcher, WatcherType.Data);
         if (currentState.startsWith(commitStatePrefix)) { // 请求状态已经更改为 COMMIT
             LOGGER.debug("Transaction state is COMMIT and execute success(). path={}", path);
             callback.success(null);
