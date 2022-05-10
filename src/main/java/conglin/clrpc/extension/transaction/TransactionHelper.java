@@ -1,12 +1,53 @@
 package conglin.clrpc.extension.transaction;
 
 import conglin.clrpc.common.Callback;
-/**
- * 
- * consumer     begin -> prepare                                                     (waiting all responses) -> commit/abort
- *                          \|/                                                               /|\                    \|/
- * provider             isOccupied(return true) -> (pre-commit) -> signSuccess/signFailed -> watch         (do commit/rollback action)
- */
+
+ /**
+  *  consumer                          provider
+  *
+  *   begin
+  *     |
+  *    \|/
+  *     |
+  *  prepare
+  *     |
+  *    \|/
+  *     |
+  * send request        ->          receive request
+  * (not blocking)
+  *                                         |
+  *                                        \|/
+  *                                         |
+  *                                    isOccupied
+  *                                         |
+  *                                        \|/
+  *                                         |
+  *                            invoke method (do pre-commit action)
+  *                                         |
+  *                                        \|/
+  *                                         |
+  *                               signPrecommit or signAbort
+  *                                         |
+  *                                        \|/
+  *                                         |
+  *                              watch (wait transaction state)
+  *                                         |
+  *                                        \|/
+  *                                         |
+  * receive response     <-            send response
+  *  (not blocking)
+  *     |
+  *    \|/
+  *     |
+  * commit or abort                         .
+  *                                         .
+  *                                         .
+  *                              do commit or rollback action
+  *                                         |
+  *                                        \|/
+  *                                         |
+  *                               signCommit or signAbort
+  */
 public interface TransactionHelper {
 
     /**
@@ -96,8 +137,8 @@ public interface TransactionHelper {
      * @return 是否标记成功
      * @throws TransactionException 失败抛出
      */
-    default boolean signSuccess(long transactionId, int serialId, String target) throws TransactionException {
-        return signSuccess(transactionId + "/" + serialId, target);
+    default boolean signPrecommit(long transactionId, int serialId, String target) throws TransactionException {
+        return signPrecommit(transactionId + "/" + serialId, target);
     }
 
     /**
@@ -110,7 +151,34 @@ public interface TransactionHelper {
      * @return 是否标记成功
      * @throws TransactionException 失败抛出
      */
-    boolean signSuccess(String path, String target) throws TransactionException;
+    boolean signPrecommit(String path, String target) throws TransactionException;
+
+    /**
+     * 标记原子命令提交成功
+     *
+     * 该方法由事务参与者调用
+     *
+     * @param transactionId 事务id
+     * @param serialId      序列id
+     * @param target        当前参与者信息
+     * @return 是否标记成功
+     * @throws TransactionException 失败抛出
+     */
+    default boolean signCommit(long transactionId, int serialId, String target) throws TransactionException {
+        return signCommit(transactionId + "/" + serialId, target);
+    }
+
+    /**
+     * 标记原子命令提交成功
+     *
+     * 该方法由事务参与者调用
+     *
+     * @param path   路径
+     * @param target 当前参与者信息
+     * @return 是否标记成功
+     * @throws TransactionException 失败抛出
+     */
+    boolean signCommit(String path, String target) throws TransactionException;
 
     /**
      * 标记原子命令预提交失败
@@ -123,8 +191,8 @@ public interface TransactionHelper {
      * @return 是否标记成功
      * @throws TransactionException 失败抛出
      */
-    default boolean signFailed(long transactionId, int serialId, String target) throws TransactionException {
-        return signFailed(transactionId + "/" + serialId, target);
+    default boolean signAbort(long transactionId, int serialId, String target) throws TransactionException {
+        return signAbort(transactionId + "/" + serialId, target);
     }
 
     /**
@@ -137,7 +205,7 @@ public interface TransactionHelper {
      * @return 是否标记成功
      * @throws TransactionException 失败抛出
      */
-    boolean signFailed(String path, String target) throws TransactionException;
+    boolean signAbort(String path, String target) throws TransactionException;
 
     /**
      * 监视事务状态

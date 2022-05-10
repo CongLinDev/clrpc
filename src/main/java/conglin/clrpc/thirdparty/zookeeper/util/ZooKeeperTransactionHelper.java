@@ -64,16 +64,23 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     }
 
     @Override
-    public boolean signSuccess(String path, String target) throws TransactionException {
+    public boolean signPrecommit(String path, String target) throws TransactionException {
         String oldValue = buildValue(TransactionState.PREPARE.name(), target);
         String newValue = buildValue(TransactionState.PRECOMMIT.name(), target);
         return ZooKeeperUtils.compareAndSetNodeData(keeperInstance.instance(), buildPath(path), oldValue, newValue);
     }
 
     @Override
-    public boolean signFailed(String path, String target) throws TransactionException {
+    public boolean signAbort(String path, String target) throws TransactionException {
         String oldValue = buildValue(TransactionState.PREPARE.name(), target);
         String newValue = buildValue(TransactionState.ABORT.name(), target);
+        return ZooKeeperUtils.compareAndSetNodeData(keeperInstance.instance(), buildPath(path), oldValue, newValue);
+    }
+
+    @Override
+    public boolean signCommit(String path, String target) throws TransactionException {
+        String oldValue = buildValue(TransactionState.PRECOMMIT.name(), target);
+        String newValue = buildValue(TransactionState.COMMIT.name(), target);
         return ZooKeeperUtils.compareAndSetNodeData(keeperInstance.instance(), buildPath(path), oldValue, newValue);
     }
 

@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.exception.ServiceExecutionException;
 import conglin.clrpc.common.exception.UnsupportedServiceException;
@@ -77,21 +78,30 @@ abstract public class AbstractProviderTransactionServiceChannelHandler extends P
             // 预提交失败
             LOGGER.error("Transaction request(transactionId={} serialId={}) execute failed: {}", transactionId,
                     serialId, e.getMessage());
-            if (signFailed(transactionId, serialId, instanceId)) {
+            if (signAbort(transactionId, serialId, instanceId)) {
                 return new ResponsePayload(true, e);
             }
             return null; // 直接丢弃，等待重试
         }
 
         // 标记预提交成功
-        if (!signSuccess(transactionId, serialId, instanceId)) {
+        if (!signPrecommit(transactionId, serialId, instanceId)) {
             transactionResult.callback().fail(null);
             return null; // 直接丢弃，等待重试
         }
 
         try {
             // 监视节点
-            helper.watch(transactionId, transactionResult.callback());
+            helper.watch(transactionId, transactionResult.callback().andThen(
+                    new Callback() {
+                        public void success(Object result) {
+                            signCommit(transactionId, serialId, instanceId);
+                        };
+
+                        public void fail(Exception exception) {
+                            signAbort(transactionId, serialId, instanceId);
+                        };
+                    }));
             // 发送预提交结果
             return new ResponsePayload(transactionResult.result());
         } catch (TransactionException e) {
@@ -103,21 +113,31 @@ abstract public class AbstractProviderTransactionServiceChannelHandler extends P
         }
     }
 
-    private boolean signFailed(long transactionId, int serialId, String target) {
+    private boolean signCommit(long transactionId, int serialId, String target) {
         try {
-            return helper.signFailed(transactionId, serialId, target);
+            return helper.signCommit(transactionId, serialId, target);
         } catch (TransactionException e) {
-            LOGGER.warn("Transaction request(transactionId={} serialId={}) signFailed failed: {}", transactionId,
+            LOGGER.warn("Transaction request(transactionId={} serialId={}) signCommit failed: {}", transactionId,
                     serialId, e.getMessage());
             return false;
         }
     }
 
-    private boolean signSuccess(long transactionId, int serialId, String target) {
+    private boolean signAbort(long transactionId, int serialId, String target) {
         try {
-            return helper.signSuccess(transactionId, serialId, target);
+            return helper.signAbort(transactionId, serialId, target);
         } catch (TransactionException e) {
-            LOGGER.warn("Transaction request(transactionId={} serialId={}) signSuccess failed: {}", transactionId,
+            LOGGER.warn("Transaction request(transactionId={} serialId={}) signAbort failed: {}", transactionId,
+                    serialId, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean signPrecommit(long transactionId, int serialId, String target) {
+        try {
+            return helper.signPrecommit(transactionId, serialId, target);
+        } catch (TransactionException e) {
+            LOGGER.warn("Transaction request(transactionId={} serialId={}) signPrecommit failed: {}", transactionId,
                     serialId, e.getMessage());
             return false;
         }
