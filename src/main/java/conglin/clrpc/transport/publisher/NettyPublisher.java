@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.ComponentContext;
@@ -79,12 +78,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
     }
 
     @Override
-    public boolean isDestroyed() {
-        return true;
-    }
-
-    @Override
-    public void destroy() throws DestroyFailedException {
+    public void destroy() {
         ObjectLifecycleUtils.destroy(serviceRegistry);
         nettyBootstrap.config().group().shutdownGracefully();
         nettyBootstrap.config().childGroup().shutdownGracefully();

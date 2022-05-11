@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.object.Pair;
@@ -121,16 +120,13 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     }
 
     @Override
-    public void destroy() throws DestroyFailedException {
-        ObjectLifecycleUtils.destroy(serviceRegistry);
-        disconnectAllProviderNode();
-        nettyBootstrap.config().group().shutdownGracefully();
-        ObjectLifecycleUtils.destroy(loadBalancer);
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return loadBalancer.isEmpty();
+    public void destroy() {
+        if (!loadBalancer.isEmpty()) {
+            ObjectLifecycleUtils.destroy(serviceRegistry);
+            disconnectAllProviderNode();
+            nettyBootstrap.config().group().shutdownGracefully();
+            ObjectLifecycleUtils.destroy(loadBalancer);
+        }
     }
 
     @Override

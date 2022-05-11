@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
-import conglin.clrpc.definition.role.Role;
+import conglin.clrpc.common.Role;
+import conglin.clrpc.common.State;
+import conglin.clrpc.common.State.StateRecord;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.ComponentContext;
@@ -43,6 +45,7 @@ public class ProviderBootstrap extends Bootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBootstrap.class);
 
+    private final StateRecord stateRecord;
     private final Publisher publisher;
     private final ServiceObjectHolder serviceObjectHolder;
     private ServiceRegistry serviceRegistry;
@@ -61,6 +64,7 @@ public class ProviderBootstrap extends Bootstrap {
         super(properties);
         serviceObjectHolder = new ServiceObjectHolder();
         publisher = new NettyPublisher();
+        stateRecord = new StateRecord(State.PREPARE);
     }
 
     /**
@@ -70,6 +74,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return
      */
     public ProviderBootstrap publish(ServiceObject<?> serviceObject) {
+        stateRecord.except(State.PREPARE);
         serviceObjectHolder.putServiceObject(serviceObject);
         LOGGER.info("Publish service named {} with interface(class={}).", serviceObject.name(),
                 serviceObject.interfaceClass());
@@ -89,8 +94,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return
      */
     public ProviderBootstrap registry(ServiceRegistry serviceRegistry) {
-        if (this.serviceRegistry != null)
-            throw new UnsupportedOperationException();
+        stateRecord.except(State.PREPARE);
         this.serviceRegistry = serviceRegistry;
         return this;
     }
@@ -101,20 +105,27 @@ public class ProviderBootstrap extends Bootstrap {
      * @param option 启动选项
      */
     public void start(BootOption option) {
-        LOGGER.info("Provider is starting.");
-        ComponentContext context = initContext(option);
-        ObjectLifecycleUtils.assemble(serviceObjectHolder, context);
-        ObjectLifecycleUtils.assemble(publisher, context);
+        if (stateRecord.compareAndSetState(State.PREPARE, State.INITING)) {
+            LOGGER.info("Provider is starting.");
+            ComponentContext context = initContext(option);
+            ObjectLifecycleUtils.assemble(serviceObjectHolder, context);
+            ObjectLifecycleUtils.assemble(publisher, context);
+            stateRecord.setState(State.AVAILABLE);
+        }
+
     }
 
     /**
      * 关闭
      */
     public void stop() {
-        LOGGER.info("Provider is stopping.");
-        ObjectLifecycleUtils.destroy(serviceObjectHolder);
-        ObjectLifecycleUtils.destroy(publisher);
-        context = null;
+        if (stateRecord.compareAndSetState(State.AVAILABLE, State.DESTORYING)) {
+            LOGGER.info("Provider is stopping.");
+            ObjectLifecycleUtils.destroy(serviceObjectHolder);
+            ObjectLifecycleUtils.destroy(publisher);
+            context = null;
+            stateRecord.setState(State.UNAVAILABLE);
+        }
     }
 
     /**
@@ -123,6 +134,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return this
      */
     public ProviderBootstrap hookStop() {
+        stateRecord.except(State.PREPARE);
         hook(this::stop);
         return this;
     }

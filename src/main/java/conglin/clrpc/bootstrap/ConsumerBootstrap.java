@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
-import conglin.clrpc.definition.role.Role;
+import conglin.clrpc.common.Role;
+import conglin.clrpc.common.State;
+import conglin.clrpc.common.State.StateRecord;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
@@ -58,6 +60,7 @@ public class ConsumerBootstrap extends Bootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
+    private final StateRecord stateRecord;
     private final InvocationContextHolder<Long> contextHolder;
     private final Router router;
     private final RequestSender requestSender;
@@ -74,6 +77,7 @@ public class ConsumerBootstrap extends Bootstrap {
         this.contextHolder = new DefaultInvocationContextHolder();
         this.router = new NettyRouter();
         requestSender = new DefaultRequestSender();
+        stateRecord = new StateRecord(State.PREPARE);
     }
 
     /**
@@ -83,8 +87,7 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return
      */
     public ConsumerBootstrap registry(ServiceRegistry serviceRegistry) {
-        if (this.serviceRegistry != null)
-            throw new UnsupportedOperationException();
+        stateRecord.except(State.PREPARE);
         this.serviceRegistry = serviceRegistry;
         return this;
     }
@@ -122,6 +125,7 @@ public class ConsumerBootstrap extends Bootstrap {
      */
     @SuppressWarnings("unchecked")
     public <T> T proxy(ServiceInterface<T> serviceInterface, boolean async) {
+        stateRecord.except(State.AVAILABLE);
         ServiceInterfaceObjectProxy proxy = async ? new AsyncObjectProxy(serviceInterface)
                 : new SyncObjectProxy(serviceInterface);
         ObjectLifecycleUtils.assemble(proxy, context);
@@ -136,6 +140,7 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return this
      */
     public ConsumerBootstrap subscribe(ServiceInterface<?> serviceInterface) {
+        stateRecord.except(State.AVAILABLE);
         LOGGER.debug("Refresh service=({}) provider.", serviceInterface.name());
         router.subscribe(serviceInterface);
         return this;
@@ -147,23 +152,29 @@ public class ConsumerBootstrap extends Bootstrap {
      * @param option 启动选项
      */
     public void start(BootOption option) {
-        LOGGER.info("ConsumerBootstrap is starting.");
-        initContext(option);
-        ObjectLifecycleUtils.assemble(contextHolder, context);
-        ObjectLifecycleUtils.assemble(router, context);
-        ObjectLifecycleUtils.assemble(requestSender, context);
+        if (stateRecord.compareAndSetState(State.PREPARE, State.INITING)) {
+            LOGGER.info("ConsumerBootstrap is starting.");
+            initContext(option);
+            ObjectLifecycleUtils.assemble(contextHolder, context);
+            ObjectLifecycleUtils.assemble(router, context);
+            ObjectLifecycleUtils.assemble(requestSender, context);
+            stateRecord.setState(State.AVAILABLE);
+        }
     }
 
     /**
      * 停止
      */
     public void stop() {
-        LOGGER.info("Consumer is stopping.");
-        contextHolder.waitForUncompletedInvocation();
-        ObjectLifecycleUtils.destroy(contextHolder);
-        ObjectLifecycleUtils.destroy(router);
-        ObjectLifecycleUtils.destroy(requestSender);
-        context = null;
+        if (stateRecord.compareAndSetState(State.AVAILABLE, State.DESTORYING)) {
+            LOGGER.info("Consumer is stopping.");
+            contextHolder.waitForUncompletedInvocation();
+            ObjectLifecycleUtils.destroy(contextHolder);
+            ObjectLifecycleUtils.destroy(router);
+            ObjectLifecycleUtils.destroy(requestSender);
+            context = null;
+            stateRecord.setState(State.UNAVAILABLE);
+        }
     }
 
     /**

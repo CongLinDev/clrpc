@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextAware;
@@ -129,13 +128,10 @@ public class DefaultRequestSender implements RequestSender, ComponentContextAwar
     }
 
     @Override
-    public boolean isDestroyed() {
-        return this.scheduledExecutorService == null || this.scheduledExecutorService.isShutdown();
-    }
-
-    @Override
-    public void destroy() throws DestroyFailedException {
-        this.scheduledExecutorService.shutdown();
+    public void destroy() {
+        if (this.scheduledExecutorService.isShutdown()) {
+            this.scheduledExecutorService.shutdown();
+        }
     }
 
     /**

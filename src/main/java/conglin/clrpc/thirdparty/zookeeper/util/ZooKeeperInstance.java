@@ -2,7 +2,8 @@ package conglin.clrpc.thirdparty.zookeeper.util;
 
 import conglin.clrpc.common.Available;
 import conglin.clrpc.common.Destroyable;
-import conglin.clrpc.common.exception.DestroyFailedException;
+import conglin.clrpc.common.State;
+import conglin.clrpc.common.State.StateRecord;
 import conglin.clrpc.common.object.UrlScheme;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ZooKeeperInstance implements Destroyable, Available {
 
+    private final StateRecord stateRecord;
     private final ZooKeeper keeper;
     private final AtomicInteger count;
     private final String cacheKey;
@@ -35,7 +37,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
             instance = new ZooKeeperInstance(cacheKey, keeper, 0);
             ZOOKEEPER_CONNECTION_POOL.put(cacheKey, instance);
         }
-        instance.acquire(false);
+        instance.acquire();
         return instance;
     }
 
@@ -46,7 +48,8 @@ public class ZooKeeperInstance implements Destroyable, Available {
      * @return
      */
     public static ZooKeeperInstance connect(UrlScheme scheme) {
-        return connect(scheme.getAddress(), Integer.parseInt(scheme.getParameterOrDefault("session-timeout", String.valueOf(ZooKeeperUtils.DEFAULT_SESSION_TIMEOUT))));
+        return connect(scheme.getAddress(), Integer.parseInt(scheme.getParameterOrDefault("session-timeout",
+                String.valueOf(ZooKeeperUtils.DEFAULT_SESSION_TIMEOUT))));
     }
 
     /**
@@ -67,6 +70,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
         this.cacheKey = cacheKey;
         this.keeper = keeper;
         this.count = new AtomicInteger(count);
+        this.stateRecord = new StateRecord(State.AVAILABLE);
     }
 
     /**
@@ -87,25 +91,18 @@ public class ZooKeeperInstance implements Destroyable, Available {
         return cacheKey;
     }
 
-
     public int acquire() {
-        return acquire(true);
-    }
-
-    protected int acquire(boolean check) {
-        if (check)
-            check();
+        stateRecord.except(State.AVAILABLE);
         return count.incrementAndGet();
     }
 
     public int release() {
-        return release(true);
-    }
-
-    protected int release(boolean check) {
-        if (check)
-            check();
-        return count.decrementAndGet();
+        stateRecord.except(State.AVAILABLE);
+        int countValue = count.decrementAndGet();
+        if (countValue <= 0) {
+            destroy();
+        }
+        return countValue;
     }
 
     public int count() {
@@ -113,22 +110,16 @@ public class ZooKeeperInstance implements Destroyable, Available {
     }
 
     @Override
-    public boolean isDestroyed() {
-        return count() <= 0;
+    public void destroy() {
+        if (stateRecord.compareAndSetState(State.AVAILABLE, State.DESTORYING)) {
+            ZooKeeperInstance.removeCache(getCacheKey());
+            ZooKeeperUtils.disconnectZooKeeper(instance());
+            stateRecord.setState(State.UNAVAILABLE);
+        }
     }
 
     @Override
-    public void destroy() throws DestroyFailedException {
-        int count = release();
-        if (count <= 0) {
-            ZooKeeperInstance.removeCache(getCacheKey());
-            ZooKeeperUtils.disconnectZooKeeper(instance());
-        }
-    }
-
-    protected void check() {
-        if (isDestroyed()) {
-            throw new UnsupportedOperationException("instance has been destroyed");
-        }
+    public boolean isAvailable() {
+        return stateRecord.isState(State.AVAILABLE);
     }
 }

@@ -1,8 +1,8 @@
 package conglin.clrpc.service.context;
 
+import conglin.clrpc.common.Role;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;

@@ -1,7 +1,7 @@
 package conglin.clrpc.service.handler.factory;
 
-import conglin.clrpc.definition.role.Role;
 import conglin.clrpc.service.context.ComponentContextAware;
+import conglin.clrpc.common.Role;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;

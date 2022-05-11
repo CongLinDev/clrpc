@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import conglin.clrpc.common.Available;
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.exception.DestroyFailedException;
 import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.service.ServiceInterface;
@@ -169,13 +168,8 @@ abstract public class AbstractTransactionProxy
     }
 
     @Override
-    public void destroy() throws DestroyFailedException {
+    public void destroy() {
         ObjectLifecycleUtils.destroy(helper);
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return ObjectLifecycleUtils.isDestroyed(helper);
     }
 
     /**
