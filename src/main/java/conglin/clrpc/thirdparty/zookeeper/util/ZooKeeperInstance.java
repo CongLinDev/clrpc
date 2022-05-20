@@ -2,8 +2,8 @@ package conglin.clrpc.thirdparty.zookeeper.util;
 
 import conglin.clrpc.common.Available;
 import conglin.clrpc.common.Destroyable;
-import conglin.clrpc.common.State;
-import conglin.clrpc.common.State.StateRecord;
+import conglin.clrpc.common.CommonState;
+import conglin.clrpc.common.StateRecord;
 import conglin.clrpc.common.object.UrlScheme;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ZooKeeperInstance implements Destroyable, Available {
 
-    private final StateRecord stateRecord;
+    private final StateRecord<CommonState> stateRecord;
     private final ZooKeeper keeper;
     private final AtomicInteger count;
     private final String cacheKey;
@@ -70,7 +70,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
         this.cacheKey = cacheKey;
         this.keeper = keeper;
         this.count = new AtomicInteger(count);
-        this.stateRecord = new StateRecord(State.AVAILABLE);
+        this.stateRecord = new StateRecord<>(CommonState.AVAILABLE);
     }
 
     /**
@@ -92,12 +92,12 @@ public class ZooKeeperInstance implements Destroyable, Available {
     }
 
     public int acquire() {
-        stateRecord.except(State.AVAILABLE);
+        stateRecord.except(CommonState.AVAILABLE);
         return count.incrementAndGet();
     }
 
     public int release() {
-        stateRecord.except(State.AVAILABLE);
+        stateRecord.except(CommonState.AVAILABLE);
         int countValue = count.decrementAndGet();
         if (countValue <= 0) {
             destroy();
@@ -111,15 +111,15 @@ public class ZooKeeperInstance implements Destroyable, Available {
 
     @Override
     public void destroy() {
-        if (stateRecord.compareAndSetState(State.AVAILABLE, State.DESTORYING)) {
+        if (stateRecord.compareAndSetState(CommonState.AVAILABLE, CommonState.DESTORYING)) {
             ZooKeeperInstance.removeCache(getCacheKey());
             ZooKeeperUtils.disconnectZooKeeper(instance());
-            stateRecord.setState(State.UNAVAILABLE);
+            stateRecord.setState(CommonState.UNAVAILABLE);
         }
     }
 
     @Override
     public boolean isAvailable() {
-        return stateRecord.isState(State.AVAILABLE);
+        return stateRecord.isState(CommonState.AVAILABLE);
     }
 }

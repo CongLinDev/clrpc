@@ -1,8 +1,8 @@
 package conglin.clrpc.thirdparty.zookeeper.proxy;
 
 import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.extension.transaction.AbstractTransactionProxy;
 import conglin.clrpc.extension.transaction.TransactionHelper;
+import conglin.clrpc.extension.transaction.proxy.AbstractTransactionProxy;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperTransactionHelper;
 
 /**

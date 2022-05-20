@@ -1,4 +1,4 @@
-package conglin.clrpc.extension.transaction;
+package conglin.clrpc.extension.transaction.payload;
 
 import conglin.clrpc.transport.message.RequestPayload;
 

@@ -3,7 +3,6 @@ package conglin.clrpc.common.object;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,8 +63,7 @@ final public class UrlScheme {
      * @return
      */
     public static String toParameters(Map<String, String> parameters, String paramsJoin, String keyValueJoin) {
-        Set<Map.Entry<String, String>> entrySet = parameters.entrySet();
-        if (entrySet.isEmpty())
+        if (parameters.isEmpty())
             return "";
 
         StringBuilder builder = new StringBuilder();
@@ -109,7 +107,7 @@ final public class UrlScheme {
         this.port = matcher.group(3);
         this.path = matcher.group(4).isEmpty() ? "/" : matcher.group(4);
         this.query = matcher.group(5) == null ? "" : matcher.group(5);
-        this.parameters = resolveParameters(query, "[&]", "[=]");
+        this.parameters = Collections.unmodifiableMap(resolveParameters(query, "[&]", "[=]"));
     }
 
     public UrlScheme(UrlScheme urlScheme) {

@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.Role;
-import conglin.clrpc.common.State;
-import conglin.clrpc.common.State.StateRecord;
+import conglin.clrpc.common.CommonState;
+import conglin.clrpc.common.StateRecord;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
@@ -60,7 +60,7 @@ public class ConsumerBootstrap extends Bootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
-    private final StateRecord stateRecord;
+    private final StateRecord<CommonState> stateRecord;
     private final InvocationContextHolder<Long> contextHolder;
     private final Router router;
     private final RequestSender requestSender;
@@ -77,7 +77,7 @@ public class ConsumerBootstrap extends Bootstrap {
         this.contextHolder = new DefaultInvocationContextHolder();
         this.router = new NettyRouter();
         requestSender = new DefaultRequestSender();
-        stateRecord = new StateRecord(State.PREPARE);
+        stateRecord = new StateRecord<>(CommonState.PREPARE);
     }
 
     /**
@@ -87,7 +87,7 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return
      */
     public ConsumerBootstrap registry(ServiceRegistry serviceRegistry) {
-        stateRecord.except(State.PREPARE);
+        stateRecord.except(CommonState.PREPARE);
         this.serviceRegistry = serviceRegistry;
         return this;
     }
@@ -125,7 +125,7 @@ public class ConsumerBootstrap extends Bootstrap {
      */
     @SuppressWarnings("unchecked")
     public <T> T proxy(ServiceInterface<T> serviceInterface, boolean async) {
-        stateRecord.except(State.AVAILABLE);
+        stateRecord.except(CommonState.AVAILABLE);
         ServiceInterfaceObjectProxy proxy = async ? new AsyncObjectProxy(serviceInterface)
                 : new SyncObjectProxy(serviceInterface);
         ObjectLifecycleUtils.assemble(proxy, context);
@@ -140,10 +140,16 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return this
      */
     public ConsumerBootstrap subscribe(ServiceInterface<?> serviceInterface) {
-        stateRecord.except(State.AVAILABLE);
+        stateRecord.except(CommonState.AVAILABLE);
         LOGGER.debug("Refresh service=({}) provider.", serviceInterface.name());
         router.subscribe(serviceInterface);
         return this;
+    }
+
+    @Override
+    public Object object(Class<?> clazz) {
+        stateRecord.except(CommonState.AVAILABLE);
+        return super.object(clazz);
     }
 
     /**
@@ -152,13 +158,13 @@ public class ConsumerBootstrap extends Bootstrap {
      * @param option 启动选项
      */
     public void start(BootOption option) {
-        if (stateRecord.compareAndSetState(State.PREPARE, State.INITING)) {
+        if (stateRecord.compareAndSetState(CommonState.PREPARE, CommonState.INITING)) {
             LOGGER.info("ConsumerBootstrap is starting.");
             initContext(option);
             ObjectLifecycleUtils.assemble(contextHolder, context);
             ObjectLifecycleUtils.assemble(router, context);
             ObjectLifecycleUtils.assemble(requestSender, context);
-            stateRecord.setState(State.AVAILABLE);
+            stateRecord.setState(CommonState.AVAILABLE);
         }
     }
 
@@ -166,14 +172,14 @@ public class ConsumerBootstrap extends Bootstrap {
      * 停止
      */
     public void stop() {
-        if (stateRecord.compareAndSetState(State.AVAILABLE, State.DESTORYING)) {
+        if (stateRecord.compareAndSetState(CommonState.AVAILABLE, CommonState.DESTORYING)) {
             LOGGER.info("Consumer is stopping.");
             contextHolder.waitForUncompletedInvocation();
             ObjectLifecycleUtils.destroy(contextHolder);
             ObjectLifecycleUtils.destroy(router);
             ObjectLifecycleUtils.destroy(requestSender);
             context = null;
-            stateRecord.setState(State.UNAVAILABLE);
+            stateRecord.setState(CommonState.UNAVAILABLE);
         }
     }
 

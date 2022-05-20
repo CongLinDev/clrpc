@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.Role;
-import conglin.clrpc.common.State;
-import conglin.clrpc.common.State.StateRecord;
+import conglin.clrpc.common.CommonState;
+import conglin.clrpc.common.StateRecord;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.ComponentContext;
@@ -45,7 +45,7 @@ public class ProviderBootstrap extends Bootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderBootstrap.class);
 
-    private final StateRecord stateRecord;
+    private final StateRecord<CommonState> stateRecord;
     private final Publisher publisher;
     private final ServiceObjectHolder serviceObjectHolder;
     private ServiceRegistry serviceRegistry;
@@ -64,7 +64,7 @@ public class ProviderBootstrap extends Bootstrap {
         super(properties);
         serviceObjectHolder = new ServiceObjectHolder();
         publisher = new NettyPublisher();
-        stateRecord = new StateRecord(State.PREPARE);
+        stateRecord = new StateRecord<>(CommonState.PREPARE);
     }
 
     /**
@@ -74,7 +74,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return
      */
     public ProviderBootstrap publish(ServiceObject<?> serviceObject) {
-        stateRecord.except(State.PREPARE);
+        stateRecord.except(CommonState.PREPARE);
         serviceObjectHolder.putServiceObject(serviceObject);
         LOGGER.info("Publish service named {} with interface(class={}).", serviceObject.name(),
                 serviceObject.interfaceClass());
@@ -94,7 +94,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return
      */
     public ProviderBootstrap registry(ServiceRegistry serviceRegistry) {
-        stateRecord.except(State.PREPARE);
+        stateRecord.except(CommonState.PREPARE);
         this.serviceRegistry = serviceRegistry;
         return this;
     }
@@ -105,12 +105,12 @@ public class ProviderBootstrap extends Bootstrap {
      * @param option 启动选项
      */
     public void start(BootOption option) {
-        if (stateRecord.compareAndSetState(State.PREPARE, State.INITING)) {
+        if (stateRecord.compareAndSetState(CommonState.PREPARE, CommonState.INITING)) {
             LOGGER.info("Provider is starting.");
             ComponentContext context = initContext(option);
             ObjectLifecycleUtils.assemble(serviceObjectHolder, context);
             ObjectLifecycleUtils.assemble(publisher, context);
-            stateRecord.setState(State.AVAILABLE);
+            stateRecord.setState(CommonState.AVAILABLE);
         }
 
     }
@@ -119,12 +119,12 @@ public class ProviderBootstrap extends Bootstrap {
      * 关闭
      */
     public void stop() {
-        if (stateRecord.compareAndSetState(State.AVAILABLE, State.DESTORYING)) {
+        if (stateRecord.compareAndSetState(CommonState.AVAILABLE, CommonState.DESTORYING)) {
             LOGGER.info("Provider is stopping.");
             ObjectLifecycleUtils.destroy(serviceObjectHolder);
             ObjectLifecycleUtils.destroy(publisher);
             context = null;
-            stateRecord.setState(State.UNAVAILABLE);
+            stateRecord.setState(CommonState.UNAVAILABLE);
         }
     }
 
@@ -134,7 +134,7 @@ public class ProviderBootstrap extends Bootstrap {
      * @return this
      */
     public ProviderBootstrap hookStop() {
-        stateRecord.except(State.PREPARE);
+        stateRecord.except(CommonState.PREPARE);
         hook(this::stop);
         return this;
     }

@@ -70,12 +70,10 @@ public final class ZooKeeperUtils {
      * @param keeper
      */
     public static void disconnectZooKeeper(final ZooKeeper keeper) {
-        if (keeper != null) {
-            try {
-                keeper.close(500);
-            } catch (InterruptedException e) {
-                LOGGER.error("ZooKeeper session close failed. Cause: {}", e.getMessage());
-            }
+        try {
+            keeper.close();
+        } catch (InterruptedException e) {
+            LOGGER.error("ZooKeeper session close failed. Cause: {}", e.getMessage());
         }
     }
 

@@ -1,4 +1,4 @@
-package conglin.clrpc.extension.transaction;
+package conglin.clrpc.extension.transaction.future;
 
 import conglin.clrpc.common.Callback;
 import conglin.clrpc.common.exception.ServiceException;

@@ -11,10 +11,12 @@ import conglin.clrpc.service.util.ObjectLifecycleUtils;
 
 /**
  * 抽象的 Bootstrap
- * <p>
+ * 
  * 用于保存配置对象、控制资源引用计数
  */
 abstract public class Bootstrap {
+
+    private static final String DEFAULT_CONFIG_FILE_NAME = "config.properties";
 
     private final Properties properties;
 
@@ -27,10 +29,10 @@ abstract public class Bootstrap {
         if (properties == null) {
             properties = new Properties();
             try (InputStream inputStream = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream("config.properties")) {
+                    .getResourceAsStream(DEFAULT_CONFIG_FILE_NAME)) {
                 properties.load(inputStream);
             } catch (IOException e) {
-                throw new IllegalArgumentException(e);
+                throw new IllegalStateException(e);
             }
         }
         this.properties = properties;
@@ -69,7 +71,7 @@ abstract public class Bootstrap {
      * @param clazz 必须提供一个无参构造函数
      * @return
      */
-    public Object object(Class<?> clazz) {
+    protected Object object(Class<?> clazz) {
         Object object = ClassUtils.loadObject(clazz);
         ObjectLifecycleUtils.assemble(object, componentContext());
         return object;

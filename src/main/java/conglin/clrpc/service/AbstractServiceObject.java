@@ -13,7 +13,7 @@ abstract public class AbstractServiceObject<T> implements ServiceObject<T> {
     public AbstractServiceObject(String name, Class<T> interfaceClass, Map<String, String> metaInfo) {
         this.metaInfo = metaInfo;
         this.interfaceClass = interfaceClass;
-        metaInfo.put(ServiceObject.INTERFACE, interfaceClass.getName());
+        metaInfo.putIfAbsent(ServiceObject.INTERFACE, interfaceClass.getName());
         metaInfo.putIfAbsent(ServiceObject.SERVICE_NAME, name);
         metaInfo.putIfAbsent(ServiceObject.VERSION, ServiceVersion.defaultVersion().toString());
     }
