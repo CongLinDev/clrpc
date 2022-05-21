@@ -1,17 +1,15 @@
 package conglin.clrpc.service;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import conglin.clrpc.common.util.ClassUtils;
+import conglin.clrpc.common.exception.ServiceExecutionException;
+import conglin.clrpc.common.exception.UnsupportedServiceException;
 
 public class ServiceObjectHolder {
-    private final Map<String, ServiceObjectWrapper> map;
+    private final Map<String, InnerServiceWrapper> map;
 
     public ServiceObjectHolder() {
         this.map = new HashMap<>();
@@ -24,7 +22,7 @@ public class ServiceObjectHolder {
      * @return
      */
     public boolean putServiceObject(ServiceObject<?> serviceObject) {
-        return map.putIfAbsent(serviceObject.name(), new ServiceObjectWrapper(serviceObject)) == null;
+        return map.putIfAbsent(serviceObject.name(), new InnerServiceWrapper(serviceObject)) == null;
     }
 
     /**
@@ -34,20 +32,10 @@ public class ServiceObjectHolder {
      * @return
      */
     public ServiceObject<?> getServiceObject(String serviceName) {
-        ServiceObjectWrapper wrapper = map.get(serviceName);
+        InnerServiceWrapper wrapper = map.get(serviceName);
         if (wrapper == null)
             return null;
         return wrapper.getServiceObject();
-    }
-
-    /**
-     * 获取 wrapper
-     * 
-     * @param serviceName
-     * @return
-     */
-    public ServiceObjectWrapper getServiceObjectWrapper(String serviceName) {
-        return map.get(serviceName);
     }
 
     /**
@@ -59,13 +47,27 @@ public class ServiceObjectHolder {
         this.map.values().forEach(v -> consumer.accept(v.getServiceObject()));
     }
 
-    public static class ServiceObjectWrapper {
-        private final ServiceObject<?> serviceObject;
-        private final Map<String, List<Method>> methodMap;
+    public Object invoke(String serviceName, String methodName, Object[] parameters)
+            throws UnsupportedServiceException, ServiceExecutionException {
+        InnerServiceWrapper wrapper = map.get(serviceName);
+        if (wrapper == null) {
+            throw new UnsupportedServiceException(serviceName);
+        }
 
-        public ServiceObjectWrapper(ServiceObject<?> serviceObject) {
+        try {
+            return wrapper.invoke(wrapper.getServiceObject().object(), serviceName, parameters);
+        } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new ServiceExecutionException(e);
+        }
+    }
+
+    private static class InnerServiceWrapper extends ServiceMethodWrapper {
+        private final ServiceObject<?> serviceObject;
+
+        public InnerServiceWrapper(ServiceObject<?> serviceObject) {
+            super(serviceObject.interfaceClass());
             this.serviceObject = serviceObject;
-            this.methodMap = ServiceObjectWrapper.customMethodMap(serviceObject.interfaceClass());
         }
 
         /**
@@ -73,99 +75,6 @@ public class ServiceObjectHolder {
          */
         public ServiceObject<?> getServiceObject() {
             return serviceObject;
-        }
-
-        /**
-         * 利用缓存的 {@link Method} 列表快速查找匹配方法
-         * 
-         * @param methodName
-         * @param parameters
-         * @return
-         */
-        public Method findMatchMethod(String methodName, Object[] parameters) {
-            List<Method> candidates = this.methodMap.get(methodName);
-            if (candidates == null || candidates.isEmpty())
-                return null;
-            if (candidates.size() == 1)
-                return candidates.get(0);
-
-            // find match method
-            final Class<?>[] parameterTypes = ClassUtils.getClasses(parameters);
-            final int parameterSize = parameterTypes.length;
-
-            findMatchMethodLoop: for (Method candidate : candidates) {
-                Class<?>[] candidateParamterTypes = candidate.getParameterTypes();
-                for (int i = 0; i < parameterSize; i++) {
-                    if (!candidateParamterTypes[i].isAssignableFrom(parameterTypes[i]))
-                        continue findMatchMethodLoop;
-                }
-                return candidate;
-
-            }
-            return null;
-        }
-
-        /**
-         * 自定义 {@link Method} map
-         * 
-         * 降低运行时方法查找时间
-         * 
-         * @param clazz
-         * @return
-         */
-        private static Map<String, List<Method>> customMethodMap(Class<?> clazz) {
-            return Arrays.stream(clazz.getMethods()).peek(method -> method.setAccessible(true))
-                    .collect(Collectors.groupingBy(ServiceObjectWrapper::customMethodName,
-                            Collectors.collectingAndThen(Collectors.toList(), ServiceObjectWrapper::sortMethod)));
-        }
-
-        /**
-         * 对 {@link Method} 列表排序，排序顺序按照参数类型
-         * 
-         * @param methods
-         * @return
-         */
-        private static List<Method> sortMethod(List<Method> methods) {
-            methods.sort((m1, m2) -> {
-                Class<?>[] parameterTypes1 = m1.getParameterTypes();
-                Class<?>[] parameterTypes2 = m2.getParameterTypes();
-                int diff = 0;
-                for (int i = 0; i < parameterTypes1.length; i++) {
-                    if (!parameterTypes1[i].equals(parameterTypes2[i])) {
-                        if (parameterTypes1[i].isAssignableFrom(parameterTypes2[i])) {
-                            diff++;
-                        } else if (parameterTypes2[i].isAssignableFrom(parameterTypes1[i])) {
-                            diff--;
-                        } else {
-                            return 0;
-                        }
-                    }
-                }
-                return diff;
-            });
-            return methods;
-        }
-
-        /**
-         * 是否是自定义方法名
-         * 
-         * @param methodName
-         * @return
-         */
-        public static boolean isCustomMethodName(String methodName) {
-            if (methodName == null || methodName.isEmpty())
-                return false;
-            return methodName.charAt(0) == '$';
-        }
-
-        /**
-         * 自定义方法名
-         * 
-         * @param method
-         * @return
-         */
-        public static String customMethodName(Method method) {
-            return String.format("$%s$%d", method.getName(), method.getParameterCount());
         }
     }
 

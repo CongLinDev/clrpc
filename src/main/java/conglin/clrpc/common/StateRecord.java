@@ -54,9 +54,9 @@ public class StateRecord<T extends Enum<?>> {
      * 判断是否是预期的state
      * 
      * @param exceptState
-     * @throws UnsupportedOperationException
+     * @throws IllegalStateException
      */
-    public void except(T exceptState) throws UnsupportedOperationException {
+    public void except(T exceptState) throws IllegalStateException {
         if (!this.state.equals(exceptState)) {
             throw new IllegalStateException(
                     String.format("expectState=%s realState=%s", exceptState, state));
