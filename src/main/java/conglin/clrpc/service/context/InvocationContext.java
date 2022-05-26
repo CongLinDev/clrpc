@@ -41,21 +41,29 @@ public class InvocationContext {
         localContext.remove();
     }
 
+    // init in constructor
     protected final InvocationFuture future;
     private final long invokeBeginTime;
-    protected RequestPayload request; // init in proxy
-    protected InstanceCondition instanceCondition; // init in proxy
-    protected Consumer<ServiceInstance> instanceConsumer; // init in proxy
-    protected FailStrategy failStrategy; // init in proxy
-    protected long timeoutThreshold;    // init in proxy
+    private int executeTimes;
 
-    protected Long identifier; // init in sender
-    protected ResponsePayload response; // init in response
-    private long invokeEndTime;  // init in response
+    // init in proxy
+    protected RequestPayload request;
+    protected InstanceCondition choosedInstanceCondition;
+    protected Consumer<ServiceInstance> choosedInstancePostProcessor;
+    protected FailStrategy failStrategy;
+    protected long timeoutThreshold;
+    
+    // init in exector
+    protected Long identifier;
+
+    // init in response
+    protected ResponsePayload response;
+    private long invokeEndTime;
 
     public InvocationContext() {
         invokeBeginTime = System.currentTimeMillis();
         future = new BasicFuture();
+        executeTimes = 0;
     }
 
     public RequestPayload getRequest() {
@@ -69,25 +77,32 @@ public class InvocationContext {
     }
 
     /**
-     * @return the instanceCondition
+     * @return the choosedInstanceCondition
      */
-    public InstanceCondition getInstanceCondition() {
-        return instanceCondition;
+    public InstanceCondition getChoosedInstanceCondition() {
+        return choosedInstanceCondition;
     }
 
     /**
-     * @param instanceCondition the instanceCondition to set
+     * @param choosedInstanceCondition the choosedInstanceCondition to set
      */
-    public void setInstanceCondition(InstanceCondition instanceCondition) {
-        this.instanceCondition = instanceCondition;
+    public void setChoosedInstanceCondition(InstanceCondition choosedInstanceCondition) {
+        this.choosedInstanceCondition = choosedInstanceCondition;
     }
 
-    public Consumer<ServiceInstance> getInstanceConsumer() {
-        return instanceConsumer;
+    /**
+     * @return the choosedInstancePostProcessor
+     */
+    public Consumer<ServiceInstance> getChoosedInstancePostProcessor() {
+        return choosedInstancePostProcessor;
     }
 
-    public void setInstanceConsumer(Consumer<ServiceInstance> instanceConsumer) {
-        this.instanceConsumer = instanceConsumer;
+    /**
+     * 
+     * @param choosedInstancePostProcessor the choosedInstancePostProcessor to set
+     */
+    public void setChoosedInstancePostProcessor(Consumer<ServiceInstance> choosedInstancePostProcessor) {
+        this.choosedInstancePostProcessor = choosedInstancePostProcessor;
     }
 
     /**
@@ -110,7 +125,8 @@ public class InvocationContext {
      * @return
      */
     public boolean isTimeout() {
-        if (timeoutThreshold <= 0) return false;
+        if (timeoutThreshold <= 0)
+            return false;
         return System.currentTimeMillis() > timeoutThreshold + invokeBeginTime;
     }
 
@@ -181,5 +197,19 @@ public class InvocationContext {
      */
     public long getInvokeEndTime() {
         return invokeEndTime;
-    } 
+    }
+
+    /**
+     * increase executeTimes
+     */
+    public void increaseExecuteTimes() {
+        executeTimes++;
+    }
+
+    /**
+     * @return the executeTimes
+     */
+    public int getExecuteTimes() {
+        return executeTimes;
+    }
 }

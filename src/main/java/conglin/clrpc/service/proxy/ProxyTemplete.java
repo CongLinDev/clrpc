@@ -5,13 +5,13 @@ import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.context.InvocationContext;
-import conglin.clrpc.transport.component.RequestSender;
+import conglin.clrpc.transport.component.InvocationExecutor;
 
-public class SimpleProxy implements InvocationProxy, Initializable, ComponentContextAware {
+public class ProxyTemplete implements InvocationProxy, Initializable, ComponentContextAware {
 
     private ComponentContext context;
     // 发送器
-    private RequestSender sender;
+    private InvocationExecutor executor;
 
     @Override
     public void setContext(ComponentContext context) {
@@ -25,7 +25,7 @@ public class SimpleProxy implements InvocationProxy, Initializable, ComponentCon
 
     @Override
     public void init() {
-        sender = getContext().getWith(ComponentContextEnum.REQUEST_SENDER);
+        executor = getContext().getWith(ComponentContextEnum.INVOCATION_EXECUTOR);
     }
 
     /**
@@ -36,6 +36,6 @@ public class SimpleProxy implements InvocationProxy, Initializable, ComponentCon
      */
     @Override
     public void call(InvocationContext invocationContext) {
-        sender.send(invocationContext);
+        executor.execute(invocationContext);
     }
 }

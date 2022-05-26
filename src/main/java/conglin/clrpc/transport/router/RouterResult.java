@@ -7,15 +7,15 @@ import conglin.clrpc.transport.message.Message;
 
 public class RouterResult {
     private final ServiceInstance instance;
-    private final Consumer<Message> sender;
+    private final Consumer<Message> executor;
 
     /**
      * @param target
      * @param sender
      */
-    public RouterResult(ServiceInstance instance, Consumer<Message> sender) {
+    public RouterResult(ServiceInstance instance, Consumer<Message> executor) {
         this.instance = instance;
-        this.sender = sender;
+        this.executor = executor;
     }
 
     /**
@@ -30,7 +30,7 @@ public class RouterResult {
      * 
      * @param message
      */
-    public void send(Message message) {
-        sender.accept(message);
+    public void execute(Message message) {
+        executor.accept(message);
     }
 }

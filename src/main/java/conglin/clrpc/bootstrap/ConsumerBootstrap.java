@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.bootstrap.option.BootOption;
-import conglin.clrpc.common.Role;
 import conglin.clrpc.common.CommonState;
+import conglin.clrpc.common.Role;
 import conglin.clrpc.common.StateRecord;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
@@ -20,8 +20,8 @@ import conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
 import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.service.util.ObjectLifecycleUtils;
-import conglin.clrpc.transport.component.DefaultRequestSender;
-import conglin.clrpc.transport.component.RequestSender;
+import conglin.clrpc.transport.component.DefaultInvocationExecutor;
+import conglin.clrpc.transport.component.InvocationExecutor;
 import conglin.clrpc.transport.router.NettyRouter;
 import conglin.clrpc.transport.router.Router;
 
@@ -63,7 +63,7 @@ public class ConsumerBootstrap extends Bootstrap {
     private final StateRecord<CommonState> stateRecord;
     private final InvocationContextHolder<Long> contextHolder;
     private final Router router;
-    private final RequestSender requestSender;
+    private final InvocationExecutor invocationExecutor;
 
     private ServiceRegistry serviceRegistry;
     private ComponentContext context;
@@ -76,7 +76,7 @@ public class ConsumerBootstrap extends Bootstrap {
         super(properties);
         this.contextHolder = new DefaultInvocationContextHolder();
         this.router = new NettyRouter();
-        requestSender = new DefaultRequestSender();
+        invocationExecutor = new DefaultInvocationExecutor();
         stateRecord = new StateRecord<>(CommonState.PREPARE);
     }
 
@@ -163,7 +163,7 @@ public class ConsumerBootstrap extends Bootstrap {
             initContext(option);
             ObjectLifecycleUtils.assemble(contextHolder, context);
             ObjectLifecycleUtils.assemble(router, context);
-            ObjectLifecycleUtils.assemble(requestSender, context);
+            ObjectLifecycleUtils.assemble(invocationExecutor, context);
             stateRecord.setState(CommonState.AVAILABLE);
         }
     }
@@ -177,7 +177,7 @@ public class ConsumerBootstrap extends Bootstrap {
             contextHolder.waitForUncompletedInvocation();
             ObjectLifecycleUtils.destroy(contextHolder);
             ObjectLifecycleUtils.destroy(router);
-            ObjectLifecycleUtils.destroy(requestSender);
+            ObjectLifecycleUtils.destroy(invocationExecutor);
             context = null;
             stateRecord.setState(CommonState.UNAVAILABLE);
         }
@@ -221,7 +221,7 @@ public class ConsumerBootstrap extends Bootstrap {
         // router
         context.put(ComponentContextEnum.ROUTER, router);
         // request sender
-        context.put(ComponentContextEnum.REQUEST_SENDER, requestSender);
+        context.put(ComponentContextEnum.INVOCATION_EXECUTOR, invocationExecutor);
         // channelHandlerFactory
         context.put(ComponentContextEnum.CHANNEL_HANDLER_FACTORY, option.channelHandlerFactory());
     }

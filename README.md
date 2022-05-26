@@ -10,7 +10,7 @@
 
 当前阶段均为 `SNAPSHOT` 版本，暂时不提供依赖配置。
 
-你可以进入 [Release页面](https://github.com/CongLinDev/clrpc/releases/latest) 下载jar包使用，或是使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地自行打包。
+你可以使用命令 `git clone git@github.com:CongLinDev/clrpc.git` 克隆到本地自行打包。
 
 ## Usage
 
@@ -179,13 +179,13 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 |   consumer.retry.check-period    | Integer |  False   |  3000   |   重试机制执行周期   |
 | consumer.retry.initial-threshold | Integer |  False   |  3000   |   初始重试时间门槛   |
 
-### Extension config Items
+### Extension Config Items
 
 |          Field          |  Type  | Required | Default |             Remark             |
 | :---------------------: | :----: | :------: | :-----: | :----------------------------: |
 | extension.atomicity.url | String |   True   |         | 原子服务地址，目前用于事务管理 |
 
-#### About customized address url
+#### About Customized Address Url
 
 配置项中的 `extension.atomicity.url` 为必填项，其url解析规则如下：
 
@@ -196,11 +196,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 3. 根节点部分，如 `/clrpc` （若未给出默认为 `/` ）；
 4. 参数部分，如 `session-timeout=5000` 。
 
-#### About customized channel handler
-
-[Click me](#Extension).
-
-## Distributed transaction
+## Distributed Transaction
 
 **clrpc** 使用 **ZooKeeper** 实现了类似于两段式提交(2PC)的分布式事务协调服务。
 
@@ -215,19 +211,53 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ## Extension
 
+### Registery
+
+使用者通过实现 `conglin.clrpc.service.registry.ServiceRegistry` 接口来实现注册中心。
+
+在启动前通过`conglin.clrpc.bootstrap.Bootstrap#registry(ServiceRegistry)` 传入即可完成对注册中心的扩展。
+
+### Identifier Generator
+
+使用者通过实现 `conglin.clrpc.common.identifier.IdentifierGenerator` 接口来实现ID生成器。
+
+在启动时通过`conglin.clrpc.bootstrap.option.BootOption#identifierGenerator(IdentifierGenerator)` 传入即可完成对ID生成器的扩展。
+
+#### Serialization Handler
+
+使用者通过实现 `conglin.clrpc.common.serialization.SerializationHandler` 接口来实现序列化处理器。
+
+在启动时通过`conglin.clrpc.bootstrap.option.BootOption#serializationHandler(SerializationHandler)` 传入即可完成对序列化处理器的扩展。
+
+#### Service Instance Codec
+
+使用者通过实现 `conglin.clrpc.service.instance.codec.ServiceInstanceCodec` 接口来实现ServiceInstance序列化处理器。
+
+在启动时通过`conglin.clrpc.bootstrap.option.BootOption#serviceInstanceCodec(SerializationHandler)` 传入即可完成对ServiceInstance序列化处理器的扩展。
+
+#### Protocol Definition
+
+使用者通过实现 `conglin.clrpc.transport.protocol.ProtocolDefinition` 接口来实现消息类型协议。
+
+在启动时通过`conglin.clrpc.bootstrap.option.BootOption#protocolDefinition(ProtocolDefinition)` 传入即可完成对消息类型协议的扩展。
+
+#### Message Handler
+
 **clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
 
-使用者实现接口 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory`，在启动时通过`conglin.clrpc.bootstrap.option.BootOption#channelHandlerFactory(ChannelHandlerFactory)` 传入即可完成对消息处理的扩展。
+使用者实现 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 接口来创建工厂。
+
+在启动时通过`conglin.clrpc.bootstrap.option.BootOption#channelHandlerFactory(ChannelHandlerFactory)` 传入即可完成对消息处理的扩展。
 
 ## Object Lifecycle
 
-使用者可以通过提供对象或提供存在无参构造函数的类并实现以下接口来保证自己的扩展对象拥有 **clrpc** 对象生命周期。
+使用者可以通过提供对象并实现以下接口来保证自己的扩展对象拥有 **clrpc** 对象生命周期。
 
 1. 使用前
    1. conglin.clrpc.service.context.ComponentContextAware
    2. conglin.clrpc.common.Initializable
 2. 使用后
-   1. conglin.clrpc.common.Destroyable
+   1. conglin.clrpc.common.Destroyable (没有经过托管的对象不具备该周期，需要开发者手动处理)
 
 ## Method Lookup
 
@@ -240,7 +270,9 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
    3. 对于缓存key相同的 `Method` ，根据其 `Method` 参数类型继承顺序进行排序，例如 `#hello(String, Integer)` 将排在 `#hello(String, Object)` 前面。
    4. 执行时根据请求参数类型按顺序匹配 `Method` 参数类型。
 
-Customer 处需要配合代理来选择使用哪种方式。对于 `conglin.clrpc.service.proxy.AbstractObjectProxy` 及其子类默认使用第二种方式。若需要更换方法查询方式，对方法 `conglin.clrpc.service.proxy.AbstractObjectProxy#getMethodName(Method)` 重写即可。
+Customer 处需要配合代理来选择使用哪种方式。
+
+对于 `conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy` 及其子类默认使用第二种方式。若需要更换方法查询方式，对方法 `conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy#getMethodName(Method)` 重写即可。
 
 ## License
 

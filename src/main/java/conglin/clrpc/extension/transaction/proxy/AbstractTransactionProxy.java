@@ -218,11 +218,11 @@ abstract public class AbstractTransactionProxy
                             nextSerialId(), serviceName, methodName, args);
                     InvocationContext invocationContext = new InvocationContext();
                     invocationContext.setRequest(request);
-                    invocationContext.setInstanceCondition(instanceCondition());
+                    invocationContext.setChoosedInstanceCondition(instanceCondition());
                     invocationContext.setTimeoutThreshold(timeoutThreshold());
 
-                    Consumer<ServiceInstance> proxyBindingInstanceConsumer = instanceConsumer();
-                    invocationContext.setInstanceConsumer(instance -> {
+                    Consumer<ServiceInstance> proxyBindingChoosedInstancePostProcessor = choosedInstancePostProcessor();
+                    invocationContext.setChoosedInstancePostProcessor(instance -> {
                         try {
                             helper.prepare(request.transactionId(), request.serialId(), instance.id());
                         } catch (TransactionException e) {
@@ -230,8 +230,8 @@ abstract public class AbstractTransactionProxy
                                     request.transactionId(), request.serialId(), e.getMessage());
                             invocationContext.getFuture().done(true, e);
                         }
-                        if (proxyBindingInstanceConsumer != null) {
-                            proxyBindingInstanceConsumer.accept(instance);
+                        if (proxyBindingChoosedInstancePostProcessor != null) {
+                            proxyBindingChoosedInstancePostProcessor.accept(instance);
                         }
                     });
                     call(invocationContext);

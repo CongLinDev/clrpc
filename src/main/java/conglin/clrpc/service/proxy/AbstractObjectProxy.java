@@ -1,7 +1,6 @@
 package conglin.clrpc.service.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.ServiceMethodWrapper;
 import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
@@ -17,19 +16,13 @@ import java.util.function.Consumer;
  * 
  * 适合未知服务名的调用
  */
-abstract public class AbstractObjectProxy extends SimpleProxy implements InvocationHandler {
+abstract public class AbstractObjectProxy extends ProxyTemplete implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Class<?> methodDeclaringClass = method.getDeclaringClass();
         if (Object.class == methodDeclaringClass) {
-            return switch (method.getName()) {
-                case "equals" -> proxy == args[0];
-                case "hashCode" -> System.identityHashCode(proxy);
-                case "toString" -> proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy))
-                        + ", with InvocationHandler " + this;
-                default -> throw new IllegalStateException(method.getName());
-            };
+            return method.invoke(proxy, args);
         }
 
         InvocationContext invocationContext = call(getServiceName(methodDeclaringClass), getMethodName(method), args);
@@ -57,7 +50,7 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
      * @return
      */
     protected String getMethodName(Method method) {
-        return ServiceMethodWrapper.customMethodName(method);
+        return method.getName();
     }
 
     /**
@@ -72,8 +65,8 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
         InvocationContext invocationContext = new InvocationContext();
         invocationContext.setRequest(new RequestPayload(serviceName, methodName, args));
         invocationContext.setFailStrategy(failStrategy());
-        invocationContext.setInstanceConsumer(instanceConsumer());
-        invocationContext.setInstanceCondition(instanceCondition());
+        invocationContext.setChoosedInstancePostProcessor(choosedInstancePostProcessor());
+        invocationContext.setChoosedInstanceCondition(instanceCondition());
         invocationContext.setTimeoutThreshold(timeoutThreshold());
         super.call(invocationContext);
         return invocationContext;
@@ -103,11 +96,11 @@ abstract public class AbstractObjectProxy extends SimpleProxy implements Invocat
     abstract protected FailStrategy failStrategy();
 
     /**
-     * instanceConsumer
+     * choosedInstancePostProcessor
      *
      * @return
      */
-    abstract protected Consumer<ServiceInstance> instanceConsumer();
+    abstract protected Consumer<ServiceInstance> choosedInstancePostProcessor();
 
     /**
      * condition

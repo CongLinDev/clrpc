@@ -47,6 +47,16 @@ public class ServiceObjectHolder {
         this.map.values().forEach(v -> consumer.accept(v.getServiceObject()));
     }
 
+    /**
+     * invoke
+     * 
+     * @param serviceName
+     * @param methodName
+     * @param parameters
+     * @return
+     * @throws UnsupportedServiceException
+     * @throws ServiceExecutionException
+     */
     public Object invoke(String serviceName, String methodName, Object[] parameters)
             throws UnsupportedServiceException, ServiceExecutionException {
         InnerServiceWrapper wrapper = map.get(serviceName);
