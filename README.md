@@ -209,7 +209,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ![distributed.png](https://i.loli.net/2021/10/16/loCg5LTF2uitGMh.png)
 
-## Extension
+## Bootstrap Extension
 
 ### Registery
 
@@ -223,31 +223,53 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 在启动时通过`conglin.clrpc.bootstrap.option.BootOption#identifierGenerator(IdentifierGenerator)` 传入即可完成对ID生成器的扩展。
 
-#### Serialization Handler
+### Serialization Handler
 
 使用者通过实现 `conglin.clrpc.common.serialization.SerializationHandler` 接口来实现序列化处理器。
 
 在启动时通过`conglin.clrpc.bootstrap.option.BootOption#serializationHandler(SerializationHandler)` 传入即可完成对序列化处理器的扩展。
 
-#### Service Instance Codec
+### Service Instance Codec
 
 使用者通过实现 `conglin.clrpc.service.instance.codec.ServiceInstanceCodec` 接口来实现ServiceInstance序列化处理器。
 
 在启动时通过`conglin.clrpc.bootstrap.option.BootOption#serviceInstanceCodec(SerializationHandler)` 传入即可完成对ServiceInstance序列化处理器的扩展。
 
-#### Protocol Definition
+### Protocol Definition
 
 使用者通过实现 `conglin.clrpc.transport.protocol.ProtocolDefinition` 接口来实现消息类型协议。
 
 在启动时通过`conglin.clrpc.bootstrap.option.BootOption#protocolDefinition(ProtocolDefinition)` 传入即可完成对消息类型协议的扩展。
 
-#### Message Handler
+### Message Handler
 
 **clrpc** 利用了 **Netty** 的 `ChannelPipeline` 作为处理消息的责任链，并提供消息处理扩展点。
 
 使用者实现 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 接口来创建工厂。
 
 在启动时通过`conglin.clrpc.bootstrap.option.BootOption#channelHandlerFactory(ChannelHandlerFactory)` 传入即可完成对消息处理的扩展。
+
+## Service Interface Extension
+
+### FailStrategy
+
+使用者通过实现 `conglin.clrpc.service.strategy.FailStrategy` 接口来提供请求失败策略。
+
+**clrpc** 提供三种策略实现：
+
+1. FailFast: 失败时抛出异常。（默认策略）
+2. FailOver: 失败时重试。
+3. FailSafe: 失败时不抛出异常，返回默认值。
+
+使用者可以根据需求，任意组合或自定义失败策略。
+
+### Timeout Threshold
+
+请求超时时间，单位是毫秒。
+
+### Instance Condition
+
+使用者通过实现 `conglin.clrpc.service.instance.condition.InstanceCondition` 接口来选择服务实例。
 
 ## Object Lifecycle
 
