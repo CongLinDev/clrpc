@@ -207,7 +207,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 流程图如下：
 
-![distributed.png](https://i.loli.net/2021/10/16/loCg5LTF2uitGMh.png)
+![distributed_transaction.png](./picture/distributed_transaction.png)
 
 ## Bootstrap Extension
 
@@ -251,7 +251,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ## Service Interface Extension
 
-### FailStrategy
+### Fail Strategy
 
 使用者通过实现 `conglin.clrpc.service.strategy.FailStrategy` 接口来提供请求失败策略。
 
