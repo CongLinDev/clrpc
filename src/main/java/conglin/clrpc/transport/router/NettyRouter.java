@@ -8,9 +8,11 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
+import conglin.clrpc.common.loadbalance.DefaultMultiLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
+import conglin.clrpc.common.loadbalance.MultiLoadBalancer;
 import conglin.clrpc.common.object.Pair;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
@@ -30,13 +32,13 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyRouter.class);
 
     private ServiceRegistry serviceRegistry;
-    private final LoadBalancer<String, ServiceInstance, Channel> loadBalancer;
+    private final MultiLoadBalancer<String, ServiceInstance, Channel> multiLoadBalancer;
     private Bootstrap nettyBootstrap;
     private ComponentContext context;
 
     public NettyRouter() {
-        this.loadBalancer = new ConsistentHashLoadBalancer<String, ServiceInstance, Channel>(this::connectProvider,
-                this::disconnectProvider);
+        this.multiLoadBalancer = new DefaultMultiLoadBalancer<String, ServiceInstance, Channel>(this::connectProvider,
+                Channel::close, ServiceInstance::match);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
         serviceRegistry = getContext().getWith(ComponentContextEnum.SERVICE_REGISTRY);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
 
-        ObjectLifecycleUtils.assemble(loadBalancer, getContext());
+        ObjectLifecycleUtils.assemble(multiLoadBalancer, getContext());
         ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
 
         nettyBootstrap = new Bootstrap()
@@ -71,7 +73,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     public RouterResult choose(RouterCondition condition) throws NoAvailableServiceInstancesException {
         String serviceName = condition.getServiceName();
 
-        Pair<ServiceInstance, Channel> pair = loadBalancer.getEntity(serviceName, condition.getRandom(),
+        Pair<ServiceInstance, Channel> pair = multiLoadBalancer.getEntity(serviceName, condition.getRandom(),
                 condition.getInstanceCondition(), Channel::isActive);
         if (pair == null)
             throw new NoAvailableServiceInstancesException(condition);
@@ -84,7 +86,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
      * @param serviceName
      * @param serviceInstance
      */
-    public Channel connectProvider(String serviceName, ServiceInstance serviceInstance) {
+    public Channel connectProvider(ServiceInstance serviceInstance) {
         String remoteAddress = serviceInstance.address();
         try {
             ChannelFuture channelFuture = nettyBootstrap.connect(IPAddressUtils.splitHostAndPort(remoteAddress)).sync();
@@ -102,38 +104,36 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     }
 
     /**
-     * 取消连接某个服务提供者
-     *
-     * @param serviceName
-     * @param channel
-     */
-    public void disconnectProvider(String serviceName, Channel channel) {
-        channel.close();
-    }
-
-    /**
      * 取消全部的连接
      */
     private void disconnectAllProviderNode() {
-        loadBalancer.forEach(Channel::close);
-        loadBalancer.clear();
+        multiLoadBalancer.forEach(Channel::close);
+        multiLoadBalancer.clearLoadBalancer();
     }
 
     @Override
     public void destroy() {
-        if (!loadBalancer.isEmpty()) {
+        if (!multiLoadBalancer.isEmpty()) {
             ObjectLifecycleUtils.destroy(serviceRegistry);
             disconnectAllProviderNode();
             nettyBootstrap.config().group().shutdownGracefully();
-            ObjectLifecycleUtils.destroy(loadBalancer);
+            ObjectLifecycleUtils.destroy(multiLoadBalancer);
         }
     }
 
     @Override
-    public void subscribe(ServiceInterface<?> serviceInterface) {
-        if (!loadBalancer.hasType(serviceInterface.name())) {
-            serviceRegistry.subscribeProvider(serviceInterface,
-                    instances -> loadBalancer.update(serviceInterface.name(), instances));
+    public void subscribe(ServiceInterface<?> serviceInterface, Class<?> loadBalancerClass) {
+        if (!multiLoadBalancer.hasType(serviceInterface.name())) {
+            @SuppressWarnings("unchecked")
+            LoadBalancer<ServiceInstance, Channel> loadBalancer = ClassUtils.loadObjectByType(loadBalancerClass,
+                    LoadBalancer.class);
+            if (loadBalancer == null) {
+                throw new IllegalArgumentException(
+                        "Get LoadBalancer Instance Failed. Class=" + loadBalancerClass.getName());
+            }
+            multiLoadBalancer.addLoadBalancer(serviceInterface.name(), loadBalancer);
+            ObjectLifecycleUtils.assemble(loadBalancer, getContext());
+            serviceRegistry.subscribeProvider(serviceInterface, loadBalancer::update);
         }
     }
 }

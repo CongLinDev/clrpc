@@ -22,7 +22,7 @@ public class AnnotationServiceInterface<T> implements conglin.clrpc.service.Serv
         }
 
         String name = serviceInterface.name();
-        if ("".equals(name)) {
+        if (name.isEmpty()) {
             name = serviceInterfaceClass.getName();
         }
         this.name = name;

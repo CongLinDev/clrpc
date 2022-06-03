@@ -169,15 +169,15 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ### Config Items
 
-|              Field               |  Type   | Required | Default |        Remark        |
-| :------------------------------: | :-----: | :------: | :-----: | :------------------: |
-|       provider.instance.id       | String  |   True   |         |     服务提供者id     |
-|    provider.instance.address     | String  |   True   |         |    服务提供者地址    |
-|    provider.io-thread.number     | Integer |  False   |    4    | 服务提供者的IO线程数 |
-|       consumer.instance.id       | String  |   True   |         |     服务消费者id     |
-|    consumer.io-thread.number     | Integer |  False   |    4    | 服务使用者的IO线程数 |
-|   consumer.retry.check-period    | Integer |  False   |  3000   |   重试机制执行周期   |
-| consumer.retry.initial-threshold | Integer |  False   |  3000   |   初始重试时间门槛   |
+|              Field               |  Type   | Required | Default |           Remark            |
+| :------------------------------: | :-----: | :------: | :-----: | :-------------------------: |
+|       provider.instance.id       | String  |   True   |         |        服务提供者id         |
+|    provider.instance.address     | String  |   True   |         |       服务提供者地址        |
+|    provider.io-thread.number     | Integer |  False   |    4    |    服务提供者的IO线程数     |
+|       consumer.instance.id       | String  |   True   |         |        服务消费者id         |
+|    consumer.io-thread.number     | Integer |  False   |    4    |    服务使用者的IO线程数     |
+|   consumer.retry.check-period    | Integer |  False   |  3000   | 重试机制执行周期 单位是毫秒 |
+| consumer.retry.initial-threshold | Integer |  False   |  3000   | 初始重试时间门槛 单位是毫秒 |
 
 ### Extension Config Items
 
@@ -215,31 +215,56 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 使用者通过实现 `conglin.clrpc.service.registry.ServiceRegistry` 接口来实现注册中心。
 
-在启动前通过`conglin.clrpc.bootstrap.Bootstrap#registry(ServiceRegistry)` 传入即可完成对注册中心的扩展。
+在启动前通过 `conglin.clrpc.bootstrap.Bootstrap#registry(ServiceRegistry)` 传入即可完成对注册中心的扩展。
+
+**clrpc** 提供一个基于 **ZooKeeper** 的实现：`conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceRegistry` 。
+
+### Load Balancer
+
+使用者通过实现 `conglin.clrpc.common.loadbalance.LoadBalancer` 接口来实现负载均衡器。
+
+在订阅服务时通过 `conglin.clrpc.bootstrap.ConsumerBootstrap#subscribe(ServiceInterface<?>, Class<? extends LoadBalancer>)` 传入即可完成对注册中心的扩展。
+
+对于不同的服务，允许使用不同的负载均衡器即可以使用不同的负载均衡策略。
+
+**clrpc** 提供一种策略实现：
+
+1. 一致性哈希算法。（默认策略）
 
 ### Identifier Generator
 
 使用者通过实现 `conglin.clrpc.common.identifier.IdentifierGenerator` 接口来实现ID生成器。
 
-在启动时通过`conglin.clrpc.bootstrap.option.BootOption#identifierGenerator(IdentifierGenerator)` 传入即可完成对ID生成器的扩展。
+在启动时通过 `conglin.clrpc.bootstrap.option.BootOption#identifierGenerator(IdentifierGenerator)` 传入即可完成对ID生成器的扩展。
+
+**clrpc** 提供四种策略实现：
+
+1. 雪花算法。（默认策略）
+2. 随机数生成。
+3. 基于ZooKeeper的全局顺序id生成。
+4. 基于ZooKeeper的服务顺序id生成。
 
 ### Serialization Handler
 
 使用者通过实现 `conglin.clrpc.common.serialization.SerializationHandler` 接口来实现序列化处理器。
 
-在启动时通过`conglin.clrpc.bootstrap.option.BootOption#serializationHandler(SerializationHandler)` 传入即可完成对序列化处理器的扩展。
+在启动时通过 `conglin.clrpc.bootstrap.option.BootOption#serializationHandler(SerializationHandler)` 传入即可完成对序列化处理器的扩展。
+
+**clrpc** 提供一种策略实现：
+
+1. Protostuff。（默认策略）
 
 ### Service Instance Codec
 
 使用者通过实现 `conglin.clrpc.service.instance.codec.ServiceInstanceCodec` 接口来实现ServiceInstance序列化处理器。
 
-在启动时通过`conglin.clrpc.bootstrap.option.BootOption#serviceInstanceCodec(SerializationHandler)` 传入即可完成对ServiceInstance序列化处理器的扩展。
+在启动时通过 `conglin.clrpc.bootstrap.option.BootOption#serviceInstanceCodec(SerializationHandler)` 传入即可完成对ServiceInstance序列化处理器的扩展。
 
 ### Protocol Definition
 
 使用者通过实现 `conglin.clrpc.transport.protocol.ProtocolDefinition` 接口来实现消息类型协议。
 
-在启动时通过`conglin.clrpc.bootstrap.option.BootOption#protocolDefinition(ProtocolDefinition)` 传入即可完成对消息类型协议的扩展。
+在启动时通过 `conglin.clrpc.bootstrap.option.BootOption#protocolDefinition(ProtocolDefinition)` 传入即可完成对消息类型协议的扩展。
 
 ### Message Handler
 
@@ -247,9 +272,9 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 使用者实现 `conglin.clrpc.service.handler.factory.ChannelHandlerFactory` 接口来创建工厂。
 
-在启动时通过`conglin.clrpc.bootstrap.option.BootOption#channelHandlerFactory(ChannelHandlerFactory)` 传入即可完成对消息处理的扩展。
+在启动时通过 `conglin.clrpc.bootstrap.option.BootOption#channelHandlerFactory(ChannelHandlerFactory)` 传入即可完成对消息处理的扩展。
 
-## Service Interface Extension
+## Service Interface Extensions
 
 ### Fail Strategy
 
@@ -265,7 +290,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ### Timeout Threshold
 
-请求超时时间，单位是毫秒。
+请求超时时间，单位是毫秒。若小于0则永不超时。
 
 ### Instance Condition
 
@@ -294,7 +319,9 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 Customer 处需要配合代理来选择使用哪种方式。
 
-对于 `conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy` 及其子类默认使用第二种方式。若需要更换方法查询方式，对方法 `conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy#getMethodName(Method)` 重写即可。
+对于 `conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy` 及其子类默认使用第二种方式。
+
+若需要更换方法查询方式，对方法 `conglin.clrpc.service.proxy.AbstractObjectProxy#getMethodName(Method)` 重写即可。
 
 ## License
 

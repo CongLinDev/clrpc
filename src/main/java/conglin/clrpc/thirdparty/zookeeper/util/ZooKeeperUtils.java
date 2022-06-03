@@ -151,7 +151,7 @@ public final class ZooKeeperUtils {
      * @return 节点路径
      */
     public static String createNode(final ZooKeeper keeper, String path) {
-        if ("".equals(path))
+        if (path == null || path.isEmpty())
             return null;
         try {
             Stat stat = keeper.exists(path, false);

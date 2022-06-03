@@ -10,6 +10,8 @@ import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.CommonState;
 import conglin.clrpc.common.Role;
 import conglin.clrpc.common.StateRecord;
+import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
+import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
@@ -140,9 +142,20 @@ public class ConsumerBootstrap extends Bootstrap {
      * @return this
      */
     public ConsumerBootstrap subscribe(ServiceInterface<?> serviceInterface) {
+        return subscribe(serviceInterface, ConsistentHashLoadBalancer.class);
+    }
+
+    /**
+     * 刷新服务
+     *
+     * @param serviceInterface 接口
+     * @param loaderBalancerClass 指定 {@link LoadBalancer}
+     * @return this
+     */
+    public ConsumerBootstrap subscribe(ServiceInterface<?> serviceInterface, Class<?> loaderBalancerClass) {
         stateRecord.except(CommonState.AVAILABLE);
         LOGGER.debug("Refresh service=({}) provider.", serviceInterface.name());
-        router.subscribe(serviceInterface);
+        router.subscribe(serviceInterface, loaderBalancerClass);
         return this;
     }
 

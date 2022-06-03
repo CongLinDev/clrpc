@@ -39,4 +39,18 @@ abstract public class AbstractServiceInstance implements ServiceInstance {
 
     @Override
     abstract public String toString();
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (!(obj instanceof ServiceInstance s))
+            return false;
+        return this.id.equals(s.id()) && this.address.equals(s.address());
+    }
 }

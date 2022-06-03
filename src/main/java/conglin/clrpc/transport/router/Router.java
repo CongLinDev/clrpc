@@ -17,6 +17,7 @@ public interface Router {
      * 订阅服务
      * 
      * @param serviceInterface
+     * @param loadBalancerClass
      */
-    void subscribe(ServiceInterface<?> serviceInterface);
+    void subscribe(ServiceInterface<?> serviceInterface, Class<?> loadBalancerClass);
 }

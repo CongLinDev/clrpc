@@ -1,11 +1,12 @@
 package conglin.clrpc.common.loadbalance;
 
-import conglin.clrpc.common.object.Pair;
-
 import java.util.Collection;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import conglin.clrpc.common.object.Pair;
 
 /**
  * 该接口用作负载均衡 适合 {一个 type 对应多个 key-value 对} 组的负载均衡
@@ -14,115 +15,81 @@ import java.util.function.Predicate;
  * @param <K> key
  * @param <V> value
  */
-public interface LoadBalancer<T, K, V> {
+public interface LoadBalancer<K, V> {
 
     /**
      * 使用集合更新数据
      *
-     * @param type 类型
      * @param data 其中key为连接的ip地址，value为 服务器的元信息
      */
-    void update(T type, Collection<K> data);
+    void update(Collection<K> data);
 
     /**
-     * 根据type寻找第一个可用对象
+     * 寻找第一个可用对象
      *
-     * @param type 类型
      * @return
      */
-    default V get(T type) {
-        return get(type, 0);
+    default V get() {
+        return get(0);
     }
 
     /**
      * 根据指定算法返回对象
      *
-     * @param type   类型
      * @param random
      * @return
      */
-    default V get(T type, int random) {
-        return getValue(type, random, v -> Boolean.TRUE);
+    default V get(int random) {
+        return getValue(random, v -> Boolean.TRUE);
     }
 
     /**
      * 根据条件返回第一个符合条件指定对象
      *
-     * @param type      类型
      * @param predicate 条件
      * @return
      */
-    default V getKey(T type, Predicate<K> predicate) {
-        return getKey(type, 0, predicate);
+    default V getKey(Predicate<K> predicate) {
+        return getKey(0, predicate);
     }
 
     /**
      * 根据type和random返回第一个符合条件的指定对象
      *
-     * @param type      类型
      * @param random    随机数
      * @param predicate 条件
      * @return
      */
-    V getKey(T type, int random, Predicate<K> predicate);
+    V getKey(int random, Predicate<K> predicate);
 
     /**
      * 根据条件返回第一个符合条件指定对象
      *
-     * @param type      类型
      * @param predicate 条件
      * @return
      */
-    default V getValue(T type, Predicate<V> predicate) {
-        return getValue(type, 0, predicate);
+    default V getValue(Predicate<V> predicate) {
+        return getValue(0, predicate);
     }
-
 
     /**
      * 根据type和random返回第一个符合条件的指定对象
      *
-     * @param type      类型
      * @param random    随机数
      * @param predicate 条件
      * @return
      */
-    V getValue(T type, int random, Predicate<V> predicate);
+    V getValue(int random, Predicate<V> predicate);
 
     /**
-     * 根据type和random返回第一个符合条件的指定对象
+     * 根据random返回第一个符合条件的指定对象
      *
-     * @param type           类型
      * @param random         随机数
      * @param keyPredicate   条件
      * @param valuePredicate 条件
      * @return
      */
-    Pair<K, V> getEntity(T type, int random, Predicate<K> keyPredicate, Predicate<V> valuePredicate);
-
-    /**
-     * 获取所有类型
-     *
-     * @return
-     */
-    Collection<T> allTypes();
-
-    /**
-     * 是否存在该类型
-     *
-     * @param type 类型
-     * @return
-     */
-    boolean hasType(T type);
-
-    /**
-     * 给定类型下是否有可用的对象
-     *
-     * @param type 类型
-     * @return
-     */
-    default boolean hasNext(T type) {
-        return hasType(type) && get(type) != null;
-    }
+    Pair<K, V> getEntity(int random, Predicate<K> keyPredicate, Predicate<V> valuePredicate);
 
     /**
      * 对所有节点做出某个操作
@@ -130,31 +97,6 @@ public interface LoadBalancer<T, K, V> {
      * @param consumer 处理
      */
     void forEach(Consumer<V> consumer);
-
-    /**
-     * 对所有节点做出某个操作
-     *
-     * @param <R>
-     * @param function 处理
-     * @return
-     */
-    <R> Collection<R> apply(Function<V, R> function);
-
-    /**
-     * 对某个类型的所有节点做出某个操作
-     *
-     * @param type     类型
-     * @param consumer 处理
-     */
-    void forEach(T type, Consumer<V> consumer);
-
-    /**
-     * @param type     类型
-     * @param function 处理
-     * @param <R>
-     * @return
-     */
-    <R> Collection<R> apply(T type, Function<V, R> function);
 
     /**
      * 清空容器内所有数据
@@ -167,4 +109,25 @@ public interface LoadBalancer<T, K, V> {
      * @return
      */
     boolean isEmpty();
+
+    /**
+     * 设置转换器 由 K 得到 V
+     * 
+     * @param convertor
+     */
+    void setConvertor(Function<K, V> convertor);
+
+    /**
+     * 设置销毁器 销毁 V
+     * 
+     * @param destructor
+     */
+    void setDestructor(Consumer<V> destructor);
+
+    /**
+     * 设置匹配器
+     * 
+     * @param matcher
+     */
+    void setMatcher(BiPredicate<K, K> matcher);
 }

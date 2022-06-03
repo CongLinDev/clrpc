@@ -38,4 +38,17 @@ public interface ServiceInstance extends Service {
     default ServiceVersion version() {
         return serviceObject().version();
     }
+
+    /**
+     * match
+     * 
+     * @param instance1
+     * @param instance2
+     * @return
+     */
+    static boolean match(ServiceInstance instance1, ServiceInstance instance2) {
+        if (instance1 == null || instance2 == null)
+            return false;
+        return instance1.id().equals(instance2.id());
+    }
 }
