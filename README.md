@@ -1,8 +1,8 @@
 # clrpc
 
-这是一个基于 `Java` 、 由 **Netty** 负责传输 、默认使用 **Protostuff** 负责编解码的简单的RPC(远程过程调用)工具。
+这是一个基于 `Java` 的分布式远程过程调用工具。
 
-服务提供者将服务发布注册到 注册中心 **ZooKeeper** 上后，服务消费者请求 注册中心 **ZooKeeper** 查找订阅服务后与服务提供者通信调用服务( 支持 *同步服务* 和 *异步服务* )。
+服务提供者注册到注册中心后，服务消费者查询服务，挑选合适的服务提供者并调用服务（支持同步调用和异步调用）。
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://apache.org/licenses/LICENSE-2.0)
 
@@ -227,7 +227,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 对于不同的服务，允许使用不同的负载均衡器即可以使用不同的负载均衡策略。
 
-**clrpc** 提供一种策略实现：
+**clrpc** 提供三种策略实现：
 
 1. 基于树的一致性哈希。（默认策略）
 2. 基于数组的随机。
