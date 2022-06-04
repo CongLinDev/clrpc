@@ -223,13 +223,15 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 使用者通过实现 `conglin.clrpc.common.loadbalance.LoadBalancer` 接口来实现负载均衡器。
 
-在订阅服务时通过 `conglin.clrpc.bootstrap.ConsumerBootstrap#subscribe(ServiceInterface<?>, Class<? extends LoadBalancer>)` 传入即可完成对注册中心的扩展。
+在订阅服务时通过 `conglin.clrpc.bootstrap.ConsumerBootstrap#subscribe(ServiceInterface<?>, Class<? extends LoadBalancer<?, ?>>)` 传入即可完成对注册中心的扩展。
 
 对于不同的服务，允许使用不同的负载均衡器即可以使用不同的负载均衡策略。
 
 **clrpc** 提供一种策略实现：
 
-1. 一致性哈希算法。（默认策略）
+1. 基于树的一致性哈希。（默认策略）
+2. 基于数组的随机。
+3. 基于数组的轮询。
 
 ### Identifier Generator
 

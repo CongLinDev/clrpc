@@ -22,7 +22,17 @@ public interface LoadBalancer<K, V> {
      *
      * @param data 其中key为连接的ip地址，value为 服务器的元信息
      */
-    void update(Collection<K> data);
+    default void update(Collection<K> data) {
+        update(-1, data);
+    }
+
+    /**
+     * 使用集合更新数据
+     * 
+     * @param epoch 为负数时表示最新的数据
+     * @param data
+     */
+    void update(int epoch, Collection<K> data);
 
     /**
      * 寻找第一个可用对象
