@@ -52,21 +52,11 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
                         LOGGER.warn("Node set epoch failed(currentEpoch={} epoch={} key={})", currentEpoch, node.getEpoch(), key);
                         break;
                     }
-                    if (!key.equals(node.getKey())) {
-                        V v = this.convertor.apply(key);
-                        if (v != null) {
-                            this.destructor.accept(node.getValue());
-                            node.setKey(key);
-                            node.setValue(v);
-                            LOGGER.info("Add new node(position={}, key={})", position, key);
-                        } else {
-                            LOGGER.error("Null Object from {}", key);
-                        }
-                    }
+                    node.setKey(key);   // update key
                     LOGGER.info("Update old node(position={}, key={})", position, key);
                     break;
                 } else { // 发生冲撞
-                    LOGGER.warn("Hash collision. Consider to replace a hash algorithm for load balancer.");
+                    LOGGER.warn("position() collision. Consider to replace a position algorithm for load balancer.");
                     position++;
                 }
             }

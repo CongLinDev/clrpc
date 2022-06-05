@@ -94,8 +94,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
                 LOGGER.debug("Connect to remote provider successfully. Remote Address={}", remoteAddress);
                 return channelFuture.channel();
             } else {
-                LOGGER.error("Provider starts failed");
-                throw new InterruptedException();
+                LOGGER.error("Cannot connect to remote provider {}", remoteAddress);
             }
         } catch (UnknownHostException | InterruptedException e) {
             LOGGER.error("Cannot connect to remote provider {}. Cause: {}", remoteAddress, e.getMessage());

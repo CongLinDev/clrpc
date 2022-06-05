@@ -53,17 +53,7 @@ public class ArrayLoadBalancer<K, V> extends AbstractLoadBalancer<K, V> {
                             key);
                     continue updateNextKey; // update next key
                 }
-                if (!key.equals(node.getKey())) {
-                    V v = this.convertor.apply(key);
-                    if (v != null) {
-                        this.destructor.accept(node.getValue());
-                        node.setKey(key);
-                        node.setValue(v);
-                        LOGGER.info("Add new node(index={}, key={})", nextNodesIndex, key);
-                    } else {
-                        LOGGER.error("Null Object from {}", key);
-                    }
-                }
+                node.setKey(key);   // update key
                 // migration
                 nextNodes[nextNodesIndex++] = node;
                 nodes[index] = null; // help next query
@@ -117,8 +107,12 @@ public class ArrayLoadBalancer<K, V> extends AbstractLoadBalancer<K, V> {
     @Override
     public void forEach(Consumer<V> consumer) {
         final Node<K, V>[] nodes = this.nodes;
-        for (Node<K, V> node : nodes) {
-            consumer.accept(node.getValue());
+        final int size = this.size;
+        for (int i = 0; i < size; i++) {
+            Node<K, V> node = nodes[i];
+            if (node != null) {
+                consumer.accept(node.getValue());
+            }
         }
     }
 

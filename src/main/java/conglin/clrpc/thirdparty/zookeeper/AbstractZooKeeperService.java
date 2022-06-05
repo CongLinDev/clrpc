@@ -21,7 +21,8 @@ abstract public class AbstractZooKeeperService implements Destroyable {
     }
 
     protected String buildPath(String... subPaths) {
-        if (subPaths == null || subPaths.length == 0) return rootPath;
+        if (subPaths == null || subPaths.length == 0)
+            return rootPath;
         StringBuilder stringBuilder = new StringBuilder(rootPath);
         for (String path : subPaths) {
             stringBuilder.append(SEPARATOR).append(path);
