@@ -8,7 +8,6 @@ import conglin.clrpc.common.serialization.SerializationHandler;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
-import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.transport.component.InvocationExecutor;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 import conglin.clrpc.transport.router.Router;
@@ -24,7 +23,6 @@ public enum ComponentContextEnum {
     SERVICE_OBJECT_HOLDER(ServiceObjectHolder.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class),
     PROTOCOL_DEFINITION(ProtocolDefinition.class),
-    SERVICE_REGISTRY(ServiceRegistry.class),
     CHANNEL_HANDLER_FACTORY(ChannelHandlerFactory.class);
 
 

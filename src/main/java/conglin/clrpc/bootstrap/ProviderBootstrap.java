@@ -20,25 +20,24 @@ import conglin.clrpc.transport.publisher.Publisher;
 
 /**
  * RPC provider端启动类
- * <p>
+ * 
  * 使用如下代码启动
  *
  * <blockquote>
  *
  * <pre>
  *
+ * ServiceObject<Interface1> serviceObject = ...
+ * 
  * ProviderBootstrap bootstrap = new ProviderBootstrap();
- * ServiceObject<Interface1> serviceObject = new SimpleServiceObject.Builder<>(Interface1.class)
- *         .name("Service1")
- *         .object(new ServiceImpl1())
- *         .build();
- * bootstrap.registry(new ServiceRegistry(){...})
+ *
+ * bootstrap.registry(ServiceRegistry.class)
  *          .publish(serviceObject).hookStop().start(new BootOption());
  *
  * </pre>
  *
  * </blockquote>
- * <p>
+ * 
  * 注意：若服务接口相同，先添加的服务会被覆盖。 结束后不要忘记关闭服务端，释放资源。
  */
 public class ProviderBootstrap extends Bootstrap {
@@ -48,7 +47,6 @@ public class ProviderBootstrap extends Bootstrap {
     private final StateRecord<CommonState> stateRecord;
     private final Publisher publisher;
     private final ServiceObjectHolder serviceObjectHolder;
-    private ServiceRegistry serviceRegistry;
     private ComponentContext context;
 
     public ProviderBootstrap() {
@@ -90,12 +88,12 @@ public class ProviderBootstrap extends Bootstrap {
     /**
      * 设置注册中心
      * 
-     * @param serviceRegistry
+     * @param registryClass
      * @return
      */
-    public ProviderBootstrap registry(ServiceRegistry serviceRegistry) {
+    public ProviderBootstrap registry(Class<? extends ServiceRegistry> registryClass) {
         stateRecord.except(CommonState.PREPARE);
-        this.serviceRegistry = serviceRegistry;
+        this.publisher.bindRegistry(registryClass);
         return this;
     }
 
@@ -147,9 +145,6 @@ public class ProviderBootstrap extends Bootstrap {
      */
     private ComponentContext initContext(BootOption option) {
         context = new ComponentContext();
-        // registery
-        assert serviceRegistry != null;
-        context.put(ComponentContextEnum.SERVICE_REGISTRY, this.serviceRegistry);
         context.put(ComponentContextEnum.SERVICE_OBJECT_HOLDER, this.serviceObjectHolder);
         // 设置角色
         context.put(ComponentContextEnum.ROLE, role());

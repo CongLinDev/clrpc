@@ -1,6 +1,7 @@
 package conglin.clrpc.transport.router;
 
 import conglin.clrpc.service.ServiceInterface;
+import conglin.clrpc.service.registry.ServiceRegistry;
 
 public interface Router {
     /**
@@ -12,7 +13,6 @@ public interface Router {
      */
     RouterResult choose(RouterCondition condition) throws NoAvailableServiceInstancesException;
 
-
     /**
      * 订阅服务
      * 
@@ -20,4 +20,11 @@ public interface Router {
      * @param loadBalancerClass
      */
     void subscribe(ServiceInterface<?> serviceInterface, Class<?> loadBalancerClass);
+
+    /**
+     * 绑定registry
+     * 
+     * @param registryClass
+     */
+    void bindRegistry(Class<? extends ServiceRegistry> registryClass);
 }

@@ -40,17 +40,17 @@ class EchoServiceImpl implements EchoService {
 ### Service Provider
 
 ```java
-// 创建服务提供者
-ProviderBootstrap bootstrap = new ProviderBootstrap();
-
 // 创建简单的服务对象
 ServiceObject<EchoService> serviceObject = new SimpleServiceObject.Builder<>(EchoService.class)
         .name("EchoService")
         .object(new EchoServiceImpl())
         .build();
 
+// 创建服务提供者
+ProviderBootstrap bootstrap = new ProviderBootstrap();
+
 // 发布服务并开启服务
-bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc"))) // 设置注册中心
+bootstrap.registry(ZooKeeperServiceRegistry.class) // 设置注册中心
         .publish(serviceObject) // 发布服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start(new CommonOption());
@@ -59,15 +59,16 @@ bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0
 ### Service Consumer
 
 ```java
-// 创建服务消费者
-ConsumerBootstrap bootstrap = new ConsumerBootstrap();
-// 开启服务消费者
-bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc")))
-        .start(new CommonOption());
 // 创建简单的服务接口对象
 ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Builder<>(EchoService.class)
         .name("EchoService")
         .build();
+
+// 创建服务消费者
+ConsumerBootstrap bootstrap = new ConsumerBootstrap();
+// 开启服务消费者
+bootstrap.registry(ZooKeeperServiceRegistry.class)
+        .start(new CommonOption());
 
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
@@ -95,15 +96,16 @@ bootstrap.stop();
 ### Service Consumer (With Transaction)
 
 ```java
-// 创建服务消费者
-ConsumerBootstrap bootstrap = new ConsumerBootstrap();
-// 开启服务消费者
-bootstrap.registry(new ZooKeeperServiceRegistry(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc")))
-        .start(new CommonOption());
 // 创建服务接口对象
 ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Builder<>(EchoService.class)
         .name("EchoService")
         .build();
+
+// 创建服务消费者
+ConsumerBootstrap bootstrap = new ConsumerBootstrap();
+// 开启服务消费者
+bootstrap.registry(ZooKeeperServiceRegistry.class)
+        .start(new CommonOption());
 
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
@@ -171,23 +173,28 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 |              Field               |  Type   | Required | Default |           Remark            |
 | :------------------------------: | :-----: | :------: | :-----: | :-------------------------: |
+|      provider.registry.url       |   URL   |   TRUE   |         |        注册中心地址         |
 |       provider.instance.id       | String  |   True   |         |        服务提供者id         |
 |    provider.instance.address     | String  |   True   |         |       服务提供者地址        |
 |    provider.io-thread.number     | Integer |  False   |    4    |    服务提供者的IO线程数     |
+|      consumer.registry.url       |   URL   |   TRUE   |         |        注册中心地址         |
 |       consumer.instance.id       | String  |   True   |         |        服务消费者id         |
 |    consumer.io-thread.number     | Integer |  False   |    4    |    服务使用者的IO线程数     |
 |   consumer.retry.check-period    | Integer |  False   |  3000   | 重试机制执行周期 单位是毫秒 |
 | consumer.retry.initial-threshold | Integer |  False   |  3000   | 初始重试时间门槛 单位是毫秒 |
 
+| consumer.retry.initial-threshold | Integer |  False   |  3000   | 初始重试时间门槛 单位是毫秒 |
+(new UrlScheme("zookeeper://127.0.0.1:2181/clrpc"))
+
 ### Extension Config Items
 
-|          Field          |  Type  | Required | Default |             Remark             |
-| :---------------------: | :----: | :------: | :-----: | :----------------------------: |
-| extension.atomicity.url | String |   True   |         | 原子服务地址，目前用于事务管理 |
+|          Field          | Type  | Required | Default |             Remark             |
+| :---------------------: | :---: | :------: | :-----: | :----------------------------: |
+| extension.atomicity.url |  URL  |   True   |         | 原子服务地址，目前用于事务管理 |
 
 #### About Customized Address Url
 
-配置项中的 `extension.atomicity.url` 为必填项，其url解析规则如下：
+配置项中的 `provider.registry.url` `consumer.registry.url` 为必填项，其url解析规则如下：
 
 `zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000`
 

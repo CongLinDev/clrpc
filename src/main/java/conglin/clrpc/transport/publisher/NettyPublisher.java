@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.Initializable;
+import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.context.ComponentContext;
@@ -26,7 +28,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyPublisher.class);
 
     private ServiceRegistry serviceRegistry;
-
+    private Class<? extends ServiceRegistry> registryClass;
     private ComponentContext context;
     private ServerBootstrap nettyBootstrap;
 
@@ -41,11 +43,18 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
     }
 
     @Override
-    public void init() {
-        this.serviceRegistry = getContext().getWith(ComponentContextEnum.SERVICE_REGISTRY);
+    public void bindRegistry(Class<? extends ServiceRegistry> registryClass) {
+        this.registryClass = registryClass;
+    }
 
+    @Override
+    public void init() {
+        assert registryClass != null;
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
+        UrlScheme registryUrlScheme = new UrlScheme(properties.getProperty("provider.registry.url"));
+        this.serviceRegistry = ClassUtils.loadObjectByType(registryClass, ServiceRegistry.class, registryUrlScheme);
+        assert this.serviceRegistry != null;
+        ObjectLifecycleUtils.assemble(this.serviceRegistry, getContext());
 
         nettyBootstrap = new ServerBootstrap()
                 .group(new NioEventLoopGroup(1),
@@ -79,6 +88,8 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
 
     @Override
     public void destroy() {
+        ServiceObjectHolder serviceObjectHolder = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
+        serviceObjectHolder.forEach(serviceRegistry::unregisterProvider);
         ObjectLifecycleUtils.destroy(serviceRegistry);
         nettyBootstrap.config().group().shutdownGracefully();
         nettyBootstrap.config().childGroup().shutdownGracefully();

@@ -29,33 +29,27 @@ import conglin.clrpc.transport.router.Router;
 
 /**
  * RPC consumer端启动类
- * <p>
+ * 
  * 使用如下代码启动
- *
+ * 
  * <blockquote>
  *
  * <pre>
+ * ServiceInterface<Interface1> serviceInterface1 = ...
+ * 
  * ConsumerBootstrap bootstrap = new ConsumerBootstrap();
- * bootstrap.registry(new ServiceRegistry(){...}).start(new BootOption());
+ * bootstrap.registry(ServiceRegistry.class).start(new BootOption());
  *
- * // 构造ServiceInterface
- * ServiceInterface<Interface1> serviceInterface1 = new SimpleServiceInterface.Builder<>(Interface1.class)
- *         .name("Service1")
- *         .build();
- * // 刷新
  * bootstrap.subscribe(serviceInterface1);
  *
- * // 订阅同步服务
  * Interface1 sync = bootstrap.proxy(serviceInterface1, false);
  *
- * // 订阅异步服务
  * Interface1 async = bootstrap.proxy(serviceInterface1, true);
  *
  * bootstrap.stop();
  * </pre>
  *
  * </blockquote>
- * <p>
  * 注意：结束后不要忘记关闭客户端，释放资源。
  */
 public class ConsumerBootstrap extends Bootstrap {
@@ -67,7 +61,6 @@ public class ConsumerBootstrap extends Bootstrap {
     private final Router router;
     private final InvocationExecutor invocationExecutor;
 
-    private ServiceRegistry serviceRegistry;
     private ComponentContext context;
 
     public ConsumerBootstrap() {
@@ -85,12 +78,12 @@ public class ConsumerBootstrap extends Bootstrap {
     /**
      * 设置注册中心
      * 
-     * @param serviceRegistry
+     * @param registryClass
      * @return
      */
-    public ConsumerBootstrap registry(ServiceRegistry serviceRegistry) {
+    public ConsumerBootstrap registry(Class<? extends ServiceRegistry> registryClass) {
         stateRecord.except(CommonState.PREPARE);
-        this.serviceRegistry = serviceRegistry;
+        this.router.bindRegistry(registryClass);
         return this;
     }
 
@@ -148,7 +141,7 @@ public class ConsumerBootstrap extends Bootstrap {
     /**
      * 刷新服务
      *
-     * @param serviceInterface 接口
+     * @param serviceInterface    接口
      * @param loaderBalancerClass 指定 {@link LoadBalancer}
      * @return this
      */
@@ -214,9 +207,6 @@ public class ConsumerBootstrap extends Bootstrap {
      */
     private void initContext(BootOption option) {
         context = new ComponentContext();
-        assert serviceRegistry != null;
-        // registry
-        context.put(ComponentContextEnum.SERVICE_REGISTRY, serviceRegistry);
         // 设置角色
         context.put(ComponentContextEnum.ROLE, role());
         // 设置属性配置器

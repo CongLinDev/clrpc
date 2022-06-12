@@ -35,10 +35,10 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
         // 遍历更新的数据，对给定的数据进行更新
         for (K key : data) {
             int position = position(key);// 获取区域内部编号
-
+            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(position);
             while (true) {
-                Node<K, V> node;
-                if ((node = circle.get(position)) == null) { // 新增
+                // no node and create it
+                if (entry == null) {
                     V v = this.convertor.apply(key);
                     if (v != null) {
                         LOGGER.info("Add new node(position={}, key={})", position, key);
@@ -47,18 +47,41 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
                         LOGGER.error("Null Object from {}", key);
                     }
                     break;
-                } else if (matcher.test(node.getKey(), key)) { // 更新
+                }
+
+                Node<K, V> node = entry.getValue();
+                if (entry.getKey() == position) {
+                    if (this.matcher.test(node.getKey(), key)) {
+                        if (!node.setEpoch(currentEpoch)) {
+                            LOGGER.warn("Node set epoch failed(currentEpoch={} epoch={} key={})", currentEpoch, node.getEpoch(), key);
+                            break;
+                        }
+                        node.setKey(key);   // update key
+                        LOGGER.info("Update old node(position={}, key={})", position, key);
+                        break;
+                    } else {    // maybe collision
+                        LOGGER.warn("position() collision. Consider to replace a position algorithm for load balancer.");
+                        entry = circle.higherEntry(++position); // find next position
+                        continue;
+                    }
+                }
+
+                // assert entry.getKey() > position
+                if (this.matcher.test(node.getKey(), key)) {
                     if (!node.setEpoch(currentEpoch)) {
                         LOGGER.warn("Node set epoch failed(currentEpoch={} epoch={} key={})", currentEpoch, node.getEpoch(), key);
                         break;
                     }
                     node.setKey(key);   // update key
+                    // Adjust the position
+                    circle.remove(node.getKey());
+                    circle.put(position, node);
                     LOGGER.info("Update old node(position={}, key={})", position, key);
                     break;
-                } else { // 发生冲撞
-                    LOGGER.warn("position() collision. Consider to replace a position algorithm for load balancer.");
-                    position++;
                 }
+                // the entry has no relationship with current key
+                // and will create new node in the next loop.
+                entry = null;
             }
         }
 

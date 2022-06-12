@@ -12,6 +12,7 @@ import conglin.clrpc.common.loadbalance.DefaultMultiLoadBalancer;
 import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.common.loadbalance.MultiLoadBalancer;
 import conglin.clrpc.common.object.Pair;
+import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.service.ServiceInterface;
@@ -31,6 +32,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public class NettyRouter implements Router, ComponentContextAware, Initializable, Destroyable {
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyRouter.class);
 
+    private Class<? extends ServiceRegistry> registryClass;
     private ServiceRegistry serviceRegistry;
     private final MultiLoadBalancer<String, ServiceInstance, Channel> multiLoadBalancer;
     private Bootstrap nettyBootstrap;
@@ -52,12 +54,20 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     }
 
     @Override
+    public void bindRegistry(Class<? extends ServiceRegistry> registryClass) {
+        this.registryClass = registryClass;
+    }
+
+    @Override
     public void init() {
-        serviceRegistry = getContext().getWith(ComponentContextEnum.SERVICE_REGISTRY);
+        assert registryClass != null;
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
+        UrlScheme registryUrlScheme = new UrlScheme(properties.getProperty("consumer.registry.url"));
+        this.serviceRegistry = ClassUtils.loadObjectByType(registryClass, ServiceRegistry.class, registryUrlScheme);
+        assert this.serviceRegistry != null;
+        ObjectLifecycleUtils.assemble(this.serviceRegistry, getContext());
 
         ObjectLifecycleUtils.assemble(multiLoadBalancer, getContext());
-        ObjectLifecycleUtils.assemble(serviceRegistry, getContext());
 
         nettyBootstrap = new Bootstrap()
                 .group(new NioEventLoopGroup(
@@ -112,8 +122,8 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
 
     @Override
     public void destroy() {
+        ObjectLifecycleUtils.destroy(serviceRegistry);
         if (!multiLoadBalancer.isEmpty()) {
-            ObjectLifecycleUtils.destroy(serviceRegistry);
             disconnectAllProviderNode();
             nettyBootstrap.config().group().shutdownGracefully();
             ObjectLifecycleUtils.destroy(multiLoadBalancer);

@@ -9,7 +9,7 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
 
     private final List<InvocationFuture> futures;
 
-    private boolean combineDone;
+    private volatile boolean combineDone;
 
     /**
      * 构造一个空的复合Future

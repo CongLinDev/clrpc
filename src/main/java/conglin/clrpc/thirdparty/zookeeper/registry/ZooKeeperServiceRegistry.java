@@ -10,7 +10,6 @@ import org.apache.zookeeper.CreateMode;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.object.Pair;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.ServiceObject;
@@ -53,11 +52,11 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
     @Override
     public void init() {
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        this.instanceAddress = properties.getProperty("provider.instance.address");
         this.instanceId = properties.getProperty("provider.instance.id");
         if (instanceId == null) {
             throw new IllegalArgumentException("properties 'provider.instance.id' must not be null");
         }
+        this.instanceAddress = properties.getProperty("provider.instance.address");
         this.serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
     }
 
@@ -92,10 +91,9 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
     public void subscribeProvider(ServiceInterface<?> serviceInterface,
             Consumer<Collection<ServiceInstance>> callback) {
         String providerNodes = buildPath(serviceInterface.name(), "provider");
-        ZooKeeperUtils.watchChildrenList(keeperInstance.instance(), providerNodes,
+        ZooKeeperUtils.watchChildrenData(keeperInstance.instance(), providerNodes,
                 values -> callback.accept(
                         values.stream()
-                                .map(Pair::getSecond)
                                 .map(serviceInstanceCodec::fromContent)
                                 .toList()));
     }
@@ -121,6 +119,7 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
         }
     }
 
+    @Override
     public List<ServiceInstance> listProviders(ServiceInterface<?> serviceInterface) {
         String providerNodes = buildPath(serviceInterface.name(), "provider");
         return ZooKeeperUtils.listChildrenData(keeperInstance.instance(), providerNodes)
