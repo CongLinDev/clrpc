@@ -15,8 +15,6 @@ import conglin.clrpc.common.loadbalance.LoadBalancer;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.context.DefaultInvocationContextHolder;
-import conglin.clrpc.service.context.InvocationContextHolder;
 import conglin.clrpc.service.proxy.AsyncObjectProxy;
 import conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy;
 import conglin.clrpc.service.proxy.SyncObjectProxy;
@@ -57,7 +55,6 @@ public class ConsumerBootstrap extends Bootstrap {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
     private final StateRecord<CommonState> stateRecord;
-    private final InvocationContextHolder<Long> contextHolder;
     private final Router router;
     private final InvocationExecutor invocationExecutor;
 
@@ -69,9 +66,8 @@ public class ConsumerBootstrap extends Bootstrap {
 
     public ConsumerBootstrap(Properties properties) {
         super(properties);
-        this.contextHolder = new DefaultInvocationContextHolder();
         this.router = new NettyRouter();
-        invocationExecutor = new DefaultInvocationExecutor();
+        this.invocationExecutor = new DefaultInvocationExecutor();
         stateRecord = new StateRecord<>(CommonState.PREPARE);
     }
 
@@ -167,7 +163,6 @@ public class ConsumerBootstrap extends Bootstrap {
         if (stateRecord.compareAndSetState(CommonState.PREPARE, CommonState.INITING)) {
             LOGGER.info("ConsumerBootstrap is starting.");
             initContext(option);
-            ObjectLifecycleUtils.assemble(contextHolder, context);
             ObjectLifecycleUtils.assemble(router, context);
             ObjectLifecycleUtils.assemble(invocationExecutor, context);
             stateRecord.setState(CommonState.AVAILABLE);
@@ -180,8 +175,6 @@ public class ConsumerBootstrap extends Bootstrap {
     public void stop() {
         if (stateRecord.compareAndSetState(CommonState.AVAILABLE, CommonState.DESTORYING)) {
             LOGGER.info("Consumer is stopping.");
-            contextHolder.waitForUncompletedInvocation();
-            ObjectLifecycleUtils.destroy(contextHolder);
             ObjectLifecycleUtils.destroy(router);
             ObjectLifecycleUtils.destroy(invocationExecutor);
             context = null;
@@ -219,8 +212,6 @@ public class ConsumerBootstrap extends Bootstrap {
         context.put(ComponentContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         // protocol
         context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
-        // future holder
-        context.put(ComponentContextEnum.INVOCATION_CONTEXT_HOLDER, contextHolder);
         // router
         context.put(ComponentContextEnum.ROUTER, router);
         // request sender

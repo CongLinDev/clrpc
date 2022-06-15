@@ -19,7 +19,6 @@ public enum ComponentContextEnum {
     ROUTER(Router.class),
     PROPERTIES(Properties.class),
     INVOCATION_EXECUTOR(InvocationExecutor.class),
-    INVOCATION_CONTEXT_HOLDER(InvocationContextHolder.class),
     SERVICE_OBJECT_HOLDER(ServiceObjectHolder.class),
     SERVICE_INSTANCE_CODEC(ServiceInstanceCodec.class),
     PROTOCOL_DEFINITION(ProtocolDefinition.class),

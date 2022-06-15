@@ -4,7 +4,7 @@ import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.common.Role;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.handler.ConsumerBasicServiceChannelHandler;
+import conglin.clrpc.service.handler.ConsumerReceiveResponseChannelHandler;
 import conglin.clrpc.service.handler.ProviderBasicServiceChannelHandler;
 import conglin.clrpc.transport.handler.ProviderResponseChannelHandler;
 import conglin.clrpc.transport.handler.codec.UniProtocolCodec;
@@ -132,7 +132,7 @@ public class DefaultChannelHandlerFactory implements OrderedChannelHandlerFactor
 
         Role role = getContext().getWith(ComponentContextEnum.ROLE);
         if (role.isConsumer()) {
-            channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
+            channelHandlerList.add(new DefaultOrderedChannelHandler(new ConsumerReceiveResponseChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
         } else if (role.isProvider()) {
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderBasicServiceChannelHandler(), ChannelHandlerPhase.HANDLE, 1));
             channelHandlerList.add(new DefaultOrderedChannelHandler(new ProviderResponseChannelHandler(), ChannelHandlerPhase.HANDLE, 2));

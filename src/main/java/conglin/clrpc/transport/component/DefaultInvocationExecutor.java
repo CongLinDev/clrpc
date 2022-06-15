@@ -15,17 +15,24 @@ import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.service.context.ComponentContext;
 import conglin.clrpc.service.context.ComponentContextAware;
 import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.context.DefaultInvocationContextHolder;
 import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.context.InvocationContextHolder;
+import conglin.clrpc.service.future.InvocationFuture;
 import conglin.clrpc.service.strategy.FailStrategy;
+import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.message.Message;
+import conglin.clrpc.transport.message.Payload;
+import conglin.clrpc.transport.message.ResponsePayload;
 import conglin.clrpc.transport.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.transport.router.Router;
 import conglin.clrpc.transport.router.RouterCondition;
 import conglin.clrpc.transport.router.RouterResult;
 
 /**
- * 默认的请求发送器，直接发送请求
+ * 默认的请求处理器
+ * 
+ * 负责请求发送与回复的处理
  */
 public class DefaultInvocationExecutor implements InvocationExecutor, ComponentContextAware, Initializable, Destroyable {
 
@@ -43,8 +50,9 @@ public class DefaultInvocationExecutor implements InvocationExecutor, ComponentC
 
     @Override
     public void init() {
+        this.contextHolder = new DefaultInvocationContextHolder();
+        ObjectLifecycleUtils.assemble(contextHolder, getContext());
         this.identifierGenerator = getContext().getWith(ComponentContextEnum.IDENTIFIER_GENERATOR);
-        this.contextHolder = getContext().getWith(ComponentContextEnum.INVOCATION_CONTEXT_HOLDER);
         this.router = getContext().getWith(ComponentContextEnum.ROUTER);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
         long checkPeriod = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
@@ -77,21 +85,9 @@ public class DefaultInvocationExecutor implements InvocationExecutor, ComponentC
                         continue;
                     }
 
-                    // retry
-                    try {
-                        doExecute(invocationContext); // retry
-                        LOGGER.warn("Service response(identifier={}) is too slow. Retry...",
-                                invocationContext.getIdentifier());
-                    } catch (NoAvailableServiceInstancesException e) {
-                        if (!failStrategy.noTarget(invocationContext, e)
-                                && !invocationContext.getFuture().isPending()) {
-                            iterator.remove();
-                        }
-                    } catch (Exception e) {
-                        LOGGER.warn(
-                                "Service response(identifier={}) is too slow. but we catch an exception and we will do nothing",
-                                invocationContext.getIdentifier(), e);
-                    }
+                    doExecute(invocationContext); // retry
+                    LOGGER.warn("Service response(identifier={}) is too slow. Retry...",
+                            invocationContext.getIdentifier());
                 }
                 LOGGER.debug("check uncompleted future task is done");
             }, initialThreshold, checkPeriod, TimeUnit.MILLISECONDS);
@@ -113,45 +109,68 @@ public class DefaultInvocationExecutor implements InvocationExecutor, ComponentC
         Long messageId = identifierGenerator.generate();
         invocationContext.setIdentifier(messageId);
         contextHolder.put(messageId, invocationContext);
-        try {
-            doExecute(invocationContext);
-        } catch (NoAvailableServiceInstancesException e) {
-            if (!invocationContext.getFailStrategy().noTarget(invocationContext, e)
-                    && !invocationContext.getFuture().isPending()) {
-                contextHolder.remove(messageId);
-            }
-        } catch (Exception e) {
-            LOGGER.warn(
-                    "we catch an exception and we will do nothing",
-                    invocationContext.getIdentifier(), e);
-        }
+        doExecute(invocationContext);
     }
 
     @Override
     public void destroy() {
-        if (this.scheduledExecutorService.isShutdown()) {
+        contextHolder.waitForUncompletedInvocation();
+        if (!this.scheduledExecutorService.isShutdown()) {
             this.scheduledExecutorService.shutdown();
         }
+        ObjectLifecycleUtils.destroy(contextHolder);
     }
 
     /**
      * 发送请求
      *
      * @param invocationContext
-     * @throws NoAvailableServiceInstancesException
      */
-    protected void doExecute(InvocationContext invocationContext)
-            throws NoAvailableServiceInstancesException {
+    protected void doExecute(InvocationContext invocationContext) {
         RouterCondition condition = new RouterCondition();
         condition.setServiceName(invocationContext.getRequest().serviceName());
         condition.setRandom(invocationContext.getExecuteTimes() ^ invocationContext.getIdentifier().intValue());
         condition.setInstanceCondition(invocationContext.getChoosedInstanceCondition());
-        RouterResult routerResult = router.choose(condition);
-        if (invocationContext.getChoosedInstancePostProcessor() != null) {
-            invocationContext.getChoosedInstancePostProcessor().accept(routerResult.getInstance());
+        try {
+            RouterResult routerResult = router.choose(condition);
+            if (invocationContext.getChoosedInstancePostProcessor() != null) {
+                invocationContext.getChoosedInstancePostProcessor().accept(routerResult.getInstance());
+            }
+            invocationContext.increaseExecuteTimes();
+            routerResult.execute(new Message(invocationContext.getIdentifier(), invocationContext.getRequest()));
+            LOGGER.debug("Execute request for messageId={}", invocationContext.getIdentifier());
+        } catch (NoAvailableServiceInstancesException e) {
+            if (!invocationContext.getFailStrategy().noTarget(invocationContext, e)
+                    && !invocationContext.getFuture().isPending()) {
+                contextHolder.remove(invocationContext.getIdentifier());
+            }
         }
-        invocationContext.increaseExecuteTimes();
-        routerResult.execute(new Message(invocationContext.getIdentifier(), invocationContext.getRequest()));
-        LOGGER.debug("Execute request for messageId={}", invocationContext.getIdentifier());
+    }
+
+    @Override
+    public void receive(Message message) {
+        Payload payload = message.payload();
+        if (!(payload instanceof ResponsePayload)) {
+            return;
+        }
+        Long messageId = message.messageId();
+        LOGGER.debug("Receive response (messageId={})", messageId);
+        InvocationContext invocationContext = contextHolder.remove(messageId);
+        if (invocationContext == null) {
+            LOGGER.error("Can not find binding invocationContext (messageId={})", messageId);
+            return;
+        }
+
+        InvocationFuture future = invocationContext.getFuture();
+        if (future.isPending()) {
+            ResponsePayload response = (ResponsePayload) payload;
+            if (response.isError()) {
+                invocationContext.getFailStrategy().error(invocationContext, payload);
+            } else {
+                invocationContext.setResponse(response);
+            }
+        } else {
+            LOGGER.error("Can not find binding invocationContext (messageId={})", messageId);
+        }
     }
 }

@@ -35,7 +35,7 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
         // 遍历更新的数据，对给定的数据进行更新
         for (K key : data) {
             int position = position(key);// 获取区域内部编号
-            Map.Entry<Integer, Node<K, V>> entry = circle.higherEntry(position);
+            Map.Entry<Integer, Node<K, V>> entry = circle.ceilingEntry(position);
             while (true) {
                 // no node and create it
                 if (entry == null) {
@@ -61,7 +61,7 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
                         break;
                     } else {    // maybe collision
                         LOGGER.warn("position() collision. Consider to replace a position algorithm for load balancer.");
-                        entry = circle.higherEntry(++position); // find next position
+                        entry = circle.ceilingEntry(++position); // find next position
                         continue;
                     }
                 }
@@ -104,7 +104,7 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
         Map.Entry<Integer, Node<K, V>> entry;
 
         // 遍历 [offset, tail]
-        while ((entry = circle.higherEntry(next)) != null) {
+        while ((entry = circle.ceilingEntry(next)) != null) {
             if (predicate.test(entry.getValue()))
                 return entry.getValue();
             next = entry.getKey() + 1;
@@ -117,7 +117,7 @@ public class ConsistentHashLoadBalancer<K, V> extends AbstractLoadBalancer<K, V>
             return null;
         }
         
-        while ((entry = circle.higherEntry(next)) != null && entry.getKey() < offset) {
+        while ((entry = circle.ceilingEntry(next)) != null && entry.getKey() < offset) {
             if (predicate.test(entry.getValue()))
                 return entry.getValue();
             next = entry.getKey() + 1;

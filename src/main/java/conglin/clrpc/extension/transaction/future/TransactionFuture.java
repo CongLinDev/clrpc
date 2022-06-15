@@ -46,7 +46,7 @@ public class TransactionFuture extends AbstractCompositeFuture {
     @Override
     protected void doRunCallback(Callback callback) {
         if (!isError()) {
-            callback.success(doGet());
+            callback.success(null);
         } else {
             callback.fail(new ServiceException("Transaction has been aborted."));
         }

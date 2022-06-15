@@ -3,7 +3,6 @@ package conglin.clrpc.service.future;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 abstract public class AbstractCompositeFuture extends AbstractFuture {
 
@@ -99,15 +98,15 @@ abstract public class AbstractCompositeFuture extends AbstractFuture {
     }
 
     @Override
-    protected List<Object> doGet() {
-        // return results as list
-        return futures.stream().map(t -> {
+    protected Object doGet() {
+        for (InvocationFuture f : futures) {
             try {
-                return t.get();
-            } catch (InterruptedException | ExecutionException e) {
-                return e;
+                f.get();
+            } catch (Exception e) {
+
             }
-        }).toList();
+        }
+        return null;
     }
 
     @Override
