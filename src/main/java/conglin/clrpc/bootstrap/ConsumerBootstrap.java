@@ -40,9 +40,9 @@ import conglin.clrpc.transport.router.Router;
  *
  * bootstrap.subscribe(serviceInterface1);
  *
- * Interface1 sync = bootstrap.proxy(serviceInterface1, false);
+ * Interface1 sync = bootstrap.syncService(serviceInterface1);
  *
- * Interface1 async = bootstrap.proxy(serviceInterface1, true);
+ * Interface1 async = bootstrap.asyncService(serviceInterface1);
  *
  * bootstrap.stop();
  * </pre>
@@ -90,35 +90,37 @@ public class ConsumerBootstrap extends Bootstrap {
 
     /**
      * 获取异步服务代理
-     * <p>
+     * 
      * 使用该方法返回的代理前，应当保证之前调用 {@link ConsumerBootstrap#subscribe(ServiceInterface)}
      * 刷新
      *
      * @param <T>
      * @param serviceInterface 接口
-     * @return 代理服务对象
-     * @see #proxy(ServiceInterface, boolean)
-     */
-    public <T> T proxy(ServiceInterface<T> serviceInterface) {
-        return proxy(serviceInterface, true);
-    }
-
-    /**
-     * 获取服务代理
-     * <p>
-     * 使用该方法返回的代理前，应当保证之前调用 {@link ConsumerBootstrap#subscribe(ServiceInterface)}
-     * 刷新
-     *
-     * @param <T>
-     * @param serviceInterface 接口
-     * @param async            是否是异步代理
      * @return 代理服务对象
      */
     @SuppressWarnings("unchecked")
-    public <T> T proxy(ServiceInterface<T> serviceInterface, boolean async) {
+    public <T> T asyncService(ServiceInterface<T> serviceInterface) {
         stateRecord.except(CommonState.AVAILABLE);
-        ServiceInterfaceObjectProxy proxy = async ? new AsyncObjectProxy(serviceInterface)
-                : new SyncObjectProxy(serviceInterface);
+        ServiceInterfaceObjectProxy proxy = new AsyncObjectProxy(serviceInterface);
+        ObjectLifecycleUtils.assemble(proxy, context);
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class<?>[] { serviceInterface.interfaceClass() }, proxy);
+    }
+
+    /**
+     * 获取同步服务代理
+     * 
+     * 使用该方法返回的代理前，应当保证之前调用 {@link ConsumerBootstrap#subscribe(ServiceInterface)}
+     * 刷新
+     *
+     * @param <T>
+     * @param serviceInterface 接口
+     * @return 代理服务对象
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T syncService(ServiceInterface<T> serviceInterface) {
+        stateRecord.except(CommonState.AVAILABLE);
+        ServiceInterfaceObjectProxy proxy = new SyncObjectProxy(serviceInterface);
         ObjectLifecycleUtils.assemble(proxy, context);
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { serviceInterface.interfaceClass() }, proxy);

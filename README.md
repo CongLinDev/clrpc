@@ -74,11 +74,11 @@ bootstrap.registry(ZooKeeperServiceRegistry.class)
 bootstrap.subscribe(serviceInterface);
 
 //使用同步服务
-EchoService syncService = bootstrap.proxy(serviceInterface, false);
+EchoService syncService = bootstrap.syncService(serviceInterface);
 String result = syncService.hello("I am consumer!"); // 一直阻塞，直到返回结果
 
 // 使用异步服务
-EchoService asyncService = bootstrap.proxy(serviceInterface, true);
+EchoService asyncService = bootstrap.asyncService(serviceInterface);
 String fakeResult = asyncService.hello("I am consumer!"); // 直接返回默认值
 assert fakeResult == null;
 InvocationFuture future = InvocationContext.lastContext().getFuture(); // 获取该线程最新一次操作的产生的future对象
@@ -110,20 +110,20 @@ bootstrap.registry(ZooKeeperServiceRegistry.class)
 // 提前刷新需要订阅的服务
 bootstrap.subscribe(serviceInterface);
 
-TransactionProxy proxy = (TransactionProxy)bootstrap.object(ZooKeeperTransactionProxy.class);
-EchoService service = proxy.proxy(serviceInterface); // get proxy from TransactionProxy instead of bootstrap
+TransactionManager manager = (TransactionManager)bootstrap.object(ZooKeeperTransactionManager.class);
+EchoService service = manager.asyncService(serviceInterface); // get proxy from TransactionManager instead of bootstrap
 
-proxy.begin(); // 事务开启
+manager.begin(); // 事务开启
 
 service.hello("first request"); // 异步发送第一条请求
 InvocationFuture f1 = InvocationContext.lastContext().getFuture(); // 获取第一条请求产生的future对象
 service.hi("second request"); // 异步发送第二条请求
 InvocationFuture f2 = InvocationContext.lastContext().getFuture(); // 获取第二条请求产生的future对象
 
-TransactionInvocationContext context = proxy.commit(); // 事务提交 返回事务 上下文
+TransactionInvocationContext context = manager.commit(); // 事务提交 返回事务 上下文
 
-// 销毁 TransactionProxy
-ObjectLifecycleUtils.destroy(proxy);
+// 销毁 TransactionManager
+ObjectLifecycleUtils.destroy(manager);
 // 关闭服务消费者
 bootstrap.stop();
 ```
@@ -222,7 +222,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 使用者通过实现 `conglin.clrpc.service.registry.ServiceRegistry` 接口来实现注册中心。
 
-在启动前通过 `conglin.clrpc.bootstrap.Bootstrap#registry(ServiceRegistry)` 传入即可完成对注册中心的扩展。
+在启动前通过 `conglin.clrpc.bootstrap.Bootstrap#registry(Class<? extends ServiceRegistry>)` 传入即可完成对注册中心的扩展。
 
 **clrpc** 提供一个基于 **ZooKeeper** 的实现：`conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceRegistry` 。
 

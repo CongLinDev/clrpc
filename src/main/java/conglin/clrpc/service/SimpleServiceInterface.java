@@ -27,6 +27,7 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
         this.interfaceClass = interfaceClass;
         this.failStrategy = failStrategy;
         this.instanceCondition = instanceCondition;
+        this.instanceCondition.bindServiceInterface(this);
     }
 
     @Override
@@ -117,7 +118,6 @@ public class SimpleServiceInterface<T> implements ServiceInterface<T> {
             if (instanceCondition == null) {
                 instanceCondition = new DefaultInstanceCondition();
             }
-            instanceCondition.currentVersion(version);
             if (failStrategy == null) {
                 failStrategy = new FailFast();
             }

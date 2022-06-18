@@ -12,7 +12,7 @@ import java.lang.annotation.*;
  *
  * @see conglin.clrpc.service.ServiceInterface
  *
- * 注意：该注解只能被使用在服务接口上。
+ *      注意：该注解只能被使用在服务接口上。
  */
 @Documented
 @Target(ElementType.TYPE)
@@ -26,9 +26,8 @@ public @interface ServiceInterface {
      */
     String name() default "";
 
-
     /**
-     * 超时时间 
+     * 超时时间
      * 
      * timeoutThreshold() <= 0时 永不超时
      * 

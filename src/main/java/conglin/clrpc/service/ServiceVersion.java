@@ -5,10 +5,21 @@ final public class ServiceVersion implements Comparable<ServiceVersion> {
     private final static String VERSION_FORMATTER = "%d.%d.%d";
     private final static ServiceVersion DEFAULT_VERSION = new ServiceVersion(1, 0, 0);
 
+    /**
+     * 默认版本号
+     * 
+     * @return
+     */
     public static ServiceVersion defaultVersion() {
         return DEFAULT_VERSION;
     }
 
+    /**
+     * 解析
+     * 
+     * @param content
+     * @return
+     */
     public static ServiceVersion parse(String content) {
         String[] s = content.split("\\.");
         if (s.length != 3) {
@@ -36,14 +47,29 @@ final public class ServiceVersion implements Comparable<ServiceVersion> {
         this.build = build;
     }
 
+    /**
+     * get major
+     * 
+     * @return
+     */
     public int getMajor() {
         return major;
     }
 
+    /**
+     * get minor
+     * 
+     * @return
+     */
     public int getMinor() {
         return minor;
     }
 
+    /**
+     * get build
+     * 
+     * @return
+     */
     public int getBuild() {
         return build;
     }

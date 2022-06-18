@@ -1,5 +1,6 @@
 package conglin.clrpc.transport.router;
 
+import conglin.clrpc.service.instance.condition.EmptyInstanceCondition;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
 
 public class RouterCondition {
@@ -8,7 +9,7 @@ public class RouterCondition {
     private int random;
     public InstanceCondition getInstanceCondition() {
         if (instanceCondition == null) {
-            instanceCondition = InstanceCondition.PERMIT_ALL;
+            instanceCondition = new EmptyInstanceCondition();
         }
         return instanceCondition;
     }

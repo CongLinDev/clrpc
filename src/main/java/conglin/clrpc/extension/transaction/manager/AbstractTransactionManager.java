@@ -1,4 +1,4 @@
-package conglin.clrpc.extension.transaction.proxy;
+package conglin.clrpc.extension.transaction.manager;
 
 import java.lang.reflect.Proxy;
 import java.util.Properties;
@@ -30,14 +30,14 @@ import conglin.clrpc.service.util.ObjectLifecycleUtils;
 import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 /**
- * 分布式事务代理 注意，该类是线程不安全的
+ * 分布式事务管理 注意，该类是线程不安全的
  * <p>
- * 在某一时段只能操作一个事务，如果使用者不确定代理是否可用，可调用 {@link #isAvailable()} 查看
+ * 在某一时段只能操作一个事务，如果使用者不确定manager是否可用，可调用 {@link #isAvailable()} 查看
  */
-abstract public class AbstractTransactionProxy
-        implements TransactionProxy, Initializable, ComponentContextAware, Available, Destroyable {
+abstract public class AbstractTransactionManager
+        implements TransactionManager, Initializable, ComponentContextAware, Available, Destroyable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionProxy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransactionManager.class);
 
     protected ComponentContext componentContext;
     // ID生成器
@@ -117,7 +117,7 @@ abstract public class AbstractTransactionProxy
         }
 
         TransactionInvocationContext c = transactionInvocationContext;
-        transactionInvocationContext = null; // 提交后该代理对象可以进行重用
+        transactionInvocationContext = null; // 提交后该manager对象可以进行重用
         return c;
     }
 
@@ -148,7 +148,7 @@ abstract public class AbstractTransactionProxy
         }
 
         TransactionInvocationContext c = transactionInvocationContext;
-        transactionInvocationContext = null; // 提交后该代理对象可以进行重用
+        transactionInvocationContext = null; // 提交后该manager对象可以进行重用
         return c;
     }
 
@@ -162,7 +162,7 @@ abstract public class AbstractTransactionProxy
         helper.abort(transactionInvocationContext.getIdentifier(), instanceId);
         transactionInvocationContext.abort();
         TransactionInvocationContext c = transactionInvocationContext;
-        transactionInvocationContext = null; // 提交后该代理对象可以进行重用
+        transactionInvocationContext = null; // 提交后该manager对象可以进行重用
         return c;
     }
 
@@ -196,7 +196,7 @@ abstract public class AbstractTransactionProxy
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T proxy(ServiceInterface<T> serviceInterface) {
+    public <T> T asyncService(ServiceInterface<T> serviceInterface) {
         InnerAsyncObjectProxy proxy = new InnerAsyncObjectProxy(serviceInterface);
         ObjectLifecycleUtils.assemble(proxy, getContext());
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
@@ -235,9 +235,9 @@ abstract public class AbstractTransactionProxy
                         }
                     });
                     call(invocationContext);
-                    AbstractTransactionProxy.this.transactionInvocationContext.getFuture()
+                    AbstractTransactionManager.this.transactionInvocationContext.getFuture()
                             .combine(invocationContext.getFuture());
-                    AbstractTransactionProxy.this.transactionInvocationContext.getInvocationContextList()
+                    AbstractTransactionManager.this.transactionInvocationContext.getInvocationContextList()
                             .add(invocationContext);
                     return invocationContext;
                 } catch (Exception e) {

@@ -1,4 +1,4 @@
-package conglin.clrpc.extension.transaction.proxy;
+package conglin.clrpc.extension.transaction.manager;
 
 import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.context.TransactionInvocationContext;
@@ -7,7 +7,7 @@ import conglin.clrpc.service.ServiceInterface;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public interface TransactionProxy {
+public interface TransactionManager {
 
     /**
      * 开始一个事务，默认非顺序执行
@@ -46,11 +46,11 @@ public interface TransactionProxy {
     /**
      * 获取异步原子请求代理
      * 
-     * 需要注意的是 该方法产生的对象与当前 {@link TransactionProxy} 对象深度绑定
+     * 需要注意的是 该方法产生的对象与当前 {@link TransactionManager} 对象深度绑定
      * 
      * @param <T>
      * @param serviceInterface
      * @return
      */
-    <T> T proxy(ServiceInterface<T> serviceInterface);
+    <T> T asyncService(ServiceInterface<T> serviceInterface);
 }
