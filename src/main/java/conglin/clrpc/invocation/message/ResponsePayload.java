@@ -2,7 +2,7 @@ package conglin.clrpc.invocation.message;
 
 import java.io.Serial;
 
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 
 public class ResponsePayload implements Payload {
 

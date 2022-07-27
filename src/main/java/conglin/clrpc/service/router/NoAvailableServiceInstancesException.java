@@ -1,6 +1,6 @@
 package conglin.clrpc.service.router;
 
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 
 public class NoAvailableServiceInstancesException extends ServiceException {
 

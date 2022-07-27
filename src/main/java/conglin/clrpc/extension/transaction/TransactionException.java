@@ -1,6 +1,6 @@
 package conglin.clrpc.extension.transaction;
 
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 
 public class TransactionException extends ServiceException {
 

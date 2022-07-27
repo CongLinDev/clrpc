@@ -1,4 +1,4 @@
-package conglin.clrpc.common.exception;
+package conglin.clrpc.common;
 
 import java.io.Serial;
 import java.util.concurrent.ExecutionException;

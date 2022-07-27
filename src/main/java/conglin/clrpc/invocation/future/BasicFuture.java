@@ -3,7 +3,7 @@ package conglin.clrpc.invocation.future;
 import java.util.concurrent.CancellationException;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 
 public class BasicFuture extends AbstractFuture {
 

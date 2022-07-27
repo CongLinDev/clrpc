@@ -2,7 +2,7 @@ package conglin.clrpc.invocation;
 
 import java.io.Serial;
 
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 
 /**
  * RPC服务异常

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import conglin.clrpc.common.exception.ServiceExecutionException;
+import conglin.clrpc.invocation.ServiceExecutionException;
 import conglin.clrpc.invocation.UnsupportedServiceException;
 
 public class ServiceObjectHolder {

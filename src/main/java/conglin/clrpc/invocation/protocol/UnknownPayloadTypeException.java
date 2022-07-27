@@ -1,6 +1,6 @@
 package conglin.clrpc.invocation.protocol;
 
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 import conglin.clrpc.invocation.message.Payload;
 
 public class UnknownPayloadTypeException extends ServiceException {

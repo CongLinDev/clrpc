@@ -1,7 +1,7 @@
 package conglin.clrpc.extension.transaction.future;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.exception.ServiceException;
+import conglin.clrpc.common.ServiceException;
 import conglin.clrpc.invocation.future.AbstractCompositeFuture;
 import conglin.clrpc.invocation.future.InvocationFuture;
 
