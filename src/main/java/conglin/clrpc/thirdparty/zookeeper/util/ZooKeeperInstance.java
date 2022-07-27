@@ -1,10 +1,11 @@
 package conglin.clrpc.thirdparty.zookeeper.util;
 
-import conglin.clrpc.common.Available;
-import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.common.CommonState;
 import conglin.clrpc.common.StateRecord;
 import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.lifecycle.Available;
+import conglin.clrpc.lifecycle.Destroyable;
+
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.HashMap;

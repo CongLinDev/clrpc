@@ -1,10 +1,9 @@
 package conglin.clrpc.bootstrap.option;
 
-import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.serialization.SerializationHandler;
-import conglin.clrpc.service.handler.factory.ChannelHandlerFactory;
+import conglin.clrpc.invocation.identifier.IdentifierGenerator;
+import conglin.clrpc.invocation.protocol.ProtocolDefinition;
+import conglin.clrpc.invocation.serialization.SerializationHandler;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
-import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 public class BootOption {
 
@@ -12,7 +11,6 @@ public class BootOption {
     private SerializationHandler serializationHandler;
     private ServiceInstanceCodec serviceInstanceCodec;
     private ProtocolDefinition protocolDefinition;
-    private ChannelHandlerFactory channelHandlerFactory;
 
     public IdentifierGenerator identifierGenerator() {
         return identifierGenerator;
@@ -47,15 +45,6 @@ public class BootOption {
 
     public BootOption protocolDefinition(ProtocolDefinition protocolDefinition) {
         this.protocolDefinition = protocolDefinition;
-        return this;
-    }
-
-    public ChannelHandlerFactory channelHandlerFactory() {
-        return channelHandlerFactory;
-    }
-
-    public BootOption channelHandlerFactory(ChannelHandlerFactory channelHandlerFactory) {
-        this.channelHandlerFactory = channelHandlerFactory;
         return this;
     }
 }

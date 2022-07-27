@@ -1,9 +1,9 @@
 package conglin.clrpc.thirdparty.zookeeper;
 
-import conglin.clrpc.common.Destroyable;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperInstance;
 
 import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.lifecycle.Destroyable;
 
 abstract public class AbstractZooKeeperService implements Destroyable {
     private static final String SEPARATOR = "/";

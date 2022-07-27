@@ -9,14 +9,17 @@ import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.Role;
 import conglin.clrpc.common.CommonState;
 import conglin.clrpc.common.StateRecord;
+import conglin.clrpc.executor.CommonRequestExecutor;
+import conglin.clrpc.executor.pipeline.ChainExecutor;
+import conglin.clrpc.executor.pipeline.CommonExecutorPipeline;
+import conglin.clrpc.lifecycle.ComponentContext;
+import conglin.clrpc.lifecycle.ComponentContextEnum;
+import conglin.clrpc.lifecycle.ObjectLifecycleUtils;
+import conglin.clrpc.netty.NettyPublisher;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.ServiceObjectHolder;
-import conglin.clrpc.service.context.ComponentContext;
-import conglin.clrpc.service.context.ComponentContextEnum;
+import conglin.clrpc.service.publisher.Publisher;
 import conglin.clrpc.service.registry.ServiceRegistry;
-import conglin.clrpc.service.util.ObjectLifecycleUtils;
-import conglin.clrpc.transport.publisher.NettyPublisher;
-import conglin.clrpc.transport.publisher.Publisher;
 
 /**
  * RPC provider端启动类
@@ -48,9 +51,22 @@ public class ProviderBootstrap extends Bootstrap {
     private final Publisher publisher;
     private final ServiceObjectHolder serviceObjectHolder;
     private ComponentContext context;
+    private final CommonExecutorPipeline executorPipeline;
 
     public ProviderBootstrap() {
         this(null);
+    }
+
+    /**
+     * 注册处理器
+     * 
+     * @param executor
+     * @return
+     */
+    public ProviderBootstrap registerExecutor(ChainExecutor executor) {
+        stateRecord.except(CommonState.PREPARE);
+        executorPipeline.register(executor);
+        return this;
     }
 
     /**
@@ -63,6 +79,7 @@ public class ProviderBootstrap extends Bootstrap {
         serviceObjectHolder = new ServiceObjectHolder();
         publisher = new NettyPublisher();
         stateRecord = new StateRecord<>(CommonState.PREPARE);
+        executorPipeline = new CommonExecutorPipeline();
     }
 
     /**
@@ -84,7 +101,6 @@ public class ProviderBootstrap extends Bootstrap {
         return Role.PROVIDER;
     }
 
-
     /**
      * 设置注册中心
      * 
@@ -105,12 +121,13 @@ public class ProviderBootstrap extends Bootstrap {
     public void start(BootOption option) {
         if (stateRecord.compareAndSetState(CommonState.PREPARE, CommonState.INITING)) {
             LOGGER.info("Provider is starting.");
+            executorPipeline.register(new CommonRequestExecutor());
             ComponentContext context = initContext(option);
             ObjectLifecycleUtils.assemble(serviceObjectHolder, context);
+            ObjectLifecycleUtils.assemble(executorPipeline, context);
             ObjectLifecycleUtils.assemble(publisher, context);
             stateRecord.setState(CommonState.AVAILABLE);
         }
-
     }
 
     /**
@@ -156,8 +173,8 @@ public class ProviderBootstrap extends Bootstrap {
         context.put(ComponentContextEnum.SERVICE_INSTANCE_CODEC, option.serviceInstanceCodec());
         // protocol
         context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
-        // channelHandlerFactory
-        context.put(ComponentContextEnum.CHANNEL_HANDLER_FACTORY, option.channelHandlerFactory());
+        // executor pipeline
+        context.put(ComponentContextEnum.EXECUTOR_PIPELINE, executorPipeline);
         return context;
     }
 

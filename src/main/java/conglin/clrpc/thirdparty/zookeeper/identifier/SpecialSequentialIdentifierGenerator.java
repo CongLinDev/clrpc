@@ -1,7 +1,7 @@
 package conglin.clrpc.thirdparty.zookeeper.identifier;
 
-import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.invocation.identifier.IdentifierGenerator;
 import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
 import org.apache.zookeeper.CreateMode;

@@ -1,14 +1,14 @@
 package conglin.clrpc.thirdparty.bootstrap.option;
 
 import conglin.clrpc.bootstrap.option.BootOption;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
-import conglin.clrpc.common.identifier.SnowFlakeIdentifierGenerator;
-import conglin.clrpc.common.serialization.SerializationHandler;
+import conglin.clrpc.invocation.identifier.IdentifierGenerator;
+import conglin.clrpc.invocation.identifier.SnowFlakeIdentifierGenerator;
+import conglin.clrpc.invocation.protocol.DefaultProtocolDefinition;
+import conglin.clrpc.invocation.protocol.ProtocolDefinition;
+import conglin.clrpc.invocation.serialization.SerializationHandler;
 import conglin.clrpc.service.instance.codec.DefaultServiceInstanceCodec;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
-import conglin.clrpc.thirdparty.protostuff.serialization.ProtostuffSerializationHandler;
-import conglin.clrpc.transport.protocol.DefaultProtocolDefinition;
-import conglin.clrpc.transport.protocol.ProtocolDefinition;
+import conglin.clrpc.thirdparty.protostuff.ProtostuffSerializationHandler;
 
 public class CommonOption extends BootOption {
     @Override

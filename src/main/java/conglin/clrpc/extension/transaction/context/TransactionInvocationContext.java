@@ -5,7 +5,7 @@ import java.util.List;
 
 import conglin.clrpc.extension.transaction.TransactionState;
 import conglin.clrpc.extension.transaction.future.TransactionFuture;
-import conglin.clrpc.service.context.InvocationContext;
+import conglin.clrpc.invocation.InvocationContext;
 
 public class TransactionInvocationContext {
     private final long identifier; // init in sender

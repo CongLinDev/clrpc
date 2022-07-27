@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Initializable;
 import conglin.clrpc.common.object.UrlScheme;
+import conglin.clrpc.lifecycle.ComponentContext;
+import conglin.clrpc.lifecycle.ComponentContextAware;
+import conglin.clrpc.lifecycle.ComponentContextEnum;
+import conglin.clrpc.lifecycle.Initializable;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.ServiceObject;
-import conglin.clrpc.service.context.ComponentContext;
-import conglin.clrpc.service.context.ComponentContextAware;
-import conglin.clrpc.service.context.ComponentContextEnum;
 import conglin.clrpc.service.instance.AbstractServiceInstance;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;

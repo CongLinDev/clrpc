@@ -1,9 +1,9 @@
 package conglin.clrpc.extension.annotation;
 
+import conglin.clrpc.invocation.strategy.FailFast;
+import conglin.clrpc.invocation.strategy.FailStrategy;
 import conglin.clrpc.service.instance.condition.DefaultInstanceCondition;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
-import conglin.clrpc.service.strategy.FailFast;
-import conglin.clrpc.service.strategy.FailStrategy;
 
 import java.lang.annotation.*;
 

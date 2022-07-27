@@ -10,24 +10,24 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.Available;
-import conglin.clrpc.common.Destroyable;
-import conglin.clrpc.common.Initializable;
-import conglin.clrpc.common.identifier.IdentifierGenerator;
 import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.TransactionHelper;
 import conglin.clrpc.extension.transaction.context.TransactionInvocationContext;
 import conglin.clrpc.extension.transaction.payload.TransactionRequestPayload;
+import conglin.clrpc.invocation.InvocationContext;
+import conglin.clrpc.invocation.identifier.IdentifierGenerator;
+import conglin.clrpc.invocation.protocol.ProtocolDefinition;
+import conglin.clrpc.invocation.proxy.AsyncObjectProxy;
+import conglin.clrpc.lifecycle.Available;
+import conglin.clrpc.lifecycle.ComponentContext;
+import conglin.clrpc.lifecycle.ComponentContextAware;
+import conglin.clrpc.lifecycle.ComponentContextEnum;
+import conglin.clrpc.lifecycle.Destroyable;
+import conglin.clrpc.lifecycle.Initializable;
+import conglin.clrpc.lifecycle.ObjectLifecycleUtils;
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.context.ComponentContext;
-import conglin.clrpc.service.context.ComponentContextAware;
-import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.context.InvocationContext;
 import conglin.clrpc.service.instance.ServiceInstance;
-import conglin.clrpc.service.proxy.AsyncObjectProxy;
-import conglin.clrpc.service.util.ObjectLifecycleUtils;
-import conglin.clrpc.transport.protocol.ProtocolDefinition;
 
 /**
  * 分布式事务管理 注意，该类是线程不安全的

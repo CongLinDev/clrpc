@@ -6,8 +6,8 @@ import java.util.Properties;
 
 import conglin.clrpc.common.Role;
 import conglin.clrpc.common.util.ClassUtils;
-import conglin.clrpc.service.context.ComponentContext;
-import conglin.clrpc.service.util.ObjectLifecycleUtils;
+import conglin.clrpc.lifecycle.ComponentContext;
+import conglin.clrpc.lifecycle.ObjectLifecycleUtils;
 
 /**
  * 抽象的 Bootstrap

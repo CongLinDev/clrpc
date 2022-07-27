@@ -1,8 +1,8 @@
 package conglin.clrpc.extension.transaction.payload;
 
-import conglin.clrpc.transport.message.RequestPayload;
-
 import java.io.Serial;
+
+import conglin.clrpc.invocation.message.RequestPayload;
 
 public class TransactionRequestPayload extends RequestPayload {
 

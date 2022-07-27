@@ -10,20 +10,22 @@ import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.CommonState;
 import conglin.clrpc.common.Role;
 import conglin.clrpc.common.StateRecord;
-import conglin.clrpc.common.loadbalance.ConsistentHashLoadBalancer;
-import conglin.clrpc.common.loadbalance.LoadBalancer;
+import conglin.clrpc.executor.InvocationContextChainExecutor;
+import conglin.clrpc.executor.NetworkClientChainExecutor;
+import conglin.clrpc.executor.pipeline.ChainExecutor;
+import conglin.clrpc.executor.pipeline.CommonExecutorPipeline;
+import conglin.clrpc.invocation.proxy.AsyncObjectProxy;
+import conglin.clrpc.invocation.proxy.ServiceInterfaceObjectProxy;
+import conglin.clrpc.invocation.proxy.SyncObjectProxy;
+import conglin.clrpc.lifecycle.ComponentContext;
+import conglin.clrpc.lifecycle.ComponentContextEnum;
+import conglin.clrpc.lifecycle.ObjectLifecycleUtils;
+import conglin.clrpc.netty.NettyRouter;
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.context.ComponentContext;
-import conglin.clrpc.service.context.ComponentContextEnum;
-import conglin.clrpc.service.proxy.AsyncObjectProxy;
-import conglin.clrpc.service.proxy.ServiceInterfaceObjectProxy;
-import conglin.clrpc.service.proxy.SyncObjectProxy;
+import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
+import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.service.registry.ServiceRegistry;
-import conglin.clrpc.service.util.ObjectLifecycleUtils;
-import conglin.clrpc.transport.component.DefaultInvocationExecutor;
-import conglin.clrpc.transport.component.InvocationExecutor;
-import conglin.clrpc.transport.router.NettyRouter;
-import conglin.clrpc.transport.router.Router;
+import conglin.clrpc.service.router.Router;
 
 /**
  * RPC consumer端启动类
@@ -55,8 +57,8 @@ public class ConsumerBootstrap extends Bootstrap {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
     private final StateRecord<CommonState> stateRecord;
+    private final CommonExecutorPipeline executorPipeline;
     private final Router router;
-    private final InvocationExecutor invocationExecutor;
 
     private ComponentContext context;
 
@@ -67,8 +69,20 @@ public class ConsumerBootstrap extends Bootstrap {
     public ConsumerBootstrap(Properties properties) {
         super(properties);
         this.router = new NettyRouter();
-        this.invocationExecutor = new DefaultInvocationExecutor();
         stateRecord = new StateRecord<>(CommonState.PREPARE);
+        executorPipeline = new CommonExecutorPipeline();
+    }
+
+    /**
+     * 注册处理器
+     * 
+     * @param executor
+     * @return
+     */
+    public ConsumerBootstrap registerExecutor(ChainExecutor executor) {
+        stateRecord.except(CommonState.PREPARE);
+        executorPipeline.register(executor);
+        return this;
     }
 
     /**
@@ -166,7 +180,9 @@ public class ConsumerBootstrap extends Bootstrap {
             LOGGER.info("ConsumerBootstrap is starting.");
             initContext(option);
             ObjectLifecycleUtils.assemble(router, context);
-            ObjectLifecycleUtils.assemble(invocationExecutor, context);
+            executorPipeline.register(new InvocationContextChainExecutor());
+            executorPipeline.register(new NetworkClientChainExecutor());
+            ObjectLifecycleUtils.assemble(executorPipeline, context);
             stateRecord.setState(CommonState.AVAILABLE);
         }
     }
@@ -178,7 +194,7 @@ public class ConsumerBootstrap extends Bootstrap {
         if (stateRecord.compareAndSetState(CommonState.AVAILABLE, CommonState.DESTORYING)) {
             LOGGER.info("Consumer is stopping.");
             ObjectLifecycleUtils.destroy(router);
-            ObjectLifecycleUtils.destroy(invocationExecutor);
+            ObjectLifecycleUtils.destroy(executorPipeline);
             context = null;
             stateRecord.setState(CommonState.UNAVAILABLE);
         }
@@ -216,10 +232,8 @@ public class ConsumerBootstrap extends Bootstrap {
         context.put(ComponentContextEnum.PROTOCOL_DEFINITION, option.protocolDefinition());
         // router
         context.put(ComponentContextEnum.ROUTER, router);
-        // request sender
-        context.put(ComponentContextEnum.INVOCATION_EXECUTOR, invocationExecutor);
-        // channelHandlerFactory
-        context.put(ComponentContextEnum.CHANNEL_HANDLER_FACTORY, option.channelHandlerFactory());
+        // executor pipeline
+        context.put(ComponentContextEnum.EXECUTOR_PIPELINE, executorPipeline);
     }
 
     @Override
