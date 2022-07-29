@@ -6,11 +6,11 @@ import conglin.clrpc.executor.pipeline.AbstractChainExecutor;
 import conglin.clrpc.invocation.message.Message;
 import conglin.clrpc.invocation.message.ResponsePayload;
 
-public class ResponseExecutor extends AbstractChainExecutor {
+public class NetworkServerExecutor extends AbstractChainExecutor {
 
     private final Consumer<Object> sender;
 
-    public ResponseExecutor(Consumer<Object> sender) {
+    public NetworkServerExecutor(Consumer<Object> sender) {
         this.sender = sender;
     }
 

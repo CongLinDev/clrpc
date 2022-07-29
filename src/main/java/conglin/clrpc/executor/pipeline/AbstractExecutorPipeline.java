@@ -32,6 +32,31 @@ abstract public class AbstractExecutorPipeline implements ExecutorPipeline {
     }
 
     @Override
+    public void unregister(String name) {
+        ExecutorNode current = head.next;
+        while (current != tail) {
+            if (current.executor().name().equals(name)) {
+                ExecutorNode pre = current.pre;
+                ExecutorNode next = current.next;
+                pre.next = next;
+                next.pre = pre;
+                doUnregister(current.executor());
+                current = pre;
+            }
+            current = current.next;
+        }
+    }
+
+    /**
+     * Unregister action
+     * 
+     * @param executor
+     */
+    protected void doUnregister(ChainExecutor executor) {
+
+    }
+
+    @Override
     public void inbound(Object object) {
         head.executor().inbound(object);
     }
@@ -68,6 +93,11 @@ abstract public class AbstractExecutorPipeline implements ExecutorPipeline {
         public int order() {
             return Integer.MIN_VALUE;
         }
+
+        @Override
+        public String name() {
+            return "HeadExecutor";
+        }
     }
 
     protected static class TailExecutor extends AbstractChainExecutor {
@@ -84,6 +114,11 @@ abstract public class AbstractExecutorPipeline implements ExecutorPipeline {
         @Override
         public int order() {
             return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public String name() {
+            return "TailExecutor";
         }
     }
 

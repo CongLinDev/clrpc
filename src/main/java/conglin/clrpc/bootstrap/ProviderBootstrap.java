@@ -70,6 +70,18 @@ public class ProviderBootstrap extends Bootstrap {
     }
 
     /**
+     * 取消注册处理器
+     * 
+     * @param name
+     * @return
+     */
+    public ProviderBootstrap unregisterExecutor(String name) {
+        stateRecord.except(CommonState.PREPARE);
+        executorPipeline.unregister(name);
+        return this;
+    }
+
+    /**
      * 创建 服务提供者 启动对象
      *
      * @param properties 配置

@@ -23,14 +23,14 @@ import conglin.clrpc.lifecycle.ComponentContextEnum;
 import conglin.clrpc.lifecycle.Destroyable;
 import conglin.clrpc.lifecycle.Initializable;
 
-public class InvocationContextChainExecutor extends CommonChainExecutor implements Initializable, Destroyable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InvocationContextChainExecutor.class);
+public class InvocationContextExecutor extends CommonChainExecutor implements Initializable, Destroyable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InvocationContextExecutor.class);
 
     private final Map<Long, InvocationContext> contexts;
     private ScheduledExecutorService scheduledExecutorService;
     protected IdentifierGenerator identifierGenerator;
 
-    public InvocationContextChainExecutor() {
+    public InvocationContextExecutor() {
         contexts = new ConcurrentHashMap<>();
     }
 
@@ -73,7 +73,7 @@ public class InvocationContextChainExecutor extends CommonChainExecutor implemen
                         continue;
                     }
 
-                    InvocationContextChainExecutor.this.nextOutbound(invocationContext); // retry
+                    InvocationContextExecutor.this.nextOutbound(invocationContext); // retry
                     LOGGER.warn("Service response(identifier={}) is too slow. Retry...",
                             invocationContext.getIdentifier());
                 }

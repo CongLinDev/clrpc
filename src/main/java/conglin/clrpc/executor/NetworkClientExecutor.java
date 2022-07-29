@@ -13,8 +13,8 @@ import conglin.clrpc.service.router.Router;
 import conglin.clrpc.service.router.RouterCondition;
 import conglin.clrpc.service.router.RouterResult;
 
-public class NetworkClientChainExecutor extends CommonChainExecutor implements Initializable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkClientChainExecutor.class);
+public class NetworkClientExecutor extends CommonChainExecutor implements Initializable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkClientExecutor.class);
     protected Router router;
 
     @Override

@@ -26,4 +26,13 @@ public interface ChainExecutor extends Executor {
     default int order() {
         return 0;
     }
+
+    /**
+     * name
+     * 
+     * @return
+     */
+    default String name() {
+        return getClass().getName();
+    }
 }

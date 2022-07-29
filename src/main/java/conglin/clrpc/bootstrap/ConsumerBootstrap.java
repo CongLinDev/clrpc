@@ -10,8 +10,8 @@ import conglin.clrpc.bootstrap.option.BootOption;
 import conglin.clrpc.common.CommonState;
 import conglin.clrpc.common.Role;
 import conglin.clrpc.common.StateRecord;
-import conglin.clrpc.executor.InvocationContextChainExecutor;
-import conglin.clrpc.executor.NetworkClientChainExecutor;
+import conglin.clrpc.executor.InvocationContextExecutor;
+import conglin.clrpc.executor.NetworkClientExecutor;
 import conglin.clrpc.executor.pipeline.ChainExecutor;
 import conglin.clrpc.executor.pipeline.CommonExecutorPipeline;
 import conglin.clrpc.invocation.proxy.AsyncObjectProxy;
@@ -82,6 +82,18 @@ public class ConsumerBootstrap extends Bootstrap {
     public ConsumerBootstrap registerExecutor(ChainExecutor executor) {
         stateRecord.except(CommonState.PREPARE);
         executorPipeline.register(executor);
+        return this;
+    }
+
+    /**
+     * 取消注册处理器
+     * 
+     * @param name
+     * @return
+     */
+    public ConsumerBootstrap unregisterExecutor(String name) {
+        stateRecord.except(CommonState.PREPARE);
+        executorPipeline.unregister(name);
         return this;
     }
 
@@ -180,8 +192,8 @@ public class ConsumerBootstrap extends Bootstrap {
             LOGGER.info("ConsumerBootstrap is starting.");
             initContext(option);
             ObjectLifecycleUtils.assemble(router, context);
-            executorPipeline.register(new InvocationContextChainExecutor());
-            executorPipeline.register(new NetworkClientChainExecutor());
+            executorPipeline.register(new InvocationContextExecutor());
+            executorPipeline.register(new NetworkClientExecutor());
             ObjectLifecycleUtils.assemble(executorPipeline, context);
             stateRecord.setState(CommonState.AVAILABLE);
         }

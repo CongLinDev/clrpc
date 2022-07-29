@@ -28,5 +28,10 @@ public class CommonExecutorPipeline extends AbstractExecutorPipeline implements 
     public void destroy() {
         forEach(ObjectLifecycleUtils::destroy);
     }
+
+    @Override
+    protected void doUnregister(ChainExecutor executor) {
+        ObjectLifecycleUtils.destroy(executor);
+    }
     
 }

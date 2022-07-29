@@ -2,7 +2,7 @@ package conglin.clrpc.executor;
 
 import conglin.clrpc.executor.pipeline.AbstractChainExecutor;
 
-public class ReverseExecutor extends AbstractChainExecutor {
+public class BoundReverseExecutor extends AbstractChainExecutor {
     @Override
     public void inbound(Object object) {
         super.nextOutbound(object); // 反转

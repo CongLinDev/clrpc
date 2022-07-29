@@ -1,7 +1,7 @@
 package conglin.clrpc.netty;
 
-import conglin.clrpc.executor.ResponseExecutor;
-import conglin.clrpc.executor.ReverseExecutor;
+import conglin.clrpc.executor.NetworkServerExecutor;
+import conglin.clrpc.executor.BoundReverseExecutor;
 import conglin.clrpc.executor.pipeline.ExecutorPipeline;
 import conglin.clrpc.invocation.protocol.ProtocolDefinition;
 import conglin.clrpc.invocation.serialization.SerializationHandler;
@@ -26,8 +26,8 @@ public class ProviderInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        executorPipeline.register(new ReverseExecutor());
-        executorPipeline.register(new ResponseExecutor(pipeline::writeAndFlush));
+        executorPipeline.register(new BoundReverseExecutor());
+        executorPipeline.register(new NetworkServerExecutor(pipeline::writeAndFlush));
         pipeline.addLast(new UniProtocolCodec(serializationHandler, protocolDefinition));
         pipeline.addLast(new ReceiveMessageChannelHandler(executorPipeline));    
     }
