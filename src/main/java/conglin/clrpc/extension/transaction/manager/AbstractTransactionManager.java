@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.extension.transaction.TransactionException;
 import conglin.clrpc.extension.transaction.TransactionHelper;
 import conglin.clrpc.extension.transaction.context.TransactionInvocationContext;
@@ -52,22 +51,22 @@ abstract public class AbstractTransactionManager
     /**
      * 获取helper
      * 
-     * @param urlScheme
      * @return helper
      */
-    abstract protected TransactionHelper getTransactionHelper(UrlScheme urlScheme);
+    abstract protected TransactionHelper getTransactionHelper();
 
     @Override
     public void init() {
         this.identifierGenerator = getContext().getWith(ComponentContextEnum.IDENTIFIER_GENERATOR);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        this.instanceId = properties.getProperty("consumer.instance.id");
+        this.instanceId = properties.getProperty("instance.id");
         if (instanceId == null) {
-            throw new IllegalArgumentException("properties 'consumer.instance.id' must not be null");
+            throw new IllegalArgumentException("properties 'instance.id' must not be null");
         }
-        helper = getTransactionHelper(new UrlScheme(properties.getProperty("extension.atomicity.url")));
+        
         ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
+        helper = getTransactionHelper();
     }
 
     @Override

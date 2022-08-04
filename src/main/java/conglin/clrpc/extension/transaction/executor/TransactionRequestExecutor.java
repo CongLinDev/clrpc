@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.executor.pipeline.CommonChainExecutor;
 import conglin.clrpc.extension.transaction.CommonTransactionResult;
 import conglin.clrpc.extension.transaction.TransactionException;
@@ -16,7 +15,7 @@ import conglin.clrpc.extension.transaction.payload.TransactionRequestPayload;
 import conglin.clrpc.invocation.ServiceExecutionException;
 import conglin.clrpc.invocation.UnsupportedServiceException;
 import conglin.clrpc.invocation.message.Message;
-import conglin.clrpc.invocation.message.ResponsePayload;
+import conglin.clrpc.invocation.message.AtomicResponsePayload;
 import conglin.clrpc.invocation.protocol.ProtocolDefinition;
 import conglin.clrpc.lifecycle.ComponentContextEnum;
 import conglin.clrpc.lifecycle.Destroyable;
@@ -33,9 +32,8 @@ abstract public class TransactionRequestExecutor extends CommonChainExecutor imp
     @Override
     public void init() {
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        this.instanceId = properties.getProperty("provider.instance.id");
-        String urlString = properties.getProperty("extension.atomicity.url");
-        helper = newTransactionHelper(new UrlScheme(urlString));
+        this.instanceId = properties.getProperty("instance.id");
+        helper = newTransactionHelper();
         ProtocolDefinition protocolDefinition = getContext().getWith(ComponentContextEnum.PROTOCOL_DEFINITION);
         protocolDefinition.setPayloadType(TransactionRequestPayload.PAYLOAD_TYPE, TransactionRequestPayload.class);
         serviceObjectHolder = getContext().getWith(ComponentContextEnum.SERVICE_OBJECT_HOLDER);
@@ -49,10 +47,9 @@ abstract public class TransactionRequestExecutor extends CommonChainExecutor imp
     /**
      * 创建一个 {@link TransactionHelper}
      * 
-     * @param urlScheme
      * @return
      */
-    abstract protected TransactionHelper newTransactionHelper(UrlScheme urlScheme);
+    abstract protected TransactionHelper newTransactionHelper();
 
     @Override
     public int order() {
@@ -62,13 +59,13 @@ abstract public class TransactionRequestExecutor extends CommonChainExecutor imp
     @Override
     public void inbound(Object object) {
         if (object instanceof Message message && message.payload() instanceof TransactionRequestPayload request) {
-            super.nextInbound(new Message(message.messageId(), new ResponsePayload(execute(request))));
+            super.nextInbound(new Message(message.messageId(), new AtomicResponsePayload(execute(request))));
         } else {
             super.nextInbound(object);
         }
     }
 
-    protected ResponsePayload execute(TransactionRequestPayload request) {
+    protected AtomicResponsePayload execute(TransactionRequestPayload request) {
         // 标记事务的本条请求被当前服务提供者所占有
         long transactionId = request.transactionId();
         int serialId = request.serialId();
@@ -92,7 +89,7 @@ abstract public class TransactionRequestExecutor extends CommonChainExecutor imp
             LOGGER.error("Transaction request(transactionId={} serialId={}) execute failed: {}", transactionId,
                     serialId, e.getMessage());
             if (signAbort(transactionId, serialId, instanceId)) {
-                return new ResponsePayload(true, e);
+                return new AtomicResponsePayload(true, e);
             }
             return null; // 直接丢弃，等待重试
         }
@@ -116,13 +113,13 @@ abstract public class TransactionRequestExecutor extends CommonChainExecutor imp
                         };
                     }));
             // 发送预提交结果
-            return new ResponsePayload(transactionResult.result());
+            return new AtomicResponsePayload(transactionResult.result());
         } catch (TransactionException e) {
             // 监视失败
             LOGGER.error("Transaction request(transactionId={} serialId={}) watch failed: {}", transactionId, serialId,
                     e.getMessage());
             transactionResult.callback().fail(null);
-            return new ResponsePayload(true, e); // 返回失败信息
+            return new AtomicResponsePayload(true, e); // 返回失败信息
         }
     }
 

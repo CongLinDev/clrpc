@@ -2,7 +2,7 @@ package conglin.clrpc.invocation.proxy;
 
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.invocation.InvocationContext;
-import conglin.clrpc.invocation.message.RequestPayload;
+import conglin.clrpc.invocation.message.AtomicRequestPayload;
 import conglin.clrpc.invocation.strategy.FailStrategy;
 import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.condition.InstanceCondition;
@@ -63,7 +63,7 @@ abstract public class AbstractObjectProxy extends ProxyTemplete implements Invoc
      */
     public InvocationContext call(String serviceName, String methodName, Object... args) {
         InvocationContext invocationContext = new InvocationContext();
-        invocationContext.setRequest(new RequestPayload(serviceName, methodName, args));
+        invocationContext.setRequest(new AtomicRequestPayload(serviceName, methodName, args));
         invocationContext.setFailStrategy(failStrategy());
         invocationContext.setChoosedInstancePostProcessor(choosedInstancePostProcessor());
         invocationContext.setChoosedInstanceCondition(instanceCondition());

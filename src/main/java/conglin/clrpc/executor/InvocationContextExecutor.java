@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.executor.pipeline.CommonChainExecutor;
 import conglin.clrpc.invocation.InvocationContext;
-import conglin.clrpc.invocation.future.InvocationFuture;
 import conglin.clrpc.invocation.identifier.IdentifierGenerator;
 import conglin.clrpc.invocation.message.Message;
 import conglin.clrpc.invocation.message.Payload;
@@ -43,8 +42,8 @@ public class InvocationContextExecutor extends CommonChainExecutor implements In
     public void init() {
         this.identifierGenerator = getContext().getWith(ComponentContextEnum.IDENTIFIER_GENERATOR);
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        long checkPeriod = Integer.parseInt(properties.getProperty("consumer.retry.check-period", "3000"));
-        long initialThreshold = Integer.parseInt(properties.getProperty("consumer.retry.initial-threshold", "3000"));
+        long checkPeriod = Integer.parseInt(properties.getProperty("invocation.retry.check-period", "3000"));
+        long initialThreshold = Integer.parseInt(properties.getProperty("invocation.retry.initial-threshold", "3000"));
 
         if (checkPeriod > 0) {
             this.scheduledExecutorService = new ScheduledThreadPoolExecutor(1, runnable -> {
@@ -68,7 +67,8 @@ public class InvocationContextExecutor extends CommonChainExecutor implements In
                     }
 
                     FailStrategy failStrategy = invocationContext.getFailStrategy();
-                    if (!failStrategy.timeout(invocationContext) && !invocationContext.getFuture().isPending()) {
+                    failStrategy.timeout(invocationContext);
+                    if (!invocationContext.getFuture().isPending()) {
                         iterator.remove();
                         continue;
                     }
@@ -89,9 +89,13 @@ public class InvocationContextExecutor extends CommonChainExecutor implements In
         } else {
             nextInbound(object);
         }
-        
     }
 
+    /**
+     * 处理 {@link ResponsePayload}
+     * 
+     * @param message
+     */
     protected void execute(Message message) {
         Payload payload = message.payload();
         if (!(payload instanceof ResponsePayload)) {
@@ -105,11 +109,10 @@ public class InvocationContextExecutor extends CommonChainExecutor implements In
             return;
         }
 
-        InvocationFuture future = invocationContext.getFuture();
-        if (future.isPending()) {
+        if (invocationContext.getFuture().isPending()) {
             ResponsePayload response = (ResponsePayload) payload;
             if (response.isError()) {
-                invocationContext.getFailStrategy().error(invocationContext, payload);
+                invocationContext.getFailStrategy().error(invocationContext, response);
             } else {
                 invocationContext.setResponse(response);
             }

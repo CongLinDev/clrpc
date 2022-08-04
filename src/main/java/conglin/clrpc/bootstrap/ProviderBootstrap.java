@@ -19,7 +19,7 @@ import conglin.clrpc.netty.NettyPublisher;
 import conglin.clrpc.service.ServiceObject;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.publisher.Publisher;
-import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ServiceRegistryFactory;
 
 /**
  * RPC provider端启动类
@@ -34,7 +34,7 @@ import conglin.clrpc.service.registry.ServiceRegistry;
  * 
  * ProviderBootstrap bootstrap = new ProviderBootstrap();
  *
- * bootstrap.registry(ServiceRegistry.class)
+ * bootstrap.registry(new ServiceRegistryFactory(){...})
  *          .publish(serviceObject).hookStop().start(new BootOption());
  *
  * </pre>
@@ -116,12 +116,12 @@ public class ProviderBootstrap extends Bootstrap {
     /**
      * 设置注册中心
      * 
-     * @param registryClass
+     * @param registryFactory
      * @return
      */
-    public ProviderBootstrap registry(Class<? extends ServiceRegistry> registryClass) {
+    public ProviderBootstrap registry(ServiceRegistryFactory registryFactory) {
         stateRecord.except(CommonState.PREPARE);
-        this.publisher.bindRegistry(registryClass);
+        this.publisher.bindRegistryFactory(registryFactory);
         return this;
     }
 

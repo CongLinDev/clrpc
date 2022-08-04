@@ -5,8 +5,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import conglin.clrpc.invocation.message.Payload;
-import conglin.clrpc.invocation.message.RequestPayload;
-import conglin.clrpc.invocation.message.ResponsePayload;
+import conglin.clrpc.invocation.message.AtomicRequestPayload;
+import conglin.clrpc.invocation.message.AtomicResponsePayload;
 import conglin.clrpc.invocation.message.SystemPayload;
 
 public class DefaultProtocolDefinition implements ProtocolDefinition {
@@ -29,8 +29,8 @@ public class DefaultProtocolDefinition implements ProtocolDefinition {
      */
     private void initDefaultMessageType() {
         setPayloadType(SystemPayload.PAYLOAD_TYPE, SystemPayload.class);
-        setPayloadType(RequestPayload.PAYLOAD_TYPE, RequestPayload.class);
-        setPayloadType(ResponsePayload.PAYLOAD_TYPE, ResponsePayload.class);
+        setPayloadType(AtomicRequestPayload.PAYLOAD_TYPE, AtomicRequestPayload.class);
+        setPayloadType(AtomicResponsePayload.PAYLOAD_TYPE, AtomicResponsePayload.class);
     }
 
     @Override

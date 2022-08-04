@@ -2,8 +2,8 @@ package conglin.clrpc.invocation.strategy;
 
 import conglin.clrpc.invocation.InvocationContext;
 import conglin.clrpc.invocation.ServiceTimeoutException;
-import conglin.clrpc.invocation.message.Payload;
 import conglin.clrpc.invocation.message.ResponsePayload;
+import conglin.clrpc.invocation.message.AtomicResponsePayload;
 import conglin.clrpc.service.router.NoAvailableServiceInstancesException;
 
 /**
@@ -12,26 +12,22 @@ import conglin.clrpc.service.router.NoAvailableServiceInstancesException;
 final public class FailFast implements FailStrategy {
 
     @Override
-    public boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
-        context.setResponse(new ResponsePayload(true, exception));
-        return false;
+    public void noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
+        context.setResponse(new AtomicResponsePayload(true, exception));
     }
 
     @Override
-    public boolean timeout(InvocationContext context) {
-        context.setResponse(new ResponsePayload(true, new ServiceTimeoutException()));
-        return false;
+    public void timeout(InvocationContext context) {
+        context.setResponse(new AtomicResponsePayload(true, new ServiceTimeoutException()));
     }
 
     @Override
-    public boolean limit(InvocationContext context) {
-        context.setResponse(new ResponsePayload(true, new ServiceTimeoutException()));
-        return false;
+    public void limit(InvocationContext context) {
+        context.setResponse(new AtomicResponsePayload(true, new ServiceTimeoutException()));
     }
 
     @Override
-    public boolean error(InvocationContext context, Payload sourcePayload) {
-        context.setResponse((ResponsePayload) sourcePayload);
-        return false;
+    public void error(InvocationContext context, ResponsePayload sourcePayload) {
+        context.setResponse(sourcePayload);
     }
 }

@@ -6,8 +6,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.lifecycle.ComponentContext;
 import conglin.clrpc.lifecycle.ComponentContextAware;
@@ -18,6 +16,7 @@ import conglin.clrpc.lifecycle.ObjectLifecycleUtils;
 import conglin.clrpc.service.ServiceObjectHolder;
 import conglin.clrpc.service.publisher.Publisher;
 import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ServiceRegistryFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -28,7 +27,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyPublisher.class);
 
     private ServiceRegistry serviceRegistry;
-    private Class<? extends ServiceRegistry> registryClass;
+    private ServiceRegistryFactory registryFactory;
     private ComponentContext context;
     private ServerBootstrap nettyBootstrap;
 
@@ -43,23 +42,22 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
     }
 
     @Override
-    public void bindRegistry(Class<? extends ServiceRegistry> registryClass) {
-        this.registryClass = registryClass;
+    public void bindRegistryFactory(ServiceRegistryFactory registryFactory) {
+        this.registryFactory = registryFactory;
     }
 
     @Override
     public void init() {
-        assert registryClass != null;
+        assert registryFactory != null;
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        UrlScheme registryUrlScheme = new UrlScheme(properties.getProperty("provider.registry.url"));
-        this.serviceRegistry = ClassUtils.loadObjectByType(registryClass, ServiceRegistry.class, registryUrlScheme);
+        this.serviceRegistry = registryFactory.get(properties);
         assert this.serviceRegistry != null;
         ObjectLifecycleUtils.assemble(this.serviceRegistry, getContext());
 
         nettyBootstrap = new ServerBootstrap()
                 .group(new NioEventLoopGroup(1),
                         new NioEventLoopGroup(
-                                Integer.parseInt(properties.getProperty("provider.io-thread.number", "4"))))
+                                Integer.parseInt(properties.getProperty("netty.io-thread.number", "4"))))
                 .channel(NioServerSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         ProviderInitializer initializer = new ProviderInitializer(
@@ -69,7 +67,7 @@ public class NettyPublisher implements Publisher, Initializable, ComponentContex
         nettyBootstrap.childHandler(initializer).option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-        String instanceAddress = properties.getProperty("provider.instance.address");
+        String instanceAddress = properties.getProperty("instance.address");
         try {
             ChannelFuture channelFuture = nettyBootstrap.bind(IPAddressUtils.splitHostAndPortResolved(instanceAddress))
                     .sync();

@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import conglin.clrpc.common.object.Pair;
-import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.common.util.ClassUtils;
 import conglin.clrpc.common.util.IPAddressUtils;
 import conglin.clrpc.lifecycle.ComponentContext;
@@ -22,6 +21,7 @@ import conglin.clrpc.service.loadbalance.DefaultMultiLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
 import conglin.clrpc.service.loadbalance.MultiLoadBalancer;
 import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ServiceRegistryFactory;
 import conglin.clrpc.service.router.NoAvailableServiceInstancesException;
 import conglin.clrpc.service.router.Router;
 import conglin.clrpc.service.router.RouterCondition;
@@ -35,7 +35,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public class NettyRouter implements Router, ComponentContextAware, Initializable, Destroyable {
     private final static Logger LOGGER = LoggerFactory.getLogger(NettyRouter.class);
 
-    private Class<? extends ServiceRegistry> registryClass;
+    private ServiceRegistryFactory registryFactory;
     private ServiceRegistry serviceRegistry;
     private final MultiLoadBalancer<String, ServiceInstance, Channel> multiLoadBalancer;
     private Bootstrap nettyBootstrap;
@@ -57,16 +57,15 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
     }
 
     @Override
-    public void bindRegistry(Class<? extends ServiceRegistry> registryClass) {
-        this.registryClass = registryClass;
+    public void bindRegistryFactory(ServiceRegistryFactory registryFactory) {
+        this.registryFactory = registryFactory;
     }
 
     @Override
     public void init() {
-        assert registryClass != null;
+        assert registryFactory != null;
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        UrlScheme registryUrlScheme = new UrlScheme(properties.getProperty("consumer.registry.url"));
-        this.serviceRegistry = ClassUtils.loadObjectByType(registryClass, ServiceRegistry.class, registryUrlScheme);
+        this.serviceRegistry = registryFactory.get(properties);
         assert this.serviceRegistry != null;
         ObjectLifecycleUtils.assemble(this.serviceRegistry, getContext());
 
@@ -74,7 +73,7 @@ public class NettyRouter implements Router, ComponentContextAware, Initializable
 
         nettyBootstrap = new Bootstrap()
                 .group(new NioEventLoopGroup(
-                        Integer.parseInt(properties.getProperty("consumer.io-thread.number", "4"))))
+                        Integer.parseInt(properties.getProperty("netty.io-thread.number", "4"))))
                 .channel(NioSocketChannel.class);
         // .handler(new LoggingHandler(LogLevel.INFO))
         ConsumerInitializer initializer = new ConsumerInitializer(

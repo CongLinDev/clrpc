@@ -1,7 +1,7 @@
 package conglin.clrpc.invocation.strategy;
 
 import conglin.clrpc.invocation.InvocationContext;
-import conglin.clrpc.invocation.message.Payload;
+import conglin.clrpc.invocation.message.ResponsePayload;
 import conglin.clrpc.service.router.NoAvailableServiceInstancesException;
 
 /**
@@ -13,32 +13,28 @@ public interface FailStrategy {
      * 
      * @param context
      * @param exception
-     * @return 是否重试
      */
-    boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception);
+    void noTarget(InvocationContext context, NoAvailableServiceInstancesException exception);
 
     /**
      * 发生超时
      * 
      * @param context
-     * @return 是否重试
      */
-    boolean timeout(InvocationContext context);
+    void timeout(InvocationContext context);
 
     /**
      * 发生限流
      * 
      * @param context
-     * @return 是否重试
      */
-    boolean limit(InvocationContext context);
+    void limit(InvocationContext context);
 
     /**
      * 执行错误
      * 
      * @param context
      * @param sourcePayload
-     * @return 是否重试
      */
-    boolean error(InvocationContext context, Payload sourcePayload);
+    void error(InvocationContext context, ResponsePayload sourcePayload);
 }

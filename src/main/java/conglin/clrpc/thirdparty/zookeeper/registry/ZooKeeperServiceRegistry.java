@@ -6,10 +6,8 @@ import java.util.Properties;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
-import org.apache.zookeeper.CreateMode;
 import org.slf4j.LoggerFactory;
 
-import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.lifecycle.ComponentContext;
 import conglin.clrpc.lifecycle.ComponentContextAware;
 import conglin.clrpc.lifecycle.ComponentContextEnum;
@@ -21,6 +19,7 @@ import conglin.clrpc.service.instance.ServiceInstance;
 import conglin.clrpc.service.instance.codec.ServiceInstanceCodec;
 import conglin.clrpc.service.registry.ServiceRegistry;
 import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
+import conglin.clrpc.thirdparty.zookeeper.ZooKeeperConnectionInfo;
 import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
 
 public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
@@ -35,8 +34,18 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
 
     private ServiceInstanceCodec serviceInstanceCodec;
 
-    public ZooKeeperServiceRegistry(UrlScheme url) {
-        super(url, "service");
+    /**
+     * get instance
+     * 
+     * @param properties
+     * @return
+     */
+    public static ZooKeeperServiceRegistry getInstance(Properties properties) {
+        return new ZooKeeperServiceRegistry(getConnectionInfo("registry.", properties));
+    }
+
+    public ZooKeeperServiceRegistry(ZooKeeperConnectionInfo connectionInfo) {
+        super(connectionInfo, "service");
     }
 
     @Override
@@ -52,11 +61,11 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
     @Override
     public void init() {
         Properties properties = getContext().getWith(ComponentContextEnum.PROPERTIES);
-        this.instanceId = properties.getProperty("provider.instance.id");
+        this.instanceId = properties.getProperty("instance.id");
         if (instanceId == null) {
-            throw new IllegalArgumentException("properties 'provider.instance.id' must not be null");
+            throw new IllegalArgumentException("properties 'instance.id' must not be null");
         }
-        this.instanceAddress = properties.getProperty("provider.instance.address");
+        this.instanceAddress = properties.getProperty("instance.address");
         this.serviceInstanceCodec = getContext().getWith(ComponentContextEnum.SERVICE_INSTANCE_CODEC);
     }
 
@@ -69,8 +78,7 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
             }
         };
         String providerNode = buildPath(serviceObject.name(), "provider", instanceId);
-        if (ZooKeeperUtils.createNode(keeperInstance.instance(), providerNode, instance.toString(),
-                CreateMode.EPHEMERAL) != null) {
+        if (ZooKeeperUtils.createEphemeralNode(keeperInstance.instance(), providerNode, instance.toString()) != null) {
             LOGGER.debug("register provider(id={}, name={}) successfully.", instanceId, serviceObject.name());
         } else {
             LOGGER.error("register provider(id={}, name={}) failed.", instanceId, serviceObject.name());
@@ -101,8 +109,7 @@ public class ZooKeeperServiceRegistry extends AbstractZooKeeperService
     @Override
     public void registerConsumer(ServiceInterface<?> serviceInterface) {
         String consumerNode = buildPath(serviceInterface.name(), "consumer", instanceId);
-        if (ZooKeeperUtils.createNode(keeperInstance.instance(), consumerNode, "",
-                CreateMode.EPHEMERAL) != null) {
+        if (ZooKeeperUtils.createEphemeralNode(keeperInstance.instance(), consumerNode, "") != null) {
             LOGGER.debug("register consumer(id={}, name={}) successfully.", instanceId, serviceInterface.name());
         } else {
             LOGGER.error("register consumer(id={}, name={}) failed.", instanceId, serviceInterface.name());

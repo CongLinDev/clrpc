@@ -2,9 +2,9 @@ package conglin.clrpc.extension.transaction.payload;
 
 import java.io.Serial;
 
-import conglin.clrpc.invocation.message.RequestPayload;
+import conglin.clrpc.invocation.message.AtomicRequestPayload;
 
-public class TransactionRequestPayload extends RequestPayload {
+public class TransactionRequestPayload extends AtomicRequestPayload {
 
     @Serial
     private static final long serialVersionUID = -7860287729080523289L;

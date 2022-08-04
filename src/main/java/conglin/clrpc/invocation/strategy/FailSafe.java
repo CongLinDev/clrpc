@@ -1,35 +1,30 @@
 package conglin.clrpc.invocation.strategy;
 
 import conglin.clrpc.invocation.InvocationContext;
-import conglin.clrpc.invocation.message.Payload;
 import conglin.clrpc.invocation.message.ResponsePayload;
+import conglin.clrpc.invocation.message.AtomicResponsePayload;
 import conglin.clrpc.service.router.NoAvailableServiceInstancesException;
 
 final public class FailSafe implements FailStrategy {
-    private static final ResponsePayload RESPONSE = new ResponsePayload(false, null);
+    private static final AtomicResponsePayload RESPONSE = new AtomicResponsePayload(false, null);
 
     @Override
-    public boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
+    public void noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
         context.setResponse(RESPONSE);
-        return false;
     }
 
     @Override
-    public boolean timeout(InvocationContext context) {
+    public void timeout(InvocationContext context) {
         context.setResponse(RESPONSE);
-        return false;
     }
 
     @Override
-    public boolean limit(InvocationContext context) {
+    public void limit(InvocationContext context) {
         context.setResponse(RESPONSE);
-        return false;
     }
 
     @Override
-    public boolean error(InvocationContext context, Payload sourcePayload) {
+    public void error(InvocationContext context, ResponsePayload sourcePayload) {
         context.setResponse(RESPONSE);
-        return false;
     }
-    
 }

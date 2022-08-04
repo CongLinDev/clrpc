@@ -1,7 +1,7 @@
 package conglin.clrpc.service.router;
 
 import conglin.clrpc.service.ServiceInterface;
-import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ServiceRegistryFactory;
 
 public interface Router {
     /**
@@ -26,5 +26,5 @@ public interface Router {
      * 
      * @param registryClass
      */
-    void bindRegistry(Class<? extends ServiceRegistry> registryClass);
+    void bindRegistryFactory(ServiceRegistryFactory registryFactory);
 }

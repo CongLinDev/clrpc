@@ -63,7 +63,7 @@ public class UniProtocolCodec extends CombinedChannelDuplexHandler<ProtocolDecod
 
         @Override
         protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-            if (in.readableBytes() <= 16)
+            if (in.readableBytes() <= 14)
                 return;
             in.markReaderIndex();
 

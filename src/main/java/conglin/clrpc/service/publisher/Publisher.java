@@ -1,6 +1,6 @@
 package conglin.clrpc.service.publisher;
 
-import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ServiceRegistryFactory;
 
 public interface Publisher {
     /**
@@ -8,5 +8,5 @@ public interface Publisher {
      * 
      * @param registryClass
      */
-    void bindRegistry(Class<? extends ServiceRegistry> registryClass);
+    void bindRegistryFactory(ServiceRegistryFactory registryFactory);
 }

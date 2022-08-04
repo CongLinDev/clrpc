@@ -1,10 +1,10 @@
-package conglin.clrpc.thirdparty.zookeeper.util;
+package conglin.clrpc.thirdparty.zookeeper;
 
 import conglin.clrpc.common.CommonState;
 import conglin.clrpc.common.StateRecord;
-import conglin.clrpc.common.object.UrlScheme;
 import conglin.clrpc.lifecycle.Available;
 import conglin.clrpc.lifecycle.Destroyable;
+import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
 
 import org.apache.zookeeper.ZooKeeper;
 
@@ -30,7 +30,7 @@ public class ZooKeeperInstance implements Destroyable, Available {
      * @param sessionTimeout
      * @return
      */
-    public static ZooKeeperInstance connect(final String address, final int sessionTimeout) {
+    private static ZooKeeperInstance connect(final String address, final int sessionTimeout) {
         String cacheKey = String.format(ZOOKEEPER_CONNECTION_POOL_KEY_FORMAT, address, sessionTimeout);
         ZooKeeperInstance instance = ZOOKEEPER_CONNECTION_POOL.get(cacheKey);
         if (instance == null) {
@@ -45,12 +45,11 @@ public class ZooKeeperInstance implements Destroyable, Available {
     /**
      * 连接
      *
-     * @param scheme
+     * @param connectionInfo
      * @return
      */
-    public static ZooKeeperInstance connect(UrlScheme scheme) {
-        return connect(scheme.getAddress(), Integer.parseInt(scheme.getParameterOrDefault("session-timeout",
-                String.valueOf(ZooKeeperUtils.DEFAULT_SESSION_TIMEOUT))));
+    public static ZooKeeperInstance connect(ZooKeeperConnectionInfo connectionInfo) {
+        return connect(connectionInfo.getConnectString(), connectionInfo.getSessionTimeout());
     }
 
     /**

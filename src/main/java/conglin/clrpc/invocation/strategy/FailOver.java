@@ -1,28 +1,29 @@
 package conglin.clrpc.invocation.strategy;
 
 import conglin.clrpc.invocation.InvocationContext;
-import conglin.clrpc.invocation.message.Payload;
+import conglin.clrpc.invocation.message.ResponsePayload;
 import conglin.clrpc.service.router.NoAvailableServiceInstancesException;
 
 final public class FailOver implements FailStrategy {
 
     @Override
-    public boolean noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
-        return true;
+    public void noTarget(InvocationContext context, NoAvailableServiceInstancesException exception) {
+
     }
 
     @Override
-    public boolean timeout(InvocationContext context) {
-        return true;
+    public void timeout(InvocationContext context) {
+
     }
 
     @Override
-    public boolean limit(InvocationContext context) {
-        return true;
+    public void limit(InvocationContext context) {
+
     }
 
     @Override
-    public boolean error(InvocationContext context, Payload sourcePayload) {
-        return true;
+    public void error(InvocationContext context, ResponsePayload sourcePayload) {
+
     }
+
 }

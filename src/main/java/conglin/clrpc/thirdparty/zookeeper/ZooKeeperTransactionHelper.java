@@ -1,16 +1,18 @@
-package conglin.clrpc.thirdparty.zookeeper.util;
+package conglin.clrpc.thirdparty.zookeeper;
 
-import conglin.clrpc.common.Callback;
-import conglin.clrpc.common.object.UrlScheme;
-import conglin.clrpc.extension.transaction.TransactionException;
-import conglin.clrpc.extension.transaction.TransactionHelper;
-import conglin.clrpc.extension.transaction.TransactionState;
-import conglin.clrpc.thirdparty.zookeeper.AbstractZooKeeperService;
+import java.util.Properties;
+
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event;
 import org.apache.zookeeper.Watcher.WatcherType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import conglin.clrpc.common.Callback;
+import conglin.clrpc.extension.transaction.TransactionException;
+import conglin.clrpc.extension.transaction.TransactionHelper;
+import conglin.clrpc.extension.transaction.TransactionState;
+import conglin.clrpc.thirdparty.zookeeper.util.ZooKeeperUtils;
 
 public class ZooKeeperTransactionHelper extends AbstractZooKeeperService implements TransactionHelper {
 
@@ -19,20 +21,33 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     private static final String STATE_SEPARATOR = "#";
 
     private static String buildValue(String... values) {
-        if (values == null || values.length == 0) return "";
-        if (values.length == 1) return values[0];
+        if (values == null || values.length == 0)
+            return "";
+        if (values.length == 1)
+            return values[0];
         return String.join(STATE_SEPARATOR, values);
     }
 
-    public ZooKeeperTransactionHelper(UrlScheme url) {
-        super(url, "transaction");
+    /**
+     * get instance
+     * 
+     * @param properties
+     * @return
+     */
+    public static ZooKeeperTransactionHelper getInstance(Properties properties) {
+        return new ZooKeeperTransactionHelper(getConnectionInfo("extension.transaction.", properties));
+    }
+
+    public ZooKeeperTransactionHelper(ZooKeeperConnectionInfo connectionInfo) {
+        super(connectionInfo, "transaction");
     }
 
     @Override
     public void begin(String path, String target) throws TransactionException {
         String nodePath = buildPath(path);
         // 创建事务根节点，并将节点值设为 TransactionState.PREPARE
-        if (ZooKeeperUtils.createNode(keeperInstance.instance(), nodePath, buildValue(TransactionState.PREPARE.name(), target)) == null)
+        if (ZooKeeperUtils.createNode(keeperInstance.instance(), nodePath,
+                buildValue(TransactionState.PREPARE.name(), target)) == null)
             throw new TransactionException("Transaction begin failed. (path = " + nodePath + ")");
     }
 
@@ -45,14 +60,16 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
             // 存在节点 查看节点状态
             if (existState.startsWith(buildValue(TransactionState.PREPARE.name()))) {
                 // 覆盖值
-                ZooKeeperUtils.compareAndSetNodeData(keeperInstance.instance(), nodePath, existState, buildValue(TransactionState.PREPARE.name(), target));
+                ZooKeeperUtils.compareAndSetNodeData(keeperInstance.instance(), nodePath, existState,
+                        buildValue(TransactionState.PREPARE.name(), target));
             } else {
                 throw new TransactionException("prepare fail " + existState);
             }
         } else {
             // 不存在节点
             // 创建临时子节点，并将节点值设为 TransactionState.PREPARE.name(), target
-            ZooKeeperUtils.createNode(keeperInstance.instance(), nodePath, buildValue(TransactionState.PREPARE.name(), target));
+            ZooKeeperUtils.createNode(keeperInstance.instance(), nodePath,
+                    buildValue(TransactionState.PREPARE.name(), target));
         }
     }
 
@@ -92,7 +109,7 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
         String abortStatePrefix = buildValue(TransactionState.ABORT.name());
         Watcher watcher = event -> {
             String newState = ZooKeeperUtils.watchNode(keeperInstance.instance(), nodePath, null);
-            if (Event.EventType.NodeDataChanged == event.getType()) {       // 节点被修改，说明状态改变
+            if (Event.EventType.NodeDataChanged == event.getType()) { // 节点被修改，说明状态改变
                 if (newState.startsWith(commitStatePrefix)) {
                     LOGGER.debug("Transaction state is COMMIT and execute success(). path={} value={}", path, newState);
                     callback.success(null);
@@ -100,14 +117,17 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
                     LOGGER.debug("Transaction state is ABORT and execute fail(). path={} value={}", path, newState);
                     callback.fail(null);
                 } else if (newState.startsWith(prepareStatePrefix)) {
-                    LOGGER.error("Transaction state is PREPARE. The coordinator may be choose another one. And execute fail(). path={} value={}", path, newState);
+                    LOGGER.error(
+                            "Transaction state is PREPARE. The coordinator may be choose another one. And execute fail(). path={} value={}",
+                            path, newState);
                     callback.fail(null);
                 } else {
                     LOGGER.error("Unknown transaction state, and execute fail(). path={} value={}", path, newState);
                     callback.fail(null);
                 }
-            } else if (Event.EventType.NodeDeleted == event.getType()) {     // 节点被删除，说明协调者离开集群了，自动回滚
-                LOGGER.error("Transaction node has been deleted. The coordinator maybe has some problems. path={}", path);
+            } else if (Event.EventType.NodeDeleted == event.getType()) { // 节点被删除，说明协调者离开集群了，自动回滚
+                LOGGER.error("Transaction node has been deleted. The coordinator maybe has some problems. path={}",
+                        path);
                 callback.fail(null);
             }
         };
@@ -142,7 +162,8 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     public void abort(String path, String target) throws TransactionException {
         String transactionPath = buildPath(path);
         // 将 transactionPath 节点标记为 TransactionState.ABORT
-        if (ZooKeeperUtils.setNodeData(keeperInstance.instance(), transactionPath, buildValue(TransactionState.ABORT.name(), target)) == null) {
+        if (ZooKeeperUtils.setNodeData(keeperInstance.instance(), transactionPath,
+                buildValue(TransactionState.ABORT.name(), target)) == null) {
             throw new TransactionException("abort transaction failed. path=" + transactionPath);
         }
     }
@@ -151,7 +172,8 @@ public class ZooKeeperTransactionHelper extends AbstractZooKeeperService impleme
     public void commit(String path, String target) throws TransactionException {
         String transactionPath = buildPath(path);
         // 将 transactionPath 节点标记为 TransactionState.COMMIT
-        if (ZooKeeperUtils.setNodeData(keeperInstance.instance(), transactionPath, buildValue(TransactionState.COMMIT.name(), target)) == null) {
+        if (ZooKeeperUtils.setNodeData(keeperInstance.instance(), transactionPath,
+                buildValue(TransactionState.COMMIT.name(), target)) == null) {
             throw new TransactionException("abort transaction failed. path=" + transactionPath);
         }
     }

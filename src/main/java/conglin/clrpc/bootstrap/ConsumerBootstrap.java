@@ -24,7 +24,7 @@ import conglin.clrpc.netty.NettyRouter;
 import conglin.clrpc.service.ServiceInterface;
 import conglin.clrpc.service.loadbalance.ConsistentHashLoadBalancer;
 import conglin.clrpc.service.loadbalance.LoadBalancer;
-import conglin.clrpc.service.registry.ServiceRegistry;
+import conglin.clrpc.service.registry.ServiceRegistryFactory;
 import conglin.clrpc.service.router.Router;
 
 /**
@@ -38,7 +38,7 @@ import conglin.clrpc.service.router.Router;
  * ServiceInterface<Interface1> serviceInterface1 = ...
  * 
  * ConsumerBootstrap bootstrap = new ConsumerBootstrap();
- * bootstrap.registry(ServiceRegistry.class).start(new BootOption());
+ * bootstrap.registry(new ServiceRegistryFactory(){...}).start(new BootOption());
  *
  * bootstrap.subscribe(serviceInterface1);
  *
@@ -100,12 +100,12 @@ public class ConsumerBootstrap extends Bootstrap {
     /**
      * 设置注册中心
      * 
-     * @param registryClass
+     * @param registryFactory
      * @return
      */
-    public ConsumerBootstrap registry(Class<? extends ServiceRegistry> registryClass) {
+    public ConsumerBootstrap registry(ServiceRegistryFactory registryFactory) {
         stateRecord.except(CommonState.PREPARE);
-        this.router.bindRegistry(registryClass);
+        this.router.bindRegistryFactory(registryFactory);
         return this;
     }
 

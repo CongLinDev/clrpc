@@ -50,7 +50,7 @@ ServiceObject<EchoService> serviceObject = new SimpleServiceObject.Builder<>(Ech
 ProviderBootstrap bootstrap = new ProviderBootstrap();
 
 // 发布服务并开启服务
-bootstrap.registry(ZooKeeperServiceRegistry.class) // 设置注册中心
+bootstrap.registry(ZooKeeperServiceRegistry::getInstance) // 设置注册中心
         .publish(serviceObject) // 发布服务对象
         .hookStop() // 注册关闭钩子，用于优雅关闭服务提供者
         .start(new CommonOption());
@@ -67,7 +67,7 @@ ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Buil
 // 创建服务消费者
 ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
-bootstrap.registry(ZooKeeperServiceRegistry.class)
+bootstrap.registry(ZooKeeperServiceRegistry::getInstance)
         .start(new CommonOption());
 
 // 提前刷新需要订阅的服务
@@ -104,7 +104,7 @@ ServiceInterface<EchoService> serviceInterface = new SimpleServiceInterface.Buil
 // 创建服务消费者
 ConsumerBootstrap bootstrap = new ConsumerBootstrap();
 // 开启服务消费者
-bootstrap.registry(ZooKeeperServiceRegistry.class)
+bootstrap.registry(ZooKeeperServiceRegistry::getInstance)
         .start(new CommonOption());
 
 // 提前刷新需要订阅的服务
@@ -171,34 +171,24 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 ### Config Items
 
-|              Field               |  Type   | Required | Default |           Remark            |
-| :------------------------------: | :-----: | :------: | :-----: | :-------------------------: |
-|      provider.registry.url       |   URL   |   TRUE   |         |        注册中心地址         |
-|       provider.instance.id       | String  |   True   |         |        服务提供者id         |
-|    provider.instance.address     | String  |   True   |         |       服务提供者地址        |
-|    provider.io-thread.number     | Integer |  False   |    4    |    服务提供者的IO线程数     |
-|      consumer.registry.url       |   URL   |   TRUE   |         |        注册中心地址         |
-|       consumer.instance.id       | String  |   True   |         |        服务消费者id         |
-|    consumer.io-thread.number     | Integer |  False   |    4    |    服务使用者的IO线程数     |
-|   consumer.retry.check-period    | Integer |  False   |  3000   | 重试机制执行周期 单位是毫秒 |
-| consumer.retry.initial-threshold | Integer |  False   |  3000   | 初始重试时间门槛 单位是毫秒 |
+|               Field                |  Type   | Required | Default |              Remark              |
+| :--------------------------------: | :-----: | :------: | :-----: | :------------------------------: |
+|            instance.id             | String  |   True   |         |            服务实例id            |
+|          instance.address          | String  |   True   |         |           服务实例地址           |
+|   registry.zookeeper.connection    | String  |   TRUE   |         |      注册中心ZooKeeper地址       |
+| registry.zookeeper.session-timeout | Integer |  FALSE   |  5000   | 注册中心ZooKeeper超时 单位是毫秒 |
+|      registry.zookeeper.path       | String  |  FALSE   | /clrpc  |    注册中心ZooKeeper基础路径     |
+|       netty.io-thread.number       | Integer |  False   |    4    |          netty IO线程数          |
+|   invocation.retry.check-period    | Integer |  False   |  3000   |   重试机制执行周期 单位是毫秒    |
+| invocation.retry.initial-threshold | Integer |  False   |  3000   |   初始重试时间门槛 单位是毫秒    |
 
 ### Extension Config Items
 
-|          Field          | Type  | Required | Default |             Remark             |
-| :---------------------: | :---: | :------: | :-----: | :----------------------------: |
-| extension.atomicity.url |  URL  |   True   |         | 原子服务地址，目前用于事务管理 |
-
-#### About Customized Address Url
-
-配置项中的 `provider.registry.url` `consumer.registry.url` 为必填项，其url解析规则如下：
-
-`zookeeper://127.0.0.1:2181/clrpc?session-timeout=5000`
-
-1. 协议名，如 `zookeeper`；
-2. 服务地址部分，如 `127.0.0.1:2181`；
-3. 根节点部分，如 `/clrpc` （若未给出默认为 `/` ）；
-4. 参数部分，如 `session-timeout=5000` 。
+|                      Field                      |  Type   | Required | Default |            Remark            |
+| :---------------------------------------------: | :-----: | :------: | :-----: | :--------------------------: |
+|   extension.transaction.zookeeper.connection    | String  |   TRUE   |         |      事务ZooKeeper地址       |
+| extension.transaction.zookeeper.session-timeout | Integer |  FALSE   |  5000   | 事务ZooKeeper超时 单位是毫秒 |
+|      extension.transaction.zookeeper.path       | String  |  FALSE   | /clrpc  |    事务ZooKeeper基础路径     |
 
 ## Distributed Transaction
 
@@ -219,7 +209,7 @@ ServiceObject<EchoService> serviceObject = new AnnotationServiceObject<>(EchoSer
 
 使用者通过实现 `conglin.clrpc.service.registry.ServiceRegistry` 接口来实现注册中心。
 
-在启动前通过 `conglin.clrpc.bootstrap.Bootstrap#registry(Class<? extends ServiceRegistry>)` 传入即可完成对注册中心的扩展。
+在启动前通过 `conglin.clrpc.bootstrap.Bootstrap#registry(ServiceRegistryFactory)` 传入即可完成对注册中心的扩展。
 
 **clrpc** 提供一个基于 **ZooKeeper** 的实现：`conglin.clrpc.thirdparty.zookeeper.registry.ZooKeeperServiceRegistry` 。
 

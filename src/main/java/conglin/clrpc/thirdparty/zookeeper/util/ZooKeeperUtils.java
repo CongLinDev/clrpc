@@ -94,7 +94,7 @@ public final class ZooKeeperUtils {
     }
 
     /**
-     * 递归创建通用的持久节点 该节点不存储任何信息 采用 OPEN_ACL_UNSAFE 策略
+     * 递归创建通用的持久节点 采用 OPEN_ACL_UNSAFE 策略
      * 
      * @param keeper
      * @param path   绝对路径
@@ -106,19 +106,31 @@ public final class ZooKeeperUtils {
     }
 
     /**
-     * 递归创建通用的节点 该节点不存储任何信息 采用 OPEN_ACL_UNSAFE 策略
+     * 创建临时顺序节点 采用 OPEN_ACL_UNSAFE 策略
      * 
      * @param keeper
      * @param path   绝对路径
-     * @param mode   节点创建模式
+     * @param data   存储数据
      * @return
      */
-    public static String createNode(final ZooKeeper keeper, String path, CreateMode mode) {
-        return createNode(keeper, path, "", mode);
+    public static String createEphemeralSequentialNode(final ZooKeeper keeper, String path, String data) {
+        return createNode(keeper, path, data, CreateMode.EPHEMERAL_SEQUENTIAL);
     }
 
     /**
-     * 递归创建通用的节点 该节点不存储任何信息 采用 OPEN_ACL_UNSAFE 策略
+     * 创建临时节点 采用 OPEN_ACL_UNSAFE 策略
+     * 
+     * @param keeper
+     * @param path   绝对路径
+     * @param data   存储数据
+     * @return
+     */
+    public static String createEphemeralNode(final ZooKeeper keeper, String path, String data) {
+        return createNode(keeper, path, data, CreateMode.EPHEMERAL);
+    }
+
+    /**
+     * 递归创建通用的节点 采用 OPEN_ACL_UNSAFE 策略
      * 
      * @param keeper
      * @param path   绝对路径
@@ -554,6 +566,7 @@ public final class ZooKeeperUtils {
 
     /**
      * 获取节点的值
+     * 
      * @param keeper
      * @param path
      * @return
